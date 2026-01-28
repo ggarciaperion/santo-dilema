@@ -73,7 +73,7 @@ export default function Home() {
       {/* Lado FIT - Ensaladas */}
       <Link
         href="/fit"
-        className={`relative flex-1 flex items-start md:items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
           hoveredSide === "fat" ? "md:flex-[0.3]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fit")}
@@ -188,7 +188,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-cyan-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-2 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 pt-6 pb-4 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
@@ -228,7 +228,7 @@ export default function Home() {
       {/* Lado FAT - Alitas */}
       <Link
         href="/fat"
-        className={`relative flex-1 flex items-start md:items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
           hoveredSide === "fit" ? "md:flex-[0.3]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fat")}
@@ -347,7 +347,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-2 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 pt-6 pb-4 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
@@ -382,7 +382,7 @@ export default function Home() {
       </Link>
 
       {/* Dark Kitchen Label - Parte inferior */}
-      <div className={`absolute bottom-2 md:bottom-4 z-20 transform -translate-x-1/2 transition-all duration-700 ease-out px-4 ${
+      <div className={`absolute bottom-1 md:bottom-3 z-20 transform -translate-x-1/2 transition-all duration-700 ease-out px-4 ${
         hoveredSide === "fit" ? "md:left-[35%]" : hoveredSide === "fat" ? "md:left-[65%]" : "md:left-1/2"
       } left-1/2`}>
         <div className="flex items-center gap-1.5 md:gap-2 text-center">
