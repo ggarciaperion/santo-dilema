@@ -416,10 +416,10 @@ export default function FatPage() {
                     </div>
                     <button
                       onClick={() => removeFromCart(item.product.id)}
-                      className="w-7 h-7 bg-red-600 hover:bg-red-500 text-white rounded text-base transition-all flex items-center justify-center flex-shrink-0"
+                      className="text-2xl hover:scale-110 transition-all flex items-center justify-center flex-shrink-0"
                       title="Eliminar"
                     >
-                      🗑️
+                      ❌
                     </button>
                   </div>
                 ))}
