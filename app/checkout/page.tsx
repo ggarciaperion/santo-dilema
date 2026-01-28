@@ -1,0 +1,402 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "../context/CartContext";
+
+export default function CheckoutPage() {
+  const router = useRouter();
+  const { cart, clearCart, totalItems, totalPrice } = useCart();
+  const [formData, setFormData] = useState({
+    name: "",
+    dni: "",
+    phone: "",
+    address: "",
+    email: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isSearchingCustomer, setIsSearchingCustomer] = useState(false);
+  const [customerFound, setCustomerFound] = useState(false);
+  const [showDniSearch, setShowDniSearch] = useState(true);
+
+  // Validar si el formulario está completo
+  const isFormValid = () => {
+    return (
+      formData.name.trim() !== "" &&
+      formData.dni.length === 8 &&
+      formData.phone.length === 9 &&
+      formData.address.trim() !== ""
+    );
+  };
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (totalItems === 0 && !orderPlaced) {
+      router.push("/");
+    }
+  }, [totalItems, orderPlaced, router]);
+
+  const handleNumberInput = (field: 'dni' | 'phone', value: string) => {
+    // Solo permite números, sin espacios
+    const numbersOnly = value.replace(/\D/g, '');
+    setFormData({ ...formData, [field]: numbersOnly });
+  };
+
+  const handleNameInput = (value: string) => {
+    // Solo permite letras y espacios, convierte a mayúsculas
+    const lettersOnly = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').toUpperCase();
+    setFormData({ ...formData, name: lettersOnly });
+  };
+
+  const searchCustomerByDni = async (dni: string) => {
+    if (dni.length !== 8) return;
+
+    setIsSearchingCustomer(true);
+    try {
+      const response = await fetch(`/api/customers?dni=${dni}`);
+      const data = await response.json();
+
+      if (data.found) {
+        setFormData(data.customer);
+        setCustomerFound(true);
+        setShowDniSearch(false);
+      } else {
+        setCustomerFound(false);
+        setShowDniSearch(false);
+      }
+    } catch (error) {
+      console.error("Error al buscar cliente:", error);
+      setShowDniSearch(false);
+    } finally {
+      setIsSearchingCustomer(false);
+    }
+  };
+
+  const handleDniSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    searchCustomerByDni(formData.dni);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      dni: "",
+      phone: "",
+      address: "",
+      email: "",
+    });
+    setCustomerFound(false);
+    setShowDniSearch(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          cart: cart,
+          totalItems: totalItems,
+          totalPrice: totalPrice,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        clearCart();
+        setOrderPlaced(true);
+        setTimeout(() => {
+          router.push("/");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Error al enviar pedido:", error);
+      alert("Hubo un error al procesar tu pedido. Intenta nuevamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (orderPlaced) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="bg-gray-900 rounded-2xl border-2 border-fuchsia-500 neon-border-purple p-12 text-center max-w-md">
+          <div className="text-8xl mb-6">✅</div>
+          <h2 className="text-4xl font-black text-fuchsia-400 mb-4 neon-glow-purple">
+            ¡Pedido Confirmado!
+          </h2>
+          <p className="text-xl text-white mb-6">
+            Hemos recibido tu pedido. Pronto te contactaremos.
+          </p>
+          <p className="text-sm text-gray-400">
+            Redirigiendo a inicio...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black flex flex-col">
+      {/* Header */}
+      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple">
+        <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center gap-2 md:gap-4">
+          <Link href="/" className="flex items-center gap-2 md:gap-4 hover:opacity-80 transition-opacity">
+            <Image
+              src="/logo.jpg"
+              alt="Santo Dilema"
+              width={32}
+              height={32}
+              className="rounded-full neon-border-purple md:w-10 md:h-10"
+            />
+            <span className="text-amber-400 text-sm md:text-lg font-bold gold-glow">SANTO DILEMA</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* Checkout Layout - Full Screen */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Left Side - Form */}
+        <div className="flex-1 bg-black p-4 md:p-6 flex items-start md:items-center justify-center overflow-y-auto">
+          <div className="max-w-xl w-full">
+            <h1 className="text-xl md:text-2xl font-black text-fuchsia-400 mb-1 neon-glow-purple">
+              Finalizar Pedido
+            </h1>
+            <p className="text-gray-300 mb-3 md:mb-4 text-[11px] md:text-xs">
+              Completa tus datos para confirmar tu orden
+            </p>
+
+            {showDniSearch ? (
+              /* DNI Search Form */
+              <form onSubmit={handleDniSearchSubmit} className="space-y-3 md:space-y-4">
+                <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-3 md:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl md:text-2xl">🚀</span>
+                    <h3 className="text-xs md:text-sm font-bold text-fuchsia-400">Compra más rápido</h3>
+                  </div>
+                  <p className="text-[9px] md:text-[10px] text-gray-300 mb-2 md:mb-3">
+                    Si ya compraste antes, ingresa tu DNI para autocompletar tus datos
+                  </p>
+
+                  <div>
+                    <label className="block text-[11px] md:text-xs font-bold text-fuchsia-400 mb-1">
+                      Ingresa tu DNI
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        required
+                        value={formData.dni}
+                        onChange={(e) => handleNumberInput('dni', e.target.value)}
+                        maxLength={8}
+                        className="flex-1 px-3 py-2.5 md:py-2 text-sm md:text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                        placeholder="12345678"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSearchingCustomer || formData.dni.length !== 8}
+                        className="px-3 md:px-4 py-2.5 md:py-2 bg-fuchsia-600 hover:bg-fuchsia-500 active:scale-95 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSearchingCustomer ? "..." : "Buscar"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowDniSearch(false)}
+                    className="text-[11px] md:text-xs text-fuchsia-400 hover:text-fuchsia-300 underline transition-colors active:scale-95"
+                  >
+                    ¿Primera compra? Ingresa tus datos aquí
+                  </button>
+                </div>
+              </form>
+            ) : (
+              /* Full Form */
+              <form id="checkout-form" onSubmit={handleSubmit} className="space-y-3">
+                {customerFound && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">✓</span>
+                        <p className="text-xs text-green-400 font-bold">¡Te encontramos! Verifica tus datos</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={resetForm}
+                        className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 underline"
+                      >
+                        Cambiar DNI
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                    Nombre completo *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => handleNameInput(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    placeholder="JUAN PÉREZ"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                      DNI *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.dni}
+                      onChange={(e) => handleNumberInput('dni', e.target.value)}
+                      maxLength={8}
+                      disabled={customerFound}
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="12345678"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                      Teléfono *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => handleNumberInput('phone', e.target.value)}
+                      maxLength={9}
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                      placeholder="999888777"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                    Dirección de entrega *
+                  </label>
+                  <textarea
+                    required
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    rows={2}
+                    placeholder="Av. Ejemplo 123, Dpto 456"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                    Email (opcional)
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    placeholder="tucorreo@ejemplo.com"
+                  />
+                  <p className="text-[10px] text-fuchsia-300/60 mt-1">
+                    Recibe ofertas y promociones limitadas
+                  </p>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side - Order Summary */}
+        <div className="w-full md:w-[400px] bg-gray-900 border-t-2 md:border-t-0 md:border-l-2 border-fuchsia-500/30 p-4 md:p-6 flex flex-col max-h-[50vh] md:max-h-none">
+          <h3 className="text-lg md:text-xl font-black text-fuchsia-400 mb-3 md:mb-4 neon-glow-purple">
+            Resumen del Pedido
+          </h3>
+          <div className="flex-1 overflow-y-auto space-y-2 mb-3 md:mb-4">
+            {cart.map((item) => (
+              <div
+                key={item.product.id}
+                className="bg-black/50 rounded-lg p-2 border border-fuchsia-500/20"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-xl md:text-2xl">{item.product.image}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-[11px] md:text-xs truncate">
+                      {item.product.name}
+                    </p>
+                    <p className="text-fuchsia-300 text-[9px] md:text-[10px] mt-0.5">
+                      S/ {item.product.price.toFixed(2)} x {item.quantity}
+                    </p>
+                  </div>
+                  <p className="text-amber-400 font-black text-xs md:text-sm gold-glow">
+                    S/ {(item.product.price * item.quantity).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t-2 border-fuchsia-500/50 pt-3 md:pt-4">
+            <div className="flex justify-between items-center mb-3 md:mb-4">
+              <span className="text-white font-bold text-sm md:text-base">Total:</span>
+              <span className="text-amber-400 font-black text-xl md:text-2xl gold-glow">
+                S/ {totalPrice.toFixed(2)}
+              </span>
+            </div>
+
+            {!showDniSearch && (
+              <>
+                <button
+                  type="submit"
+                  form="checkout-form"
+                  disabled={isSubmitting || !isFormValid()}
+                  className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-3 md:py-3 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105 mb-2 md:mb-3"
+                >
+                  {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
+                </button>
+
+                {!isFormValid() && (
+                  <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-2">
+                    ⚠️ Completa todos los campos obligatorios
+                  </p>
+                )}
+
+                <p className="text-gray-400 text-[9px] md:text-[10px] text-center">
+                  Al confirmar tu pedido, nos pondremos en contacto contigo para coordinar la entrega
+                </p>
+              </>
+            )}
+
+            {showDniSearch && (
+              <div className="p-2 md:p-3 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/30">
+                <p className="text-fuchsia-300 text-[9px] md:text-[10px]">
+                  💡 Completa tus datos para continuar con el pedido
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Colores del logo Santo Dilema */
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+
+  /* Colores principales */
+  --neon-purple: #d946ef;
+  --neon-pink: #ec4899;
+  --gold: #f59e0b;
+  --dark-gold: #d97706;
+
+  /* Colores FIT (lado turquesa/cyan) */
+  --fit-primary: #06b6d4;
+  --fit-secondary: #14b8a6;
+  --fit-glow: #22d3ee;
+
+  /* Colores FAT (lado rojo/naranja) */
+  --fat-primary: #ef4444;
+  --fat-secondary: #f97316;
+  --fat-glow: #fb923c;
+
+  /* Fondos */
+  --bg-dark: #0a0a0a;
+  --bg-darker: #050505;
+  --bg-card: #1a1a1a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Efectos de neón */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .neon-glow-purple {
+    text-shadow: 0 0 10px rgba(217, 70, 239, 0.8),
+                 0 0 20px rgba(217, 70, 239, 0.6),
+                 0 0 30px rgba(217, 70, 239, 0.4);
+  }
+
+  .neon-glow-fit {
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.8),
+                 0 0 20px rgba(6, 182, 212, 0.6),
+                 0 0 30px rgba(6, 182, 212, 0.4);
+  }
+
+  .neon-glow-fat {
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.8),
+                 0 0 20px rgba(239, 68, 68, 0.6),
+                 0 0 30px rgba(239, 68, 68, 0.4);
+  }
+
+  .neon-border-purple {
+    box-shadow: 0 0 10px rgba(217, 70, 239, 0.5),
+                0 0 20px rgba(217, 70, 239, 0.3),
+                inset 0 0 10px rgba(217, 70, 239, 0.2);
+  }
+
+  .neon-border-fit {
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.5),
+                0 0 20px rgba(6, 182, 212, 0.3),
+                inset 0 0 10px rgba(6, 182, 212, 0.2);
+  }
+
+  .neon-border-fat {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5),
+                0 0 20px rgba(239, 68, 68, 0.3),
+                inset 0 0 10px rgba(239, 68, 68, 0.2);
+  }
+
+  .gold-glow {
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.6),
+                 0 0 20px rgba(245, 158, 11, 0.4);
+  }
+
+  /* Animaciones sutiles para iconos de fondo */
+  .float-slow {
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .float-slower {
+    animation: float 12s ease-in-out infinite;
+  }
+
+  .float-medium {
+    animation: float 10s ease-in-out infinite;
+  }
+
+  .rotate-slow {
+    animation: rotate 20s linear infinite;
+  }
+
+  .sway-left {
+    animation: sway 7s ease-in-out infinite;
+  }
+
+  .sway-right {
+    animation: sway 9s ease-in-out infinite reverse;
+  }
+
+  .pulse-slow {
+    animation: pulse-subtle 6s ease-in-out infinite;
+  }
+
+  .bounce-subtle {
+    animation: bounce-soft 5s ease-in-out infinite;
+  }
+}
+
+/* Definición de keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sway {
+  0%, 100% {
+    transform: translateX(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateX(15px) rotate(5deg);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
