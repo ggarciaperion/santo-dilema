@@ -188,7 +188,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-cyan-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-3 md:pt-16 md:pb-8 lg:pt-20 lg:pb-10">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-2 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
@@ -347,7 +347,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-3 md:pt-16 md:pb-8 lg:pt-20 lg:pb-10">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-2 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
