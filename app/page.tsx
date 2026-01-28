@@ -13,10 +13,10 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-black opacity-90 z-0" />
 
       {/* Título principal dividido con neón - SANTO | DILEMA */}
-      <div className={`absolute top-4 md:top-8 z-20 flex flex-col items-center justify-center transition-all duration-700 ease-out ${
+      <div className={`absolute top-2 md:top-6 z-20 flex flex-col items-center justify-center transition-all duration-700 ease-out ${
         hoveredSide === "fit" ? "md:left-[35%]" : hoveredSide === "fat" ? "md:left-[65%]" : "md:left-1/2"
       } left-1/2 transform -translate-x-1/2`}>
-        <h1 className="flex items-center gap-3 md:gap-6 text-3xl md:text-5xl lg:text-7xl font-black tracking-tight">
+        <h1 className="flex items-center gap-2 md:gap-4 text-2xl md:text-4xl lg:text-6xl font-black tracking-tight">
           <span className="text-amber-400 gold-glow inline-flex items-center">
             S
             <span className="relative inline-block">
@@ -44,7 +44,7 @@ export default function Home() {
               </svg>
             </span>
           </span>
-          <div className={`w-0.5 h-8 md:h-16 lg:h-20 bg-gradient-to-b from-transparent to-transparent shadow-lg transition-all duration-700 ${
+          <div className={`w-0.5 h-6 md:h-12 lg:h-16 bg-gradient-to-b from-transparent to-transparent shadow-lg transition-all duration-700 ${
             hoveredSide === "fit" ? "via-cyan-400 shadow-cyan-400/50" : hoveredSide === "fat" ? "via-red-400 shadow-red-400/50" : "via-fuchsia-500 shadow-fuchsia-500/50"
           }`}></div>
           <span className={`transition-all duration-700 ${
@@ -53,16 +53,16 @@ export default function Home() {
         </h1>
 
         {/* Taglines debajo - animados según hover */}
-        <div className="flex items-center gap-4 md:gap-12 lg:gap-16 mt-2 md:mt-4 overflow-hidden">
-          <p className={`text-cyan-400/80 text-[10px] md:text-sm lg:text-base font-bold tracking-wider neon-glow-fit whitespace-nowrap transition-all duration-500 ${
+        <div className="flex items-center gap-3 md:gap-8 lg:gap-12 mt-1 md:mt-2 overflow-hidden">
+          <p className={`text-cyan-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fit whitespace-nowrap transition-all duration-500 ${
             hoveredSide === "fat" ? "opacity-0 -translate-x-8" : "opacity-100 translate-x-0"
           }`}>
             PREMIUM SALADS
           </p>
-          <div className={`w-0.5 h-3 md:h-4 bg-transparent transition-all duration-500 ${
+          <div className={`w-0.5 h-2 md:h-3 bg-transparent transition-all duration-500 ${
             hoveredSide === null ? "opacity-100" : "opacity-0"
           }`}></div>
-          <p className={`text-red-400/80 text-[10px] md:text-sm lg:text-base font-bold tracking-wider neon-glow-fat whitespace-nowrap transition-all duration-500 ${
+          <p className={`text-red-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fat whitespace-nowrap transition-all duration-500 ${
             hoveredSide === "fit" ? "opacity-0 translate-x-8" : "opacity-100 translate-x-0"
           }`}>
             PREMIUM WINGS
@@ -188,32 +188,32 @@ export default function Home() {
           <div className="absolute inset-0 bg-cyan-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-4 md:px-8 py-12 md:pt-40 md:pb-28 lg:pt-48 lg:pb-32">
-          <div className="mb-4 md:mb-8">
-            <div className="mb-3 md:mb-4 filter drop-shadow-lg">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-8 md:pt-28 md:pb-20 lg:pt-32 lg:pb-24">
+          <div className="mb-2 md:mb-4">
+            <div className="mb-2 md:mb-3 filter drop-shadow-lg">
               <Image
                 src="/SALAD.png"
                 alt="Ensalada Premium"
-                width={80}
-                height={80}
-                className="mx-auto md:w-32 md:h-32"
+                width={60}
+                height={60}
+                className="mx-auto md:w-24 md:h-24"
               />
             </div>
           </div>
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-3 md:mb-6 tracking-tight text-cyan-400 neon-glow-fit">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 md:mb-4 tracking-tight text-cyan-400 neon-glow-fit">
             BALANCE
           </h2>
-          <p className="text-base md:text-xl lg:text-2xl font-light mb-4 md:mb-8 text-cyan-200">
+          <p className="text-sm md:text-lg lg:text-xl font-light mb-3 md:mb-6 text-cyan-200">
             Ensaladas Saludables
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fit" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-sm md:text-lg text-white/90 mb-3 md:mb-4">
+            <p className="text-xs md:text-base text-white/90 mb-2 md:mb-3">
               Elige el camino del equilibrio
             </p>
-            <div className="inline-block px-5 py-2.5 md:px-6 md:py-3 border-2 border-cyan-400 rounded-full neon-border-fit">
-              <span className="text-cyan-400 font-bold text-sm md:text-base">VER MENÚ →</span>
+            <div className="inline-block px-4 py-2 md:px-5 md:py-2.5 border-2 border-cyan-400 rounded-full neon-border-fit">
+              <span className="text-cyan-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
             </div>
           </div>
         </div>
@@ -347,32 +347,32 @@ export default function Home() {
           <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-4 md:px-8 py-12 md:pt-40 md:pb-28 lg:pt-48 lg:pb-32">
-          <div className="mb-4 md:mb-8">
-            <div className="mb-3 md:mb-4 filter drop-shadow-lg">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-8 md:pt-28 md:pb-20 lg:pt-32 lg:pb-24">
+          <div className="mb-2 md:mb-4">
+            <div className="mb-2 md:mb-3 filter drop-shadow-lg">
               <Image
                 src="/WING.png"
                 alt="Alitas Premium"
-                width={80}
-                height={80}
-                className="mx-auto md:w-32 md:h-32"
+                width={60}
+                height={60}
+                className="mx-auto md:w-24 md:h-24"
               />
             </div>
           </div>
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-3 md:mb-6 tracking-tight text-red-400 neon-glow-fat">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 md:mb-4 tracking-tight text-red-400 neon-glow-fat">
             PLACER
           </h2>
-          <p className="text-base md:text-xl lg:text-2xl font-light mb-4 md:mb-8 text-orange-200">
+          <p className="text-sm md:text-lg lg:text-xl font-light mb-3 md:mb-6 text-orange-200">
             Alitas Irresistibles
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fat" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-sm md:text-lg text-white/90 mb-3 md:mb-4">
+            <p className="text-xs md:text-base text-white/90 mb-2 md:mb-3">
               Elige el camino de la indulgencia
             </p>
-            <div className="inline-block px-5 py-2.5 md:px-6 md:py-3 border-2 border-red-400 rounded-full neon-border-fat">
-              <span className="text-red-400 font-bold text-sm md:text-base">VER MENÚ →</span>
+            <div className="inline-block px-4 py-2 md:px-5 md:py-2.5 border-2 border-red-400 rounded-full neon-border-fat">
+              <span className="text-red-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
             </div>
           </div>
         </div>
@@ -382,19 +382,19 @@ export default function Home() {
       </Link>
 
       {/* Dark Kitchen Label - Parte inferior */}
-      <div className={`absolute bottom-4 md:bottom-8 z-20 transform -translate-x-1/2 transition-all duration-700 ease-out px-4 ${
+      <div className={`absolute bottom-2 md:bottom-4 z-20 transform -translate-x-1/2 transition-all duration-700 ease-out px-4 ${
         hoveredSide === "fit" ? "md:left-[35%]" : hoveredSide === "fat" ? "md:left-[65%]" : "md:left-1/2"
       } left-1/2`}>
-        <div className="flex items-center gap-2 md:gap-3 text-center">
-          <div className={`w-4 md:w-8 h-px bg-gradient-to-r from-transparent transition-all duration-700 ${
+        <div className="flex items-center gap-1.5 md:gap-2 text-center">
+          <div className={`w-3 md:w-6 h-px bg-gradient-to-r from-transparent transition-all duration-700 ${
             hoveredSide === "fit" ? "to-cyan-400" : hoveredSide === "fat" ? "to-red-400" : "to-fuchsia-500"
           }`}></div>
-          <p className={`text-[9px] md:text-sm font-bold tracking-widest transition-all duration-700 whitespace-nowrap ${
+          <p className={`text-[8px] md:text-xs font-bold tracking-widest transition-all duration-700 whitespace-nowrap ${
             hoveredSide === "fit" ? "text-cyan-400 neon-glow-fit" : hoveredSide === "fat" ? "text-red-400 neon-glow-fat" : "text-fuchsia-400 neon-glow-purple"
           }`}>
             PREMIUM DARK KITCHEN · DELIVERY ONLY
           </p>
-          <div className={`w-4 md:w-8 h-px bg-gradient-to-l from-transparent transition-all duration-700 ${
+          <div className={`w-3 md:w-6 h-px bg-gradient-to-l from-transparent transition-all duration-700 ${
             hoveredSide === "fit" ? "to-cyan-400" : hoveredSide === "fat" ? "to-red-400" : "to-fuchsia-500"
           }`}></div>
         </div>
