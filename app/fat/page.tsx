@@ -533,6 +533,17 @@ export default function FatPage() {
           </div>
         </div>
       )}
+
+      {/* Footer decorativo con iconos animados */}
+      <footer className="fixed bottom-0 left-0 right-0 pointer-events-none z-0">
+        <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-center gap-8 md:gap-12 opacity-20">
+          <span className="text-2xl md:text-3xl text-red-400 neon-glow-fat float-slow">🔥</span>
+          <span className="text-xl md:text-2xl text-orange-400 neon-glow-fat bounce-subtle">🍗</span>
+          <span className="text-2xl md:text-3xl text-red-400 neon-glow-fat float-slower">🔥</span>
+          <span className="text-xl md:text-2xl text-orange-400 neon-glow-fat float-medium">🌶️</span>
+          <span className="text-2xl md:text-3xl text-red-400 neon-glow-fat float-slow" style={{animationDelay: '2s'}}>🔥</span>
+        </div>
+      </footer>
     </div>
   );
 }
