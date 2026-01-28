@@ -8,7 +8,7 @@ export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
 
   return (
-    <main className="min-h-screen w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
+    <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
       {/* Fondo con textura oscura */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-black opacity-90 z-0" />
 
@@ -73,7 +73,7 @@ export default function Home() {
       {/* Lado FIT - Ensaladas */}
       <Link
         href="/fit"
-        className={`relative flex-1 flex items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[50dvh] md:min-h-screen ${
           hoveredSide === "fat" ? "md:flex-[0.3]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fit")}
@@ -228,7 +228,7 @@ export default function Home() {
       {/* Lado FAT - Alitas */}
       <Link
         href="/fat"
-        className={`relative flex-1 flex items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[50dvh] md:min-h-screen ${
           hoveredSide === "fit" ? "md:flex-[0.3]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fat")}
