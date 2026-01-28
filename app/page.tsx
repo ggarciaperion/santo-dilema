@@ -188,9 +188,9 @@ export default function Home() {
           <div className="absolute inset-0 bg-cyan-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-8 md:pt-28 md:pb-20 lg:pt-32 lg:pb-24">
-          <div className="mb-2 md:mb-4">
-            <div className="mb-2 md:mb-3 filter drop-shadow-lg">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-4 md:pt-20 md:pb-12 lg:pt-24 lg:pb-16">
+          <div className="mb-1.5 md:mb-3">
+            <div className="mb-1.5 md:mb-2 filter drop-shadow-lg">
               <Image
                 src="/SALAD.png"
                 alt="Ensalada Premium"
@@ -200,19 +200,19 @@ export default function Home() {
               />
             </div>
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 md:mb-4 tracking-tight text-cyan-400 neon-glow-fit">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1.5 md:mb-3 tracking-tight text-cyan-400 neon-glow-fit">
             BALANCE
           </h2>
-          <p className="text-sm md:text-lg lg:text-xl font-light mb-3 md:mb-6 text-cyan-200">
+          <p className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-4 text-cyan-200">
             Ensaladas Saludables
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fit" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-xs md:text-base text-white/90 mb-2 md:mb-3">
+            <p className="text-xs md:text-base text-white/90 mb-1.5 md:mb-2">
               Elige el camino del equilibrio
             </p>
-            <div className="inline-block px-4 py-2 md:px-5 md:py-2.5 border-2 border-cyan-400 rounded-full neon-border-fit">
+            <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-cyan-400 rounded-full neon-border-fit">
               <span className="text-cyan-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
             </div>
           </div>
@@ -347,9 +347,9 @@ export default function Home() {
           <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-8 md:pt-28 md:pb-20 lg:pt-32 lg:pb-24">
-          <div className="mb-2 md:mb-4">
-            <div className="mb-2 md:mb-3 filter drop-shadow-lg">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-4 md:pt-20 md:pb-12 lg:pt-24 lg:pb-16">
+          <div className="mb-1.5 md:mb-3">
+            <div className="mb-1.5 md:mb-2 filter drop-shadow-lg">
               <Image
                 src="/WING.png"
                 alt="Alitas Premium"
@@ -359,19 +359,19 @@ export default function Home() {
               />
             </div>
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 md:mb-4 tracking-tight text-red-400 neon-glow-fat">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1.5 md:mb-3 tracking-tight text-red-400 neon-glow-fat">
             PLACER
           </h2>
-          <p className="text-sm md:text-lg lg:text-xl font-light mb-3 md:mb-6 text-orange-200">
+          <p className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-4 text-orange-200">
             Alitas Irresistibles
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fat" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-xs md:text-base text-white/90 mb-2 md:mb-3">
+            <p className="text-xs md:text-base text-white/90 mb-1.5 md:mb-2">
               Elige el camino de la indulgencia
             </p>
-            <div className="inline-block px-4 py-2 md:px-5 md:py-2.5 border-2 border-red-400 rounded-full neon-border-fat">
+            <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-red-400 rounded-full neon-border-fat">
               <span className="text-red-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
             </div>
           </div>
