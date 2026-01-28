@@ -259,7 +259,7 @@ export default function FatPage() {
             {products.map((product) => (
               <div
                 key={product.id}
-                ref={(el) => (cardRefs.current[product.id] = el)}
+                ref={(el) => { cardRefs.current[product.id] = el; }}
                 onMouseEnter={() => handleCardHover(product.id)}
                 onMouseLeave={() => setHoveredCard(null)}
                 className={`bg-gray-900 rounded-xl border-2 border-red-500/30 overflow-visible flex-shrink-0 w-[280px] md:w-[260px] snap-center transition-all duration-300 ease-out ${
