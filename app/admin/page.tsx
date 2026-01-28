@@ -1252,7 +1252,7 @@ export default function AdminPage() {
               <button
                 onClick={() => {
                   setEditingProduct(null);
-                  setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true });
+                  setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
                   setShowProductModal(true);
                 }}
                 className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
@@ -1432,7 +1432,7 @@ export default function AdminPage() {
                     onClick={() => {
                       setShowProductModal(false);
                       setEditingProduct(null);
-                      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true });
+                      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
                     }}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
                   >
