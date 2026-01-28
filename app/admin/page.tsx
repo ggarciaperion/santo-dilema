@@ -176,7 +176,7 @@ export default function AdminPage() {
       });
       loadProducts();
       setShowProductModal(false);
-      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true });
+      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
     } catch (error) {
       console.error("Error al crear producto:", error);
     }
@@ -192,7 +192,7 @@ export default function AdminPage() {
       loadProducts();
       setShowProductModal(false);
       setEditingProduct(null);
-      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true });
+      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
     } catch (error) {
       console.error("Error al actualizar producto:", error);
     }
