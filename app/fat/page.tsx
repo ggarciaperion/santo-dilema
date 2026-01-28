@@ -262,10 +262,11 @@ export default function FatPage() {
                 ref={(el) => { cardRefs.current[product.id] = el; }}
                 onMouseEnter={() => handleCardHover(product.id)}
                 onMouseLeave={() => setHoveredCard(null)}
-                className={`bg-gray-900 rounded-xl border-2 border-red-500/30 overflow-visible flex-shrink-0 w-[280px] md:w-[260px] snap-center transition-all duration-300 ease-out ${
-                  hoveredCard === product.id
-                    ? 'md:scale-105 md:-translate-y-2 border-red-400 neon-border-fat shadow-2xl shadow-red-500/50 z-10'
-                    : 'scale-100 translate-y-0 hover:border-red-400'
+                className={`bg-gray-900 rounded-xl border-2 overflow-visible flex-shrink-0 w-[280px] md:w-[260px] snap-center transition-all duration-300 ease-out
+                  border-red-400 neon-border-fat shadow-xl shadow-red-500/30
+                  ${hoveredCard === product.id
+                    ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
+                    : 'md:border-red-500/30 md:shadow-none scale-100 translate-y-0'
                 }`}
                 style={{
                   transformOrigin: 'center center',

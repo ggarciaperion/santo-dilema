@@ -246,10 +246,11 @@ export default function FitPage() {
                 ref={(el) => (cardRefs.current[product.id] = el)}
                 onMouseEnter={() => handleCardHover(product.id)}
                 onMouseLeave={() => setHoveredCard(null)}
-                className={`bg-gray-900 rounded-xl border-2 border-cyan-500/30 overflow-visible flex-shrink-0 w-[280px] md:w-[260px] snap-center transition-all duration-300 ease-out ${
-                  hoveredCard === product.id
-                    ? 'md:scale-105 md:-translate-y-2 border-cyan-400 neon-border-fit shadow-2xl shadow-cyan-500/50 z-10'
-                    : 'scale-100 translate-y-0 hover:border-cyan-400'
+                className={`bg-gray-900 rounded-xl border-2 overflow-visible flex-shrink-0 w-[280px] md:w-[260px] snap-center transition-all duration-300 ease-out
+                  border-cyan-400 neon-border-fit shadow-xl shadow-cyan-500/30
+                  ${hoveredCard === product.id
+                    ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
+                    : 'md:border-cyan-500/30 md:shadow-none scale-100 translate-y-0'
                 }`}
                 style={{
                   transformOrigin: 'center center',
