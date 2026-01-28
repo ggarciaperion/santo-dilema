@@ -188,7 +188,7 @@ export default function FitPage() {
               href="/fat"
               className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors neon-glow-fat px-2 py-1 rounded border border-red-500/30 hover:border-red-400 sm:hidden"
             >
-              Placer
+              Ver menú Placer
             </Link>
             {totalItems > 0 && (
               <div className="bg-cyan-500 text-black px-2 md:px-3 py-1 md:py-1.5 rounded-full font-bold text-xs md:text-sm neon-border-fit">

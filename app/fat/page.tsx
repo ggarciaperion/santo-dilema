@@ -204,7 +204,7 @@ export default function FatPage() {
               href="/fit"
               className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors neon-glow-fit px-2 py-1 rounded border border-cyan-500/30 hover:border-cyan-400 sm:hidden"
             >
-              Balance
+              Ver menú Balance
             </Link>
             {totalItems > 0 && (
               <div className="bg-red-500 text-white px-2 md:px-3 py-1 md:py-1.5 rounded-full font-bold text-xs md:text-sm neon-border-fat">
