@@ -73,7 +73,7 @@ export default function Home() {
       {/* Lado FIT - Ensaladas */}
       <Link
         href="/fit"
-        className={`relative flex-1 flex items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
+        className={`relative flex-1 flex items-start md:items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
           hoveredSide === "fat" ? "md:flex-[0.3]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fit")}
@@ -228,7 +228,7 @@ export default function Home() {
       {/* Lado FAT - Alitas */}
       <Link
         href="/fat"
-        className={`relative flex-1 flex items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
+        className={`relative flex-1 flex items-start md:items-center justify-center transition-all duration-500 min-h-[50vh] md:min-h-screen ${
           hoveredSide === "fit" ? "md:flex-[0.3]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fat")}
