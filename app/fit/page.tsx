@@ -394,17 +394,17 @@ export default function FitPage() {
                       >
                         +
                       </button>
-                      <button
-                        onClick={() => removeFromCart(item.product.id)}
-                        className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center ml-1"
-                        title="Eliminar"
-                      >
-                        ×
-                      </button>
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow min-w-[60px] text-right">
                       S/ {(item.product.price * item.quantity).toFixed(2)}
                     </div>
+                    <button
+                      onClick={() => removeFromCart(item.product.id)}
+                      className="w-7 h-7 bg-red-600 hover:bg-red-500 text-white rounded text-base transition-all flex items-center justify-center flex-shrink-0"
+                      title="Eliminar"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 ))}
               </div>
