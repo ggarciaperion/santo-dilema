@@ -188,28 +188,28 @@ export default function Home() {
           <div className="absolute inset-0 bg-cyan-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-4 md:pt-20 md:pb-12 lg:pt-24 lg:pb-16">
-          <div className="mb-1.5 md:mb-3">
-            <div className="mb-1.5 md:mb-2 filter drop-shadow-lg">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-3 md:pt-16 md:pb-8 lg:pt-20 lg:pb-10">
+          <div className="mb-1 md:mb-2">
+            <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
                 src="/SALAD.png"
                 alt="Ensalada Premium"
-                width={60}
-                height={60}
-                className="mx-auto md:w-24 md:h-24"
+                width={50}
+                height={50}
+                className="mx-auto md:w-20 md:h-20"
               />
             </div>
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1.5 md:mb-3 tracking-tight text-cyan-400 neon-glow-fit">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1 md:mb-2 tracking-tight text-cyan-400 neon-glow-fit">
             BALANCE
           </h2>
-          <p className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-4 text-cyan-200">
+          <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-cyan-200">
             Ensaladas Saludables
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fit" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-xs md:text-base text-white/90 mb-1.5 md:mb-2">
+            <p className="text-xs md:text-base text-white/90 mb-1 md:mb-1.5">
               Elige el camino del equilibrio
             </p>
             <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-cyan-400 rounded-full neon-border-fit">
@@ -347,28 +347,28 @@ export default function Home() {
           <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 py-4 md:pt-20 md:pb-12 lg:pt-24 lg:pb-16">
-          <div className="mb-1.5 md:mb-3">
-            <div className="mb-1.5 md:mb-2 filter drop-shadow-lg">
+        <div className="relative z-10 text-center text-white px-3 md:px-6 py-3 md:pt-16 md:pb-8 lg:pt-20 lg:pb-10">
+          <div className="mb-1 md:mb-2">
+            <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
                 src="/WING.png"
                 alt="Alitas Premium"
-                width={60}
-                height={60}
-                className="mx-auto md:w-24 md:h-24"
+                width={50}
+                height={50}
+                className="mx-auto md:w-20 md:h-20"
               />
             </div>
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1.5 md:mb-3 tracking-tight text-red-400 neon-glow-fat">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1 md:mb-2 tracking-tight text-red-400 neon-glow-fat">
             PLACER
           </h2>
-          <p className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-4 text-orange-200">
+          <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
             Alitas Irresistibles
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fat" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-xs md:text-base text-white/90 mb-1.5 md:mb-2">
+            <p className="text-xs md:text-base text-white/90 mb-1 md:mb-1.5">
               Elige el camino de la indulgencia
             </p>
             <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-red-400 rounded-full neon-border-fat">
