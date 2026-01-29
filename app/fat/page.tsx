@@ -115,7 +115,8 @@ export default function FatPage() {
   }, [completedOrders]);
 
   const getRequiredSalsasCount = (productId: string): number => {
-    const quantity = orderQuantity[productId] || 1;
+    const quantity = orderQuantity[productId] || 0;
+    if (quantity === 0) return 0;
     let baseSalsas = 1;
     if (productId === "pequeno-dilema") baseSalsas = 1;
     if (productId === "duo-dilema") baseSalsas = 2;
@@ -146,21 +147,50 @@ export default function FatPage() {
   };
 
   const handleIncreaseQuantity = (productId: string) => {
+    const currentQty = orderQuantity[productId] || 0;
     setOrderQuantity((prev) => ({
       ...prev,
-      [productId]: (prev[productId] || 1) + 1
+      [productId]: currentQty + 1
     }));
-    // Limpiar salsas cuando cambia la cantidad
-    setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
+    // Expandir el card automáticamente
+    if (currentQty === 0) {
+      setExpandedCard(productId);
+      setShowSalsas((prev) => ({ ...prev, [productId]: true }));
+      if (!selectedSalsas[productId]) {
+        setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
+      }
+      if (!selectedComplements[productId]) {
+        setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
+      }
+    } else {
+      // Limpiar salsas cuando cambia la cantidad
+      setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
+    }
   };
 
   const handleDecreaseQuantity = (productId: string) => {
-    const currentQty = orderQuantity[productId] || 1;
-    if (currentQty > 1) {
+    const currentQty = orderQuantity[productId] || 0;
+    if (currentQty > 0) {
       setOrderQuantity((prev) => ({
         ...prev,
         [productId]: currentQty - 1
       }));
+      // Si llega a 0, colapsar el card y limpiar carrito
+      if (currentQty === 1) {
+        setExpandedCard(null);
+        setShowSalsas((prev) => ({ ...prev, [productId]: false }));
+        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
+        setShowExtras((prev) => ({ ...prev, [productId]: false }));
+        // Eliminar del carrito si existe
+        if (mainProductsInCart[productId]) {
+          removeFromCart(mainProductsInCart[productId]);
+          setMainProductsInCart((prev) => {
+            const newState = { ...prev };
+            delete newState[productId];
+            return newState;
+          });
+        }
+      }
       // Limpiar salsas cuando cambia la cantidad
       setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
     }
@@ -605,7 +635,7 @@ export default function FatPage() {
                           −
                         </button>
                         <span className="text-white font-bold w-8 text-center text-sm">
-                          {orderQuantity[product.id] || 1}
+                          {orderQuantity[product.id] || 0}
                         </span>
                         <button
                           onClick={(e) => {
@@ -618,19 +648,6 @@ export default function FatPage() {
                         </button>
                       </div>
                     </div>
-
-                    {/* Botón Elige tu salsa - Visible siempre */}
-                    {!isExpanded && (
-                      <button
-                        onClick={() => handleExpandCard(product.id)}
-                        className="w-full bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded-lg p-2 transition-all shadow-sm shadow-amber-500/20 flex items-center justify-center gap-2"
-                      >
-                        <span className="text-sm">🌶️</span>
-                        <span className="text-white text-xs font-bold">
-                          Elige tu{requiredSalsas > 1 ? 's' : ''} salsa{requiredSalsas > 1 ? 's' : ''}
-                        </span>
-                      </button>
-                    )}
                   </div>
 
                   {/* Expanded Content */}
