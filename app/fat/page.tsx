@@ -31,7 +31,7 @@ const products: Product[] = [
     name: "Pequeño Dilema",
     description: "12 alitas con tu salsa favorita",
     price: 28.90,
-    image: "🍗",
+    image: "/pequeno-dilema.png",
     category: "fat",
   },
   {
@@ -635,7 +635,15 @@ export default function FatPage() {
                 >
                   {/* Card Header */}
                   <div className="bg-gradient-to-br from-red-900/40 to-orange-900/40 h-24 md:h-28 flex items-center justify-center border-b-2 border-red-500/30 rounded-t-xl overflow-hidden">
-                    <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                    {product.image.startsWith('/') ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    ) : (
+                      <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                    )}
                   </div>
                   <div className="p-3 md:p-4">
                     <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
