@@ -104,6 +104,13 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
+      console.log("Enviando pedido...", {
+        formData,
+        cart,
+        totalItems,
+        totalPrice
+      });
+
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -118,7 +125,11 @@ export default function CheckoutPage() {
         }),
       });
 
+      console.log("Respuesta del servidor:", response.status, response.ok);
+
       if (response.ok) {
+        const data = await response.json();
+        console.log("Pedido creado exitosamente:", data);
         clearCart();
         setOrderPlaced(true);
         setTimeout(() => {
@@ -126,13 +137,13 @@ export default function CheckoutPage() {
         }, 4000);
       } else {
         const errorData = await response.json();
-        console.error("Error del servidor:", errorData);
-        alert("Hubo un error al procesar tu pedido. Intenta nuevamente.");
+        console.error("Error del servidor:", response.status, errorData);
+        alert(`Hubo un error al procesar tu pedido (${response.status}). Intenta nuevamente.\n${JSON.stringify(errorData)}`);
         setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error al enviar pedido:", error);
-      alert("Hubo un error de conexión. Por favor verifica tu internet e intenta nuevamente.");
+      alert(`Hubo un error de conexión: ${error instanceof Error ? error.message : 'Error desconocido'}\nPor favor verifica tu internet e intenta nuevamente.`);
       setIsSubmitting(false);
     }
   };

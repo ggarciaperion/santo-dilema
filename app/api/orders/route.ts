@@ -1,26 +1,10 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-
-const ordersFilePath = path.join(process.cwd(), "data", "orders.json");
-
-// Asegurar que el directorio data existe
-function ensureDataDirectory() {
-  const dataDir = path.join(process.cwd(), "data");
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  if (!fs.existsSync(ordersFilePath)) {
-    fs.writeFileSync(ordersFilePath, JSON.stringify([], null, 2));
-  }
-}
+import { storage } from "@/lib/storage";
 
 // GET - Obtener todos los pedidos
 export async function GET() {
   try {
-    ensureDataDirectory();
-    const ordersData = fs.readFileSync(ordersFilePath, "utf-8");
-    const orders = JSON.parse(ordersData);
+    const orders = await storage.getOrders();
     return NextResponse.json(orders);
   } catch (error) {
     console.error("Error al leer pedidos:", error);
@@ -31,12 +15,8 @@ export async function GET() {
 // POST - Crear un nuevo pedido
 export async function POST(request: Request) {
   try {
-    ensureDataDirectory();
     const body = await request.json();
-
-    // Leer pedidos existentes
-    const ordersData = fs.readFileSync(ordersFilePath, "utf-8");
-    const orders = JSON.parse(ordersData);
+    console.log("📦 Recibiendo nuevo pedido:", body);
 
     // Crear nuevo pedido con ID único
     const newOrder = {
@@ -46,17 +26,20 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    // Agregar al inicio del array
-    orders.unshift(newOrder);
+    console.log("✅ Pedido creado con ID:", newOrder.id);
 
-    // Guardar
-    fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2));
+    // Guardar usando la utilidad de storage
+    await storage.saveOrder(newOrder);
+    console.log("💾 Pedido guardado");
 
     return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {
-    console.error("Error al crear pedido:", error);
+    console.error("❌ Error al crear pedido:", error);
     return NextResponse.json(
-      { error: "Error al procesar el pedido" },
+      {
+        error: "Error al procesar el pedido",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
@@ -65,26 +48,21 @@ export async function POST(request: Request) {
 // PATCH - Actualizar estado de un pedido
 export async function PATCH(request: Request) {
   try {
-    ensureDataDirectory();
     const { id, status } = await request.json();
 
-    const ordersData = fs.readFileSync(ordersFilePath, "utf-8");
-    const orders = JSON.parse(ordersData);
+    const updatedOrder = await storage.updateOrder(id, {
+      status,
+      updatedAt: new Date().toISOString(),
+    });
 
-    const orderIndex = orders.findIndex((order: any) => order.id === id);
-    if (orderIndex === -1) {
+    if (!updatedOrder) {
       return NextResponse.json(
         { error: "Pedido no encontrado" },
         { status: 404 }
       );
     }
 
-    orders[orderIndex].status = status;
-    orders[orderIndex].updatedAt = new Date().toISOString();
-
-    fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2));
-
-    return NextResponse.json(orders[orderIndex]);
+    return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar pedido:", error);
     return NextResponse.json(
