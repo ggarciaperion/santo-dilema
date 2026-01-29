@@ -146,19 +146,42 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="h-[100dvh] bg-black flex flex-col">
       {/* Header */}
       <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple">
-        <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center gap-2 md:gap-4">
-          <Link href="/" className="flex items-center gap-2 md:gap-4 hover:opacity-80 transition-opacity">
-            <Image
-              src="/logo.jpg"
-              alt="Santo Dilema"
-              width={32}
-              height={32}
-              className="rounded-full neon-border-purple md:w-10 md:h-10"
-            />
-            <span className="text-amber-400 text-sm md:text-lg font-bold gold-glow">SANTO DILEMA</span>
+        <div className="container mx-auto px-3 md:px-4 py-2 md:py-2 flex items-center justify-center">
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <h1 className="flex items-center gap-2 md:gap-3 text-base md:text-xl font-black tracking-tight">
+              <span className="text-amber-400 gold-glow inline-flex items-center">
+                S
+                <span className="relative inline-block">
+                  A
+                </span>
+                <span className="relative inline-block">
+                  N
+                </span>
+                <span className="relative inline-block">
+                  T
+                </span>
+                <span className="relative inline-block">
+                  O
+                  <svg
+                    className="absolute -top-1.5 md:-top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 md:w-4 md:h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/>
+                    <line x1="2" y1="19" x2="22" y2="19"/>
+                  </svg>
+                </span>
+              </span>
+              <div className="w-0.5 h-5 md:h-7 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
+              <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
+            </h1>
           </Link>
         </div>
       </header>
@@ -166,29 +189,29 @@ export default function CheckoutPage() {
       {/* Checkout Layout - Full Screen */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Side - Form */}
-        <div className="flex-1 bg-black p-4 md:p-6 flex items-start md:items-center justify-center overflow-y-auto">
+        <div className="flex-1 bg-black p-3 md:p-4 flex items-start md:items-center justify-center overflow-y-auto">
           <div className="max-w-xl w-full">
-            <h1 className="text-xl md:text-2xl font-black text-fuchsia-400 mb-1 neon-glow-purple">
+            <h1 className="text-lg md:text-xl font-black text-fuchsia-400 mb-0.5 neon-glow-purple">
               Finalizar Pedido
             </h1>
-            <p className="text-gray-300 mb-3 md:mb-4 text-[11px] md:text-xs">
+            <p className="text-gray-300 mb-2 md:mb-3 text-[10px] md:text-xs">
               Completa tus datos para confirmar tu orden
             </p>
 
             {showDniSearch ? (
               /* DNI Search Form */
-              <form onSubmit={handleDniSearchSubmit} className="space-y-3 md:space-y-4">
-                <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-3 md:p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl md:text-2xl">🚀</span>
+              <form onSubmit={handleDniSearchSubmit} className="space-y-2 md:space-y-2">
+                <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-2.5 md:p-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-lg md:text-xl">🚀</span>
                     <h3 className="text-xs md:text-sm font-bold text-fuchsia-400">Compra más rápido</h3>
                   </div>
-                  <p className="text-[9px] md:text-[10px] text-gray-300 mb-2 md:mb-3">
+                  <p className="text-[9px] md:text-[10px] text-gray-300 mb-2">
                     Si ya compraste antes, ingresa tu DNI para autocompletar tus datos
                   </p>
 
                   <div>
-                    <label className="block text-[11px] md:text-xs font-bold text-fuchsia-400 mb-1">
+                    <label className="block text-[11px] md:text-[11px] font-bold text-fuchsia-400 mb-0.5">
                       Ingresa tu DNI
                     </label>
                     <div className="flex gap-2">
@@ -224,13 +247,13 @@ export default function CheckoutPage() {
               </form>
             ) : (
               /* Full Form */
-              <form id="checkout-form" onSubmit={handleSubmit} className="space-y-3">
+              <form id="checkout-form" onSubmit={handleSubmit} className="space-y-2">
                 {customerFound && (
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">✓</span>
-                        <p className="text-xs text-green-400 font-bold">¡Te encontramos! Verifica tus datos</p>
+                        <span className="text-lg">✓</span>
+                        <p className="text-[11px] text-green-400 font-bold">¡Te encontramos! Verifica tus datos</p>
                       </div>
                       <button
                         type="button"
@@ -244,7 +267,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                  <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
                     Nombre completo *
                   </label>
                   <input
@@ -252,14 +275,14 @@ export default function CheckoutPage() {
                     required
                     value={formData.name}
                     onChange={(e) => handleNameInput(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     placeholder="JUAN PÉREZ"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                    <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
                       DNI *
                     </label>
                     <input
@@ -269,12 +292,12 @@ export default function CheckoutPage() {
                       onChange={(e) => handleNumberInput('dni', e.target.value)}
                       maxLength={8}
                       disabled={customerFound}
-                      className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="12345678"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                    <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
                       Teléfono *
                     </label>
                     <input
@@ -283,14 +306,14 @@ export default function CheckoutPage() {
                       value={formData.phone}
                       onChange={(e) => handleNumberInput('phone', e.target.value)}
                       maxLength={9}
-                      className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                      className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                       placeholder="999888777"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                  <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
                     Dirección de entrega *
                   </label>
                   <textarea
@@ -299,14 +322,14 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     rows={2}
                     placeholder="Av. Ejemplo 123, Dpto 456"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-fuchsia-400 mb-1">
+                  <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
                     Email (opcional)
                   </label>
                   <input
@@ -315,7 +338,7 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     placeholder="tucorreo@ejemplo.com"
                   />
                   <p className="text-[10px] text-fuchsia-300/60 mt-1">
@@ -328,11 +351,11 @@ export default function CheckoutPage() {
         </div>
 
         {/* Right Side - Order Summary */}
-        <div className="w-full md:w-[400px] bg-gray-900 border-t-2 md:border-t-0 md:border-l-2 border-fuchsia-500/30 p-4 md:p-6 flex flex-col max-h-[50vh] md:max-h-none">
-          <h3 className="text-lg md:text-xl font-black text-fuchsia-400 mb-3 md:mb-4 neon-glow-purple">
+        <div className="w-full md:w-[400px] bg-gray-900 border-t-2 md:border-t-0 md:border-l-2 border-fuchsia-500/30 p-3 md:p-4 flex flex-col max-h-[50vh] md:max-h-none">
+          <h3 className="text-base md:text-lg font-black text-fuchsia-400 mb-2 md:mb-2 neon-glow-purple">
             Resumen del Pedido
           </h3>
-          <div className="flex-1 overflow-y-auto space-y-2 mb-3 md:mb-4">
+          <div className="flex-1 overflow-y-auto space-y-1.5 mb-2 md:mb-3">
             {cart.map((item) => (
               <div
                 key={item.product.id}
@@ -356,10 +379,10 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          <div className="border-t-2 border-fuchsia-500/50 pt-3 md:pt-4">
-            <div className="flex justify-between items-center mb-3 md:mb-4">
+          <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
+            <div className="flex justify-between items-center mb-2 md:mb-2">
               <span className="text-white font-bold text-sm md:text-base">Total:</span>
-              <span className="text-amber-400 font-black text-xl md:text-2xl gold-glow">
+              <span className="text-amber-400 font-black text-lg md:text-xl gold-glow">
                 S/ {totalPrice.toFixed(2)}
               </span>
             </div>
@@ -370,13 +393,13 @@ export default function CheckoutPage() {
                   type="submit"
                   form="checkout-form"
                   disabled={isSubmitting || !isFormValid()}
-                  className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-3 md:py-3 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105 mb-2 md:mb-3"
+                  className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-2.5 md:py-2.5 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105 mb-1.5 md:mb-2"
                 >
                   {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
                 </button>
 
                 {!isFormValid() && (
-                  <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-2">
+                  <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-1">
                     ⚠️ Completa todos los campos obligatorios
                   </p>
                 )}
