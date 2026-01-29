@@ -441,19 +441,8 @@ export default function FatPage() {
                           <div
                             className="mt-2 space-y-1.5 max-h-48 overflow-y-auto p-2 rounded-lg border border-amber-500/30 bg-amber-900/10"
                             style={{
-                              boxShadow: '0 0 15px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(251, 191, 36, 0.05)'
-                            }}
-                            onWheel={(e) => {
-                              const target = e.currentTarget;
-                              const atTop = target.scrollTop === 0;
-                              const atBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 1;
-
-                              if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
-                                // Permitir propagación del scroll a la página
-                                return;
-                              }
-                              // Prevenir propagación cuando hay espacio para scrollear
-                              e.stopPropagation();
+                              boxShadow: '0 0 15px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(251, 191, 36, 0.05)',
+                              overscrollBehavior: 'contain'
                             }}
                           >
                             {salsas.map((salsa) => {
