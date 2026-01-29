@@ -217,11 +217,8 @@ export default function FatPage() {
     if (!canAddProduct(product.id)) return;
 
     // El plato principal ya está en el carrito (se agregó automáticamente al completar las salsas)
-    // Solo agregar complementos si hay
-    const complements = selectedComplements[product.id] || [];
-    complements.forEach((complement) => {
-      addToCart(complement, 1);
-    });
+    // Los complementos también ya están en el carrito (se agregaron al hacer clic en +)
+    // Solo necesitamos limpiar y cerrar el card
 
     // Limpiar selecciones
     setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
@@ -238,11 +235,8 @@ export default function FatPage() {
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
-    // Agregar a selectedComplements (se agregará al carrito cuando se confirme el pedido)
-    setSelectedComplements((prev) => ({
-      ...prev,
-      [productId]: [...(prev[productId] || []), complement]
-    }));
+    // Agregar directamente al carrito para que el total se actualice
+    addToCart(complement, 1);
 
     // Mostrar feedback visual
     const key = `${productId}-${complement.id}`;
