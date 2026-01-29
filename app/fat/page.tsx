@@ -590,7 +590,7 @@ export default function FatPage() {
                           onClick={handleCloseCard}
                           className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
                         >
-                          <span>Cambiar menú</span>
+                          <span>Mostrar menos</span>
                           <span className="text-lg">×</span>
                         </button>
                       </div>
