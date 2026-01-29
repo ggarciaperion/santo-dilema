@@ -593,7 +593,7 @@ export default function FatPage() {
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onMouseEnter={() => handleCardHover(product.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 rounded-xl border-2 overflow-visible flex-shrink-0 transition-all duration-300 ease-out
+                  className={`bg-gray-900 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all duration-500 ease-in-out
                     border-red-400 neon-border-fat shadow-xl shadow-red-500/30
                     ${isExpanded
                       ? 'w-[320px] md:w-[380px] z-20'
@@ -651,8 +651,14 @@ export default function FatPage() {
                   </div>
 
                   {/* Expanded Content */}
-                  {isExpanded && (
-                    <div className="px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3">
+                  <div
+                    className={`transition-all duration-700 ease-in-out overflow-hidden ${
+                      isExpanded ? 'max-h-[2500px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className={`px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3 transition-all duration-500 ease-out ${
+                      isExpanded ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                    }`}>
                       {/* Botón de Cerrar */}
                       <div className="flex justify-end mb-2">
                         <button
@@ -899,7 +905,7 @@ export default function FatPage() {
                         {canAdd ? 'Agregar orden' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })}
