@@ -206,11 +206,6 @@ export default function FatPage() {
             >
               Ver menú Balance
             </Link>
-            {totalItems > 0 && (
-              <div className="bg-red-500 text-white px-2 md:px-3 py-1 md:py-1.5 rounded-full font-bold text-xs md:text-sm neon-border-fat">
-                {totalItems} - S/ {totalPrice.toFixed(2)}
-              </div>
-            )}
           </div>
         </div>
       </header>

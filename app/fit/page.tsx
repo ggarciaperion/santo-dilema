@@ -190,11 +190,6 @@ export default function FitPage() {
             >
               Ver menú Placer
             </Link>
-            {totalItems > 0 && (
-              <div className="bg-cyan-500 text-black px-2 md:px-3 py-1 md:py-1.5 rounded-full font-bold text-xs md:text-sm neon-border-fit">
-                {totalItems} - S/ {totalPrice.toFixed(2)}
-              </div>
-            )}
           </div>
         </div>
       </header>
