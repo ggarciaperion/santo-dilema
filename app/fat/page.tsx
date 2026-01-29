@@ -438,44 +438,54 @@ export default function FatPage() {
                         </button>
 
                         {showSalsas[product.id] && (
-                          <div
-                            className="mt-2 space-y-1.5 max-h-48 overflow-y-auto p-2 rounded-lg border border-amber-500/30 bg-amber-900/10"
-                            style={{
-                              boxShadow: '0 0 15px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(251, 191, 36, 0.05)',
-                              overscrollBehavior: 'contain'
-                            }}
-                          >
+                          <div className="mt-2 space-y-1">
                             {salsas.map((salsa) => {
                               const count = getSalsaCount(product.id, salsa.id);
                               const isSelected = count > 0;
                               const canSelect = currentSalsas.length < requiredSalsas || isSelected;
 
                               return (
-                                <button
+                                <div
                                   key={salsa.id}
-                                  onClick={() => handleSalsaToggle(product.id, salsa.id)}
-                                  disabled={!canSelect && !isSelected}
-                                  className={`w-full flex items-center justify-between p-2 rounded border transition-all text-left
-                                    ${isSelected
-                                      ? 'bg-amber-600/30 border-amber-500 text-white shadow-sm shadow-amber-500/20'
-                                      : canSelect
-                                        ? 'bg-gray-800/30 border-amber-500/20 text-gray-300 hover:bg-amber-600/10 hover:border-amber-500/40'
-                                        : 'bg-gray-800/10 border-amber-500/10 text-gray-600 cursor-not-allowed'
-                                    }
-                                  `}
+                                  className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-amber-500/10"
                                 >
-                                  <span className="text-xs">{salsa.name}</span>
-                                  {product.id === "todos-pecan" && count > 0 && (
-                                    <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleSalsaToggle(product.id, salsa.id)}
+                                    disabled={!canSelect && !isSelected}
+                                    className={`flex-1 text-left transition-all
+                                      ${isSelected
+                                        ? 'text-amber-400 font-bold'
+                                        : canSelect
+                                          ? 'text-white hover:text-amber-300'
+                                          : 'text-gray-600 cursor-not-allowed'
+                                      }
+                                    `}
+                                  >
+                                    <span className="text-[10px]">{salsa.name}</span>
+                                  </button>
+                                  <div className="flex items-center gap-1">
+                                    {product.id === "todos-pecan" && count > 0 && (
                                       <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
                                         x{count}
                                       </span>
-                                    </div>
-                                  )}
-                                  {product.id !== "todos-pecan" && isSelected && (
-                                    <span className="text-amber-400">✓</span>
-                                  )}
-                                </button>
+                                    )}
+                                    {product.id !== "todos-pecan" && isSelected && (
+                                      <span className="text-amber-400 text-sm">✓</span>
+                                    )}
+                                    <button
+                                      onClick={() => handleSalsaToggle(product.id, salsa.id)}
+                                      disabled={!canSelect && !isSelected}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all
+                                        ${canSelect
+                                          ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                                          : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                        }
+                                      `}
+                                    >
+                                      {isSelected ? '−' : '+'}
+                                    </button>
+                                  </div>
+                                </div>
                               );
                             })}
                           </div>
