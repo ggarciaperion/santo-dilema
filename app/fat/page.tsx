@@ -13,6 +13,11 @@ interface Product {
   category: "fit" | "fat" | "bebida";
 }
 
+interface Salsa {
+  id: string;
+  name: string;
+}
+
 const products: Product[] = [
   {
     id: "pequeno-dilema",
@@ -40,32 +45,129 @@ const products: Product[] = [
   },
 ];
 
+const salsas: Salsa[] = [
+  { id: "barbecue", name: "Barbecue" },
+  { id: "anticuchos", name: "Anticuchos" },
+  { id: "ahumada", name: "Ahumada" },
+  { id: "buffalo-picante", name: "Buffalo picante" },
+  { id: "honey-mustard", name: "Honey mustard" },
+  { id: "macerichada", name: "Macerichada" },
+  { id: "teriyaki", name: "Teriyaki" },
+  { id: "parmesano-ajo", name: "Parmesano & Ajo" },
+];
+
 export default function FatPage() {
-  const { cart, addToCart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
-  const [showCartDetails, setShowCartDetails] = useState(false);
-  const [showCartModal, setShowCartModal] = useState(false);
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const { cart, addToCart, totalItems, totalPrice } = useCart();
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [selectedSalsas, setSelectedSalsas] = useState<Record<string, string[]>>({});
+  const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isDragging, setIsDragging] = useState(false);
-  const [showBebidas, setShowBebidas] = useState(false);
-  const [showExtras, setShowExtras] = useState(false);
+  const [showBebidas, setShowBebidas] = useState<Record<string, boolean>>({});
+  const [showExtras, setShowExtras] = useState<Record<string, boolean>>({});
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  const handleAddToCart = (product: Product, quantity: number) => {
-    addToCart(product, quantity);
-    // Reset quantity after adding
-    setQuantities((prev) => ({ ...prev, [product.id]: 1 }));
+  const getRequiredSalsasCount = (productId: string): number => {
+    if (productId === "pequeno-dilema") return 1;
+    if (productId === "duo-dilema") return 2;
+    if (productId === "todos-pecan") return 3;
+    return 1;
   };
 
-  const getQuantity = (productId: string) => quantities[productId] || 1;
-
-  const updateProductQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity >= 1 && newQuantity <= 99) {
-      setQuantities((prev) => ({ ...prev, [productId]: newQuantity }));
+  const handleCardClick = (productId: string) => {
+    if (isDragging) return;
+    if (expandedCard === productId) {
+      setExpandedCard(null);
+    } else {
+      setExpandedCard(productId);
+      if (!selectedSalsas[productId]) {
+        setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
+      }
+      if (!selectedComplements[productId]) {
+        setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
+      }
     }
+  };
+
+  const handleSalsaToggle = (productId: string, salsaId: string) => {
+    const requiredCount = getRequiredSalsasCount(productId);
+    const currentSalsas = selectedSalsas[productId] || [];
+
+    if (productId === "todos-pecan") {
+      // Para Todos Pecan, permitir múltiples selecciones de la misma salsa
+      if (currentSalsas.includes(salsaId)) {
+        // Remover una instancia de esta salsa
+        const index = currentSalsas.indexOf(salsaId);
+        const newSalsas = [...currentSalsas];
+        newSalsas.splice(index, 1);
+        setSelectedSalsas((prev) => ({ ...prev, [productId]: newSalsas }));
+      } else {
+        // Agregar esta salsa si no hemos llegado al límite
+        if (currentSalsas.length < requiredCount) {
+          setSelectedSalsas((prev) => ({ ...prev, [productId]: [...currentSalsas, salsaId] }));
+        }
+      }
+    } else {
+      // Para Pequeño Dilema y Dúo Dilema, no permitir duplicados
+      if (currentSalsas.includes(salsaId)) {
+        setSelectedSalsas((prev) => ({
+          ...prev,
+          [productId]: currentSalsas.filter((s) => s !== salsaId)
+        }));
+      } else {
+        if (currentSalsas.length < requiredCount) {
+          setSelectedSalsas((prev) => ({ ...prev, [productId]: [...currentSalsas, salsaId] }));
+        }
+      }
+    }
+  };
+
+  const getSalsaCount = (productId: string, salsaId: string): number => {
+    const currentSalsas = selectedSalsas[productId] || [];
+    return currentSalsas.filter((s) => s === salsaId).length;
+  };
+
+  const canAddProduct = (productId: string): boolean => {
+    const requiredCount = getRequiredSalsasCount(productId);
+    const currentSalsas = selectedSalsas[productId] || [];
+    return currentSalsas.length === requiredCount;
+  };
+
+  const handleAddToCart = (product: Product) => {
+    if (!canAddProduct(product.id)) return;
+
+    const salsasText = (selectedSalsas[product.id] || [])
+      .map((salsaId) => salsas.find((s) => s.id === salsaId)?.name)
+      .filter((name) => name)
+      .join(", ");
+
+    const productWithSalsas: Product = {
+      ...product,
+      description: `${product.description} - Salsas: ${salsasText}`,
+    };
+
+    addToCart(productWithSalsas, 1);
+
+    // Agregar complementos si hay
+    const complements = selectedComplements[product.id] || [];
+    complements.forEach((complement) => {
+      addToCart(complement, 1);
+    });
+
+    // Limpiar selecciones
+    setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
+    setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
+    setExpandedCard(null);
+  };
+
+  const handleAddComplement = (productId: string, complement: Product) => {
+    setSelectedComplements((prev) => ({
+      ...prev,
+      [productId]: [...(prev[productId] || []), complement]
+    }));
   };
 
   const scroll = (direction: 'left' | 'right') => {
@@ -83,6 +185,7 @@ export default function FatPage() {
   };
 
   const handleCardHover = (productId: string) => {
+    if (expandedCard) return; // No hacer hover si hay un cartel expandido
     setHoveredCard(productId);
     const cardElement = cardRefs.current[productId];
     const container = scrollContainerRef.current;
@@ -91,16 +194,13 @@ export default function FatPage() {
       const cardRect = cardElement.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
 
-      // Check if card is partially visible on the right
       if (cardRect.right > containerRect.right) {
         const scrollAmount = cardRect.right - containerRect.right + 20;
         container.scrollBy({
           left: scrollAmount,
           behavior: 'smooth'
         });
-      }
-      // Check if card is partially visible on the left
-      else if (cardRect.left < containerRect.left) {
+      } else if (cardRect.left < containerRect.left) {
         const scrollAmount = cardRect.left - containerRect.left - 20;
         container.scrollBy({
           left: scrollAmount,
@@ -129,7 +229,7 @@ export default function FatPage() {
     if (!isDragging || !scrollContainerRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // Multiplicador para velocidad de scroll
+    const walk = (x - startX) * 2;
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
@@ -229,70 +329,235 @@ export default function FatPage() {
             className={`flex gap-3 md:gap-4 overflow-x-auto overflow-y-visible scrollbar-hide px-2 md:px-4 py-4 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                ref={(el) => { cardRefs.current[product.id] = el; }}
-                onMouseEnter={() => handleCardHover(product.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className={`bg-gray-900 rounded-xl border-2 overflow-visible flex-shrink-0 w-[280px] md:w-[260px] snap-center transition-all duration-300 ease-out
-                  border-red-400 neon-border-fat shadow-xl shadow-red-500/30
-                  ${hoveredCard === product.id
-                    ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
-                    : 'md:border-red-500/30 md:shadow-none scale-100 translate-y-0'
-                }`}
-                style={{
-                  transformOrigin: 'center center',
-                }}
-              >
-                <div className="bg-gradient-to-br from-red-900/40 to-orange-900/40 h-24 md:h-28 flex items-center justify-center border-b-2 border-red-500/30 rounded-t-xl overflow-hidden">
-                  <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
-                </div>
-                <div className="p-3 md:p-4">
-                  <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
-                    {product.name}
-                  </h4>
-                  <p className="text-orange-200/70 text-[11px] md:text-xs mb-2 md:mb-3 line-clamp-2 h-7 md:h-8">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between mb-2 md:mb-3">
-                    <span className="text-base md:text-lg font-black text-amber-400 gold-glow">
-                      S/ {product.price.toFixed(2)}
-                    </span>
+            {products.map((product) => {
+              const isExpanded = expandedCard === product.id;
+              const requiredSalsas = getRequiredSalsasCount(product.id);
+              const currentSalsas = selectedSalsas[product.id] || [];
+              const canAdd = canAddProduct(product.id);
+
+              return (
+                <div
+                  key={product.id}
+                  ref={(el) => { cardRefs.current[product.id] = el; }}
+                  onMouseEnter={() => handleCardHover(product.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  className={`bg-gray-900 rounded-xl border-2 overflow-visible flex-shrink-0 transition-all duration-300 ease-out
+                    border-red-400 neon-border-fat shadow-xl shadow-red-500/30
+                    ${isExpanded
+                      ? 'w-[320px] md:w-[380px]'
+                      : 'w-[280px] md:w-[260px]'
+                    }
+                    ${!isExpanded && hoveredCard === product.id
+                      ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
+                      : !isExpanded ? 'md:border-red-500/30 md:shadow-none scale-100 translate-y-0' : ''
+                    }
+                    snap-center
+                  `}
+                  style={{
+                    transformOrigin: 'center center',
+                  }}
+                >
+                  {/* Card Header - Clickeable */}
+                  <div
+                    onClick={() => handleCardClick(product.id)}
+                    className="cursor-pointer"
+                  >
+                    <div className="bg-gradient-to-br from-red-900/40 to-orange-900/40 h-24 md:h-28 flex items-center justify-center border-b-2 border-red-500/30 rounded-t-xl overflow-hidden">
+                      <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                    </div>
+                    <div className="p-3 md:p-4">
+                      <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
+                        {product.name}
+                      </h4>
+                      <p className="text-orange-200/70 text-[11px] md:text-xs mb-2 md:mb-3 line-clamp-2 h-7 md:h-8">
+                        {product.description}
+                      </p>
+                      <div className="flex items-center justify-between mb-2 md:mb-3">
+                        <span className="text-base md:text-lg font-black text-amber-400 gold-glow">
+                          S/ {product.price.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-black/40 rounded border border-red-500/30">
+
+                  {/* Expanded Content */}
+                  {isExpanded && (
+                    <div className="px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3">
+                      {/* Selector de Salsas */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="text-xs font-bold text-white">Elige tu{requiredSalsas > 1 ? 's' : ''} salsa{requiredSalsas > 1 ? 's' : ''}</h5>
+                          <span className="text-[10px] text-red-400">
+                            {currentSalsas.length}/{requiredSalsas} seleccionada{requiredSalsas > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                          {salsas.map((salsa) => {
+                            const count = getSalsaCount(product.id, salsa.id);
+                            const isSelected = count > 0;
+                            const canSelect = currentSalsas.length < requiredSalsas || isSelected;
+
+                            return (
+                              <button
+                                key={salsa.id}
+                                onClick={() => handleSalsaToggle(product.id, salsa.id)}
+                                disabled={!canSelect && !isSelected}
+                                className={`w-full flex items-center justify-between p-2 rounded border transition-all text-left
+                                  ${isSelected
+                                    ? 'bg-red-600/30 border-red-500 text-white'
+                                    : canSelect
+                                      ? 'bg-gray-800/30 border-red-500/20 text-gray-300 hover:bg-red-600/10 hover:border-red-500/40'
+                                      : 'bg-gray-800/10 border-red-500/10 text-gray-600 cursor-not-allowed'
+                                  }
+                                `}
+                              >
+                                <span className="text-xs">{salsa.name}</span>
+                                {product.id === "todos-pecan" && count > 0 && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                      x{count}
+                                    </span>
+                                  </div>
+                                )}
+                                {product.id !== "todos-pecan" && isSelected && (
+                                  <span className="text-red-400">✓</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Complementos */}
+                      <div className="mb-3">
+                        <h5 className="text-xs font-bold text-white mb-2">Complementos (Opcional)</h5>
+
+                        {/* Bebidas */}
+                        <div className="mb-2">
+                          <button
+                            onClick={() => setShowBebidas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
+                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 transition-all"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">🥤</span>
+                              <span className="text-white text-xs font-bold">Bebidas</span>
+                            </div>
+                            <span className="text-red-400 text-xs">{showBebidas[product.id] ? '▼' : '▶'}</span>
+                          </button>
+
+                          {showBebidas[product.id] && (
+                            <div className="mt-2 space-y-1">
+                              {[
+                                { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
+                                { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
+                                { id: "inka-cola", name: "Inka Cola 500ml", emoji: "🥤", price: 4.00 },
+                                { id: "sprite", name: "Sprite 500ml", emoji: "🥤", price: 4.00 },
+                                { id: "fanta", name: "Fanta 500ml", emoji: "🥤", price: 4.00 },
+                              ].map((bebida) => {
+                                const bebidaProduct: Product = {
+                                  id: bebida.id,
+                                  name: bebida.name,
+                                  description: bebida.name,
+                                  price: bebida.price,
+                                  image: bebida.emoji,
+                                  category: "bebida"
+                                };
+                                return (
+                                  <div
+                                    key={bebida.id}
+                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-sm">{bebida.emoji}</span>
+                                      <span className="text-white text-[10px]">{bebida.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
+                                      <button
+                                        onClick={() => handleAddComplement(product.id, bebidaProduct)}
+                                        className="bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Extras */}
+                        <div>
+                          <button
+                            onClick={() => setShowExtras((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
+                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 transition-all"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">🍟</span>
+                              <span className="text-white text-xs font-bold">Extras</span>
+                            </div>
+                            <span className="text-red-400 text-xs">{showExtras[product.id] ? '▼' : '▶'}</span>
+                          </button>
+
+                          {showExtras[product.id] && (
+                            <div className="mt-2 space-y-1">
+                              {[
+                                { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 },
+                                { id: "extra-salsa", name: "Extra salsa", emoji: "🥫", price: 3.00 },
+                              ].map((extra) => {
+                                const extraProduct: Product = {
+                                  id: extra.id,
+                                  name: extra.name,
+                                  description: extra.name,
+                                  price: extra.price,
+                                  image: extra.emoji,
+                                  category: "bebida"
+                                };
+                                return (
+                                  <div
+                                    key={extra.id}
+                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-sm">{extra.emoji}</span>
+                                      <span className="text-white text-[10px]">{extra.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
+                                      <button
+                                        onClick={() => handleAddComplement(product.id, extraProduct)}
+                                        className="bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Botón Agregar */}
                       <button
-                        onClick={() => updateProductQuantity(product.id, getQuantity(product.id) - 1)}
-                        className="px-2 md:px-2 py-1.5 md:py-1.5 text-red-400 hover:text-red-300 font-bold transition-colors text-sm active:scale-95"
+                        onClick={() => handleAddToCart(product)}
+                        disabled={!canAdd}
+                        className={`w-full py-2.5 rounded font-bold text-sm transition-all
+                          ${canAdd
+                            ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat cursor-pointer active:scale-95'
+                            : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
+                          }
+                        `}
                       >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        max="99"
-                        value={getQuantity(product.id)}
-                        onChange={(e) => updateProductQuantity(product.id, parseInt(e.target.value) || 1)}
-                        className="w-9 md:w-10 text-center bg-transparent text-white font-bold text-xs outline-none"
-                      />
-                      <button
-                        onClick={() => updateProductQuantity(product.id, getQuantity(product.id) + 1)}
-                        className="px-2 md:px-2 py-1.5 md:py-1.5 text-red-400 hover:text-red-300 font-bold transition-colors text-sm active:scale-95"
-                      >
-                        +
+                        {canAdd ? 'Agregar al pedido' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
-                    <button
-                      onClick={() => handleAddToCart(product, getQuantity(product.id))}
-                      className="flex-1 bg-red-500 hover:bg-red-400 active:scale-95 text-white px-3 py-2 md:py-1.5 rounded font-bold text-xs transition-all neon-border-fat"
-                    >
-                      Agregar
-                    </button>
-                  </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Right Arrow - Hide on mobile */}
@@ -306,17 +571,16 @@ export default function FatPage() {
         </div>
       </section>
 
-      {/* Cart Summary Bar */}
+      {/* Cart Summary Bar - Simplified */}
       {totalItems > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-2 border-red-500/50 shadow-lg z-50">
           <div className="container mx-auto px-3 md:px-4 py-2 md:py-2">
             <div className="flex justify-between items-center gap-2">
-              <button
-                onClick={() => setShowCartModal(true)}
-                className="bg-red-500/20 hover:bg-red-500/30 active:scale-95 border border-red-500/50 text-red-400 px-2 md:px-3 py-1.5 md:py-1.5 rounded-lg font-bold text-xs md:text-sm transition-all"
-              >
-                Ver Pedido
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-white text-xs md:text-sm font-bold">
+                  {totalItems} {totalItems === 1 ? 'producto' : 'productos'}
+                </span>
+              </div>
               <div className="flex items-center gap-2 md:gap-4">
                 <p className="text-amber-400 font-bold text-sm md:text-lg gold-glow">
                   <span className="hidden sm:inline">Total: </span>S/ {totalPrice.toFixed(2)}
@@ -328,203 +592,6 @@ export default function FatPage() {
                   Continuar<span className="hidden sm:inline"> Pedido</span> →
                 </Link>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cart Modal */}
-      {showCartModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-red-500 neon-border-fat max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col">
-            {/* Modal Header */}
-            <div className="p-3 border-b-2 border-red-500/30 flex justify-between items-center">
-              <h3 className="text-lg font-black text-red-400 neon-glow-fat">
-                Tu Pedido
-              </h3>
-              <button
-                onClick={() => setShowCartModal(false)}
-                className="text-red-400 hover:text-red-300 text-2xl font-bold transition-all"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-3">
-              <div className="space-y-2">
-                {cart.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex items-center gap-2 bg-gray-800/50 rounded-lg p-2 border border-red-500/20"
-                  >
-                    <div className="text-2xl">{item.product.image}</div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-bold text-xs">
-                        {item.product.name}
-                      </h4>
-                      <p className="text-red-400 text-xs">
-                        S/ {item.product.price.toFixed(2)} c/u
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
-                      >
-                        −
-                      </button>
-                      <span className="text-white font-bold w-7 text-center text-xs">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="text-amber-400 font-bold text-sm gold-glow min-w-[60px] text-right">
-                      S/ {(item.product.price * item.quantity).toFixed(2)}
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="text-2xl hover:scale-110 transition-all flex items-center justify-center flex-shrink-0"
-                      title="Eliminar"
-                    >
-                      ❌
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Complementos */}
-              <div className="mt-3 pt-2 border-t border-red-500/30">
-                <h4 className="text-xs font-bold text-white mb-2">Complementos</h4>
-
-                {/* Bebidas - Acordeón */}
-                <div className="mb-2">
-                  <button
-                    onClick={() => setShowBebidas(!showBebidas)}
-                    className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🥤</span>
-                      <span className="text-white text-xs font-bold">Bebidas</span>
-                    </div>
-                    <span className="text-red-400 text-sm">{showBebidas ? '▼' : '▶'}</span>
-                  </button>
-
-                  {showBebidas && (
-                    <div className="mt-2 space-y-1">
-                      {[
-                        { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
-                        { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
-                        { id: "inka-cola", name: "Inka Cola 500ml", emoji: "🥤", price: 4.00 },
-                        { id: "sprite", name: "Sprite 500ml", emoji: "🥤", price: 4.00 },
-                        { id: "fanta", name: "Fanta 500ml", emoji: "🥤", price: 4.00 },
-                      ].map((bebida) => {
-                        const bebidaProduct: Product = {
-                          id: bebida.id,
-                          name: bebida.name,
-                          description: bebida.name,
-                          price: bebida.price,
-                          image: bebida.emoji,
-                          category: "bebida"
-                        };
-                        return (
-                          <div
-                            key={bebida.id}
-                            className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm">{bebida.emoji}</span>
-                              <span className="text-white text-[10px]">{bebida.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
-                              <button
-                                onClick={() => addToCart(bebidaProduct, 1)}
-                                className="bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Extras - Acordeón */}
-                <div className="mb-2">
-                  <button
-                    onClick={() => setShowExtras(!showExtras)}
-                    className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🍟</span>
-                      <span className="text-white text-xs font-bold">Extras</span>
-                    </div>
-                    <span className="text-red-400 text-sm">{showExtras ? '▼' : '▶'}</span>
-                  </button>
-
-                  {showExtras && (
-                    <div className="mt-2 space-y-1">
-                      {[
-                        { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 },
-                        { id: "extra-salsa", name: "Extra salsa", emoji: "🥫", price: 3.00 },
-                      ].map((extra) => {
-                        const extraProduct: Product = {
-                          id: extra.id,
-                          name: extra.name,
-                          description: extra.name,
-                          price: extra.price,
-                          image: extra.emoji,
-                          category: "bebida"
-                        };
-                        return (
-                          <div
-                            key={extra.id}
-                            className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm">{extra.emoji}</span>
-                              <span className="text-white text-[10px]">{extra.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
-                              <button
-                                onClick={() => addToCart(extraProduct, 1)}
-                                className="bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-3 border-t-2 border-red-500/30 bg-gray-800/50">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-white font-bold text-sm">Total:</span>
-                <span className="text-amber-400 font-black text-xl gold-glow">
-                  S/ {totalPrice.toFixed(2)}
-                </span>
-              </div>
-              <Link
-                href="/checkout"
-                className="w-full bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg font-black text-sm transition-all neon-border-fat block text-center"
-              >
-                Continuar Pedido →
-              </Link>
             </div>
           </div>
         </div>
