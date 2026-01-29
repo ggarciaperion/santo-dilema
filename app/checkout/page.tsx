@@ -123,26 +123,30 @@ export default function CheckoutPage() {
         setOrderPlaced(true);
         setTimeout(() => {
           router.push("/");
-        }, 3000);
+        }, 4000);
+      } else {
+        const errorData = await response.json();
+        console.error("Error del servidor:", errorData);
+        alert("Hubo un error al procesar tu pedido. Intenta nuevamente.");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error al enviar pedido:", error);
-      alert("Hubo un error al procesar tu pedido. Intenta nuevamente.");
-    } finally {
+      alert("Hubo un error de conexión. Por favor verifica tu internet e intenta nuevamente.");
       setIsSubmitting(false);
     }
   };
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="bg-gray-900 rounded-2xl border-2 border-fuchsia-500 neon-border-purple p-12 text-center max-w-md">
-          <div className="text-8xl mb-6">✅</div>
-          <h2 className="text-4xl font-black text-fuchsia-400 mb-4 neon-glow-purple">
-            ¡Pedido Confirmado!
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="bg-gray-900 rounded-2xl border-2 border-fuchsia-500 neon-border-purple p-8 md:p-12 text-center max-w-md w-full">
+          <div className="text-7xl md:text-8xl mb-6 animate-bounce">✅</div>
+          <h2 className="text-3xl md:text-4xl font-black text-fuchsia-400 mb-4 neon-glow-purple">
+            ¡Pedido Enviado!
           </h2>
-          <p className="text-xl text-white mb-6">
-            Hemos recibido tu pedido. Pronto te contactaremos.
+          <p className="text-lg md:text-xl text-white mb-6">
+            Te contactaremos pronto para coordinar la entrega de tu pedido
           </p>
           <p className="text-sm text-gray-400">
             Redirigiendo a inicio...
