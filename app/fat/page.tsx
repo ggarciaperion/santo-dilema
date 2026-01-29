@@ -63,14 +63,14 @@ const salsas: Salsa[] = [
   { id: "parmesano-ajo", name: "Parmesano & Ajo" },
 ];
 
-const availableComplements: Record<string, string> = {
-  "agua-mineral": "Agua mineral",
-  "coca-cola": "Coca Cola 500ml",
-  "inka-cola": "Inka Cola 500ml",
-  "sprite": "Sprite 500ml",
-  "fanta": "Fanta 500ml",
-  "extra-papas": "Extra papas",
-  "extra-salsa": "Extra salsa"
+const availableComplements: Record<string, { name: string; price: number }> = {
+  "agua-mineral": { name: "Agua mineral", price: 4.00 },
+  "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
+  "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
+  "sprite": { name: "Sprite 500ml", price: 4.00 },
+  "fanta": { name: "Fanta 500ml", price: 4.00 },
+  "extra-papas": { name: "Extra papas", price: 4.00 },
+  "extra-salsa": { name: "Extra salsa", price: 3.00 }
 };
 
 export default function FatPage() {
@@ -406,7 +406,7 @@ export default function FatPage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-red-500 neon-border-fat sticky top-0 z-10">
+      <header className="bg-gray-900 border-b-2 border-red-500 neon-border-fat sticky top-0 z-30">
         <div className="container mx-auto px-3 md:px-4 py-4 md:py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
             <h1 className="flex items-center gap-2 md:gap-3 text-lg md:text-2xl font-black tracking-tight">
@@ -877,7 +877,7 @@ export default function FatPage() {
                           {order.complementIds.length > 0 && (
                             <div className="text-red-300">
                               🍟 Complementos: {order.complementIds
-                                .map((compId) => availableComplements[compId])
+                                .map((compId) => availableComplements[compId]?.name)
                                 .filter((name) => name)
                                 .join(", ")}
                             </div>
@@ -892,7 +892,13 @@ export default function FatPage() {
                       </button>
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
-                      S/ {(product.price * order.quantity).toFixed(2)}
+                      S/ {(() => {
+                        const productTotal = product.price * order.quantity;
+                        const complementsTotal = order.complementIds.reduce((sum, compId) => {
+                          return sum + (availableComplements[compId]?.price || 0);
+                        }, 0);
+                        return (productTotal + complementsTotal).toFixed(2);
+                      })()}
                     </div>
                   </div>
                 );
