@@ -75,12 +75,15 @@ export default function FatPage() {
   const [mainProductsInCart, setMainProductsInCart] = useState<Record<string, string>>({});
   const [recentlyAddedSalsas, setRecentlyAddedSalsas] = useState<Set<string>>(new Set());
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
+  const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
 
   const getRequiredSalsasCount = (productId: string): number => {
-    if (productId === "pequeno-dilema") return 1;
-    if (productId === "duo-dilema") return 2;
-    if (productId === "todos-pecan") return 3;
-    return 1;
+    const quantity = orderQuantity[productId] || 1;
+    let baseSalsas = 1;
+    if (productId === "pequeno-dilema") baseSalsas = 1;
+    if (productId === "duo-dilema") baseSalsas = 2;
+    if (productId === "todos-pecan") baseSalsas = 3;
+    return baseSalsas * quantity;
   };
 
   const handleExpandCard = (productId: string) => {
@@ -102,6 +105,27 @@ export default function FatPage() {
       setShowSalsas((prev) => ({ ...prev, [expandedCard]: false }));
       setShowBebidas((prev) => ({ ...prev, [expandedCard]: false }));
       setShowExtras((prev) => ({ ...prev, [expandedCard]: false }));
+    }
+  };
+
+  const handleIncreaseQuantity = (productId: string) => {
+    setOrderQuantity((prev) => ({
+      ...prev,
+      [productId]: (prev[productId] || 1) + 1
+    }));
+    // Limpiar salsas cuando cambia la cantidad
+    setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
+  };
+
+  const handleDecreaseQuantity = (productId: string) => {
+    const currentQty = orderQuantity[productId] || 1;
+    if (currentQty > 1) {
+      setOrderQuantity((prev) => ({
+        ...prev,
+        [productId]: currentQty - 1
+      }));
+      // Limpiar salsas cuando cambia la cantidad
+      setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
     }
   };
 
@@ -215,11 +239,10 @@ export default function FatPage() {
   };
 
   const handleCompleteOrder = (product: Product) => {
-    // Limpiar selecciones para permitir agregar otra orden del mismo producto
-    // NO eliminar del carrito (los productos ya están agregados)
+    // Limpiar selecciones y cerrar el card
     setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
     setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
-    setShowSalsas((prev) => ({ ...prev, [product.id]: true })); // Reabrir selector de salsas
+    setShowSalsas((prev) => ({ ...prev, [product.id]: false }));
     setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
     setShowExtras((prev) => ({ ...prev, [product.id]: false }));
     setMainProductsInCart((prev) => {
@@ -232,7 +255,12 @@ export default function FatPage() {
       delete newState[product.id];
       return newState;
     });
-    // NO cerrar el card - mantener expandido para agregar otra orden
+    setOrderQuantity((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
+    setExpandedCard(null);
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
@@ -461,6 +489,31 @@ export default function FatPage() {
                       <span className="text-base md:text-lg font-black text-amber-400 gold-glow">
                         S/ {product.price.toFixed(2)}
                       </span>
+                      {!isExpanded && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDecreaseQuantity(product.id);
+                            }}
+                            className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          >
+                            −
+                          </button>
+                          <span className="text-white font-bold w-8 text-center text-sm">
+                            {orderQuantity[product.id] || 1}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleIncreaseQuantity(product.id);
+                            }}
+                            className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Botón Elige tu salsa - Visible siempre */}
@@ -723,7 +776,7 @@ export default function FatPage() {
                           }
                         `}
                       >
-                        {canAdd ? 'Listo, agregar más' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {canAdd ? 'Listo' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   )}
