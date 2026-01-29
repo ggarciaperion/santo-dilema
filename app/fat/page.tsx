@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 
 interface Product {
@@ -94,6 +94,23 @@ export default function FatPage() {
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
   const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+
+  // Cargar órdenes completadas desde localStorage al iniciar
+  useEffect(() => {
+    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
+    if (savedOrders) {
+      try {
+        setCompletedOrders(JSON.parse(savedOrders));
+      } catch (error) {
+        console.error("Error loading orders:", error);
+      }
+    }
+  }, []);
+
+  // Guardar órdenes completadas en localStorage cuando cambien
+  useEffect(() => {
+    localStorage.setItem("santo-dilema-fat-orders", JSON.stringify(completedOrders));
+  }, [completedOrders]);
 
   const getRequiredSalsasCount = (productId: string): number => {
     const quantity = orderQuantity[productId] || 1;
@@ -314,6 +331,23 @@ export default function FatPage() {
     // Abrir el card expandido
     setExpandedCard(order.productId);
     setShowSalsas((prev) => ({ ...prev, [order.productId]: true }));
+  };
+
+  const handleDeleteOrder = (orderIndex: number) => {
+    const order = completedOrders[orderIndex];
+    if (!order) return;
+
+    // Eliminar esta orden de completedOrders
+    setCompletedOrders((prev) => prev.filter((_, idx) => idx !== orderIndex));
+
+    // Eliminar el plato principal del carrito
+    const cartItemId = `${order.productId}-main`;
+    removeFromCart(cartItemId);
+
+    // Eliminar los complementos del carrito
+    order.complementIds.forEach((complementId) => {
+      removeFromCart(complementId);
+    });
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
@@ -884,12 +918,21 @@ export default function FatPage() {
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleEditOrder(index)}
-                        className="text-[10px] text-red-400 hover:text-red-300 font-bold ml-2 px-2 py-1 border border-red-400/30 rounded"
-                      >
-                        Editar
-                      </button>
+                      <div className="flex flex-col gap-2 ml-2">
+                        <button
+                          onClick={() => handleEditOrder(index)}
+                          className="text-[10px] text-red-400 hover:text-red-300 font-bold px-2 py-1 border border-red-400/30 rounded"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOrder(index)}
+                          className="text-red-500 hover:text-red-400 text-lg px-2 py-1 border border-red-500/30 rounded hover:bg-red-500/10 transition-all"
+                          title="Eliminar orden"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
                       S/ {(() => {
