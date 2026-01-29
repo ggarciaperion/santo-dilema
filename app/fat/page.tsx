@@ -634,12 +634,16 @@ export default function FatPage() {
                   }}
                 >
                   {/* Card Header */}
-                  <div className="bg-gradient-to-br from-red-900/40 to-orange-900/40 h-24 md:h-28 flex items-center justify-center border-b-2 border-red-500/30 rounded-t-xl overflow-hidden">
+                  <div className={`flex items-center justify-center border-b-2 border-red-500/30 rounded-t-xl overflow-hidden ${
+                    product.image.startsWith('/')
+                      ? 'bg-gradient-to-br from-amber-900/30 via-red-900/20 to-orange-900/30 h-40 md:h-48 p-2'
+                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-24 md:h-28'
+                  }`}>
                     {product.image.startsWith('/') ? (
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover object-center"
+                        className="w-full h-full object-contain drop-shadow-2xl"
                       />
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
