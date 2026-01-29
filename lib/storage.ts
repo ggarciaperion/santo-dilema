@@ -1,6 +1,7 @@
 import { Redis } from '@upstash/redis';
-import fs from 'fs';
-import path from 'path';
+
+// Detectar si estamos en producción (Vercel)
+const isProduction = process.env.VERCEL === '1';
 
 // Configuración de Redis para producción (Upstash)
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -10,17 +11,29 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
     })
   : null;
 
-// Rutas de archivos para desarrollo local
-const dataDir = path.join(process.cwd(), 'data');
-const ordersFilePath = path.join(dataDir, 'orders.json');
+// Variables para desarrollo local (solo se importan en desarrollo)
+let fs: any = null;
+let path: any = null;
+let dataDir: string = '';
+let ordersFilePath: string = '';
+
+// Solo inicializar filesystem en desarrollo
+if (!isProduction) {
+  fs = require('fs');
+  path = require('path');
+  dataDir = path.join(process.cwd(), 'data');
+  ordersFilePath = path.join(dataDir, 'orders.json');
+}
 
 // Asegurar que el directorio data existe en desarrollo
 function ensureDataDirectory() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  if (!fs.existsSync(ordersFilePath)) {
-    fs.writeFileSync(ordersFilePath, JSON.stringify([], null, 2));
+  if (!isProduction && fs && path) {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    if (!fs.existsSync(ordersFilePath)) {
+      fs.writeFileSync(ordersFilePath, JSON.stringify([], null, 2));
+    }
   }
 }
 
@@ -42,7 +55,11 @@ interface Order {
 export const storage = {
   // Obtener todas las órdenes
   async getOrders(): Promise<Order[]> {
-    if (redis) {
+    if (isProduction) {
+      if (!redis) {
+        console.error('⚠️ Redis no configurado en producción. Por favor configura UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN en Vercel.');
+        throw new Error('Database not configured. Please contact support.');
+      }
       // Producción: usar Redis
       const orders = await redis.get<Order[]>('orders');
       return orders || [];
@@ -59,13 +76,18 @@ export const storage = {
     const orders = await this.getOrders();
     orders.unshift(order);
 
-    if (redis) {
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
       // Producción: guardar en Redis
       await redis.set('orders', orders);
+      console.log('✅ Orden guardada en Redis');
     } else {
       // Desarrollo: guardar en archivo
       ensureDataDirectory();
       fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2));
+      console.log('✅ Orden guardada en archivo local');
     }
 
     return order;
@@ -82,7 +104,10 @@ export const storage = {
 
     orders[orderIndex] = { ...orders[orderIndex], ...updates };
 
-    if (redis) {
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
       await redis.set('orders', orders);
     } else {
       ensureDataDirectory();
