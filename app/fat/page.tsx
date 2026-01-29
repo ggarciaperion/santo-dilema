@@ -1144,7 +1144,7 @@ export default function FatPage() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-gray-900 border-2 border-red-500 neon-border-fat rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-black text-red-400 mb-4 gold-glow text-center">
-              ¿Confirmar eliminación?
+              ¡Qué dilema!
             </h3>
             {(() => {
               const order = completedOrders[deleteOrderIndex];
@@ -1163,15 +1163,26 @@ export default function FatPage() {
                     .join(", ")
                 : "";
 
+              const productTotal = product.price * order.quantity;
+              const complementsTotal = order.complementIds.reduce((sum, compId) => {
+                return sum + (availableComplements[compId]?.price || 0);
+              }, 0);
+              const orderTotal = (productTotal + complementsTotal).toFixed(2);
+
               return (
                 <div className="mb-6 text-sm">
                   <p className="text-white mb-3 text-center">
                     ¿Está seguro que desea quitar su orden de su pedido?
                   </p>
                   <div className="bg-gray-800/50 border border-red-400/30 rounded-lg p-4 space-y-2">
-                    <p className="text-amber-400 font-bold">
-                      {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-amber-400 font-bold">
+                        {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                      </p>
+                      <p className="text-amber-400 font-bold gold-glow">
+                        S/ {orderTotal}
+                      </p>
+                    </div>
                     <p className="text-red-300 text-xs">
                       🌶️ Salsas: {salsasText}
                     </p>
@@ -1189,13 +1200,13 @@ export default function FatPage() {
                 onClick={cancelDeleteOrder}
                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all border border-gray-500"
               >
-                Cancelar
+                Volver
               </button>
               <button
                 onClick={confirmDeleteOrder}
                 className="flex-1 bg-red-500 hover:bg-red-400 text-white px-4 py-3 rounded-lg font-bold transition-all neon-border-fat"
               >
-                Eliminar
+                Quitar
               </button>
             </div>
           </div>
