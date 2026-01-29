@@ -203,7 +203,7 @@ export default function FitPage() {
       <section className="bg-gradient-to-r from-cyan-900/40 via-teal-900/40 to-cyan-900/40 border-b-2 border-cyan-500/30 py-3 md:py-6">
         <div className="container mx-auto px-3 md:px-4 text-center">
           <div className="text-4xl md:text-6xl mb-1.5 md:mb-3 filter drop-shadow-lg">🥗</div>
-          <h2 className="text-3xl md:text-5xl font-black mb-1.5 md:mb-2 text-cyan-400 neon-glow-fit">
+          <h2 className="text-3xl md:text-5xl font-black mb-2.5 md:mb-3 text-cyan-400 neon-glow-fit">
             Ensaladas Saludables
           </h2>
           <p className="text-sm md:text-xl font-light text-cyan-200">

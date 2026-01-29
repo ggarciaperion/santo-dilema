@@ -219,7 +219,7 @@ export default function FatPage() {
       <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-3 md:py-6">
         <div className="container mx-auto px-3 md:px-4 text-center">
           <div className="text-4xl md:text-6xl mb-1.5 md:mb-3 filter drop-shadow-lg">🍗</div>
-          <h2 className="text-3xl md:text-5xl font-black mb-1.5 md:mb-2 text-red-400 neon-glow-fat">
+          <h2 className="text-3xl md:text-5xl font-black mb-2.5 md:mb-3 text-red-400 neon-glow-fat">
             Alitas Irresistibles
           </h2>
           <p className="text-sm md:text-xl font-light text-orange-200">
