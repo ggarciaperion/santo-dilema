@@ -7,9 +7,15 @@ import Image from "next/image";
 interface Order {
   id: string;
   name: string;
+  dni?: string;
   phone: string;
   address: string;
+  email?: string;
   notes?: string;
+  cart?: any[];
+  totalItems?: number;
+  totalPrice?: number;
+  timestamp?: string;
   status: "pending" | "confirmed" | "delivered" | "cancelled";
   createdAt: string;
   updatedAt?: string;
