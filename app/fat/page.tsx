@@ -446,8 +446,14 @@ export default function FatPage() {
                           </div>
                         </button>
 
-                        {showSalsas[product.id] && (
-                          <div className="mt-2 space-y-1 transition-all duration-300 ease-in-out animate-in fade-in slide-in-from-top-2">
+                        <div
+                          className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                            showSalsas[product.id]
+                              ? 'max-h-[600px] opacity-100 mt-2'
+                              : 'max-h-0 opacity-0 mt-0'
+                          }`}
+                        >
+                          <div className="space-y-1">
                             {salsas.map((salsa) => {
                               const count = getSalsaCount(product.id, salsa.id);
                               const isSelected = count > 0;
@@ -494,7 +500,7 @@ export default function FatPage() {
                               );
                             })}
                           </div>
-                        )}
+                        </div>
                       </div>
 
                       {/* Complementos */}
