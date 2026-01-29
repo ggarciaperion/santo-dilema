@@ -22,7 +22,7 @@ interface CompletedOrder {
   productId: string;
   quantity: number;
   salsas: string[];
-  complementsCount: number;
+  complementIds: string[];
 }
 
 const products: Product[] = [
@@ -62,6 +62,16 @@ const salsas: Salsa[] = [
   { id: "teriyaki", name: "Teriyaki" },
   { id: "parmesano-ajo", name: "Parmesano & Ajo" },
 ];
+
+const availableComplements: Record<string, string> = {
+  "agua-mineral": "Agua mineral",
+  "coca-cola": "Coca Cola 500ml",
+  "inka-cola": "Inka Cola 500ml",
+  "sprite": "Sprite 500ml",
+  "fanta": "Fanta 500ml",
+  "extra-papas": "Extra papas",
+  "extra-salsa": "Extra salsa"
+};
 
 export default function FatPage() {
   const { cart, addToCart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
@@ -252,7 +262,7 @@ export default function FatPage() {
       productId: product.id,
       quantity: orderQuantity[product.id] || 1,
       salsas: selectedSalsas[product.id] || [],
-      complementsCount: complementsInCart[product.id]?.length || 0
+      complementIds: complementsInCart[product.id] || []
     };
     setCompletedOrders((prev) => [...prev, completedOrder]);
 
@@ -278,6 +288,32 @@ export default function FatPage() {
       return newState;
     });
     setExpandedCard(null);
+  };
+
+  const handleEditOrder = (orderIndex: number) => {
+    const order = completedOrders[orderIndex];
+    if (!order) return;
+
+    // Eliminar esta orden de completedOrders
+    setCompletedOrders((prev) => prev.filter((_, idx) => idx !== orderIndex));
+
+    // Eliminar el plato principal del carrito
+    const cartItemId = `${order.productId}-main`;
+    removeFromCart(cartItemId);
+
+    // Eliminar los complementos del carrito
+    order.complementIds.forEach((complementId) => {
+      removeFromCart(complementId);
+    });
+
+    // Restaurar los estados para editar
+    setOrderQuantity((prev) => ({ ...prev, [order.productId]: order.quantity }));
+    setSelectedSalsas((prev) => ({ ...prev, [order.productId]: order.salsas }));
+    setComplementsInCart((prev) => ({ ...prev, [order.productId]: order.complementIds }));
+
+    // Abrir el card expandido
+    setExpandedCard(order.productId);
+    setShowSalsas((prev) => ({ ...prev, [order.productId]: true }));
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
@@ -838,13 +874,22 @@ export default function FatPage() {
                               .filter((name) => name)
                               .join(", ")}
                           </div>
-                          {order.complementsCount > 0 && (
+                          {order.complementIds.length > 0 && (
                             <div className="text-red-300">
-                              🍟 Complementos: {order.complementsCount} agregado{order.complementsCount > 1 ? 's' : ''}
+                              🍟 Complementos: {order.complementIds
+                                .map((compId) => availableComplements[compId])
+                                .filter((name) => name)
+                                .join(", ")}
                             </div>
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleEditOrder(index)}
+                        className="text-[10px] text-red-400 hover:text-red-300 font-bold ml-2 px-2 py-1 border border-red-400/30 rounded"
+                      >
+                        Editar
+                      </button>
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
                       S/ {(product.price * order.quantity).toFixed(2)}
