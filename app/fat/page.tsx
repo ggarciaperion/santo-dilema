@@ -123,7 +123,7 @@ export default function FatPage() {
         if (newSalsas.length === requiredCount) {
           setTimeout(() => {
             setShowSalsas((prev) => ({ ...prev, [productId]: false }));
-          }, 300);
+          }, 1200);
         }
       }
     }
@@ -447,7 +447,7 @@ export default function FatPage() {
                         </button>
 
                         {showSalsas[product.id] && (
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-2 space-y-1 transition-all duration-300 ease-in-out animate-in fade-in slide-in-from-top-2">
                             {salsas.map((salsa) => {
                               const count = getSalsaCount(product.id, salsa.id);
                               const isSelected = count > 0;
