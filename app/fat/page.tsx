@@ -94,6 +94,8 @@ export default function FatPage() {
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
   const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
 
   // Cargar órdenes completadas desde localStorage al iniciar
   useEffect(() => {
@@ -334,37 +336,18 @@ export default function FatPage() {
   };
 
   const handleDeleteOrder = (orderIndex: number) => {
-    const order = completedOrders[orderIndex];
+    setDeleteOrderIndex(orderIndex);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteOrder = () => {
+    if (deleteOrderIndex === null) return;
+
+    const order = completedOrders[deleteOrderIndex];
     if (!order) return;
 
-    const product = products.find((p) => p.id === order.productId);
-    if (!product) return;
-
-    // Construir mensaje con detalles de la orden
-    const salsasText = order.salsas
-      .map((sId) => salsas.find((s) => s.id === sId)?.name)
-      .filter((name) => name)
-      .join(", ");
-
-    const complementsText = order.complementIds.length > 0
-      ? order.complementIds
-          .map((compId) => availableComplements[compId]?.name)
-          .filter((name) => name)
-          .join(", ")
-      : "";
-
-    let orderDetails = `${order.quantity > 1 ? order.quantity + 'x ' : ''}${product.name} - Salsas: ${salsasText}`;
-    if (complementsText) {
-      orderDetails += ` - Complementos: ${complementsText}`;
-    }
-
-    // Mostrar confirmación
-    if (!window.confirm(`¿Está seguro que desea quitar su orden (${orderDetails}) de su pedido?`)) {
-      return;
-    }
-
     // Eliminar esta orden de completedOrders
-    setCompletedOrders((prev) => prev.filter((_, idx) => idx !== orderIndex));
+    setCompletedOrders((prev) => prev.filter((_, idx) => idx !== deleteOrderIndex));
 
     // Eliminar el plato principal del carrito
     const cartItemId = `${order.productId}-main`;
@@ -374,6 +357,15 @@ export default function FatPage() {
     order.complementIds.forEach((complementId) => {
       removeFromCart(complementId);
     });
+
+    // Cerrar modal
+    setShowDeleteModal(false);
+    setDeleteOrderIndex(null);
+  };
+
+  const cancelDeleteOrder = () => {
+    setShowDeleteModal(false);
+    setDeleteOrderIndex(null);
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
@@ -944,12 +936,21 @@ export default function FatPage() {
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleEditOrder(index)}
-                        className="text-[10px] text-red-400 hover:text-red-300 font-bold ml-2 px-2 py-1 border border-red-400/30 rounded"
-                      >
-                        Editar
-                      </button>
+                      <div className="flex flex-col items-center gap-2 ml-2">
+                        <button
+                          onClick={() => handleEditOrder(index)}
+                          className="text-[10px] text-red-400 hover:text-red-300 font-bold px-2 py-1 border border-red-400/30 rounded"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOrder(index)}
+                          className="text-red-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100"
+                          title="Eliminar orden"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
                       S/ {(() => {
@@ -960,13 +961,6 @@ export default function FatPage() {
                         return (productTotal + complementsTotal).toFixed(2);
                       })()}
                     </div>
-                    <button
-                      onClick={() => handleDeleteOrder(index)}
-                      className="absolute bottom-2 right-2 text-red-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100"
-                      title="Eliminar orden"
-                    >
-                      ✕
-                    </button>
                   </div>
                 );
               })}
@@ -1116,6 +1110,69 @@ export default function FatPage() {
             </div>
           </div>
         </footer>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {showDeleteModal && deleteOrderIndex !== null && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 border-2 border-red-500 neon-border-fat rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-black text-red-400 mb-4 gold-glow text-center">
+              ¿Confirmar eliminación?
+            </h3>
+            {(() => {
+              const order = completedOrders[deleteOrderIndex];
+              const product = products.find((p) => p.id === order.productId);
+              if (!product) return null;
+
+              const salsasText = order.salsas
+                .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                .filter((name) => name)
+                .join(", ");
+
+              const complementsText = order.complementIds.length > 0
+                ? order.complementIds
+                    .map((compId) => availableComplements[compId]?.name)
+                    .filter((name) => name)
+                    .join(", ")
+                : "";
+
+              return (
+                <div className="mb-6 text-sm">
+                  <p className="text-white mb-3 text-center">
+                    ¿Está seguro que desea quitar su orden de su pedido?
+                  </p>
+                  <div className="bg-gray-800/50 border border-red-400/30 rounded-lg p-4 space-y-2">
+                    <p className="text-amber-400 font-bold">
+                      {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                    </p>
+                    <p className="text-red-300 text-xs">
+                      🌶️ Salsas: {salsasText}
+                    </p>
+                    {complementsText && (
+                      <p className="text-red-300 text-xs">
+                        🍟 Complementos: {complementsText}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+            <div className="flex gap-3">
+              <button
+                onClick={cancelDeleteOrder}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all border border-gray-500"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteOrder}
+                className="flex-1 bg-red-500 hover:bg-red-400 text-white px-4 py-3 rounded-lg font-bold transition-all neon-border-fat"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
