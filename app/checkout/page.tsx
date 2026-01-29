@@ -191,12 +191,25 @@ export default function CheckoutPage() {
         {/* Left Side - Form */}
         <div className="flex-1 bg-black p-3 md:p-4 flex items-start md:items-center justify-center overflow-y-auto">
           <div className="max-w-xl w-full">
-            <h1 className="text-lg md:text-xl font-black text-fuchsia-400 mb-0.5 neon-glow-purple">
+            <h1 className="text-lg md:text-xl font-black text-fuchsia-400 mb-2 md:mb-2 neon-glow-purple">
               Finalizar Pedido
             </h1>
-            <p className="text-gray-300 mb-2 md:mb-3 text-[10px] md:text-xs">
-              Completa tus datos para confirmar tu orden
-            </p>
+
+            {/* Botón Confirmar Pedido - Siempre visible */}
+            <button
+              type="submit"
+              form="checkout-form"
+              disabled={isSubmitting || !isFormValid() || showDniSearch}
+              className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-2.5 md:py-2.5 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105 mb-2 md:mb-3"
+            >
+              {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
+            </button>
+
+            {!isFormValid() && !showDniSearch && (
+              <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-2">
+                ⚠️ Completa todos los campos obligatorios para continuar
+              </p>
+            )}
 
             {showDniSearch ? (
               /* DNI Search Form */
@@ -380,7 +393,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
-            <div className="flex justify-between items-center mb-2 md:mb-2">
+            <div className="flex justify-between items-center">
               <span className="text-white font-bold text-sm md:text-base">Total:</span>
               <span className="text-amber-400 font-black text-lg md:text-xl gold-glow">
                 S/ {totalPrice.toFixed(2)}
@@ -388,26 +401,9 @@ export default function CheckoutPage() {
             </div>
 
             {!showDniSearch && (
-              <>
-                <button
-                  type="submit"
-                  form="checkout-form"
-                  disabled={isSubmitting || !isFormValid()}
-                  className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-2.5 md:py-2.5 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105 mb-1.5 md:mb-2"
-                >
-                  {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
-                </button>
-
-                {!isFormValid() && (
-                  <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-1">
-                    ⚠️ Completa todos los campos obligatorios
-                  </p>
-                )}
-
-                <p className="text-gray-400 text-[9px] md:text-[10px] text-center">
-                  Al confirmar tu pedido, nos pondremos en contacto contigo para coordinar la entrega
-                </p>
-              </>
+              <p className="text-gray-400 text-[9px] md:text-[10px] text-center mt-2">
+                Al confirmar tu pedido, nos pondremos en contacto contigo para coordinar la entrega
+              </p>
             )}
 
             {showDniSearch && (
