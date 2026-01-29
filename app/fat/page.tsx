@@ -72,6 +72,7 @@ export default function FatPage() {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
+  const [mainProductsInCart, setMainProductsInCart] = useState<Record<string, string>>({});
 
   const getRequiredSalsasCount = (productId: string): number => {
     if (productId === "pequeno-dilema") return 1;
@@ -113,6 +114,39 @@ export default function FatPage() {
         const newSalsas = [...currentSalsas];
         newSalsas.splice(index, 1);
         setSelectedSalsas((prev) => ({ ...prev, [productId]: newSalsas }));
+
+        // Si ya no está completo, remover del carrito
+        if (newSalsas.length < requiredCount && mainProductsInCart[productId]) {
+          removeFromCart(mainProductsInCart[productId]);
+          setMainProductsInCart((prev) => {
+            const newState = { ...prev };
+            delete newState[productId];
+            return newState;
+          });
+        } else if (newSalsas.length === requiredCount) {
+          // Si sigue completo pero cambió la selección, actualizar el carrito
+          const product = products.find((p) => p.id === productId);
+          if (product) {
+            const salsasText = newSalsas
+              .map((sId) => salsas.find((s) => s.id === sId)?.name)
+              .filter((name) => name)
+              .join(", ");
+
+            const cartItemId = `${productId}-main`;
+            const productWithSalsas: Product = {
+              ...product,
+              id: cartItemId,
+              description: `${product.description} - Salsas: ${salsasText}`,
+            };
+
+            // Remover el anterior y agregar el actualizado
+            if (mainProductsInCart[productId]) {
+              removeFromCart(mainProductsInCart[productId]);
+            }
+            addToCart(productWithSalsas, 1);
+            setMainProductsInCart((prev) => ({ ...prev, [productId]: cartItemId }));
+          }
+        }
       }
     } else {
       // Agregar esta salsa si no hemos llegado al límite
@@ -120,8 +154,32 @@ export default function FatPage() {
         const newSalsas = [...currentSalsas, salsaId];
         setSelectedSalsas((prev) => ({ ...prev, [productId]: newSalsas }));
 
-        // Auto-colapsar cuando se complete la selección
+        // Auto-agregar al carrito cuando se complete la selección
         if (newSalsas.length === requiredCount) {
+          const product = products.find((p) => p.id === productId);
+          if (product) {
+            const salsasText = newSalsas
+              .map((sId) => salsas.find((s) => s.id === sId)?.name)
+              .filter((name) => name)
+              .join(", ");
+
+            const cartItemId = `${productId}-main`;
+            const productWithSalsas: Product = {
+              ...product,
+              id: cartItemId,
+              description: `${product.description} - Salsas: ${salsasText}`,
+            };
+
+            // Si ya existe en el carrito, removerlo primero (por si cambió las salsas)
+            if (mainProductsInCart[productId]) {
+              removeFromCart(mainProductsInCart[productId]);
+            }
+
+            addToCart(productWithSalsas, 1);
+            setMainProductsInCart((prev) => ({ ...prev, [productId]: cartItemId }));
+          }
+
+          // Auto-colapsar cuando se complete la selección
           setTimeout(() => {
             setShowSalsas((prev) => ({ ...prev, [productId]: false }));
           }, 1200);
@@ -141,22 +199,11 @@ export default function FatPage() {
     return currentSalsas.length === requiredCount;
   };
 
-  const handleAddToCart = (product: Product) => {
+  const handleContinue = (product: Product) => {
     if (!canAddProduct(product.id)) return;
 
-    const salsasText = (selectedSalsas[product.id] || [])
-      .map((salsaId) => salsas.find((s) => s.id === salsaId)?.name)
-      .filter((name) => name)
-      .join(", ");
-
-    const productWithSalsas: Product = {
-      ...product,
-      description: `${product.description} - Salsas: ${salsasText}`,
-    };
-
-    addToCart(productWithSalsas, 1);
-
-    // Agregar complementos si hay
+    // El plato principal ya está en el carrito (se agregó automáticamente al completar las salsas)
+    // Solo agregar complementos si hay
     const complements = selectedComplements[product.id] || [];
     complements.forEach((complement) => {
       addToCart(complement, 1);
@@ -168,6 +215,11 @@ export default function FatPage() {
     setShowSalsas((prev) => ({ ...prev, [product.id]: false }));
     setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
     setShowExtras((prev) => ({ ...prev, [product.id]: false }));
+    setMainProductsInCart((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
     setExpandedCard(null);
   };
 
@@ -640,9 +692,9 @@ export default function FatPage() {
                         </div>
                       </div>
 
-                      {/* Botón Agregar */}
+                      {/* Botón Continuar */}
                       <button
-                        onClick={() => handleAddToCart(product)}
+                        onClick={() => handleContinue(product)}
                         disabled={!canAdd}
                         className={`w-full py-2.5 rounded font-bold text-sm transition-all
                           ${canAdd
@@ -651,7 +703,7 @@ export default function FatPage() {
                           }
                         `}
                       >
-                        {canAdd ? 'Agregar al pedido' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {canAdd ? 'Continuar' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   )}
