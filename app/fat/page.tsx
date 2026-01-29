@@ -71,6 +71,7 @@ export default function FatPage() {
   const [showCartModal, setShowCartModal] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
 
   const getRequiredSalsasCount = (productId: string): number => {
     if (productId === "pequeno-dilema") return 1;
@@ -171,10 +172,21 @@ export default function FatPage() {
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
-    setSelectedComplements((prev) => ({
-      ...prev,
-      [productId]: [...(prev[productId] || []), complement]
-    }));
+    // Agregar directamente al carrito
+    addToCart(complement, 1);
+
+    // Mostrar feedback visual
+    const key = `${productId}-${complement.id}`;
+    setRecentlyAdded((prev) => new Set(prev).add(key));
+
+    // Remover después de 800ms
+    setTimeout(() => {
+      setRecentlyAdded((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(key);
+        return newSet;
+      });
+    }, 800);
   };
 
   const scroll = (direction: 'left' | 'right') => {
@@ -537,6 +549,7 @@ export default function FatPage() {
                                   image: bebida.emoji,
                                   category: "bebida"
                                 };
+                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${bebida.id}`);
                                 return (
                                   <div
                                     key={bebida.id}
@@ -550,9 +563,13 @@ export default function FatPage() {
                                       <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
                                       <button
                                         onClick={() => handleAddComplement(product.id, bebidaProduct)}
-                                        className="bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
+                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          wasRecentlyAdded
+                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                            : 'bg-red-600 hover:bg-red-500'
+                                        } text-white`}
                                       >
-                                        +
+                                        {wasRecentlyAdded ? '✓' : '+'}
                                       </button>
                                     </div>
                                   </div>
@@ -589,6 +606,7 @@ export default function FatPage() {
                                   image: extra.emoji,
                                   category: "bebida"
                                 };
+                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extra.id}`);
                                 return (
                                   <div
                                     key={extra.id}
@@ -602,9 +620,13 @@ export default function FatPage() {
                                       <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
                                       <button
                                         onClick={() => handleAddComplement(product.id, extraProduct)}
-                                        className="bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
+                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          wasRecentlyAdded
+                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                            : 'bg-red-600 hover:bg-red-500'
+                                        } text-white`}
                                       >
-                                        +
+                                        {wasRecentlyAdded ? '✓' : '+'}
                                       </button>
                                     </div>
                                   </div>
