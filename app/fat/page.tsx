@@ -47,7 +47,7 @@ const products: Product[] = [
     name: "Todos Pecan",
     description: "24 alitas + papas fritas + bebida grande",
     price: 49.90,
-    image: "/todos-pecan.png",
+    image: "/todos-pecan.png?v=2",
     category: "fat",
   },
 ];
