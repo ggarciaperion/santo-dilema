@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const [isSearchingCustomer, setIsSearchingCustomer] = useState(false);
   const [customerFound, setCustomerFound] = useState(false);
   const [showDniSearch, setShowDniSearch] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Validar si el formulario está completo
   const isFormValid = () => {
@@ -92,8 +93,14 @@ export default function CheckoutPage() {
     setShowDniSearch(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Mostrar modal de confirmación de pago
+    setShowPaymentModal(true);
+  };
+
+  const confirmOrder = async () => {
+    setShowPaymentModal(false);
     setIsSubmitting(true);
 
     try {
@@ -406,6 +413,59 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Confirmación de Pago */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 neon-border-purple max-w-md w-full p-6">
+            <div className="text-center mb-4">
+              <div className="text-5xl mb-3">💰</div>
+              <h3 className="text-xl md:text-2xl font-black text-fuchsia-400 neon-glow-purple mb-2">
+                Método de Pago
+              </h3>
+              <p className="text-white text-sm md:text-base mb-4">
+                Tu pedido será pagado <span className="text-amber-400 font-bold gold-glow">contra entrega</span>
+              </p>
+            </div>
+
+            <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-4 mb-4">
+              <p className="text-fuchsia-300 text-sm md:text-base mb-3 font-bold">
+                Podrás pagar cuando recibas tu pedido con:
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">💵</span>
+                  <span className="text-white text-sm">Efectivo</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">📱</span>
+                  <span className="text-white text-sm">Yape</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">💳</span>
+                  <span className="text-white text-sm">Plin</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg text-sm transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmOrder}
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-3 rounded-lg text-sm transition-all disabled:opacity-50 neon-border-purple"
+              >
+                {isSubmitting ? "Procesando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
