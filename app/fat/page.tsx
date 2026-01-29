@@ -214,34 +214,12 @@ export default function FatPage() {
     return currentSalsas.length === requiredCount;
   };
 
-  const handleRemoveOrder = (product: Product) => {
-    // Eliminar el plato principal del carrito si existe
-    if (mainProductsInCart[product.id]) {
-      removeFromCart(mainProductsInCart[product.id]);
-    }
-
-    // Eliminar todos los complementos de este producto del carrito
-    const complements = complementsInCart[product.id] || [];
-    complements.forEach((complementId) => {
-      removeFromCart(complementId);
-    });
-
-    // Limpiar todos los estados
-    setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
-    setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
+  const handleCompleteOrder = (product: Product) => {
+    // Solo cerrar el card y colapsar las secciones
+    // NO eliminar nada del carrito
     setShowSalsas((prev) => ({ ...prev, [product.id]: false }));
     setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
     setShowExtras((prev) => ({ ...prev, [product.id]: false }));
-    setMainProductsInCart((prev) => {
-      const newState = { ...prev };
-      delete newState[product.id];
-      return newState;
-    });
-    setComplementsInCart((prev) => {
-      const newState = { ...prev };
-      delete newState[product.id];
-      return newState;
-    });
     setExpandedCard(null);
   };
 
@@ -722,9 +700,9 @@ export default function FatPage() {
                         </div>
                       </div>
 
-                      {/* Botón Quitar orden */}
+                      {/* Botón Listo */}
                       <button
-                        onClick={() => handleRemoveOrder(product)}
+                        onClick={() => handleCompleteOrder(product)}
                         disabled={!canAdd}
                         className={`w-full py-2.5 rounded font-bold text-sm transition-all
                           ${canAdd
@@ -733,7 +711,36 @@ export default function FatPage() {
                           }
                         `}
                       >
-                        {canAdd ? 'Quitar orden' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {canAdd ? 'Listo' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Resumen de orden cuando está colapsado */}
+                  {!isExpanded && mainProductsInCart[product.id] && (
+                    <div className="p-3 border-t-2 border-red-500/30 bg-gray-800/30">
+                      <div className="text-xs text-white mb-2">
+                        <div className="font-bold text-amber-400 mb-1">Tu orden:</div>
+                        <div className="text-[10px] space-y-0.5">
+                          <div>• {product.name}</div>
+                          <div className="text-amber-300">
+                            Salsas: {(selectedSalsas[product.id] || [])
+                              .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                              .filter((name) => name)
+                              .join(", ")}
+                          </div>
+                          {complementsInCart[product.id] && complementsInCart[product.id].length > 0 && (
+                            <div className="text-red-300">
+                              Complementos: {complementsInCart[product.id].length} agregado{complementsInCart[product.id].length > 1 ? 's' : ''}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleExpandCard(product.id)}
+                        className="text-[10px] text-red-400 hover:text-red-300 font-bold"
+                      >
+                        Editar orden →
                       </button>
                     </div>
                   )}
@@ -751,6 +758,15 @@ export default function FatPage() {
             &gt;
           </button>
         </div>
+
+        {/* Texto motivacional */}
+        {totalItems > 0 && (
+          <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
+            <p className="text-center text-xs text-orange-200/70 italic">
+              💡 Puedes agregar más órdenes a tu pedido antes de continuar
+            </p>
+          </div>
+        )}
       </section>
 
       {/* Cart Summary Bar */}
