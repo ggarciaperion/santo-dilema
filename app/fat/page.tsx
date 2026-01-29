@@ -359,10 +359,6 @@ export default function FatPage() {
                       ? 'w-[320px] md:w-[380px] z-20'
                       : 'w-[280px] md:w-[260px]'
                     }
-                    ${expandedCard && !isExpanded
-                      ? 'opacity-40 scale-95'
-                      : ''
-                    }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
                       : !isExpanded && !expandedCard ? 'md:border-red-500/30 md:shadow-none scale-100 translate-y-0' : ''
