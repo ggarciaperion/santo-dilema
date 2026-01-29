@@ -356,12 +356,16 @@ export default function FatPage() {
                   className={`bg-gray-900 rounded-xl border-2 overflow-visible flex-shrink-0 transition-all duration-300 ease-out
                     border-red-400 neon-border-fat shadow-xl shadow-red-500/30
                     ${isExpanded
-                      ? 'w-[320px] md:w-[380px]'
+                      ? 'w-[320px] md:w-[380px] z-20'
                       : 'w-[280px] md:w-[260px]'
                     }
-                    ${!isExpanded && hoveredCard === product.id
+                    ${expandedCard && !isExpanded
+                      ? 'opacity-40 scale-95'
+                      : ''
+                    }
+                    ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
-                      : !isExpanded ? 'md:border-red-500/30 md:shadow-none scale-100 translate-y-0' : ''
+                      : !isExpanded && !expandedCard ? 'md:border-red-500/30 md:shadow-none scale-100 translate-y-0' : ''
                     }
                     snap-center
                   `}
