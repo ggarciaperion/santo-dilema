@@ -57,6 +57,8 @@ export default function FitPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isDragging, setIsDragging] = useState(false);
+  const [showBebidas, setShowBebidas] = useState(false);
+  const [showExtras, setShowExtras] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
@@ -408,11 +410,21 @@ export default function FitPage() {
               <div className="mt-3 pt-2 border-t border-cyan-500/30">
                 <h4 className="text-xs font-bold text-white mb-2">Complementos</h4>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Bebidas */}
-                  <div>
-                    <h5 className="text-[10px] font-semibold text-cyan-400 mb-1">Bebidas</h5>
-                    <div className="space-y-1">
+                {/* Bebidas - Acordeón */}
+                <div className="mb-2">
+                  <button
+                    onClick={() => setShowBebidas(!showBebidas)}
+                    className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🥤</span>
+                      <span className="text-white text-xs font-bold">Bebidas</span>
+                    </div>
+                    <span className="text-cyan-400 text-sm">{showBebidas ? '▼' : '▶'}</span>
+                  </button>
+
+                  {showBebidas && (
+                    <div className="mt-2 space-y-1">
                       {[
                         { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
                         { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
@@ -431,17 +443,17 @@ export default function FitPage() {
                         return (
                           <div
                             key={bebida.id}
-                            className="flex items-center justify-between bg-gray-800/30 rounded p-1 border border-cyan-500/10"
+                            className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
                           >
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1.5">
                               <span className="text-sm">{bebida.emoji}</span>
-                              <span className="text-white text-[9px]">{bebida.name}</span>
+                              <span className="text-white text-[10px]">{bebida.name}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-amber-400 text-[9px] font-bold">S/ {bebida.price.toFixed(2)}</span>
+                              <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
                               <button
                                 onClick={() => addToCart(bebidaProduct, 1)}
-                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-1.5 py-0.5 rounded text-[9px] font-bold transition-all"
+                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
                               >
                                 +
                               </button>
@@ -450,12 +462,24 @@ export default function FitPage() {
                         );
                       })}
                     </div>
-                  </div>
+                  )}
+                </div>
 
-                  {/* Extras */}
-                  <div>
-                    <h5 className="text-[10px] font-semibold text-cyan-400 mb-1">Extras</h5>
-                    <div className="space-y-1">
+                {/* Extras - Acordeón */}
+                <div className="mb-2">
+                  <button
+                    onClick={() => setShowExtras(!showExtras)}
+                    className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🍟</span>
+                      <span className="text-white text-xs font-bold">Extras</span>
+                    </div>
+                    <span className="text-cyan-400 text-sm">{showExtras ? '▼' : '▶'}</span>
+                  </button>
+
+                  {showExtras && (
+                    <div className="mt-2 space-y-1">
                       {[
                         { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 },
                         { id: "extra-salsa", name: "Extra salsa", emoji: "🥫", price: 3.00 },
@@ -471,17 +495,17 @@ export default function FitPage() {
                         return (
                           <div
                             key={extra.id}
-                            className="flex items-center justify-between bg-gray-800/30 rounded p-1 border border-cyan-500/10"
+                            className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
                           >
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1.5">
                               <span className="text-sm">{extra.emoji}</span>
-                              <span className="text-white text-[9px]">{extra.name}</span>
+                              <span className="text-white text-[10px]">{extra.name}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-amber-400 text-[9px] font-bold">S/ {extra.price.toFixed(2)}</span>
+                              <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
                               <button
                                 onClick={() => addToCart(extraProduct, 1)}
-                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-1.5 py-0.5 rounded text-[9px] font-bold transition-all"
+                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
                               >
                                 +
                               </button>
@@ -490,7 +514,7 @@ export default function FitPage() {
                         );
                       })}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
