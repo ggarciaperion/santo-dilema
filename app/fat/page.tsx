@@ -101,34 +101,29 @@ export default function FatPage() {
     }
   };
 
-  const handleSalsaToggle = (productId: string, salsaId: string) => {
+  const handleSalsaToggle = (productId: string, salsaId: string, action: 'add' | 'remove' = 'add') => {
     const requiredCount = getRequiredSalsasCount(productId);
     const currentSalsas = selectedSalsas[productId] || [];
 
-    if (productId === "todos-pecan") {
-      // Para Todos Pecan, permitir múltiples selecciones de la misma salsa
-      if (currentSalsas.includes(salsaId)) {
-        // Remover una instancia de esta salsa
-        const index = currentSalsas.indexOf(salsaId);
+    if (action === 'remove') {
+      // Remover una instancia de esta salsa
+      const index = currentSalsas.indexOf(salsaId);
+      if (index !== -1) {
         const newSalsas = [...currentSalsas];
         newSalsas.splice(index, 1);
         setSelectedSalsas((prev) => ({ ...prev, [productId]: newSalsas }));
-      } else {
-        // Agregar esta salsa si no hemos llegado al límite
-        if (currentSalsas.length < requiredCount) {
-          setSelectedSalsas((prev) => ({ ...prev, [productId]: [...currentSalsas, salsaId] }));
-        }
       }
     } else {
-      // Para Pequeño Dilema y Dúo Dilema, no permitir duplicados
-      if (currentSalsas.includes(salsaId)) {
-        setSelectedSalsas((prev) => ({
-          ...prev,
-          [productId]: currentSalsas.filter((s) => s !== salsaId)
-        }));
-      } else {
-        if (currentSalsas.length < requiredCount) {
-          setSelectedSalsas((prev) => ({ ...prev, [productId]: [...currentSalsas, salsaId] }));
+      // Agregar esta salsa si no hemos llegado al límite
+      if (currentSalsas.length < requiredCount) {
+        const newSalsas = [...currentSalsas, salsaId];
+        setSelectedSalsas((prev) => ({ ...prev, [productId]: newSalsas }));
+
+        // Auto-colapsar cuando se complete la selección
+        if (newSalsas.length === requiredCount) {
+          setTimeout(() => {
+            setShowSalsas((prev) => ({ ...prev, [productId]: false }));
+          }, 300);
         }
       }
     }
@@ -418,22 +413,36 @@ export default function FatPage() {
                       <div className="mb-3">
                         <button
                           onClick={() => setShowSalsas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                          className="w-full flex items-center justify-between bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded-lg p-2 transition-all shadow-sm shadow-amber-500/20"
+                          className={`w-full flex items-center justify-between rounded-lg p-2 transition-all shadow-sm border
+                            ${canAdd
+                              ? 'bg-green-600/20 hover:bg-green-600/30 border-green-500/40 shadow-green-500/20'
+                              : 'bg-amber-600/20 hover:bg-amber-600/30 border-amber-500/40 shadow-amber-500/20'
+                            }
+                          `}
                           style={{
-                            boxShadow: showSalsas[product.id] ? '0 0 10px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.15)' : undefined
+                            boxShadow: showSalsas[product.id]
+                              ? canAdd
+                                ? '0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.15)'
+                                : '0 0 10px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.15)'
+                              : undefined
                           }}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-sm">🌶️</span>
-                            <span className="text-white text-xs font-bold">
-                              Elige tu{requiredSalsas > 1 ? 's' : ''} salsa{requiredSalsas > 1 ? 's' : ''}
+                            <span className="text-sm">{canAdd ? '✓' : '🌶️'}</span>
+                            <span className={`text-xs font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
+                              {canAdd
+                                ? `Salsas seleccionadas (${requiredSalsas})`
+                                : `Elige tu${requiredSalsas > 1 ? 's' : ''} salsa${requiredSalsas > 1 ? 's' : ''}`
+                              }
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-amber-400 font-bold">
+                            <span className={`text-[10px] font-bold ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
                               {currentSalsas.length}/{requiredSalsas}
                             </span>
-                            <span className="text-amber-400 text-xs">{showSalsas[product.id] ? '▼' : '▶'}</span>
+                            <span className={`text-xs ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
+                              {showSalsas[product.id] ? '▼' : '▶'}
+                            </span>
                           </div>
                         </button>
 
@@ -449,32 +458,28 @@ export default function FatPage() {
                                   key={salsa.id}
                                   className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-amber-500/10"
                                 >
-                                  <button
-                                    onClick={() => handleSalsaToggle(product.id, salsa.id)}
-                                    disabled={!canSelect && !isSelected}
-                                    className={`flex-1 text-left transition-all
-                                      ${isSelected
-                                        ? 'text-amber-400 font-bold'
-                                        : canSelect
-                                          ? 'text-white hover:text-amber-300'
-                                          : 'text-gray-600 cursor-not-allowed'
-                                      }
-                                    `}
-                                  >
-                                    <span className="text-[10px]">{salsa.name}</span>
-                                  </button>
+                                  <div className="flex items-center gap-1.5 flex-1">
+                                    <span className={`text-[10px] ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
+                                      {salsa.name}
+                                    </span>
+                                  </div>
                                   <div className="flex items-center gap-1">
-                                    {product.id === "todos-pecan" && count > 0 && (
+                                    {count > 0 && (
                                       <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
                                         x{count}
                                       </span>
                                     )}
-                                    {product.id !== "todos-pecan" && isSelected && (
-                                      <span className="text-amber-400 text-sm">✓</span>
+                                    {count > 0 && (
+                                      <button
+                                        onClick={() => handleSalsaToggle(product.id, salsa.id, 'remove')}
+                                        className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                      >
+                                        −
+                                      </button>
                                     )}
                                     <button
-                                      onClick={() => handleSalsaToggle(product.id, salsa.id)}
-                                      disabled={!canSelect && !isSelected}
+                                      onClick={() => handleSalsaToggle(product.id, salsa.id, 'add')}
+                                      disabled={!canSelect}
                                       className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all
                                         ${canSelect
                                           ? 'bg-amber-600 hover:bg-amber-500 text-white'
@@ -482,7 +487,7 @@ export default function FatPage() {
                                         }
                                       `}
                                     >
-                                      {isSelected ? '−' : '+'}
+                                      +
                                     </button>
                                   </div>
                                 </div>
