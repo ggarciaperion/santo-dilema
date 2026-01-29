@@ -422,6 +422,31 @@ export default function FatPage() {
     }, 800);
   };
 
+  const handleRemoveComplement = (productId: string, complementId: string) => {
+    // Encontrar la instancia del complemento en el carrito
+    const complementsForProduct = complementsInCart[productId] || [];
+    const indexToRemove = complementsForProduct.lastIndexOf(complementId);
+
+    if (indexToRemove !== -1) {
+      // Remover del carrito
+      removeFromCart(complementId);
+
+      // Actualizar el tracking de complementos
+      const newComplements = [...complementsForProduct];
+      newComplements.splice(indexToRemove, 1);
+
+      setComplementsInCart((prev) => ({
+        ...prev,
+        [productId]: newComplements
+      }));
+    }
+  };
+
+  const getComplementCount = (productId: string, complementId: string): number => {
+    const complementsForProduct = complementsInCart[productId] || [];
+    return complementsForProduct.filter(id => id === complementId).length;
+  };
+
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
       const scrollAmount = 300;
@@ -775,7 +800,7 @@ export default function FatPage() {
 
                       {/* Complementos */}
                       <div className="mb-3">
-                        <h5 className="text-xs font-bold text-white mb-2">Complementos (Opcional)</h5>
+                        <h5 className="text-xs font-bold text-white mb-2">Complementos</h5>
 
                         {/* Bebidas */}
                         <div className="mb-2">
@@ -808,6 +833,7 @@ export default function FatPage() {
                                   category: "bebida"
                                 };
                                 const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${bebida.id}`);
+                                const count = getComplementCount(product.id, bebida.id);
                                 return (
                                   <div
                                     key={bebida.id}
@@ -819,6 +845,19 @@ export default function FatPage() {
                                     </div>
                                     <div className="flex items-center gap-1">
                                       <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
+                                      {count > 0 && (
+                                        <>
+                                          <button
+                                            onClick={() => handleRemoveComplement(product.id, bebida.id)}
+                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                          >
+                                            −
+                                          </button>
+                                          <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                            {count}
+                                          </span>
+                                        </>
+                                      )}
                                       <button
                                         onClick={() => handleAddComplement(product.id, bebidaProduct)}
                                         className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
@@ -865,6 +904,7 @@ export default function FatPage() {
                                   category: "bebida"
                                 };
                                 const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extra.id}`);
+                                const count = getComplementCount(product.id, extra.id);
                                 return (
                                   <div
                                     key={extra.id}
@@ -876,6 +916,19 @@ export default function FatPage() {
                                     </div>
                                     <div className="flex items-center gap-1">
                                       <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
+                                      {count > 0 && (
+                                        <>
+                                          <button
+                                            onClick={() => handleRemoveComplement(product.id, extra.id)}
+                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                          >
+                                            −
+                                          </button>
+                                          <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                            {count}
+                                          </span>
+                                        </>
+                                      )}
                                       <button
                                         onClick={() => handleAddComplement(product.id, extraProduct)}
                                         className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
