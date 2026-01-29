@@ -337,6 +337,32 @@ export default function FatPage() {
     const order = completedOrders[orderIndex];
     if (!order) return;
 
+    const product = products.find((p) => p.id === order.productId);
+    if (!product) return;
+
+    // Construir mensaje con detalles de la orden
+    const salsasText = order.salsas
+      .map((sId) => salsas.find((s) => s.id === sId)?.name)
+      .filter((name) => name)
+      .join(", ");
+
+    const complementsText = order.complementIds.length > 0
+      ? order.complementIds
+          .map((compId) => availableComplements[compId]?.name)
+          .filter((name) => name)
+          .join(", ")
+      : "";
+
+    let orderDetails = `${order.quantity > 1 ? order.quantity + 'x ' : ''}${product.name} - Salsas: ${salsasText}`;
+    if (complementsText) {
+      orderDetails += ` - Complementos: ${complementsText}`;
+    }
+
+    // Mostrar confirmación
+    if (!window.confirm(`¿Está seguro que desea quitar su orden (${orderDetails}) de su pedido?`)) {
+      return;
+    }
+
     // Eliminar esta orden de completedOrders
     setCompletedOrders((prev) => prev.filter((_, idx) => idx !== orderIndex));
 
@@ -894,7 +920,7 @@ export default function FatPage() {
                 return (
                   <div
                     key={`${order.productId}-${index}`}
-                    className="bg-gray-900 rounded-lg border-2 border-red-400/30 p-3 pb-12 relative"
+                    className="bg-gray-900 rounded-lg border-2 border-red-400/30 p-3 relative"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
@@ -925,7 +951,7 @@ export default function FatPage() {
                         Editar
                       </button>
                     </div>
-                    <div className="text-amber-400 font-bold text-sm gold-glow mb-2">
+                    <div className="text-amber-400 font-bold text-sm gold-glow">
                       S/ {(() => {
                         const productTotal = product.price * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
@@ -936,10 +962,10 @@ export default function FatPage() {
                     </div>
                     <button
                       onClick={() => handleDeleteOrder(index)}
-                      className="absolute bottom-0 left-0 right-0 w-full text-red-500 hover:text-red-400 hover:bg-red-500/10 text-xl py-2 border-t-2 border-red-500/30 transition-all rounded-b-lg"
+                      className="absolute bottom-2 right-2 text-red-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100"
                       title="Eliminar orden"
                     >
-                      🚮
+                      ✕
                     </button>
                   </div>
                 );
