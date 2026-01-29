@@ -593,8 +593,7 @@ export default function FatPage() {
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onMouseEnter={() => handleCardHover(product.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all duration-500 ease-in-out
-                    border-red-400 neon-border-fat shadow-xl shadow-red-500/30
+                  className={`bg-gray-900 rounded-xl border-2 overflow-hidden flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center
                     ${isExpanded
                       ? 'w-[320px] md:w-[380px] z-20'
                       : 'w-[280px] md:w-[260px]'
@@ -603,9 +602,9 @@ export default function FatPage() {
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
                       : !isExpanded && !expandedCard ? 'md:border-red-500/30 md:shadow-none scale-100 translate-y-0' : ''
                     }
-                    snap-center
                   `}
                   style={{
+                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
                     transformOrigin: 'center center',
                   }}
                 >
@@ -652,17 +651,18 @@ export default function FatPage() {
 
                   {/* Expanded Content */}
                   <div
-                    className={`overflow-hidden transition-all ${
+                    className={`overflow-hidden transition-all origin-top ${
                       isExpanded
-                        ? 'max-h-[2500px] opacity-100 duration-700 ease-out'
-                        : 'max-h-0 opacity-0 duration-500 ease-in'
+                        ? 'max-h-[2500px] scale-y-100 opacity-100 duration-600 ease-out'
+                        : 'max-h-0 scale-y-95 opacity-0 duration-400 ease-in-out'
                     }`}
+                    style={{
+                      transition: isExpanded
+                        ? 'max-height 0.6s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out'
+                        : 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, transform 0.4s ease-in-out'
+                    }}
                   >
-                    <div className={`px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3 transition-all ${
-                      isExpanded
-                        ? 'translate-y-0 scale-100 duration-500 ease-out delay-100'
-                        : 'translate-y-0 scale-95 duration-400 ease-in'
-                    }`}>
+                    <div className="px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3">
                       {/* Botón de Cerrar */}
                       <div className="flex justify-end mb-2">
                         <button
