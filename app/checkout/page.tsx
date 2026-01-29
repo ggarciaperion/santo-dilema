@@ -400,19 +400,9 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            {!showDniSearch && (
-              <p className="text-gray-400 text-[9px] md:text-[10px] text-center mt-2">
-                Al confirmar tu pedido, nos pondremos en contacto contigo para coordinar la entrega
-              </p>
-            )}
-
-            {showDniSearch && (
-              <div className="p-2 md:p-3 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/30">
-                <p className="text-fuchsia-300 text-[9px] md:text-[10px]">
-                  💡 Completa tus datos para continuar con el pedido
-                </p>
-              </div>
-            )}
+            <p className="text-gray-400 text-[9px] md:text-[10px] text-center mt-2">
+              Al confirmar tu pedido, nos pondremos en contacto contigo para coordinar la entrega
+            </p>
           </div>
         </div>
       </div>
