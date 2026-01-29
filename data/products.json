@@ -1,0 +1,114 @@
+[
+  {
+    "id": "ensalada-clasica",
+    "name": "Ensalada Clásica",
+    "category": "fit",
+    "price": 18.9,
+    "cost": 8.5,
+    "active": true
+  },
+  {
+    "id": "ensalada-proteica",
+    "name": "Ensalada Proteica",
+    "category": "fit",
+    "price": 24.9,
+    "cost": 12,
+    "active": true
+  },
+  {
+    "id": "ensalada-caesar",
+    "name": "Caesar Fit",
+    "category": "fit",
+    "price": 22.9,
+    "cost": 10.5,
+    "active": true
+  },
+  {
+    "id": "ensalada-mediterranea",
+    "name": "Mediterránea",
+    "category": "fit",
+    "price": 21.9,
+    "cost": 10,
+    "active": true
+  },
+  {
+    "id": "pequeno-dilema",
+    "name": "Pequeño Dilema",
+    "category": "fat",
+    "price": 28.9,
+    "cost": 14,
+    "active": true
+  },
+  {
+    "id": "duo-dilema",
+    "name": "Dúo Dilema",
+    "category": "fat",
+    "price": 39.9,
+    "cost": 20,
+    "active": true
+  },
+  {
+    "id": "todos-pecan",
+    "name": "Todos Pecan",
+    "category": "fat",
+    "price": 49.9,
+    "cost": 25,
+    "active": true
+  },
+  {
+    "id": "agua-mineral",
+    "name": "Agua mineral",
+    "category": "bebida",
+    "price": 4,
+    "cost": 1.5,
+    "active": true
+  },
+  {
+    "id": "coca-cola",
+    "name": "Coca Cola 500ml",
+    "category": "bebida",
+    "price": 4,
+    "cost": 2,
+    "active": true
+  },
+  {
+    "id": "inka-cola",
+    "name": "Inka Cola 500ml",
+    "category": "bebida",
+    "price": 4,
+    "cost": 2,
+    "active": true
+  },
+  {
+    "id": "sprite",
+    "name": "Sprite 500ml",
+    "category": "bebida",
+    "price": 4,
+    "cost": 2,
+    "active": true
+  },
+  {
+    "id": "fanta",
+    "name": "Fanta 500ml",
+    "category": "bebida",
+    "price": 4,
+    "cost": 2,
+    "active": true
+  },
+  {
+    "id": "extra-papas",
+    "name": "Extra papas",
+    "category": "bebida",
+    "price": 4,
+    "cost": 1.8,
+    "active": true
+  },
+  {
+    "id": "extra-salsa",
+    "name": "Extra salsa",
+    "category": "bebida",
+    "price": 3,
+    "cost": 1,
+    "active": true
+  }
+]
