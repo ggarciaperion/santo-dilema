@@ -218,7 +218,7 @@ export default function CheckoutPage() {
                         value={formData.dni}
                         onChange={(e) => handleNumberInput('dni', e.target.value)}
                         maxLength={8}
-                        className="flex-1 px-3 py-2.5 md:py-2 text-sm md:text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                        className="flex-1 px-3 py-2.5 md:py-2 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                         placeholder="12345678"
                       />
                       <button
@@ -272,7 +272,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.name}
                     onChange={(e) => handleNameInput(e.target.value)}
-                    className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     placeholder="JUAN PÉREZ"
                   />
                 </div>
@@ -289,7 +289,7 @@ export default function CheckoutPage() {
                       onChange={(e) => handleNumberInput('dni', e.target.value)}
                       maxLength={8}
                       disabled={customerFound}
-                      className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="12345678"
                     />
                   </div>
@@ -303,7 +303,7 @@ export default function CheckoutPage() {
                       value={formData.phone}
                       onChange={(e) => handleNumberInput('phone', e.target.value)}
                       maxLength={9}
-                      className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                      className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                       placeholder="999888777"
                     />
                   </div>
@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     rows={2}
                     placeholder="Av. Ejemplo 123, Dpto 456"
                   />
@@ -335,7 +335,7 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     placeholder="tucorreo@ejemplo.com"
                   />
                   <p className="text-[10px] text-fuchsia-300/60 mt-1">
