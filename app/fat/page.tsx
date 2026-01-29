@@ -618,7 +618,8 @@ export default function FatPage() {
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onMouseEnter={() => handleCardHover(product.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 rounded-xl border-2 overflow-hidden flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center
+                  className={`bg-gray-900 rounded-xl border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center
+                    ${product.image.startsWith('/') ? 'overflow-visible' : 'overflow-hidden'}
                     ${isExpanded
                       ? 'w-[320px] md:w-[380px] z-20'
                       : 'w-[280px] md:w-[260px]'
@@ -643,12 +644,12 @@ export default function FatPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute w-[130%] h-[140%] object-cover drop-shadow-2xl"
+                        className="absolute w-[150%] h-[160%] object-cover drop-shadow-2xl z-10"
                         style={{
-                          top: '-20%',
+                          top: '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
-                          objectPosition: 'center 60%'
+                          objectPosition: 'center 55%'
                         }}
                       />
                     ) : (
