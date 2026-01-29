@@ -73,6 +73,7 @@ export default function FatPage() {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
   const [mainProductsInCart, setMainProductsInCart] = useState<Record<string, string>>({});
+  const [recentlyAddedSalsas, setRecentlyAddedSalsas] = useState<Set<string>>(new Set());
 
   const getRequiredSalsasCount = (productId: string): number => {
     if (productId === "pequeno-dilema") return 1;
@@ -153,6 +154,19 @@ export default function FatPage() {
       if (currentSalsas.length < requiredCount) {
         const newSalsas = [...currentSalsas, salsaId];
         setSelectedSalsas((prev) => ({ ...prev, [productId]: newSalsas }));
+
+        // Mostrar feedback visual
+        const key = `${productId}-${salsaId}`;
+        setRecentlyAddedSalsas((prev) => new Set(prev).add(key));
+
+        // Remover feedback después de 800ms
+        setTimeout(() => {
+          setRecentlyAddedSalsas((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(key);
+            return newSet;
+          });
+        }, 800);
 
         // Auto-agregar al carrito cuando se complete la selección
         if (newSalsas.length === requiredCount) {
@@ -525,6 +539,11 @@ export default function FatPage() {
                               const count = getSalsaCount(product.id, salsa.id);
                               const isSelected = count > 0;
                               const canSelect = currentSalsas.length < requiredSalsas || isSelected;
+                              const wasRecentlyAdded = recentlyAddedSalsas.has(`${product.id}-${salsa.id}`);
+                              // Ocultar botón + cuando el count de esta salsa alcanza el máximo permitido
+                              const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
+                              const canAddMore = count < maxSalsaCount && canSelect;
+                              const showAddButton = canAddMore;
 
                               return (
                                 <div
@@ -550,18 +569,18 @@ export default function FatPage() {
                                         −
                                       </button>
                                     )}
-                                    <button
-                                      onClick={() => handleSalsaToggle(product.id, salsa.id, 'add')}
-                                      disabled={!canSelect}
-                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all
-                                        ${canSelect
-                                          ? 'bg-amber-600 hover:bg-amber-500 text-white'
-                                          : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                        }
-                                      `}
-                                    >
-                                      +
-                                    </button>
+                                    {showAddButton && (
+                                      <button
+                                        onClick={() => handleSalsaToggle(product.id, salsa.id, 'add')}
+                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          wasRecentlyAdded
+                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                            : 'bg-amber-600 hover:bg-amber-500'
+                                        } text-white`}
+                                      >
+                                        {wasRecentlyAdded ? '✓' : '+'}
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               );
