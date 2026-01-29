@@ -215,12 +215,24 @@ export default function FatPage() {
   };
 
   const handleCompleteOrder = (product: Product) => {
-    // Solo cerrar el card y colapsar las secciones
-    // NO eliminar nada del carrito
-    setShowSalsas((prev) => ({ ...prev, [product.id]: false }));
+    // Limpiar selecciones para permitir agregar otra orden del mismo producto
+    // NO eliminar del carrito (los productos ya están agregados)
+    setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
+    setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
+    setShowSalsas((prev) => ({ ...prev, [product.id]: true })); // Reabrir selector de salsas
     setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
     setShowExtras((prev) => ({ ...prev, [product.id]: false }));
-    setExpandedCard(null);
+    setMainProductsInCart((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
+    setComplementsInCart((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
+    // NO cerrar el card - mantener expandido para agregar otra orden
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
@@ -711,7 +723,7 @@ export default function FatPage() {
                           }
                         `}
                       >
-                        {canAdd ? 'Listo' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {canAdd ? 'Listo, agregar más' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   )}
