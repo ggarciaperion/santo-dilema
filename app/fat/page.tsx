@@ -1063,23 +1063,15 @@ export default function FatPage() {
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-red-500/50 shadow-2xl shadow-red-500/30 z-50">
           <div className="container mx-auto px-4 md:px-6 py-4 md:py-5">
             <div className="flex justify-between items-center gap-3 md:gap-4">
-              <button
-                onClick={() => setShowCartModal(true)}
-                className="bg-red-500/20 hover:bg-red-500/30 active:scale-95 border-2 border-red-500/50 text-red-400 px-4 md:px-5 py-2.5 md:py-3 rounded-lg font-bold text-sm md:text-base transition-all"
-              >
-                Ver Pedido
-              </button>
-              <div className="flex items-center gap-3 md:gap-5">
-                <p className="text-amber-400 font-bold text-base md:text-xl gold-glow">
-                  <span className="hidden sm:inline">Total: </span>S/ {totalPrice.toFixed(2)}
-                </p>
-                <Link
-                  href="/checkout"
-                  className="bg-red-500 hover:bg-red-400 active:scale-95 text-white px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-fat"
-                >
-                  Continuar<span className="hidden sm:inline"> Pedido</span> →
-                </Link>
+              <div className="text-amber-400 font-black text-xl md:text-3xl gold-glow">
+                S/ {totalPrice.toFixed(2)}
               </div>
+              <Link
+                href="/checkout"
+                className="bg-red-500 hover:bg-red-400 active:scale-95 text-white px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-fat"
+              >
+                Continuar<span className="hidden sm:inline"> Pedido</span> →
+              </Link>
             </div>
           </div>
         </div>
