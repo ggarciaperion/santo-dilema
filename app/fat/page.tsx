@@ -65,6 +65,7 @@ export default function FatPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isDragging, setIsDragging] = useState(false);
+  const [showSalsas, setShowSalsas] = useState<Record<string, boolean>>({});
   const [showBebidas, setShowBebidas] = useState<Record<string, boolean>>({});
   const [showExtras, setShowExtras] = useState<Record<string, boolean>>({});
   const [startX, setStartX] = useState(0);
@@ -81,6 +82,10 @@ export default function FatPage() {
     if (isDragging) return;
     if (expandedCard === productId) {
       setExpandedCard(null);
+      // Limpiar estados al cerrar
+      setShowSalsas((prev) => ({ ...prev, [productId]: false }));
+      setShowBebidas((prev) => ({ ...prev, [productId]: false }));
+      setShowExtras((prev) => ({ ...prev, [productId]: false }));
     } else {
       setExpandedCard(productId);
       if (!selectedSalsas[productId]) {
@@ -89,6 +94,16 @@ export default function FatPage() {
       if (!selectedComplements[productId]) {
         setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
       }
+    }
+  };
+
+  const handleCloseCard = () => {
+    setExpandedCard(null);
+    // Limpiar estados
+    if (expandedCard) {
+      setShowSalsas((prev) => ({ ...prev, [expandedCard]: false }));
+      setShowBebidas((prev) => ({ ...prev, [expandedCard]: false }));
+      setShowExtras((prev) => ({ ...prev, [expandedCard]: false }));
     }
   };
 
@@ -160,6 +175,9 @@ export default function FatPage() {
     // Limpiar selecciones
     setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
     setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
+    setShowSalsas((prev) => ({ ...prev, [product.id]: false }));
+    setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
+    setShowExtras((prev) => ({ ...prev, [product.id]: false }));
     setExpandedCard(null);
   };
 
@@ -383,49 +401,82 @@ export default function FatPage() {
                   {/* Expanded Content */}
                   {isExpanded && (
                     <div className="px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3">
-                      {/* Selector de Salsas */}
-                      <div className="mb-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <h5 className="text-xs font-bold text-white">Elige tu{requiredSalsas > 1 ? 's' : ''} salsa{requiredSalsas > 1 ? 's' : ''}</h5>
-                          <span className="text-[10px] text-red-400">
-                            {currentSalsas.length}/{requiredSalsas} seleccionada{requiredSalsas > 1 ? 's' : ''}
-                          </span>
-                        </div>
-                        <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                          {salsas.map((salsa) => {
-                            const count = getSalsaCount(product.id, salsa.id);
-                            const isSelected = count > 0;
-                            const canSelect = currentSalsas.length < requiredSalsas || isSelected;
+                      {/* Botón de Cerrar */}
+                      <div className="flex justify-end mb-2">
+                        <button
+                          onClick={handleCloseCard}
+                          className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <span>Cambiar menú</span>
+                          <span className="text-lg">×</span>
+                        </button>
+                      </div>
 
-                            return (
-                              <button
-                                key={salsa.id}
-                                onClick={() => handleSalsaToggle(product.id, salsa.id)}
-                                disabled={!canSelect && !isSelected}
-                                className={`w-full flex items-center justify-between p-2 rounded border transition-all text-left
-                                  ${isSelected
-                                    ? 'bg-red-600/30 border-red-500 text-white'
-                                    : canSelect
-                                      ? 'bg-gray-800/30 border-red-500/20 text-gray-300 hover:bg-red-600/10 hover:border-red-500/40'
-                                      : 'bg-gray-800/10 border-red-500/10 text-gray-600 cursor-not-allowed'
-                                  }
-                                `}
-                              >
-                                <span className="text-xs">{salsa.name}</span>
-                                {product.id === "todos-pecan" && count > 0 && (
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                      x{count}
-                                    </span>
-                                  </div>
-                                )}
-                                {product.id !== "todos-pecan" && isSelected && (
-                                  <span className="text-red-400">✓</span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
+                      {/* Selector de Salsas - Acordeón */}
+                      <div className="mb-3">
+                        <button
+                          onClick={() => setShowSalsas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
+                          className="w-full flex items-center justify-between bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded-lg p-2 transition-all shadow-sm shadow-amber-500/20"
+                          style={{
+                            boxShadow: showSalsas[product.id] ? '0 0 10px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.15)' : undefined
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">🌶️</span>
+                            <span className="text-white text-xs font-bold">
+                              Elige tu{requiredSalsas > 1 ? 's' : ''} salsa{requiredSalsas > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-amber-400 font-bold">
+                              {currentSalsas.length}/{requiredSalsas}
+                            </span>
+                            <span className="text-amber-400 text-xs">{showSalsas[product.id] ? '▼' : '▶'}</span>
+                          </div>
+                        </button>
+
+                        {showSalsas[product.id] && (
+                          <div
+                            className="mt-2 space-y-1.5 max-h-48 overflow-y-auto p-2 rounded-lg border border-amber-500/30 bg-amber-900/10"
+                            style={{
+                              boxShadow: '0 0 15px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(251, 191, 36, 0.05)'
+                            }}
+                          >
+                            {salsas.map((salsa) => {
+                              const count = getSalsaCount(product.id, salsa.id);
+                              const isSelected = count > 0;
+                              const canSelect = currentSalsas.length < requiredSalsas || isSelected;
+
+                              return (
+                                <button
+                                  key={salsa.id}
+                                  onClick={() => handleSalsaToggle(product.id, salsa.id)}
+                                  disabled={!canSelect && !isSelected}
+                                  className={`w-full flex items-center justify-between p-2 rounded border transition-all text-left
+                                    ${isSelected
+                                      ? 'bg-amber-600/30 border-amber-500 text-white shadow-sm shadow-amber-500/20'
+                                      : canSelect
+                                        ? 'bg-gray-800/30 border-amber-500/20 text-gray-300 hover:bg-amber-600/10 hover:border-amber-500/40'
+                                        : 'bg-gray-800/10 border-amber-500/10 text-gray-600 cursor-not-allowed'
+                                    }
+                                  `}
+                                >
+                                  <span className="text-xs">{salsa.name}</span>
+                                  {product.id === "todos-pecan" && count > 0 && (
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                        x{count}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {product.id !== "todos-pecan" && isSelected && (
+                                    <span className="text-amber-400">✓</span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Complementos */}
