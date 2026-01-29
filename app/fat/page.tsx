@@ -652,12 +652,16 @@ export default function FatPage() {
 
                   {/* Expanded Content */}
                   <div
-                    className={`transition-all duration-700 ease-in-out overflow-hidden ${
-                      isExpanded ? 'max-h-[2500px] opacity-100' : 'max-h-0 opacity-0'
+                    className={`overflow-hidden transition-all ${
+                      isExpanded
+                        ? 'max-h-[2500px] opacity-100 duration-700 ease-out'
+                        : 'max-h-0 opacity-0 duration-500 ease-in'
                     }`}
                   >
-                    <div className={`px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3 transition-all duration-500 ease-out ${
-                      isExpanded ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                    <div className={`px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3 transition-all ${
+                      isExpanded
+                        ? 'translate-y-0 scale-100 duration-500 ease-out delay-100'
+                        : 'translate-y-0 scale-95 duration-400 ease-in'
                     }`}>
                       {/* Botón de Cerrar */}
                       <div className="flex justify-end mb-2">
