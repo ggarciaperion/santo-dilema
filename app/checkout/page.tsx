@@ -431,8 +431,19 @@ export default function CheckoutPage() {
 
       {/* Modal de Confirmación de Pago */}
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 neon-border-purple max-w-md w-full p-6">
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+          onClick={(e) => {
+            // Cerrar modal si se hace click en el fondo
+            if (e.target === e.currentTarget) {
+              setShowPaymentModal(false);
+            }
+          }}
+        >
+          <div
+            className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 neon-border-purple max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="text-center mb-4">
               <div className="text-5xl mb-3">💰</div>
               <h3 className="text-xl md:text-2xl font-black text-fuchsia-400 neon-glow-purple mb-2">
@@ -463,19 +474,31 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
-                onClick={() => setShowPaymentModal(false)}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg text-sm transition-all"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowPaymentModal(false);
+                }}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white font-bold py-4 px-4 rounded-lg text-sm md:text-base transition-all touch-manipulation select-none"
               >
                 Cancelar
               </button>
               <button
-                onClick={confirmOrder}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!isSubmitting) {
+                    confirmOrder();
+                  }
+                }}
                 disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-3 rounded-lg text-sm transition-all disabled:opacity-50 neon-border-purple"
+                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:from-fuchsia-700 active:to-pink-700 text-white font-black py-4 px-4 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple touch-manipulation select-none"
               >
-                {isSubmitting ? "Procesando..." : "Confirmar"}
+                {isSubmitting ? "Procesando..." : "Aceptar"}
               </button>
             </div>
           </div>
