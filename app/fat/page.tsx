@@ -31,7 +31,7 @@ const products: Product[] = [
     name: "Pequeño Dilema",
     description: "12 alitas con tu salsa favorita",
     price: 28.90,
-    image: "/pequeno-dilema.png?v=2",
+    image: "/pequeno-dilema.png?v=3",
     category: "fat",
   },
   {
