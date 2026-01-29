@@ -643,8 +643,12 @@ export default function FatPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute bottom-0 w-[120%] h-[120%] object-cover object-bottom drop-shadow-2xl"
-                        style={{ transformOrigin: 'bottom center' }}
+                        className="absolute w-[140%] h-[130%] object-cover drop-shadow-2xl"
+                        style={{
+                          top: '-15%',
+                          left: '-20%',
+                          objectPosition: 'center 45%'
+                        }}
                       />
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
