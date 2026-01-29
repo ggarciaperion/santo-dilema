@@ -74,6 +74,7 @@ export default function FatPage() {
   const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
   const [mainProductsInCart, setMainProductsInCart] = useState<Record<string, string>>({});
   const [recentlyAddedSalsas, setRecentlyAddedSalsas] = useState<Set<string>>(new Set());
+  const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
 
   const getRequiredSalsasCount = (productId: string): number => {
     if (productId === "pequeno-dilema") return 1;
@@ -213,14 +214,19 @@ export default function FatPage() {
     return currentSalsas.length === requiredCount;
   };
 
-  const handleContinue = (product: Product) => {
-    if (!canAddProduct(product.id)) return;
+  const handleRemoveOrder = (product: Product) => {
+    // Eliminar el plato principal del carrito si existe
+    if (mainProductsInCart[product.id]) {
+      removeFromCart(mainProductsInCart[product.id]);
+    }
 
-    // El plato principal ya está en el carrito (se agregó automáticamente al completar las salsas)
-    // Los complementos también ya están en el carrito (se agregaron al hacer clic en +)
-    // Solo necesitamos limpiar y cerrar el card
+    // Eliminar todos los complementos de este producto del carrito
+    const complements = complementsInCart[product.id] || [];
+    complements.forEach((complementId) => {
+      removeFromCart(complementId);
+    });
 
-    // Limpiar selecciones
+    // Limpiar todos los estados
     setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
     setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
     setShowSalsas((prev) => ({ ...prev, [product.id]: false }));
@@ -231,12 +237,23 @@ export default function FatPage() {
       delete newState[product.id];
       return newState;
     });
+    setComplementsInCart((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
     setExpandedCard(null);
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
     // Agregar directamente al carrito para que el total se actualice
     addToCart(complement, 1);
+
+    // Trackear el complemento agregado para poder eliminarlo después
+    setComplementsInCart((prev) => ({
+      ...prev,
+      [productId]: [...(prev[productId] || []), complement.id]
+    }));
 
     // Mostrar feedback visual
     const key = `${productId}-${complement.id}`;
@@ -705,9 +722,9 @@ export default function FatPage() {
                         </div>
                       </div>
 
-                      {/* Botón Continuar */}
+                      {/* Botón Quitar orden */}
                       <button
-                        onClick={() => handleContinue(product)}
+                        onClick={() => handleRemoveOrder(product)}
                         disabled={!canAdd}
                         className={`w-full py-2.5 rounded font-bold text-sm transition-all
                           ${canAdd
@@ -716,7 +733,7 @@ export default function FatPage() {
                           }
                         `}
                       >
-                        {canAdd ? 'Continuar' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {canAdd ? 'Quitar orden' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   )}
