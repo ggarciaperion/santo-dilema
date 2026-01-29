@@ -654,7 +654,7 @@ export default function FatPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="relative z-10 w-[90%] h-[90%] object-contain drop-shadow-2xl"
+                        className="relative z-10 w-full h-full object-cover scale-110 drop-shadow-2xl"
                       />
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
