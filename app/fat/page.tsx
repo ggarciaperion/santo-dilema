@@ -715,35 +715,6 @@ export default function FatPage() {
                       </button>
                     </div>
                   )}
-
-                  {/* Resumen de orden cuando está colapsado */}
-                  {!isExpanded && mainProductsInCart[product.id] && (
-                    <div className="p-3 border-t-2 border-red-500/30 bg-gray-800/30">
-                      <div className="text-xs text-white mb-2">
-                        <div className="font-bold text-amber-400 mb-1">Tu orden:</div>
-                        <div className="text-[10px] space-y-0.5">
-                          <div>• {product.name}</div>
-                          <div className="text-amber-300">
-                            Salsas: {(selectedSalsas[product.id] || [])
-                              .map((sId) => salsas.find((s) => s.id === sId)?.name)
-                              .filter((name) => name)
-                              .join(", ")}
-                          </div>
-                          {complementsInCart[product.id] && complementsInCart[product.id].length > 0 && (
-                            <div className="text-red-300">
-                              Complementos: {complementsInCart[product.id].length} agregado{complementsInCart[product.id].length > 1 ? 's' : ''}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleExpandCard(product.id)}
-                        className="text-[10px] text-red-400 hover:text-red-300 font-bold"
-                      >
-                        Editar orden →
-                      </button>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -759,8 +730,57 @@ export default function FatPage() {
           </button>
         </div>
 
+        {/* Sección de órdenes agregadas */}
+        {Object.keys(mainProductsInCart).length > 0 && (
+          <div className="container mx-auto px-3 md:px-4 mt-6">
+            <h3 className="text-lg md:text-xl font-black text-amber-400 mb-3 gold-glow">
+              Tu orden
+            </h3>
+            <div className="space-y-3">
+              {products.map((product) => {
+                if (!mainProductsInCart[product.id]) return null;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-gray-900 rounded-lg border-2 border-red-400/30 p-3"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-white mb-1">{product.name}</h4>
+                        <div className="text-[11px] space-y-1">
+                          <div className="text-amber-300">
+                            🌶️ Salsas: {(selectedSalsas[product.id] || [])
+                              .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                              .filter((name) => name)
+                              .join(", ")}
+                          </div>
+                          {complementsInCart[product.id] && complementsInCart[product.id].length > 0 && (
+                            <div className="text-red-300">
+                              🍟 Complementos: {complementsInCart[product.id].length} agregado{complementsInCart[product.id].length > 1 ? 's' : ''}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleExpandCard(product.id)}
+                        className="text-[10px] text-red-400 hover:text-red-300 font-bold ml-2 px-2 py-1 border border-red-400/30 rounded"
+                      >
+                        Editar
+                      </button>
+                    </div>
+                    <div className="text-amber-400 font-bold text-sm gold-glow">
+                      S/ {product.price.toFixed(2)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Texto motivacional */}
-        {totalItems > 0 && (
+        {Object.keys(mainProductsInCart).length > 0 && (
           <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
             <p className="text-center text-xs text-orange-200/70 italic">
               💡 Puedes agregar más órdenes a tu pedido antes de continuar
