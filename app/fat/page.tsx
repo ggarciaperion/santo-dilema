@@ -172,8 +172,11 @@ export default function FatPage() {
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
-    // Agregar directamente al carrito
-    addToCart(complement, 1);
+    // Agregar a selectedComplements (se agregará al carrito cuando se confirme el pedido)
+    setSelectedComplements((prev) => ({
+      ...prev,
+      [productId]: [...(prev[productId] || []), complement]
+    }));
 
     // Mostrar feedback visual
     const key = `${productId}-${complement.id}`;
