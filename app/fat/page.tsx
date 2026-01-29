@@ -644,9 +644,9 @@ export default function FatPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute w-[150%] h-[160%] object-cover drop-shadow-2xl"
+                        className="absolute w-[130%] h-[140%] object-cover drop-shadow-2xl"
                         style={{
-                          top: '-30%',
+                          top: '-20%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%'
