@@ -1161,7 +1161,7 @@ export default function FatPage() {
               </div>
               <Link
                 href="/checkout"
-                className="w-full bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg font-black text-sm transition-all neon-border-fat block text-center"
+                className="w-full bg-red-500 hover:bg-red-400 text-white px-6 py-3 rounded-lg font-black text-base transition-all neon-border-fat block text-center"
               >
                 Continuar Pedido →
               </Link>
