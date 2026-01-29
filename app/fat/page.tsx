@@ -18,6 +18,13 @@ interface Salsa {
   name: string;
 }
 
+interface CompletedOrder {
+  productId: string;
+  quantity: number;
+  salsas: string[];
+  complementsCount: number;
+}
+
 const products: Product[] = [
   {
     id: "pequeno-dilema",
@@ -76,6 +83,7 @@ export default function FatPage() {
   const [recentlyAddedSalsas, setRecentlyAddedSalsas] = useState<Set<string>>(new Set());
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
   const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
+  const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
 
   const getRequiredSalsasCount = (productId: string): number => {
     const quantity = orderQuantity[productId] || 1;
@@ -239,6 +247,15 @@ export default function FatPage() {
   };
 
   const handleCompleteOrder = (product: Product) => {
+    // Guardar la orden completada
+    const completedOrder: CompletedOrder = {
+      productId: product.id,
+      quantity: orderQuantity[product.id] || 1,
+      salsas: selectedSalsas[product.id] || [],
+      complementsCount: complementsInCart[product.id]?.length || 0
+    };
+    setCompletedOrders((prev) => [...prev, completedOrder]);
+
     // Limpiar selecciones y cerrar el card
     setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
     setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
@@ -489,31 +506,29 @@ export default function FatPage() {
                       <span className="text-base md:text-lg font-black text-amber-400 gold-glow">
                         S/ {product.price.toFixed(2)}
                       </span>
-                      {!isExpanded && (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDecreaseQuantity(product.id);
-                            }}
-                            className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
-                          >
-                            −
-                          </button>
-                          <span className="text-white font-bold w-8 text-center text-sm">
-                            {orderQuantity[product.id] || 1}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleIncreaseQuantity(product.id);
-                            }}
-                            className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
-                          >
-                            +
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDecreaseQuantity(product.id);
+                          }}
+                          className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                        >
+                          −
+                        </button>
+                        <span className="text-white font-bold w-8 text-center text-sm">
+                          {orderQuantity[product.id] || 1}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleIncreaseQuantity(product.id);
+                          }}
+                          className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
 
                     {/* Botón Elige tu salsa - Visible siempre */}
@@ -796,46 +811,43 @@ export default function FatPage() {
         </div>
 
         {/* Sección de órdenes agregadas */}
-        {Object.keys(mainProductsInCart).length > 0 && (
+        {completedOrders.length > 0 && (
           <div className="container mx-auto px-3 md:px-4 mt-6">
             <h3 className="text-lg md:text-xl font-black text-amber-400 mb-3 gold-glow">
               Tu orden
             </h3>
             <div className="space-y-3">
-              {products.map((product) => {
-                if (!mainProductsInCart[product.id]) return null;
+              {completedOrders.map((order, index) => {
+                const product = products.find((p) => p.id === order.productId);
+                if (!product) return null;
 
                 return (
                   <div
-                    key={product.id}
+                    key={`${order.productId}-${index}`}
                     className="bg-gray-900 rounded-lg border-2 border-red-400/30 p-3"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h4 className="text-sm font-bold text-white mb-1">{product.name}</h4>
+                        <h4 className="text-sm font-bold text-white mb-1">
+                          {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                        </h4>
                         <div className="text-[11px] space-y-1">
                           <div className="text-amber-300">
-                            🌶️ Salsas: {(selectedSalsas[product.id] || [])
+                            🌶️ Salsas: {order.salsas
                               .map((sId) => salsas.find((s) => s.id === sId)?.name)
                               .filter((name) => name)
                               .join(", ")}
                           </div>
-                          {complementsInCart[product.id] && complementsInCart[product.id].length > 0 && (
+                          {order.complementsCount > 0 && (
                             <div className="text-red-300">
-                              🍟 Complementos: {complementsInCart[product.id].length} agregado{complementsInCart[product.id].length > 1 ? 's' : ''}
+                              🍟 Complementos: {order.complementsCount} agregado{order.complementsCount > 1 ? 's' : ''}
                             </div>
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleExpandCard(product.id)}
-                        className="text-[10px] text-red-400 hover:text-red-300 font-bold ml-2 px-2 py-1 border border-red-400/30 rounded"
-                      >
-                        Editar
-                      </button>
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
-                      S/ {product.price.toFixed(2)}
+                      S/ {(product.price * order.quantity).toFixed(2)}
                     </div>
                   </div>
                 );
@@ -845,7 +857,7 @@ export default function FatPage() {
         )}
 
         {/* Texto motivacional */}
-        {Object.keys(mainProductsInCart).length > 0 && (
+        {completedOrders.length > 0 && (
           <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
             <p className="text-center text-xs text-orange-200/70 italic">
               💡 Puedes agregar más órdenes a tu pedido antes de continuar
