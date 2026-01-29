@@ -827,7 +827,7 @@ export default function FatPage() {
                           }
                         `}
                       >
-                        {canAdd ? 'Listo' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {canAdd ? 'Agregar orden' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   )}
