@@ -637,24 +637,25 @@ export default function FatPage() {
                   {/* Card Header */}
                   <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-xl ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-48 md:h-56 overflow-hidden'
+                      ? 'bg-black h-48 md:h-56 overflow-visible'
                       : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-24 md:h-28 overflow-hidden'
-                  }`}
-                  style={product.image.startsWith('/') ? {
-                    clipPath: 'inset(0 -50% 0 -50%)'
-                  } : undefined}>
+                  }`}>
                     {product.image.startsWith('/') ? (
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="absolute w-[150%] h-[160%] object-cover drop-shadow-2xl"
-                        style={{
-                          top: '-30%',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          objectPosition: 'center 55%'
-                        }}
-                      />
+                      <>
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="absolute w-[150%] h-[160%] object-cover drop-shadow-2xl z-0"
+                          style={{
+                            top: '-30%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            objectPosition: 'center 55%'
+                          }}
+                        />
+                        {/* Barra que cubre la parte inferior de la imagen */}
+                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gray-900 z-10"></div>
+                      </>
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
