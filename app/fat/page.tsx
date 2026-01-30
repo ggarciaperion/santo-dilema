@@ -145,13 +145,13 @@ export default function FatPage() {
           // Asegurar que no haya ningún cartel expandido
           setExpandedCard(null);
 
-          // Scroll hacia la sección "Tu orden"
+          // Scroll hacia la sección "Tu orden" después de que se cargue
           setTimeout(() => {
-            const orderSection = document.querySelector('[class*="Tu orden"]');
+            const orderSection = document.getElementById('tu-orden-section');
             if (orderSection) {
-              orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              orderSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-          }, 300);
+          }, 500);
         } catch (error) {
           console.error("Error loading orders:", error);
           localStorage.removeItem("santo-dilema-fat-orders");
@@ -1100,7 +1100,7 @@ export default function FatPage() {
 
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
-          <div className="container mx-auto px-3 md:px-4 mt-6">
+          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 mt-6">
             <h3 className="text-lg md:text-xl font-black text-amber-400 mb-3 gold-glow">
               Tu orden
             </h3>
