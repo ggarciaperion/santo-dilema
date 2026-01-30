@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 
@@ -53,6 +53,7 @@ export default function CheckoutPage() {
   const [showQrPayment, setShowQrPayment] = useState(false);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cargar órdenes completadas desde localStorage
   useEffect(() => {
@@ -665,13 +666,39 @@ export default function CheckoutPage() {
             {/* Upload comprobante */}
             <div className="mb-3">
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 onChange={(e) => setPaymentProof(e.target.files?.[0] || null)}
-                className="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-500 file:cursor-pointer"
+                className="hidden"
               />
-              {paymentProof && (
-                <p className="text-green-400 text-xs mt-1.5">✓ {paymentProof.name}</p>
+              {!paymentProof ? (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all active:scale-95"
+                >
+                  <span className="text-green-400 text-xs">📎</span>
+                  <span className="text-green-400 text-xs font-bold tracking-wide">SUBIR CAPTURA DE PAGO</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-3 py-2 px-3 rounded-lg border border-green-500/30 bg-green-500/10">
+                  <div className="w-7 h-7 rounded-full border-2 border-green-500 bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-green-400 text-xs font-bold truncate">{paymentProof.name}</p>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-gray-500 hover:text-gray-300 text-[10px] transition-colors mt-0.5"
+                    >
+                      Cambiar archivo
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
 
