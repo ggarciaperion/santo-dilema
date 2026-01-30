@@ -369,14 +369,8 @@ export default function FatPage() {
     // Eliminar esta orden de completedOrders
     setCompletedOrders((prev) => prev.filter((_, idx) => idx !== orderIndex));
 
-    // Eliminar el plato principal del carrito
-    const cartItemId = `${order.productId}-main`;
-    removeFromCart(cartItemId);
-
-    // Eliminar los complementos del carrito
-    order.complementIds.forEach((complementId) => {
-      removeFromCart(complementId);
-    });
+    // NO eliminar del carrito - mantener items para que el total no cambie
+    // Los items serán actualizados cuando se confirme la edición
 
     // Restaurar los estados para editar
     setOrderQuantity((prev) => ({ ...prev, [order.productId]: order.quantity }));
@@ -1087,8 +1081,11 @@ export default function FatPage() {
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-red-500/50 shadow-2xl shadow-red-500/30 z-50">
           <div className="container mx-auto px-4 md:px-6 py-4 md:py-5">
             <div className="flex justify-between items-center gap-3 md:gap-4">
-              <div className="text-amber-400 font-black text-xl md:text-3xl gold-glow">
-                S/ {totalPrice.toFixed(2)}
+              <div className="flex items-center gap-2">
+                <span className="text-white font-bold text-sm md:text-lg">Total</span>
+                <span className="text-amber-400 font-black text-xl md:text-3xl gold-glow">
+                  S/ {totalPrice.toFixed(2)}
+                </span>
               </div>
               <Link
                 href="/checkout"
