@@ -603,7 +603,12 @@ export default function CheckoutPage() {
               </button>
 
               <button
-                onClick={() => setShowContraEntregaModal(true)}
+                onClick={() => {
+                  setShowContraEntregaModal(true);
+                  setShowEfectivoOptions(false);
+                  setSelectedEfectivo(null);
+                  setCantoCancelo('');
+                }}
                 className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
               >
                 <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
