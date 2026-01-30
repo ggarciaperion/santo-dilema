@@ -579,8 +579,8 @@ export default function FatPage() {
       </section>
 
       {/* Products Carousel */}
-      <section className={`container mx-auto px-3 md:px-4 py-4 md:py-6 transition-all duration-300 overflow-visible ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-4 md:pb-6'}`}>
-        <h3 className="text-xl md:text-2xl font-black text-white mb-3 md:mb-4 flex items-center gap-2">
+      <section className={`container mx-auto px-3 md:px-4 py-4 md:py-6 transition-all duration-300 overflow-visible bg-transparent ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-4 md:pb-6'}`}>
+        <h3 className="text-xl md:text-2xl font-black text-white mb-3 md:mb-4 flex items-center gap-2 bg-transparent border-none">
           <span className="text-red-400 neon-glow-fat">Nuestras Alitas</span>
           <span className="text-amber-400 gold-glow text-base md:text-lg">★</span>
         </h3>
