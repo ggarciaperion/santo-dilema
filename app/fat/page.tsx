@@ -238,6 +238,17 @@ export default function FatPage() {
     if (!selectedComplements[productId]) {
       setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
     }
+
+    // Scroll hacia la sección de salsas después de expandir
+    setTimeout(() => {
+      const card = cardRefs.current[productId];
+      if (card) {
+        const salsasSection = card.querySelector('[data-salsas-section]');
+        if (salsasSection) {
+          salsasSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }, 300);
   };
 
   const handleCloseCard = () => {
@@ -863,6 +874,7 @@ export default function FatPage() {
                         </button>
 
                         <div
+                          data-salsas-section
                           className={`overflow-hidden transition-all duration-500 ease-in-out ${
                             showSalsas[product.id]
                               ? 'max-h-[600px] opacity-100 mt-2'
