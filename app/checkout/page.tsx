@@ -590,10 +590,10 @@ export default function CheckoutPage() {
                   setPaymentMethod('anticipado');
                   setShowQrPayment(true);
                 }}
-                className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 bg-gray-800/40 active:bg-gray-800/70 transition-all active:scale-95"
               >
-                <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0"></div>
                 </div>
                 <div className="text-left flex-1">
                   <p className="text-white font-semibold text-sm">Paga con Yape o Plin</p>
@@ -609,10 +609,10 @@ export default function CheckoutPage() {
                   setSelectedEfectivo(null);
                   setCantoCancelo('');
                 }}
-                className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 bg-gray-800/40 active:bg-gray-800/70 transition-all active:scale-95"
               >
-                <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0"></div>
                 </div>
                 <div className="text-left flex-1">
                   <p className="text-white font-semibold text-sm">Pago contra entrega</p>
@@ -662,10 +662,10 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <button
                     onClick={() => confirmOrder('contraentrega-yape')}
-                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                    className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 bg-gray-800/40 active:bg-gray-800/70 transition-all active:scale-95"
                   >
-                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0"></div>
                     </div>
                     <div className="text-left flex-1">
                       <p className="text-white font-semibold text-sm">Yape o Plin</p>
@@ -680,10 +680,10 @@ export default function CheckoutPage() {
                       setSelectedEfectivo(null);
                       setCantoCancelo('');
                     }}
-                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                    className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 bg-gray-800/40 active:bg-gray-800/70 transition-all active:scale-95"
                   >
-                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0"></div>
                     </div>
                     <div className="text-left flex-1">
                       <p className="text-white font-semibold text-sm">Efectivo</p>
