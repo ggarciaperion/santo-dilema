@@ -49,8 +49,10 @@ export default function CheckoutPage() {
   const [customerFound, setCustomerFound] = useState(false);
   const [showDniSearch, setShowDniSearch] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'anticipado' | 'contraentrega' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [showQrPayment, setShowQrPayment] = useState(false);
+  const [showContraEntregaModal, setShowContraEntregaModal] = useState(false);
+  const [showEfectivoOptions, setShowEfectivoOptions] = useState(false);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -143,9 +145,11 @@ export default function CheckoutPage() {
     setShowPaymentModal(true);
   };
 
-  const confirmOrder = async () => {
+  const confirmOrder = async (overridePaymentMethod?: string) => {
     setShowPaymentModal(false);
     setShowQrPayment(false);
+    setShowContraEntregaModal(false);
+    setShowEfectivoOptions(false);
     setIsSubmitting(true);
 
     try {
@@ -170,7 +174,7 @@ export default function CheckoutPage() {
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
       formDataToSend.append('totalItems', totalItems.toString());
       formDataToSend.append('totalPrice', totalPrice.toString());
-      formDataToSend.append('paymentMethod', paymentMethod || 'contraentrega');
+      formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
       formDataToSend.append('timestamp', new Date().toISOString());
 
       // Agregar comprobante de pago si existe
@@ -554,7 +558,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Modal de Selección de Método de Pago */}
-      {showPaymentModal && !showQrPayment && (
+      {showPaymentModal && !showQrPayment && !showContraEntregaModal && (
         <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
           onClick={(e) => {
@@ -592,10 +596,7 @@ export default function CheckoutPage() {
               </button>
 
               <button
-                onClick={() => {
-                  setPaymentMethod('contraentrega');
-                  confirmOrder();
-                }}
+                onClick={() => setShowContraEntregaModal(true)}
                 className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
               >
                 <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
@@ -618,6 +619,126 @@ export default function CheckoutPage() {
             >
               Cancelar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Contra Entrega */}
+      {showContraEntregaModal && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowContraEntregaModal(false);
+              setShowEfectivoOptions(false);
+            }
+          }}
+        >
+          <div
+            className="bg-gray-900 rounded-2xl border border-fuchsia-500/30 max-w-xs w-full p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {!showEfectivoOptions ? (
+              <>
+                <h3 className="text-base font-bold text-white text-center mb-0.5">Contra entrega</h3>
+                <p className="text-gray-500 text-xs text-center mb-5">
+                  Total: <span className="text-amber-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                </p>
+
+                <div className="space-y-2">
+                  <button
+                    onClick={() => confirmOrder('contraentrega-yape')}
+                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                  >
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="text-white font-semibold text-sm">Yape o Plin</p>
+                      <p className="text-gray-500 text-[11px] mt-0.5">Al momento de la entrega</p>
+                    </div>
+                    <span className="text-gray-600 text-sm">📱</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowEfectivoOptions(true)}
+                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                  >
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="text-white font-semibold text-sm">Efectivo</p>
+                      <p className="text-gray-500 text-[11px] mt-0.5">En billetes o monedas</p>
+                    </div>
+                    <span className="text-gray-600 text-sm">💵</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setShowContraEntregaModal(false);
+                  }}
+                  className="w-full mt-4 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setShowEfectivoOptions(false)}
+                  className="text-gray-500 hover:text-gray-300 text-[11px] transition-colors mb-3"
+                >
+                  ← Atrás
+                </button>
+
+                <h3 className="text-base font-bold text-white text-center mb-0.5">Efectivo</h3>
+                <p className="text-gray-500 text-xs text-center mb-5">
+                  Total: <span className="text-amber-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                </p>
+
+                <div className="space-y-2">
+                  <button
+                    onClick={() => confirmOrder('contraentrega-efectivo-exacto')}
+                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                  >
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="text-white font-semibold text-sm">Monto exacto</p>
+                      <p className="text-gray-500 text-[11px] mt-0.5">Tengo S/ {totalPrice.toFixed(2)} exacto</p>
+                    </div>
+                    <span className="text-gray-600 text-sm">✓</span>
+                  </button>
+
+                  <button
+                    onClick={() => confirmOrder('contraentrega-efectivo-cambio')}
+                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                  >
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="text-white font-semibold text-sm">Necesito cambio</p>
+                      <p className="text-gray-500 text-[11px] mt-0.5">Pagaré con billetes</p>
+                    </div>
+                    <span className="text-gray-600 text-sm">💵</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setShowContraEntregaModal(false);
+                    setShowEfectivoOptions(false);
+                  }}
+                  className="w-full mt-4 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
+                >
+                  Cancelar
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
