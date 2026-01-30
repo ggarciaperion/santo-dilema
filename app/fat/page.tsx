@@ -29,7 +29,7 @@ const products: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "12 alitas con tu salsa favorita",
+    description: "6 alitas acompañadas de papas y 01 salsa favorita.",
     price: 28.90,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -37,15 +37,15 @@ const products: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "18 alitas con dos salsas a elección",
+    description: "12 alitas acompañadas de papas francesas y 02 de tus salsas favoritas.",
     price: 39.90,
     image: "/duo-dilema.png?v=3",
     category: "fat",
   },
   {
-    id: "todos-pecan",
-    name: "Todos Pecan",
-    description: "24 alitas + papas fritas + bebida grande",
+    id: "santo-pecado",
+    name: "Santo Pecado",
+    description: "18 alitas acompañadas de papas francesas y 03 de tus salsas favoritas.",
     price: 49.90,
     image: "/todos-pecan.png?v=3",
     category: "fat",
@@ -120,7 +120,7 @@ export default function FatPage() {
     let baseSalsas = 1;
     if (productId === "pequeno-dilema") baseSalsas = 1;
     if (productId === "duo-dilema") baseSalsas = 2;
-    if (productId === "todos-pecan") baseSalsas = 3;
+    if (productId === "santo-pecado") baseSalsas = 3;
     return baseSalsas * quantity;
   };
 
