@@ -419,6 +419,13 @@ export default function CheckoutPage() {
               const product = cart.find((item) => item.product.id.includes(order.productId))?.product;
               if (!product) return null;
 
+              // Calcular el total de esta orden
+              const productTotal = product.price * order.quantity;
+              const complementsTotal = order.complementIds.reduce((sum, compId) => {
+                return sum + (availableComplements[compId]?.price || 0);
+              }, 0);
+              const orderTotal = productTotal + complementsTotal;
+
               return (
                 <div
                   key={`${order.productId}-${index}`}
@@ -456,6 +463,9 @@ export default function CheckoutPage() {
                           </div>
                         )}
                       </div>
+                    </div>
+                    <div className="text-amber-400 font-bold text-xs md:text-sm gold-glow flex-shrink-0">
+                      S/ {orderTotal.toFixed(2)}
                     </div>
                   </div>
                 </div>
