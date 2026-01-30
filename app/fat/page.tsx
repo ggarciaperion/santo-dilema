@@ -1236,32 +1236,20 @@ export default function FatPage() {
 
       {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
       {expandedCard === null && completedOrders.length === 0 && (
-        <footer className="fixed bottom-8 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
-          <div className="relative">
-            {/* Resplandor de fondo */}
-            <div className="absolute inset-0 blur-3xl opacity-30 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 animate-pulse"></div>
-
-            {/* Texto principal */}
-            <h2
-              className="relative text-3xl md:text-5xl lg:text-6xl font-black tracking-widest animated-text-reveal uppercase italic"
-              style={{
-                fontFamily: "'Bebas Neue', 'Impact', 'Arial Black', sans-serif",
-                background: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 30%, #ef4444 60%, #dc2626 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                textShadow: '0 0 30px rgba(239, 68, 68, 0.9), 0 0 60px rgba(251, 146, 60, 0.6), 0 0 90px rgba(220, 38, 38, 0.4)',
-                filter: 'drop-shadow(0 0 15px rgba(239, 68, 68, 1)) drop-shadow(0 0 25px rgba(245, 158, 11, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8))',
-                letterSpacing: '0.15em'
-              }}
-            >
-              ¡El camino a la indulgencia!
-            </h2>
-
-            {/* Líneas decorativas */}
-            <div className="absolute -left-8 top-1/2 w-6 h-0.5 bg-gradient-to-r from-transparent to-red-500 transform -translate-y-1/2 opacity-60"></div>
-            <div className="absolute -right-8 top-1/2 w-6 h-0.5 bg-gradient-to-l from-transparent to-red-500 transform -translate-y-1/2 opacity-60"></div>
-          </div>
+        <footer className="fixed bottom-12 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
+          <h2
+            className="text-2xl md:text-4xl lg:text-5xl font-light tracking-wide animated-text-reveal"
+            style={{
+              fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
+              fontWeight: 300,
+              fontStyle: 'italic',
+              color: '#ef4444',
+              textShadow: '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.4)',
+              letterSpacing: '0.05em'
+            }}
+          >
+            ¡El camino a la indulgencia!
+          </h2>
         </footer>
       )}
 
