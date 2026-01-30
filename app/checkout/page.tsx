@@ -768,16 +768,19 @@ export default function CheckoutPage() {
 
                   {selectedEfectivo === 'cambio' && (
                     <div className="mt-1">
-                      <label className="block text-[11px] text-gray-400 mb-1">¿Cuánto cancelas?</label>
+                      <label className="block text-[11px] text-gray-400 mb-1">¿Con cuánto cancelas?</label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">S/</span>
                         <input
-                          type="number"
-                          min={totalPrice}
-                          step="0.01"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={cantoCancelo}
-                          onChange={(e) => setCantoCancelo(e.target.value)}
-                          placeholder={totalPrice.toFixed(2)}
+                          onChange={(e) => {
+                            const solo = e.target.value.replace(/\D/g, '');
+                            setCantoCancelo(solo);
+                          }}
+                          placeholder={Math.ceil(totalPrice).toString()}
                           className="w-full pl-8 pr-3 py-2 rounded-lg bg-gray-800 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-500 focus:outline-none transition-colors"
                           style={{ fontSize: '16px' }}
                         />
