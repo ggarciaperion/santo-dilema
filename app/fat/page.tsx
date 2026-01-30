@@ -380,6 +380,20 @@ export default function FatPage() {
     // Abrir el card expandido
     setExpandedCard(order.productId);
     setShowSalsas((prev) => ({ ...prev, [order.productId]: true }));
+
+    // Desplazar y centrar el cartel correspondiente
+    setTimeout(() => {
+      const card = cardRefs.current[order.productId];
+      if (card && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const cardLeft = card.offsetLeft;
+        const cardWidth = card.offsetWidth;
+        const containerWidth = container.offsetWidth;
+        const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+
+        container.scrollTo({ left: scrollPosition, behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   const handleDeleteOrder = (orderIndex: number) => {
