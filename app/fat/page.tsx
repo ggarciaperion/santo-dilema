@@ -108,6 +108,15 @@ export default function FatPage() {
     clearCart();
   }, []);
 
+  // Guardar órdenes completadas en localStorage cuando cambien
+  useEffect(() => {
+    if (completedOrders.length > 0) {
+      localStorage.setItem("santo-dilema-fat-orders", JSON.stringify(completedOrders));
+    } else {
+      localStorage.removeItem("santo-dilema-fat-orders");
+    }
+  }, [completedOrders]);
+
   // Centrar el carrusel en el cartel del medio al cargar la página
   useEffect(() => {
     const centerCarousel = () => {
