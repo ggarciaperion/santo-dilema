@@ -1100,7 +1100,7 @@ export default function FatPage() {
 
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
-          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 mt-2">
+          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0">
             <h3 className="text-lg md:text-xl font-black text-amber-400 mb-3 gold-glow">
               Tu orden
             </h3>
