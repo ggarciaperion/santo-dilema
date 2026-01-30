@@ -1238,7 +1238,7 @@ export default function FatPage() {
       {expandedCard === null && completedOrders.length === 0 && (
         <footer className="fixed bottom-12 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
           <h2
-            className="text-xl md:text-3xl lg:text-4xl font-light tracking-wide animated-text-reveal"
+            className="text-base md:text-2xl lg:text-3xl font-light tracking-wide animated-text-reveal text-center whitespace-nowrap"
             style={{
               fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
               fontWeight: 300,
