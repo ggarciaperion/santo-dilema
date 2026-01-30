@@ -1238,18 +1238,18 @@ export default function FatPage() {
       {expandedCard === null && completedOrders.length === 0 && (
         <footer className="fixed bottom-12 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
           <h2
-            className="text-2xl md:text-4xl lg:text-5xl font-light tracking-wide animated-text-reveal"
+            className="text-xl md:text-3xl lg:text-4xl font-light tracking-wide animated-text-reveal"
             style={{
               fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
               fontWeight: 300,
               fontStyle: 'italic',
               color: 'transparent',
-              WebkitTextStroke: '1.5px #ef4444',
+              WebkitTextStroke: '0.8px #ef4444',
               letterSpacing: '0.05em',
-              filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 1)) drop-shadow(0 0 15px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 25px rgba(239, 68, 68, 0.6)) drop-shadow(0 0 35px rgba(239, 68, 68, 0.4))'
+              filter: 'drop-shadow(0 0 4px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 8px rgba(239, 68, 68, 0.3)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.2))'
             }}
           >
-            ¡El camino a la indulgencia!
+            ¡Promo del día 30% dscto órdenes HONEY MUSTANG!
           </h2>
         </footer>
       )}
