@@ -1243,10 +1243,12 @@ export default function FatPage() {
               fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
               fontWeight: 300,
               fontStyle: 'italic',
-              color: '#ff6b6b',
-              textShadow: '0 0 10px rgba(239, 68, 68, 1), 0 0 20px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.4), 0 0 70px rgba(239, 68, 68, 0.3), 0 0 80px rgba(239, 68, 68, 0.2)',
+              color: 'transparent',
+              WebkitTextStroke: '1px #ef4444',
+              textStroke: '1px #ef4444',
+              textShadow: '0 0 10px rgba(239, 68, 68, 1), 0 0 20px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.4)',
               letterSpacing: '0.05em',
-              filter: 'drop-shadow(0 0 15px rgba(239, 68, 68, 0.8))'
+              filter: 'drop-shadow(0 0 15px rgba(239, 68, 68, 0.9)) drop-shadow(0 0 25px rgba(239, 68, 68, 0.6))'
             }}
           >
             ¡El camino a la indulgencia!
