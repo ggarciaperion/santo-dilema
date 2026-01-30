@@ -594,7 +594,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex items-start gap-2 md:gap-4 overflow-x-auto overflow-y-visible scrollbar-hide px-1 md:px-4 py-3 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
+            className={`flex items-center gap-2 md:gap-4 overflow-x-auto overflow-y-visible scrollbar-hide px-1 md:px-4 py-24 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
             {products.map((product) => {
@@ -626,21 +626,21 @@ export default function FatPage() {
                   }}
                 >
                   {/* Card Header */}
-                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-lg md:rounded-t-xl overflow-hidden md:overflow-visible ${
+                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-lg md:rounded-t-xl ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-56'
-                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28'
+                      ? 'bg-black h-40 md:h-56 overflow-visible'
+                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute object-cover drop-shadow-2xl z-50 w-[100%] h-[100%] md:w-[130%] md:h-[140%]"
+                        className="absolute object-cover drop-shadow-2xl z-50 w-[120%] h-[125%] md:w-[130%] md:h-[140%]"
                         style={{
-                          top: '50%',
+                          top: '-15%',
                           left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          objectPosition: 'center center'
+                          transform: 'translateX(-50%)',
+                          objectPosition: 'center 55%'
                         }}
                       />
                     ) : (
