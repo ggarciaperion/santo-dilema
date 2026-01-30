@@ -605,7 +605,7 @@ export default function CheckoutPage() {
                   <p className="text-white font-semibold text-sm">Pago contra entrega</p>
                   <p className="text-gray-500 text-[11px] mt-0.5">Efectivo o Yape al recibir</p>
                 </div>
-                <span className="text-gray-600 text-sm">🚚</span>
+                <span className="text-gray-600 text-sm">🏍️</span>
               </button>
             </div>
 
