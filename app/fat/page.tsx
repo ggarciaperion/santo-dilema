@@ -39,7 +39,7 @@ const products: Product[] = [
     name: "Dúo Dilema",
     description: "18 alitas con dos salsas a elección",
     price: 39.90,
-    image: "/duo-dilema.png",
+    image: "/duo-dilema.png?v=2",
     category: "fat",
   },
   {
