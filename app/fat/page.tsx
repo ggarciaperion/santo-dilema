@@ -303,6 +303,17 @@ export default function FatPage() {
       if (!selectedComplements[productId]) {
         setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
       }
+
+      // Scroll hacia la sección de salsas después de que se expanda el cartel
+      setTimeout(() => {
+        const card = cardRefs.current[productId];
+        if (card) {
+          const salsasButton = card.querySelector('[data-salsas-button]');
+          if (salsasButton) {
+            salsasButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 600);
     } else {
       // Limpiar salsas cuando cambia la cantidad
       setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
