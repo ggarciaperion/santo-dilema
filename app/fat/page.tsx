@@ -243,12 +243,23 @@ export default function FatPage() {
     setTimeout(() => {
       const card = cardRefs.current[productId];
       if (card) {
-        const salsasSection = card.querySelector('[data-salsas-section]');
-        if (salsasSection) {
-          salsasSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const salsasButton = card.querySelector('[data-salsas-button]');
+        if (salsasButton) {
+          // Obtener posición del botón
+          const rect = salsasButton.getBoundingClientRect();
+          const absoluteTop = window.pageYOffset + rect.top;
+
+          // Calcular posición para centrar, restando la mitad de la altura de la ventana
+          const scrollPosition = absoluteTop - (window.innerHeight / 2) + (rect.height / 2);
+
+          // Hacer scroll suave
+          window.scrollTo({
+            top: scrollPosition,
+            behavior: 'smooth'
+          });
         }
       }
-    }, 300);
+    }, 400);
   };
 
   const handleCloseCard = () => {
@@ -839,6 +850,7 @@ export default function FatPage() {
                       {/* Selector de Salsas - Acordeón */}
                       <div className="mb-2 md:mb-3">
                         <button
+                          data-salsas-button
                           onClick={() => setShowSalsas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
                           className={`w-full flex items-center justify-between rounded-md md:rounded-lg p-1.5 md:p-2 transition-all shadow-sm border
                             ${canAdd
