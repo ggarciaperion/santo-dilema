@@ -98,47 +98,61 @@ export default function FatPage() {
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
 
-  // Cargar órdenes existentes al cargar la página (si vienen del checkout)
+  // Cargar órdenes existentes si vienen del checkout, limpiar si es recarga normal
   useEffect(() => {
-    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
-    if (savedOrders) {
-      try {
-        const orders = JSON.parse(savedOrders);
+    // Verificar si vienen del checkout
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromCheckout = urlParams.get('from') === 'checkout';
 
-        // Primero limpiar el carrito para evitar duplicados
-        clearCart();
+    if (fromCheckout) {
+      // Vienen del checkout - cargar órdenes guardadas
+      const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
+      if (savedOrders) {
+        try {
+          const orders = JSON.parse(savedOrders);
 
-        setCompletedOrders(orders);
+          // Primero limpiar el carrito para evitar duplicados
+          clearCart();
 
-        // Reconstruir el carrito con las órdenes guardadas
-        orders.forEach((order: CompletedOrder) => {
-          const product = products.find(p => p.id === order.productId);
-          if (product) {
-            addToCart(product, order.quantity);
+          setCompletedOrders(orders);
 
-            // Agregar complementos al carrito
-            order.complementIds.forEach((complementId) => {
-              const complement = availableComplements[complementId];
-              if (complement) {
-                addToCart({
-                  id: complementId,
-                  name: complement.name,
-                  description: "",
-                  price: complement.price,
-                  image: "🥤",
-                  category: "bebida"
-                }, 1);
-              }
-            });
-          }
-        });
-      } catch (error) {
-        console.error("Error loading orders:", error);
-        // Si hay error, limpiar todo
-        localStorage.removeItem("santo-dilema-fat-orders");
-        localStorage.removeItem("santo-dilema-cart");
-        clearCart();
+          // Reconstruir el carrito con las órdenes guardadas
+          orders.forEach((order: CompletedOrder) => {
+            const product = products.find(p => p.id === order.productId);
+            if (product) {
+              addToCart(product, order.quantity);
+
+              // Agregar complementos al carrito
+              order.complementIds.forEach((complementId) => {
+                const complement = availableComplements[complementId];
+                if (complement) {
+                  addToCart({
+                    id: complementId,
+                    name: complement.name,
+                    description: "",
+                    price: complement.price,
+                    image: "🥤",
+                    category: "bebida"
+                  }, 1);
+                }
+              });
+            }
+          });
+
+          // Limpiar el parámetro de la URL
+          window.history.replaceState({}, '', '/fat');
+        } catch (error) {
+          console.error("Error loading orders:", error);
+          localStorage.removeItem("santo-dilema-fat-orders");
+          localStorage.removeItem("santo-dilema-cart");
+          clearCart();
+        }
       }
+    } else {
+      // Recarga normal - limpiar todo
+      localStorage.removeItem("santo-dilema-fat-orders");
+      localStorage.removeItem("santo-dilema-cart");
+      clearCart();
     }
   }, []);
 

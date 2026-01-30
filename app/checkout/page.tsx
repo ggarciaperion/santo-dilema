@@ -484,7 +484,7 @@ export default function CheckoutPage() {
             {/* Botones */}
             <div className="flex gap-2 mb-2">
               <Link
-                href="/fat"
+                href="/fat?from=checkout"
                 className="flex-1 bg-gray-700 hover:bg-gray-600 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all flex items-center justify-center gap-1 border-2 border-gray-600"
               >
                 <span>←</span>
