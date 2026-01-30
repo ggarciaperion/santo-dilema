@@ -514,9 +514,9 @@ export default function FatPage() {
     <div className="min-h-screen bg-black">
       {/* Header */}
       <header className="bg-gray-900 border-b-2 border-red-500 neon-border-fat sticky top-0 z-30">
-        <div className="container mx-auto px-3 md:px-4 py-4 md:py-4 flex justify-between items-center">
+        <div className="container mx-auto px-2 md:px-4 py-3 md:py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
-            <h1 className="flex items-center gap-2 md:gap-3 text-lg md:text-2xl font-black tracking-tight">
+            <h1 className="flex items-center gap-1.5 md:gap-3 text-base md:text-2xl font-black tracking-tight">
               <span className="text-amber-400 gold-glow inline-flex items-center">
                 S
                 <span className="relative inline-block">
@@ -566,23 +566,23 @@ export default function FatPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-5 md:py-8">
-        <div className="container mx-auto px-3 md:px-4 text-center">
-          <div className="text-4xl md:text-6xl mb-1.5 md:mb-3 filter drop-shadow-lg">🍗</div>
-          <h2 className="text-3xl md:text-5xl font-black mb-2.5 md:mb-3 text-red-400 neon-glow-fat">
+      <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-4 md:py-8">
+        <div className="container mx-auto px-2 md:px-4 text-center">
+          <div className="text-3xl md:text-6xl mb-1 md:mb-3 filter drop-shadow-lg">🍗</div>
+          <h2 className="text-2xl md:text-5xl font-black mb-2 md:mb-3 text-red-400 neon-glow-fat">
             Alitas Irresistibles
           </h2>
-          <p className="text-sm md:text-xl font-light text-orange-200">
+          <p className="text-xs md:text-xl font-light text-orange-200">
             Rendirte al placer nunca fue tan bueno
           </p>
         </div>
       </section>
 
       {/* Products Carousel */}
-      <section className={`container mx-auto px-3 md:px-4 py-4 md:py-6 transition-all duration-300 ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-4 md:pb-6'}`}>
-        <h3 className="text-xl md:text-2xl font-black text-white mb-3 md:mb-4 flex items-center gap-2">
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-6 transition-all duration-300 ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
+        <h3 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-4 flex items-center gap-2">
           <span className="text-red-400 neon-glow-fat">Nuestras Alitas</span>
-          <span className="text-amber-400 gold-glow text-base md:text-lg">★</span>
+          <span className="text-amber-400 gold-glow text-sm md:text-lg">★</span>
         </h3>
 
         {/* Carousel Container */}
@@ -594,7 +594,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex items-start gap-3 md:gap-4 overflow-x-auto overflow-y-visible scrollbar-hide px-2 md:px-4 py-4 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
+            className={`flex items-start gap-2 md:gap-4 overflow-x-auto overflow-y-visible scrollbar-hide px-1 md:px-4 py-3 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
             {products.map((product) => {
@@ -609,11 +609,11 @@ export default function FatPage() {
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onMouseEnter={() => handleCardHover(product.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 rounded-xl border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center
+                  className={`bg-gray-900 rounded-lg md:rounded-xl border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center
                     ${product.image.startsWith('/') ? 'overflow-visible' : 'overflow-hidden'}
                     ${isExpanded
-                      ? 'w-[320px] md:w-[380px] z-20'
-                      : 'w-[280px] md:w-[260px]'
+                      ? 'w-[260px] md:w-[380px] z-20'
+                      : 'w-[240px] md:w-[260px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
@@ -626,10 +626,10 @@ export default function FatPage() {
                   }}
                 >
                   {/* Card Header */}
-                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-xl ${
+                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-lg md:rounded-t-xl ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-48 md:h-56 overflow-visible'
-                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-24 md:h-28 overflow-hidden'
+                      ? 'bg-black h-40 md:h-56 overflow-visible'
+                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
@@ -647,28 +647,28 @@ export default function FatPage() {
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
                   </div>
-                  <div className="p-3 md:p-4">
-                    <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
+                  <div className="p-2.5 md:p-4">
+                    <h4 className="text-xs md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-orange-200/70 text-[11px] md:text-xs mb-2 md:mb-3 line-clamp-2 h-7 md:h-8">
+                    <p className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-3 line-clamp-2 h-6 md:h-8">
                       {product.description}
                     </p>
-                    <div className="flex items-center justify-between mb-2 md:mb-3">
-                      <span className="text-base md:text-lg font-black text-amber-400 gold-glow">
+                    <div className="flex items-center justify-between mb-1.5 md:mb-3">
+                      <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
                         S/ {product.price.toFixed(2)}
                       </span>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5 md:gap-1">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDecreaseQuantity(product.id);
                           }}
-                          className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          className="w-5 h-5 md:w-6 md:h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
                         >
                           −
                         </button>
-                        <span className="text-white font-bold w-8 text-center text-sm">
+                        <span className="text-white font-bold w-6 md:w-8 text-center text-xs md:text-sm">
                           {orderQuantity[product.id] || 0}
                         </span>
                         <button
@@ -676,7 +676,7 @@ export default function FatPage() {
                             e.stopPropagation();
                             handleIncreaseQuantity(product.id);
                           }}
-                          className="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          className="w-5 h-5 md:w-6 md:h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
                         >
                           +
                         </button>
@@ -697,23 +697,23 @@ export default function FatPage() {
                         : 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, transform 0.4s ease-in-out'
                     }}
                   >
-                    <div className="px-3 md:px-4 pb-3 md:pb-4 border-t-2 border-red-500/30 pt-3">
+                    <div className="px-2.5 md:px-4 pb-2.5 md:pb-4 border-t-2 border-red-500/30 pt-2.5 md:pt-3">
                       {/* Botón de Cerrar */}
-                      <div className="flex justify-end mb-2">
+                      <div className="flex justify-end mb-1.5 md:mb-2">
                         <button
                           onClick={handleCloseCard}
-                          className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
+                          className="text-red-400 hover:text-red-300 text-[10px] md:text-xs font-bold flex items-center gap-0.5 md:gap-1 transition-colors"
                         >
                           <span>Mostrar menos</span>
-                          <span className="text-lg">×</span>
+                          <span className="text-sm md:text-lg">×</span>
                         </button>
                       </div>
 
                       {/* Selector de Salsas - Acordeón */}
-                      <div className="mb-3">
+                      <div className="mb-2 md:mb-3">
                         <button
                           onClick={() => setShowSalsas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                          className={`w-full flex items-center justify-between rounded-lg p-2 transition-all shadow-sm border
+                          className={`w-full flex items-center justify-between rounded-md md:rounded-lg p-1.5 md:p-2 transition-all shadow-sm border
                             ${canAdd
                               ? 'bg-green-600/20 hover:bg-green-600/30 border-green-500/40 shadow-green-500/20'
                               : 'bg-amber-600/20 hover:bg-amber-600/30 border-amber-500/40 shadow-amber-500/20'
@@ -727,9 +727,9 @@ export default function FatPage() {
                               : undefined
                           }}
                         >
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">{canAdd ? '✓' : '🌶️'}</span>
-                            <span className={`text-xs font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
+                          <div className="flex items-center gap-1.5 md:gap-2">
+                            <span className="text-xs md:text-sm">{canAdd ? '✓' : '🌶️'}</span>
+                            <span className={`text-[10px] md:text-xs font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
                               {canAdd
                                 ? `Salsas seleccionadas (${requiredSalsas})`
                                 : `Elige tu${requiredSalsas > 1 ? 's' : ''} salsa${requiredSalsas > 1 ? 's' : ''}`
