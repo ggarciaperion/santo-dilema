@@ -53,6 +53,8 @@ export default function CheckoutPage() {
   const [showQrPayment, setShowQrPayment] = useState(false);
   const [showContraEntregaModal, setShowContraEntregaModal] = useState(false);
   const [showEfectivoOptions, setShowEfectivoOptions] = useState(false);
+  const [selectedEfectivo, setSelectedEfectivo] = useState<'exacto' | 'cambio' | null>(null);
+  const [cantoCancelo, setCantoCancelo] = useState('');
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +152,8 @@ export default function CheckoutPage() {
     setShowQrPayment(false);
     setShowContraEntregaModal(false);
     setShowEfectivoOptions(false);
+    setSelectedEfectivo(null);
+    setCantoCancelo('');
     setIsSubmitting(true);
 
     try {
@@ -175,6 +179,9 @@ export default function CheckoutPage() {
       formDataToSend.append('totalItems', totalItems.toString());
       formDataToSend.append('totalPrice', totalPrice.toString());
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
+      if (cantoCancelo) {
+        formDataToSend.append('cantoCancelo', cantoCancelo);
+      }
       formDataToSend.append('timestamp', new Date().toISOString());
 
       // Agregar comprobante de pago si existe
@@ -631,6 +638,8 @@ export default function CheckoutPage() {
             if (e.target === e.currentTarget) {
               setShowContraEntregaModal(false);
               setShowEfectivoOptions(false);
+              setSelectedEfectivo(null);
+              setCantoCancelo('');
             }
           }}
         >
@@ -661,7 +670,11 @@ export default function CheckoutPage() {
                   </button>
 
                   <button
-                    onClick={() => setShowEfectivoOptions(true)}
+                    onClick={() => {
+                      setShowEfectivoOptions(true);
+                      setSelectedEfectivo(null);
+                      setCantoCancelo('');
+                    }}
                     className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
                   >
                     <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
@@ -676,18 +689,20 @@ export default function CheckoutPage() {
                 </div>
 
                 <button
-                  onClick={() => {
-                    setShowContraEntregaModal(false);
-                  }}
+                  onClick={() => setShowContraEntregaModal(false)}
                   className="w-full mt-4 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
                 >
-                  Cancelar
+                  ← Volver
                 </button>
               </>
             ) : (
               <>
                 <button
-                  onClick={() => setShowEfectivoOptions(false)}
+                  onClick={() => {
+                    setShowEfectivoOptions(false);
+                    setSelectedEfectivo(null);
+                    setCantoCancelo('');
+                  }}
                   className="text-gray-500 hover:text-gray-300 text-[11px] transition-colors mb-3"
                 >
                   ← Atrás
@@ -698,13 +713,24 @@ export default function CheckoutPage() {
                   Total: <span className="text-amber-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
                 </p>
 
-                <div className="space-y-2">
+                <div className="space-y-2 mb-4">
                   <button
-                    onClick={() => confirmOrder('contraentrega-efectivo-exacto')}
-                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                    onClick={() => {
+                      setSelectedEfectivo('exacto');
+                      setCantoCancelo('');
+                    }}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all active:scale-95 ${
+                      selectedEfectivo === 'exacto'
+                        ? 'border-fuchsia-500/50 bg-gray-800/70'
+                        : 'border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                    }`}
                   >
-                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      selectedEfectivo === 'exacto' ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-600'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full bg-fuchsia-500 transition-opacity ${
+                        selectedEfectivo === 'exacto' ? 'opacity-100' : 'opacity-0'
+                      }`}></div>
                     </div>
                     <div className="text-left flex-1">
                       <p className="text-white font-semibold text-sm">Monto exacto</p>
@@ -714,11 +740,19 @@ export default function CheckoutPage() {
                   </button>
 
                   <button
-                    onClick={() => confirmOrder('contraentrega-efectivo-cambio')}
-                    className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
+                    onClick={() => setSelectedEfectivo('cambio')}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all active:scale-95 ${
+                      selectedEfectivo === 'cambio'
+                        ? 'border-fuchsia-500/50 bg-gray-800/70'
+                        : 'border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                    }`}
                   >
-                    <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      selectedEfectivo === 'cambio' ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-600'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full bg-fuchsia-500 transition-opacity ${
+                        selectedEfectivo === 'cambio' ? 'opacity-100' : 'opacity-0'
+                      }`}></div>
                     </div>
                     <div className="text-left flex-1">
                       <p className="text-white font-semibold text-sm">Necesito cambio</p>
@@ -726,14 +760,55 @@ export default function CheckoutPage() {
                     </div>
                     <span className="text-gray-600 text-sm">💵</span>
                   </button>
+
+                  {selectedEfectivo === 'cambio' && (
+                    <div className="mt-1">
+                      <label className="block text-[11px] text-gray-400 mb-1">¿Cuánto cancelas?</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">S/</span>
+                        <input
+                          type="number"
+                          min={totalPrice}
+                          step="0.01"
+                          value={cantoCancelo}
+                          onChange={(e) => setCantoCancelo(e.target.value)}
+                          placeholder={totalPrice.toFixed(2)}
+                          className="w-full pl-8 pr-3 py-2 rounded-lg bg-gray-800 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-500 focus:outline-none transition-colors"
+                          style={{ fontSize: '16px' }}
+                        />
+                      </div>
+                      {cantoCancelo && parseFloat(cantoCancelo) < totalPrice && (
+                        <p className="text-red-400 text-[10px] mt-1">El monto debe ser mayor o igual a S/ {totalPrice.toFixed(2)}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
+
+                <button
+                  onClick={() => {
+                    if (selectedEfectivo === 'exacto') {
+                      confirmOrder('contraentrega-efectivo-exacto');
+                    } else if (selectedEfectivo === 'cambio' && cantoCancelo && parseFloat(cantoCancelo) >= totalPrice) {
+                      confirmOrder('contraentrega-efectivo-cambio');
+                    }
+                  }}
+                  disabled={
+                    !selectedEfectivo ||
+                    (selectedEfectivo === 'cambio' && (!cantoCancelo || parseFloat(cantoCancelo) < totalPrice))
+                  }
+                  className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-bold py-2.5 rounded-lg text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Confirmar
+                </button>
 
                 <button
                   onClick={() => {
                     setShowContraEntregaModal(false);
                     setShowEfectivoOptions(false);
+                    setSelectedEfectivo(null);
+                    setCantoCancelo('');
                   }}
-                  className="w-full mt-4 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
+                  className="w-full mt-2 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
                 >
                   Cancelar
                 </button>
