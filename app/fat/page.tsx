@@ -97,22 +97,19 @@ export default function FatPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
 
-  // Cargar órdenes completadas desde localStorage al iniciar
+  // Limpiar todo al cargar la página
   useEffect(() => {
-    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
-    if (savedOrders) {
-      try {
-        setCompletedOrders(JSON.parse(savedOrders));
-      } catch (error) {
-        console.error("Error loading orders:", error);
-      }
-    }
-  }, []);
+    // Limpiar localStorage
+    localStorage.removeItem("santo-dilema-fat-orders");
+    localStorage.removeItem("santo-dilema-cart");
 
-  // Guardar órdenes completadas en localStorage cuando cambien
-  useEffect(() => {
-    localStorage.setItem("santo-dilema-fat-orders", JSON.stringify(completedOrders));
-  }, [completedOrders]);
+    // Limpiar estados
+    setCompletedOrders([]);
+    setOrderQuantity({});
+    setSelectedSalsas({});
+    setSelectedComplements({});
+    setComplementsInCart({});
+  }, []);
 
   // Centrar el carrusel en el cartel del medio al cargar la página
   useEffect(() => {
