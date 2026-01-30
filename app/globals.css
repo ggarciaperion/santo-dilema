@@ -219,3 +219,55 @@ body {
 .animated-text-reveal {
   animation: slideInOut 6s ease-in-out infinite, textReveal 6s ease-in-out infinite;
 }
+
+/* Animaciones de pantalla de éxito de pedido */
+@keyframes successCircleFill {
+  0% { stroke-dashoffset: 351.86; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes successCheckDraw {
+  0% { stroke-dashoffset: 60; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes successTextReveal {
+  0% { clip-path: inset(0 0 0 100%); opacity: 0; }
+  30% { clip-path: inset(0 0 0 0); opacity: 1; }
+  48% { opacity: 1; }
+  52% { opacity: 0; }
+  56% { opacity: 1; }
+  72% { opacity: 1; }
+  76% { opacity: 0; }
+  80% { opacity: 1; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes successFadeInUp {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.success-circle-fill {
+  animation: successCircleFill 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.success-check-path {
+  animation: successCheckDraw 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.6s forwards;
+}
+
+.success-main-text {
+  clip-path: inset(0 0 0 100%);
+  opacity: 0;
+  animation: successTextReveal 2.5s ease-out 2.3s forwards;
+}
+
+.success-sub-text {
+  opacity: 0;
+  animation: successFadeInUp 0.8s ease-out 3.8s forwards;
+}
+
+.success-logo {
+  opacity: 0;
+  animation: successFadeInUp 0.8s ease-out 4.3s forwards;
+}

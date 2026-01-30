@@ -207,7 +207,7 @@ export default function CheckoutPage() {
 
         setTimeout(() => {
           router.push("/");
-        }, 4000);
+        }, 6000);
       } else {
         const errorData = await response.json();
         console.error("Error del servidor:", response.status, errorData);
@@ -221,20 +221,98 @@ export default function CheckoutPage() {
     }
   };
 
+  if (isSubmitting && !orderPlaced) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-fuchsia-500 border-t-transparent rounded-full animate-spin opacity-60"></div>
+      </div>
+    );
+  }
+
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="bg-gray-900 rounded-2xl border-2 border-fuchsia-500 neon-border-purple p-8 md:p-12 text-center max-w-md w-full">
-          <div className="text-7xl md:text-8xl mb-6 animate-bounce">✅</div>
-          <h2 className="text-3xl md:text-4xl font-black text-fuchsia-400 mb-4 neon-glow-purple">
-            ¡Pedido Enviado!
-          </h2>
-          <p className="text-lg md:text-xl text-white mb-6">
-            Te contactaremos pronto para coordinar la entrega de tu pedido
-          </p>
-          <p className="text-sm text-gray-400">
-            Redirigiendo a inicio...
-          </p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+        {/* Círculo animado + check */}
+        <div className="relative mb-10">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="56" fill="none" stroke="#1f2937" strokeWidth="6" />
+            <circle
+              cx="70" cy="70" r="56"
+              fill="none"
+              stroke="#a855f7"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeDasharray="351.86"
+              strokeDashoffset="351.86"
+              className="success-circle-fill"
+              style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg width="56" height="56" viewBox="0 0 56 56">
+              <path
+                d="M12 28 L24 40 L44 16"
+                fill="none"
+                stroke="#a855f7"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray="60"
+                strokeDashoffset="60"
+                className="success-check-path"
+              />
+            </svg>
+          </div>
+        </div>
+
+        {/* Texto principal: slide-in derecha a izquierda + parpadeo */}
+        <h2
+          className="text-xl md:text-2xl text-center success-main-text"
+          style={{
+            fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
+            fontWeight: 600,
+            fontStyle: 'italic',
+            color: 'transparent',
+            WebkitTextStroke: '1px #a855f7',
+            letterSpacing: '0.05em',
+            filter: 'drop-shadow(0 0 4px rgba(168, 85, 247, 0.5)) drop-shadow(0 0 8px rgba(168, 85, 247, 0.3)) drop-shadow(0 0 12px rgba(168, 85, 247, 0.2))'
+          }}
+        >
+          Pedido enviado con éxito
+        </h2>
+
+        {/* Texto secundario */}
+        <p className="text-gray-400 text-xs md:text-sm mt-3 max-w-xs mx-auto text-center success-sub-text">
+          En breve te contactaremos para coordinar la entrega, gracias
+        </p>
+
+        {/* Logo Santo Dilema */}
+        <div className="mt-10 success-logo">
+          <h1 className="flex items-center gap-2 text-sm font-black tracking-tight">
+            <span className="text-amber-400 gold-glow inline-flex items-center">
+              S
+              <span className="relative inline-block">A</span>
+              <span className="relative inline-block">N</span>
+              <span className="relative inline-block">T</span>
+              <span className="relative inline-block">
+                O
+                <svg
+                  className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/>
+                  <line x1="2" y1="19" x2="22" y2="19"/>
+                </svg>
+              </span>
+            </span>
+            <div className="w-0.5 h-4 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
+            <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
+          </h1>
         </div>
       </div>
     );
