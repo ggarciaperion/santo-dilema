@@ -141,6 +141,17 @@ export default function FatPage() {
 
           // Limpiar el parámetro de la URL
           window.history.replaceState({}, '', '/fat');
+
+          // Asegurar que no haya ningún cartel expandido
+          setExpandedCard(null);
+
+          // Scroll hacia la sección "Tu orden"
+          setTimeout(() => {
+            const orderSection = document.querySelector('[class*="Tu orden"]');
+            if (orderSection) {
+              orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 300);
         } catch (error) {
           console.error("Error loading orders:", error);
           localStorage.removeItem("santo-dilema-fat-orders");
