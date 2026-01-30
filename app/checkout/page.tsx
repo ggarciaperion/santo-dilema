@@ -564,61 +564,47 @@ export default function CheckoutPage() {
           }}
         >
           <div
-            className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 neon-border-purple max-w-md w-full p-6"
+            className="bg-gray-900 rounded-2xl border border-fuchsia-500/30 max-w-xs w-full p-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-center mb-6">
-              <div className="text-5xl mb-3">💰</div>
-              <h3 className="text-xl md:text-2xl font-black text-fuchsia-400 neon-glow-purple mb-2">
-                Selecciona tu método de pago
-              </h3>
-              <p className="text-gray-300 text-sm">
-                Total a pagar: <span className="text-amber-400 font-black gold-glow text-lg">S/ {totalPrice.toFixed(2)}</span>
-              </p>
-            </div>
+            <h3 className="text-base font-bold text-white text-center mb-0.5">Método de pago</h3>
+            <p className="text-gray-500 text-xs text-center mb-5">
+              Total: <span className="text-amber-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+            </p>
 
-            <div className="space-y-3 mb-6">
-              {/* Opción: Pagar Ahora */}
+            <div className="space-y-2">
               <button
                 onClick={() => {
                   setPaymentMethod('anticipado');
                   setShowQrPayment(true);
                 }}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 border-2 border-green-500 rounded-lg p-4 transition-all active:scale-95 text-left"
+                className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
               >
-                <div className="flex items-center gap-3">
-                  <div className="text-4xl">✅</div>
-                  <div className="flex-1">
-                    <h4 className="text-white font-black text-base mb-1">Pagar Ahora</h4>
-                    <p className="text-green-100 text-xs">Con Yape, Plin o transferencia (más rápido)</p>
-                    <div className="flex gap-2 mt-2">
-                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded">📱 Yape</span>
-                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded">💳 Plin</span>
-                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded">🏦 Transfer</span>
-                    </div>
-                  </div>
+                <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
+                <div className="text-left flex-1">
+                  <p className="text-white font-semibold text-sm">Paga con Yape o Plin</p>
+                  <p className="text-gray-500 text-[11px] mt-0.5">Escanea QR y confirma</p>
+                </div>
+                <span className="text-gray-600 text-sm">📱</span>
               </button>
 
-              {/* Opción: Pagar Contra Entrega */}
               <button
                 onClick={() => {
                   setPaymentMethod('contraentrega');
                   confirmOrder();
                 }}
-                className="w-full bg-fuchsia-500/10 hover:bg-fuchsia-500/20 border-2 border-fuchsia-500/30 hover:border-fuchsia-500/50 rounded-lg p-4 transition-all active:scale-95 text-left"
+                className="group w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70 transition-all active:scale-95"
               >
-                <div className="flex items-center gap-3">
-                  <div className="text-4xl">🚚</div>
-                  <div className="flex-1">
-                    <h4 className="text-white font-black text-base mb-1">Pagar Contra Entrega</h4>
-                    <p className="text-fuchsia-300 text-xs">Al recibir tu pedido</p>
-                    <div className="flex gap-2 mt-2">
-                      <span className="text-xs bg-fuchsia-500/20 px-2 py-0.5 rounded">💵 Efectivo</span>
-                      <span className="text-xs bg-fuchsia-500/20 px-2 py-0.5 rounded">📱 Yape/Plin</span>
-                    </div>
-                  </div>
+                <div className="w-5 h-5 rounded-full border-2 border-gray-600 group-hover:border-fuchsia-500 flex items-center justify-center transition-all flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
+                <div className="text-left flex-1">
+                  <p className="text-white font-semibold text-sm">Pago contra entrega</p>
+                  <p className="text-gray-500 text-[11px] mt-0.5">Efectivo o Yape al recibir</p>
+                </div>
+                <span className="text-gray-600 text-sm">🚚</span>
               </button>
             </div>
 
@@ -627,7 +613,7 @@ export default function CheckoutPage() {
                 setShowPaymentModal(false);
                 setPaymentMethod(null);
               }}
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all"
+              className="w-full mt-4 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
             >
               Cancelar
             </button>
@@ -637,58 +623,55 @@ export default function CheckoutPage() {
 
       {/* Modal de Pago con QR */}
       {showQrPayment && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto">
-          <div className="bg-gray-900 rounded-xl border-2 border-green-500 max-w-md w-full p-6 my-4">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-gray-900 rounded-2xl border border-green-500/40 max-w-xs w-full p-4">
             {/* Header */}
-            <div className="text-center mb-4">
-              <div className="text-4xl mb-2">📱</div>
-              <h3 className="text-xl font-black text-green-400 mb-1">
-                Escanea y Paga
-              </h3>
-              <p className="text-gray-300 text-sm">
-                Total: <span className="text-amber-400 font-black gold-glow">S/ {totalPrice.toFixed(2)}</span>
+            <div className="text-center mb-3">
+              <h3 className="text-base font-bold text-green-400">Escanea y Paga</h3>
+              <p className="text-gray-500 text-xs mt-0.5">
+                S/ <span className="text-amber-400 font-bold">{totalPrice.toFixed(2)}</span>
               </p>
             </div>
 
             {/* QR Code */}
-            <div className="bg-white rounded-lg p-4 mb-4">
-              <div className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+            <div className="flex justify-center mb-3">
+              <div className="bg-white rounded-lg p-2" style={{ width: '140px', height: '140px' }}>
                 <img
                   src="/qr-yape-plin.png"
-                  alt="QR Pago Yape/Plin"
+                  alt="QR Pago"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <p className="text-center text-gray-600 text-xs mt-2 font-bold">
-                Escanea con Yape, Plin o tu app bancaria
-              </p>
             </div>
 
-            {/* Instrucciones */}
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-4">
-              <p className="text-green-300 text-xs font-bold mb-2">Pasos para pagar:</p>
+            {/* 3 pasos */}
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5 mb-3">
               <ol className="text-white text-xs space-y-1.5">
-                <li>1️⃣ Abre tu app Yape, Plin o banca móvil</li>
-                <li>2️⃣ Escanea el código QR</li>
-                <li>3️⃣ Realiza el pago de S/ {totalPrice.toFixed(2)}</li>
-                <li>4️⃣ Toma captura del voucher</li>
-                <li>5️⃣ Sube tu comprobante aquí abajo</li>
+                <li className="flex gap-2">
+                  <span className="text-green-400 font-bold flex-shrink-0">1.</span>
+                  <span>Escanea el QR con Yape o Plin</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-green-400 font-bold flex-shrink-0">2.</span>
+                  <span>Realiza el pago de S/ {totalPrice.toFixed(2)}</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-green-400 font-bold flex-shrink-0">3.</span>
+                  <span>Sube tu comprobante abajo</span>
+                </li>
               </ol>
             </div>
 
-            {/* Upload de Comprobante */}
-            <div className="mb-4">
-              <label className="block text-sm font-bold text-green-400 mb-2">
-                Subir comprobante de pago *
-              </label>
+            {/* Upload comprobante */}
+            <div className="mb-3">
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setPaymentProof(e.target.files?.[0] || null)}
-                className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-500 file:cursor-pointer"
+                className="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-500 file:cursor-pointer"
               />
               {paymentProof && (
-                <p className="text-green-400 text-xs mt-2">✓ {paymentProof.name}</p>
+                <p className="text-green-400 text-xs mt-1.5">✓ {paymentProof.name}</p>
               )}
             </div>
 
@@ -700,7 +683,7 @@ export default function CheckoutPage() {
                   setPaymentProof(null);
                   setPaymentMethod(null);
                 }}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all"
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-lg text-sm transition-all"
               >
                 Volver
               </button>
@@ -713,15 +696,11 @@ export default function CheckoutPage() {
                   }
                 }}
                 disabled={!paymentProof || isSubmitting}
-                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-black py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-black py-2.5 rounded-lg text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Procesando..." : "Confirmar Pago"}
+                {isSubmitting ? "Procesando..." : "Confirmar"}
               </button>
             </div>
-
-            <p className="text-gray-400 text-[10px] text-center mt-3">
-              Verificaremos tu pago y te contactaremos para coordinar la entrega
-            </p>
           </div>
         </div>
       )}
