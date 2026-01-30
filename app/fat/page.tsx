@@ -104,6 +104,10 @@ export default function FatPage() {
     if (savedOrders) {
       try {
         const orders = JSON.parse(savedOrders);
+
+        // Primero limpiar el carrito para evitar duplicados
+        clearCart();
+
         setCompletedOrders(orders);
 
         // Reconstruir el carrito con las órdenes guardadas
