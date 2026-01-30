@@ -1245,7 +1245,7 @@ export default function FatPage() {
 
       {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
       {expandedCard === null && completedOrders.length === 0 && (
-        <footer className="absolute -bottom-16 md:-bottom-20 lg:-bottom-24 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
+        <footer className="absolute bottom-4 md:bottom-6 lg:bottom-8 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
           <div className="text-center animated-text-reveal">
             <h2
               className="text-base md:text-2xl lg:text-3xl font-light tracking-wide"
