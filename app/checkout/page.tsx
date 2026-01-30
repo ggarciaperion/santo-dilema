@@ -49,6 +49,9 @@ export default function CheckoutPage() {
   const [customerFound, setCustomerFound] = useState(false);
   const [showDniSearch, setShowDniSearch] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'anticipado' | 'contraentrega' | null>(null);
+  const [showQrPayment, setShowQrPayment] = useState(false);
+  const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
 
   // Cargar órdenes completadas desde localStorage
@@ -530,14 +533,14 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* Modal de Confirmación de Pago */}
-      {showPaymentModal && (
+      {/* Modal de Selección de Método de Pago */}
+      {showPaymentModal && !showQrPayment && (
         <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
           onClick={(e) => {
-            // Cerrar modal si se hace click en el fondo
             if (e.target === e.currentTarget) {
               setShowPaymentModal(false);
+              setPaymentMethod(null);
             }
           }}
         >
@@ -545,63 +548,159 @@ export default function CheckoutPage() {
             className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 neon-border-purple max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-center mb-4">
+            <div className="text-center mb-6">
               <div className="text-5xl mb-3">💰</div>
               <h3 className="text-xl md:text-2xl font-black text-fuchsia-400 neon-glow-purple mb-2">
-                Método de Pago
+                Selecciona tu método de pago
               </h3>
-              <p className="text-white text-sm md:text-base mb-4">
-                Tu pedido será pagado <span className="text-amber-400 font-bold gold-glow">contra entrega</span>
+              <p className="text-gray-300 text-sm">
+                Total a pagar: <span className="text-amber-400 font-black gold-glow text-lg">S/ {totalPrice.toFixed(2)}</span>
               </p>
             </div>
 
-            <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-4 mb-4">
-              <p className="text-fuchsia-300 text-sm md:text-base mb-3 font-bold">
-                Podrás pagar cuando recibas tu pedido con:
+            <div className="space-y-3 mb-6">
+              {/* Opción: Pagar Ahora */}
+              <button
+                onClick={() => {
+                  setPaymentMethod('anticipado');
+                  setShowQrPayment(true);
+                }}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 border-2 border-green-500 rounded-lg p-4 transition-all active:scale-95 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="text-4xl">✅</div>
+                  <div className="flex-1">
+                    <h4 className="text-white font-black text-base mb-1">Pagar Ahora</h4>
+                    <p className="text-green-100 text-xs">Con Yape, Plin o transferencia (más rápido)</p>
+                    <div className="flex gap-2 mt-2">
+                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded">📱 Yape</span>
+                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded">💳 Plin</span>
+                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded">🏦 Transfer</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Opción: Pagar Contra Entrega */}
+              <button
+                onClick={() => {
+                  setPaymentMethod('contraentrega');
+                  confirmOrder();
+                }}
+                className="w-full bg-fuchsia-500/10 hover:bg-fuchsia-500/20 border-2 border-fuchsia-500/30 hover:border-fuchsia-500/50 rounded-lg p-4 transition-all active:scale-95 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="text-4xl">🚚</div>
+                  <div className="flex-1">
+                    <h4 className="text-white font-black text-base mb-1">Pagar Contra Entrega</h4>
+                    <p className="text-fuchsia-300 text-xs">Al recibir tu pedido</p>
+                    <div className="flex gap-2 mt-2">
+                      <span className="text-xs bg-fuchsia-500/20 px-2 py-0.5 rounded">💵 Efectivo</span>
+                      <span className="text-xs bg-fuchsia-500/20 px-2 py-0.5 rounded">📱 Yape/Plin</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowPaymentModal(false);
+                setPaymentMethod(null);
+              }}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Pago con QR */}
+      {showQrPayment && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto">
+          <div className="bg-gray-900 rounded-xl border-2 border-green-500 max-w-md w-full p-6 my-4">
+            {/* Header */}
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-2">📱</div>
+              <h3 className="text-xl font-black text-green-400 mb-1">
+                Escanea y Paga
+              </h3>
+              <p className="text-gray-300 text-sm">
+                Total: <span className="text-amber-400 font-black gold-glow">S/ {totalPrice.toFixed(2)}</span>
               </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">💵</span>
-                  <span className="text-white text-sm">Efectivo</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">📱</span>
-                  <span className="text-white text-sm">Yape</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">💳</span>
-                  <span className="text-white text-sm">Plin</span>
+            </div>
+
+            {/* QR Code - Aquí va tu QR de Yape/Plin */}
+            <div className="bg-white rounded-lg p-4 mb-4">
+              <div className="aspect-square bg-gray-100 rounded flex items-center justify-center">
+                {/* Placeholder para QR - reemplazar con tu imagen QR real */}
+                <div className="text-center">
+                  <div className="text-6xl mb-2">📷</div>
+                  <p className="text-gray-600 text-sm font-bold">Código QR</p>
+                  <p className="text-gray-500 text-xs">Yape / Plin / BCP</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            {/* Instrucciones */}
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-4">
+              <p className="text-green-300 text-xs font-bold mb-2">Pasos para pagar:</p>
+              <ol className="text-white text-xs space-y-1.5">
+                <li>1️⃣ Abre tu app Yape, Plin o banca móvil</li>
+                <li>2️⃣ Escanea el código QR</li>
+                <li>3️⃣ Realiza el pago de S/ {totalPrice.toFixed(2)}</li>
+                <li>4️⃣ Toma captura del voucher</li>
+                <li>5️⃣ Sube tu comprobante aquí abajo</li>
+              </ol>
+            </div>
+
+            {/* Upload de Comprobante */}
+            <div className="mb-4">
+              <label className="block text-sm font-bold text-green-400 mb-2">
+                Subir comprobante de pago *
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPaymentProof(e.target.files?.[0] || null)}
+                className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-500 file:cursor-pointer"
+              />
+              {paymentProof && (
+                <p className="text-green-400 text-xs mt-2">✓ {paymentProof.name}</p>
+              )}
+            </div>
+
+            {/* Botones */}
+            <div className="flex gap-2">
               <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowPaymentModal(false);
+                onClick={() => {
+                  setShowQrPayment(false);
+                  setPaymentProof(null);
+                  setPaymentMethod(null);
                 }}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white font-bold py-4 px-4 rounded-lg text-sm md:text-base transition-all touch-manipulation select-none"
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all"
               >
-                Cancelar
+                Volver
               </button>
               <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!isSubmitting) {
+                onClick={() => {
+                  if (paymentProof) {
                     confirmOrder();
+                  } else {
+                    alert('Por favor sube tu comprobante de pago');
                   }
                 }}
-                disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:from-fuchsia-700 active:to-pink-700 text-white font-black py-4 px-4 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple touch-manipulation select-none"
+                disabled={!paymentProof || isSubmitting}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-black py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Procesando..." : "Aceptar"}
+                {isSubmitting ? "Procesando..." : "Confirmar Pago"}
               </button>
             </div>
+
+            <p className="text-gray-400 text-[10px] text-center mt-3">
+              Verificaremos tu pago y te contactaremos para coordinar la entrega
+            </p>
           </div>
         </div>
       )}
