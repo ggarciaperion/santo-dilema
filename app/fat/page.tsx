@@ -579,14 +579,14 @@ export default function FatPage() {
       </section>
 
       {/* Products Carousel */}
-      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-6 transition-all duration-300 ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-6 transition-all duration-300 overflow-visible ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
         <h3 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-4 flex items-center gap-2">
           <span className="text-red-400 neon-glow-fat">Nuestras Alitas</span>
           <span className="text-amber-400 gold-glow text-sm md:text-lg">★</span>
         </h3>
 
         {/* Carousel Container */}
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center overflow-visible">
           {/* Scrollable Products */}
           <div
             ref={scrollContainerRef}
@@ -594,8 +594,8 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex items-center gap-2 md:gap-4 overflow-x-auto overflow-y-visible scrollbar-hide px-1 md:px-4 py-24 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
+            className={`flex items-center gap-2 md:gap-4 scrollbar-hide px-1 md:px-4 py-24 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowX: 'auto', overflowY: 'visible' }}
           >
             {products.map((product) => {
               const isExpanded = expandedCard === product.id;
@@ -609,8 +609,7 @@ export default function FatPage() {
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onMouseEnter={() => handleCardHover(product.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 rounded-lg md:rounded-xl border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center
-                    ${product.image.startsWith('/') ? 'overflow-visible' : 'overflow-hidden'}
+                  className={`bg-gray-900 rounded-lg md:rounded-xl border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center overflow-visible
                     ${isExpanded
                       ? 'w-[260px] md:w-[380px] z-20'
                       : 'w-[240px] md:w-[260px]'
@@ -635,12 +634,13 @@ export default function FatPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute object-cover drop-shadow-2xl z-50 w-[120%] h-[125%] md:w-[130%] md:h-[140%]"
+                        className="absolute object-cover drop-shadow-2xl w-[150%] h-[160%]"
                         style={{
-                          top: '-15%',
+                          top: '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
-                          objectPosition: 'center 55%'
+                          objectPosition: 'center 55%',
+                          zIndex: 100
                         }}
                       />
                     ) : (
