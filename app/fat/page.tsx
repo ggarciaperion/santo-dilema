@@ -1244,11 +1244,9 @@ export default function FatPage() {
               fontWeight: 300,
               fontStyle: 'italic',
               color: 'transparent',
-              WebkitTextStroke: '1px #ef4444',
-              textStroke: '1px #ef4444',
-              textShadow: '0 0 10px rgba(239, 68, 68, 1), 0 0 20px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.4)',
+              WebkitTextStroke: '1.5px #ef4444',
               letterSpacing: '0.05em',
-              filter: 'drop-shadow(0 0 15px rgba(239, 68, 68, 0.9)) drop-shadow(0 0 25px rgba(239, 68, 68, 0.6))'
+              filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 1)) drop-shadow(0 0 15px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 25px rgba(239, 68, 68, 0.6)) drop-shadow(0 0 35px rgba(239, 68, 68, 0.4))'
             }}
           >
             ¡El camino a la indulgencia!
