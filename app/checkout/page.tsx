@@ -272,21 +272,21 @@ export default function CheckoutPage() {
       {/* Checkout Layout - Full Screen */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Side - Form */}
-        <div className="flex-1 bg-black p-3 md:p-4 flex items-start md:items-center justify-center overflow-y-auto">
+        <div className="flex-1 bg-black p-2 md:p-4 flex items-start md:items-center justify-center overflow-y-auto">
           <div className="max-w-xl w-full">
-            <h1 className="text-lg md:text-xl font-black text-fuchsia-400 mb-2 md:mb-3 neon-glow-purple">
+            <h1 className="text-base md:text-xl font-black text-fuchsia-400 mb-1.5 md:mb-3 neon-glow-purple">
               Finalizar Pedido
             </h1>
 
             {showDniSearch ? (
               /* DNI Search Form */
-              <form onSubmit={handleDniSearchSubmit} className="space-y-2 md:space-y-2">
-                <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-2.5 md:p-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-lg md:text-xl">🚀</span>
+              <form onSubmit={handleDniSearchSubmit} className="space-y-1.5 md:space-y-2">
+                <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-2 md:p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-sm md:text-xl">🚀</span>
                     <h3 className="text-xs md:text-sm font-bold text-fuchsia-400">Compra más rápido</h3>
                   </div>
-                  <p className="text-[9px] md:text-[10px] text-gray-300 mb-2">
+                  <p className="text-[9px] md:text-[10px] text-gray-300 mb-1.5">
                     Si ya compraste antes, ingresa tu DNI para autocompletar tus datos
                   </p>
 
@@ -301,13 +301,13 @@ export default function CheckoutPage() {
                         value={formData.dni}
                         onChange={(e) => handleNumberInput('dni', e.target.value)}
                         maxLength={8}
-                        className="flex-1 px-3 py-2.5 md:py-2 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                        className="flex-1 px-3 py-1.5 md:py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                         placeholder="12345678"
                       />
                       <button
                         type="submit"
                         disabled={isSearchingCustomer || formData.dni.length !== 8}
-                        className="px-3 md:px-4 py-2.5 md:py-2 bg-fuchsia-600 hover:bg-fuchsia-500 active:scale-95 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 md:px-4 py-1.5 md:py-2 bg-fuchsia-600 hover:bg-fuchsia-500 active:scale-95 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isSearchingCustomer ? "..." : "Buscar"}
                       </button>
@@ -327,13 +327,13 @@ export default function CheckoutPage() {
               </form>
             ) : (
               /* Full Form */
-              <form id="checkout-form" onSubmit={handleSubmit} className="space-y-2">
+              <form id="checkout-form" onSubmit={handleSubmit} className="space-y-1.5 md:space-y-2">
                 {customerFound && (
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2">
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-1.5">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">✓</span>
-                        <p className="text-[11px] text-green-400 font-bold">¡Te encontramos! Verifica tus datos</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm">✓</span>
+                        <p className="text-[10px] text-green-400 font-bold">¡Te encontramos! Verifica tus datos</p>
                       </div>
                       <button
                         type="button"
@@ -347,7 +347,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div>
-                  <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
+                  <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
                     Nombre completo *
                   </label>
                   <input
@@ -355,14 +355,14 @@ export default function CheckoutPage() {
                     required
                     value={formData.name}
                     onChange={(e) => handleNameInput(e.target.value)}
-                    className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     placeholder="JUAN PÉREZ"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   <div>
-                    <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
+                    <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
                       DNI *
                     </label>
                     <div className="relative">
@@ -373,7 +373,7 @@ export default function CheckoutPage() {
                         onChange={(e) => handleNumberInput('dni', e.target.value)}
                         maxLength={8}
                         disabled={customerFound}
-                        className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed pr-10"
+                        className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed pr-8"
                         placeholder="12345678"
                       />
                       {!customerFound && (
@@ -385,7 +385,7 @@ export default function CheckoutPage() {
                             }
                           }}
                           disabled={formData.dni.length !== 8}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed text-xs"
                           title="Buscar DNI"
                         >
                           🔍
@@ -394,7 +394,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
+                    <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
                       Teléfono *
                     </label>
                     <input
@@ -403,14 +403,14 @@ export default function CheckoutPage() {
                       value={formData.phone}
                       onChange={(e) => handleNumberInput('phone', e.target.value)}
                       maxLength={9}
-                      className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                      className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                       placeholder="999888777"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
+                  <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
                     Dirección de entrega *
                   </label>
                   <textarea
@@ -419,14 +419,14 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                    rows={2}
+                    className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    rows={1}
                     placeholder="Av. Ejemplo 123, Dpto 456"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
+                  <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
                     Email (opcional)
                   </label>
                   <input
@@ -435,10 +435,10 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     placeholder="tucorreo@ejemplo.com"
                   />
-                  <p className="text-[10px] text-fuchsia-300/60 mt-1">
+                  <p className="text-[9px] text-fuchsia-300/60 mt-0.5">
                     Recibe ofertas y promociones limitadas
                   </p>
                 </div>
