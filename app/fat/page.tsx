@@ -245,21 +245,35 @@ export default function FatPage() {
       if (card) {
         const salsasButton = card.querySelector('[data-salsas-button]');
         if (salsasButton) {
-          // Obtener posición del botón
-          const rect = salsasButton.getBoundingClientRect();
-          const absoluteTop = window.pageYOffset + rect.top;
+          // Obtener posición actual del scroll
+          const currentScroll = window.scrollY || document.documentElement.scrollTop;
 
-          // Calcular posición para centrar, restando la mitad de la altura de la ventana
-          const scrollPosition = absoluteTop - (window.innerHeight / 2) + (rect.height / 2);
+          // Obtener posición del botón de salsas
+          const rect = salsasButton.getBoundingClientRect();
+
+          // Calcular la posición absoluta del botón (scroll actual + posición relativa)
+          const elementTop = currentScroll + rect.top;
+
+          // Calcular cuánto scroll necesitamos para centrar el elemento
+          // Centramos restando la mitad de la altura de la ventana
+          const offset = window.innerHeight / 2 - rect.height / 2;
+          const scrollTarget = elementTop - offset + 100; // +100px para ajuste adicional hacia arriba
 
           // Hacer scroll suave
           window.scrollTo({
-            top: scrollPosition,
+            top: scrollTarget,
             behavior: 'smooth'
+          });
+
+          console.log('Scroll triggered:', {
+            currentScroll,
+            elementTop,
+            scrollTarget,
+            windowHeight: window.innerHeight
           });
         }
       }
-    }, 400);
+    }, 500);
   };
 
   const handleCloseCard = () => {
