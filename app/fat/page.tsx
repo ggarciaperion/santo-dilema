@@ -1052,17 +1052,19 @@ export default function FatPage() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-start gap-2 flex-1">
-                        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-red-400/30">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-red-400/30 flex items-center justify-center">
                           {product.image.startsWith('/') ? (
                             <img
                               src={product.image}
                               alt={product.name}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.parentElement!.innerHTML = '<span class="text-2xl">🍗</span>';
+                              }}
                             />
                           ) : (
-                            <span className="flex items-center justify-center w-full h-full text-lg">
-                              {product.image}
-                            </span>
+                            <span className="text-2xl">{product.image}</span>
                           )}
                         </div>
                         <div className="flex-1">
