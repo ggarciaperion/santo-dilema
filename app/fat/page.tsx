@@ -1051,25 +1051,40 @@ export default function FatPage() {
                     className="bg-gray-900 rounded-lg border-2 border-red-400/30 p-3 relative"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h4 className="text-sm font-bold text-white mb-1">
-                          {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
-                        </h4>
-                        <div className="text-[11px] space-y-1">
-                          <div className="text-amber-300">
-                            🌶️ Salsas: {order.salsas
-                              .map((sId) => salsas.find((s) => s.id === sId)?.name)
-                              .filter((name) => name)
-                              .join(", ")}
-                          </div>
-                          {order.complementIds.length > 0 && (
-                            <div className="text-red-300">
-                              🍟 Complementos: {order.complementIds
-                                .map((compId) => availableComplements[compId]?.name)
+                      <div className="flex items-start gap-2 flex-1">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-red-400/30">
+                          {product.image.startsWith('/') ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="flex items-center justify-center w-full h-full text-lg">
+                              {product.image}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-bold text-white mb-1">
+                            {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                          </h4>
+                          <div className="text-[11px] space-y-1">
+                            <div className="text-amber-300">
+                              🌶️ Salsas: {order.salsas
+                                .map((sId) => salsas.find((s) => s.id === sId)?.name)
                                 .filter((name) => name)
                                 .join(", ")}
                             </div>
-                          )}
+                            {order.complementIds.length > 0 && (
+                              <div className="text-red-300">
+                                🍟 Complementos: {order.complementIds
+                                  .map((compId) => availableComplements[compId]?.name)
+                                  .filter((name) => name)
+                                  .join(", ")}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-col items-center gap-2 ml-2">
