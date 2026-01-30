@@ -100,22 +100,13 @@ export default function FatPage() {
 
   // Limpiar todo al cargar la página
   useEffect(() => {
-    // Limpiar localStorage primero
+    // Limpiar localStorage
     localStorage.removeItem("santo-dilema-fat-orders");
     localStorage.removeItem("santo-dilema-cart");
 
-    // Forzar recarga del carrito vacío
-    setTimeout(() => {
-      clearCart();
-
-      // Limpiar estados locales
-      setCompletedOrders([]);
-      setOrderQuantity({});
-      setSelectedSalsas({});
-      setSelectedComplements({});
-      setComplementsInCart({});
-    }, 0);
-  }, [clearCart]);
+    // Limpiar carrito global
+    clearCart();
+  }, []);
 
   // Centrar el carrusel en el cartel del medio al cargar la página
   useEffect(() => {
