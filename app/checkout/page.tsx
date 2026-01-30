@@ -301,7 +301,8 @@ export default function CheckoutPage() {
                         value={formData.dni}
                         onChange={(e) => handleNumberInput('dni', e.target.value)}
                         maxLength={8}
-                        className="flex-1 px-3 py-1.5 md:py-2 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                        className="flex-1 px-3 py-1.5 md:py-2 rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                        style={{ fontSize: '16px' }}
                         placeholder="12345678"
                       />
                       <button
