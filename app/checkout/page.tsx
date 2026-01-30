@@ -344,16 +344,33 @@ export default function CheckoutPage() {
                     <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
                       DNI *
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.dni}
-                      onChange={(e) => handleNumberInput('dni', e.target.value)}
-                      maxLength={8}
-                      disabled={customerFound}
-                      className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder="12345678"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        value={formData.dni}
+                        onChange={(e) => handleNumberInput('dni', e.target.value)}
+                        maxLength={8}
+                        disabled={customerFound}
+                        className="w-full px-3 py-1.5 text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed pr-10"
+                        placeholder="12345678"
+                      />
+                      {!customerFound && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (formData.dni.length === 8) {
+                              searchCustomerByDni(formData.dni);
+                            }
+                          }}
+                          disabled={formData.dni.length !== 8}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Buscar DNI"
+                        >
+                          🔍
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-fuchsia-400 mb-0.5">
