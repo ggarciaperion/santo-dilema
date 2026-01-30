@@ -586,7 +586,7 @@ export default function FatPage() {
         </h3>
 
         {/* Carousel Container */}
-        <div className="relative flex items-center justify-center overflow-visible">
+        <div className="relative flex items-center justify-center overflow-visible mt-16 md:mt-20">
           {/* Left Arrow - Hide on mobile */}
           <button
             onClick={() => scroll('left')}
