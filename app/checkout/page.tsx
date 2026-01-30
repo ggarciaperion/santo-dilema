@@ -381,7 +381,17 @@ export default function CheckoutPage() {
                 className="bg-black/50 rounded-lg p-2 border border-fuchsia-500/20"
               >
                 <div className="flex items-start gap-2">
-                  <span className="text-xl md:text-2xl">{item.product.image}</span>
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-fuchsia-400/30 flex items-center justify-center">
+                    {item.product.image.startsWith('/') ? (
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xl md:text-2xl">{item.product.image}</span>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-bold text-[11px] md:text-xs truncate">
                       {item.product.name}
