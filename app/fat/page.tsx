@@ -580,6 +580,11 @@ export default function FatPage() {
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-3 md:px-4 py-4 md:py-6 transition-all duration-300 ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-4 md:pb-6'}`}>
+        <h3 className="text-xl md:text-2xl font-black text-white mb-3 md:mb-4 flex items-center gap-2">
+          <span className="text-red-400 neon-glow-fat">Nuestras Alitas</span>
+          <span className="text-amber-400 gold-glow text-base md:text-lg">★</span>
+        </h3>
+
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center">
           {/* Left Arrow - Hide on mobile */}
