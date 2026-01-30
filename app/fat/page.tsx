@@ -74,7 +74,7 @@ const availableComplements: Record<string, { name: string; price: number }> = {
 };
 
 export default function FatPage() {
-  const { cart, addToCart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
+  const { cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedSalsas, setSelectedSalsas] = useState<Record<string, string[]>>({});
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
@@ -104,13 +104,16 @@ export default function FatPage() {
     localStorage.removeItem("santo-dilema-fat-orders");
     localStorage.removeItem("santo-dilema-cart");
 
-    // Limpiar estados
+    // Limpiar carrito global
+    clearCart();
+
+    // Limpiar estados locales
     setCompletedOrders([]);
     setOrderQuantity({});
     setSelectedSalsas({});
     setSelectedComplements({});
     setComplementsInCart({});
-  }, []);
+  }, [clearCart]);
 
   // Centrar el carrusel en el cartel del medio al cargar la página
   useEffect(() => {
