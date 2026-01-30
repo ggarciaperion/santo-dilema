@@ -506,11 +506,17 @@ export default function CheckoutPage() {
                             .join(", ")}
                         </div>
                         {order.complementIds.length > 0 && (
-                          <div className="text-fuchsia-300">
-                            🍟 {order.complementIds
-                              .map((compId) => availableComplements[compId]?.name)
-                              .filter((name) => name)
-                              .join(", ")}
+                          <div className="text-fuchsia-300 space-y-0.5">
+                            {order.complementIds.map((compId, i) => {
+                              const comp = availableComplements[compId];
+                              if (!comp) return null;
+                              return (
+                                <div key={`${compId}-${i}`} className="flex justify-between">
+                                  <span>🍟 {comp.name}</span>
+                                  <span className="text-fuchsia-300/60">+S/ {comp.price.toFixed(2)}</span>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
