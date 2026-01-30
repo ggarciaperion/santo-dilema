@@ -586,7 +586,7 @@ export default function FatPage() {
         </h3>
 
         {/* Carousel Container */}
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center overflow-visible">
           {/* Left Arrow - Hide on mobile */}
           <button
             onClick={() => scroll('left')}
@@ -644,7 +644,7 @@ export default function FatPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute w-[130%] h-[140%] object-cover drop-shadow-2xl"
+                        className="absolute w-[130%] h-[140%] object-cover drop-shadow-2xl z-50"
                         style={{
                           top: '-20%',
                           left: '50%',
