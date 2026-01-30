@@ -647,11 +647,11 @@ export default function FatPage() {
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
                   </div>
-                  <div className="p-2.5 md:p-4">
-                    <h4 className="text-xs md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
+                  <div className="p-3 md:p-4">
+                    <h4 className="text-xs md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-3 line-clamp-2 h-6 md:h-8">
+                    <p className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-3 line-clamp-3 h-10 md:h-12">
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-3">
