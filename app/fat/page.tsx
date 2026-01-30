@@ -114,6 +114,29 @@ export default function FatPage() {
     localStorage.setItem("santo-dilema-fat-orders", JSON.stringify(completedOrders));
   }, [completedOrders]);
 
+  // Centrar el carrusel en el cartel del medio al cargar la página
+  useEffect(() => {
+    const centerCarousel = () => {
+      if (scrollContainerRef.current && cardRefs.current["duo-dilema"]) {
+        const container = scrollContainerRef.current;
+        const middleCard = cardRefs.current["duo-dilema"];
+
+        if (middleCard) {
+          const cardLeft = middleCard.offsetLeft;
+          const cardWidth = middleCard.offsetWidth;
+          const containerWidth = container.offsetWidth;
+
+          const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+          container.scrollLeft = scrollPosition;
+        }
+      }
+    };
+
+    // Esperar un momento para que el DOM esté completamente renderizado
+    const timer = setTimeout(centerCarousel, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const getRequiredSalsasCount = (productId: string): number => {
     const quantity = orderQuantity[productId] || 0;
     if (quantity === 0) return 0;
