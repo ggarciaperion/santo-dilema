@@ -710,7 +710,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex items-center gap-2 md:gap-4 scrollbar-hide px-1 md:px-4 py-24 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
+            className={`flex items-center gap-2 md:gap-4 scrollbar-hide px-1 md:px-4 py-16 md:py-4 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowX: 'auto', overflowY: 'visible' }}
           >
             {products.map((product) => {
@@ -1100,7 +1100,7 @@ export default function FatPage() {
 
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
-          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 mt-6">
+          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 mt-2">
             <h3 className="text-lg md:text-xl font-black text-amber-400 mb-3 gold-glow">
               Tu orden
             </h3>
