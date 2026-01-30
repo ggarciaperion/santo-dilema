@@ -96,6 +96,7 @@ export default function FatPage() {
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
+  const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
 
   // Limpiar todo al cargar la página
   useEffect(() => {
@@ -134,6 +135,24 @@ export default function FatPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Cerrar cartel al hacer clic fuera de él
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!expandedCard) return;
+
+      const target = event.target as HTMLElement;
+      const expandedCardElement = cardRefs.current[expandedCard];
+
+      // Si el clic fue fuera del cartel expandido, cerrarlo
+      if (expandedCardElement && !expandedCardElement.contains(target)) {
+        handleCloseCard();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [expandedCard]);
+
   const getRequiredSalsasCount = (productId: string): number => {
     const quantity = orderQuantity[productId] || 0;
     if (quantity === 0) return 0;
@@ -148,6 +167,7 @@ export default function FatPage() {
     if (isDragging) return;
     setExpandedCard(productId);
     setShowSalsas((prev) => ({ ...prev, [productId]: true }));
+    setIsEditingOrder(false); // Es una nueva orden, no edición
     if (!selectedSalsas[productId]) {
       setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
     }
@@ -158,6 +178,7 @@ export default function FatPage() {
 
   const handleCloseCard = () => {
     setExpandedCard(null);
+    setIsEditingOrder(false); // Resetear flag de edición
     // Limpiar estados
     if (expandedCard) {
       setShowSalsas((prev) => ({ ...prev, [expandedCard]: false }));
@@ -373,6 +394,9 @@ export default function FatPage() {
     setOrderQuantity((prev) => ({ ...prev, [order.productId]: order.quantity }));
     setSelectedSalsas((prev) => ({ ...prev, [order.productId]: order.salsas }));
     setComplementsInCart((prev) => ({ ...prev, [order.productId]: order.complementIds }));
+
+    // Marcar que estamos editando
+    setIsEditingOrder(true);
 
     // Abrir el card expandido
     setExpandedCard(order.productId);
@@ -988,7 +1012,10 @@ export default function FatPage() {
 
                       {/* Botón Listo */}
                       <button
-                        onClick={() => handleCompleteOrder(product)}
+                        onClick={() => {
+                          handleCompleteOrder(product);
+                          setIsEditingOrder(false);
+                        }}
                         disabled={!canAdd}
                         className={`w-full py-2.5 rounded font-bold text-sm transition-all
                           ${canAdd
@@ -997,7 +1024,7 @@ export default function FatPage() {
                           }
                         `}
                       >
-                        {canAdd ? 'Agregar orden' : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   </div>
