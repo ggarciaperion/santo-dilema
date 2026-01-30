@@ -6,6 +6,33 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 
+interface CompletedOrder {
+  productId: string;
+  quantity: number;
+  salsas: string[];
+  complementIds: string[];
+}
+
+const salsas: { id: string; name: string }[] = [
+  { id: "barbecue", name: "Barbecue" },
+  { id: "anticuchos", name: "Anticuchos" },
+  { id: "ahumada", name: "Ahumada" },
+  { id: "buffalo-picante", name: "Buffalo picante" },
+  { id: "honey-mustard", name: "Honey mustard" },
+  { id: "acevichada", name: "Acevichada" },
+  { id: "rocoto", name: "Rocoto" },
+  { id: "aji-amarillo", name: "Ají amarillo" },
+];
+
+const availableComplements: Record<string, { name: string; price: number }> = {
+  "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
+  "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
+  "sprite": { name: "Sprite 500ml", price: 4.00 },
+  "fanta": { name: "Fanta 500ml", price: 4.00 },
+  "extra-papas": { name: "Extra papas", price: 4.00 },
+  "extra-salsa": { name: "Extra salsa", price: 3.00 }
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart, totalItems, totalPrice } = useCart();
@@ -22,6 +49,19 @@ export default function CheckoutPage() {
   const [customerFound, setCustomerFound] = useState(false);
   const [showDniSearch, setShowDniSearch] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+
+  // Cargar órdenes completadas desde localStorage
+  useEffect(() => {
+    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
+    if (savedOrders) {
+      try {
+        setCompletedOrders(JSON.parse(savedOrders));
+      } catch (error) {
+        console.error("Error loading orders:", error);
+      }
+    }
+  }, []);
 
   // Validar si el formulario está completo
   const isFormValid = () => {
@@ -375,37 +415,52 @@ export default function CheckoutPage() {
             Resumen del Pedido
           </h3>
           <div className="flex-1 overflow-y-auto space-y-1.5 mb-2 md:mb-3">
-            {cart.map((item) => (
-              <div
-                key={item.product.id}
-                className="bg-black/50 rounded-lg p-2 border border-fuchsia-500/20"
-              >
-                <div className="flex items-start gap-2">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-fuchsia-400/30 flex items-center justify-center">
-                    {item.product.image.startsWith('/') ? (
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-xl md:text-2xl">{item.product.image}</span>
-                    )}
+            {completedOrders.map((order, index) => {
+              const product = cart.find((item) => item.product.id.includes(order.productId))?.product;
+              if (!product) return null;
+
+              return (
+                <div
+                  key={`${order.productId}-${index}`}
+                  className="bg-black/50 rounded-lg p-2 border border-fuchsia-500/20"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-fuchsia-400/30 flex items-center justify-center">
+                      {product.image.startsWith('/') ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xl md:text-2xl">{product.image}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-bold text-[11px] md:text-xs">
+                        {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                      </p>
+                      <div className="text-[9px] md:text-[10px] space-y-0.5 mt-1">
+                        <div className="text-amber-300">
+                          🌶️ {order.salsas
+                            .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                            .filter((name) => name)
+                            .join(", ")}
+                        </div>
+                        {order.complementIds.length > 0 && (
+                          <div className="text-fuchsia-300">
+                            🍟 {order.complementIds
+                              .map((compId) => availableComplements[compId]?.name)
+                              .filter((name) => name)
+                              .join(", ")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-bold text-[11px] md:text-xs truncate">
-                      {item.product.name}
-                    </p>
-                    <p className="text-fuchsia-300 text-[9px] md:text-[10px] mt-0.5">
-                      S/ {item.product.price.toFixed(2)} x {item.quantity}
-                    </p>
-                  </div>
-                  <p className="text-amber-400 font-black text-xs md:text-sm gold-glow">
-                    S/ {(item.product.price * item.quantity).toFixed(2)}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
@@ -416,15 +471,24 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            {/* Botón Confirmar Pedido */}
-            <button
-              type="submit"
-              form="checkout-form"
-              disabled={isSubmitting || !isFormValid() || showDniSearch}
-              className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105 mb-2"
-            >
-              {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
-            </button>
+            {/* Botones */}
+            <div className="flex gap-2 mb-2">
+              <Link
+                href="/fat"
+                className="flex-1 bg-gray-700 hover:bg-gray-600 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all flex items-center justify-center gap-1 border-2 border-gray-600"
+              >
+                <span>←</span>
+                <span>Volver</span>
+              </Link>
+              <button
+                type="submit"
+                form="checkout-form"
+                disabled={isSubmitting || !isFormValid() || showDniSearch}
+                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105"
+              >
+                {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
+              </button>
+            </div>
 
             {!isFormValid() && !showDniSearch && (
               <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-2">
