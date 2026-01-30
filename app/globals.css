@@ -169,3 +169,53 @@ body {
     transform: translateY(-12px);
   }
 }
+
+/* Animación de texto: aparecer de izq a der, parpadear, desaparecer der a izq */
+@keyframes textReveal {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+  }
+  50%, 55% {
+    opacity: 0;
+  }
+  60%, 65% {
+    opacity: 1;
+  }
+  70%, 75% {
+    opacity: 0;
+  }
+  80% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes slideInOut {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  20% {
+    clip-path: inset(0 0 0 0);
+  }
+  80% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+.animated-text-reveal {
+  animation: slideInOut 6s ease-in-out infinite, textReveal 6s ease-in-out infinite;
+}

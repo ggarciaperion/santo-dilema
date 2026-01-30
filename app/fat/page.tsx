@@ -1234,25 +1234,22 @@ export default function FatPage() {
         </div>
       )}
 
-      {/* Footer decorativo con iconos animados - solo visible cuando no hay items en carrito */}
-      {totalItems === 0 && (
-        <footer className="fixed bottom-0 left-0 right-0 pointer-events-none z-0">
-          <div className="container mx-auto px-4 flex flex-col items-center justify-center gap-2">
-            <div className="flex items-center gap-8 md:gap-12 opacity-20">
-              <span className="text-2xl md:text-3xl text-red-400 neon-glow-fat float-slow">🔥</span>
-              <span className="text-xl md:text-2xl text-orange-400 neon-glow-fat bounce-subtle">🍗</span>
-              <span className="text-2xl md:text-3xl text-red-400 neon-glow-fat float-slower">🔥</span>
-              <span className="text-xl md:text-2xl text-orange-400 neon-glow-fat float-medium">🌶️</span>
-              <span className="text-2xl md:text-3xl text-red-400 neon-glow-fat float-slow" style={{animationDelay: '2s'}}>🔥</span>
-            </div>
-            <div className="flex items-center gap-1.5 md:gap-2 mb-1">
-              <div className="w-3 md:w-6 h-px bg-gradient-to-r from-transparent to-red-400 opacity-30"></div>
-              <p className="text-[8px] md:text-xs font-bold tracking-widest text-red-400 neon-glow-fat opacity-30 whitespace-nowrap">
-                PREMIUM DARK KITCHEN · DELIVERY ONLY
-              </p>
-              <div className="w-3 md:w-6 h-px bg-gradient-to-l from-transparent to-red-400 opacity-30"></div>
-            </div>
-          </div>
+      {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
+      {expandedCard === null && completedOrders.length === 0 && (
+        <footer className="fixed bottom-8 left-0 right-0 pointer-events-none z-0 flex justify-center items-center">
+          <h2
+            className="text-2xl md:text-4xl lg:text-5xl font-black tracking-wider animated-text-reveal"
+            style={{
+              background: 'linear-gradient(135deg, #67e8f9 0%, #ffffff 50%, #67e8f9 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textShadow: '0 0 20px rgba(103, 232, 249, 0.8), 0 0 40px rgba(103, 232, 249, 0.5), 0 0 60px rgba(103, 232, 249, 0.3)',
+              filter: 'drop-shadow(0 0 10px rgba(103, 232, 249, 0.9)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.6))'
+            }}
+          >
+            ¡El camino a la indulgencia!
+          </h2>
         </footer>
       )}
 
