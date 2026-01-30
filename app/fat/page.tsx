@@ -626,21 +626,21 @@ export default function FatPage() {
                   }}
                 >
                   {/* Card Header */}
-                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-lg md:rounded-t-xl ${
+                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-lg md:rounded-t-xl overflow-hidden md:overflow-visible ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-56 overflow-visible'
-                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden'
+                      ? 'bg-black h-40 md:h-56'
+                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute w-[130%] h-[140%] object-cover drop-shadow-2xl z-50"
+                        className="absolute object-cover drop-shadow-2xl z-50 w-[115%] h-[115%] md:w-[130%] md:h-[140%]"
                         style={{
-                          top: '-20%',
+                          top: '50%',
                           left: '50%',
-                          transform: 'translateX(-50%)',
-                          objectPosition: 'center 55%'
+                          transform: 'translate(-50%, -50%)',
+                          objectPosition: 'center center'
                         }}
                       />
                     ) : (
