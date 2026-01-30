@@ -144,6 +144,7 @@ export default function CheckoutPage() {
 
   const confirmOrder = async () => {
     setShowPaymentModal(false);
+    setShowQrPayment(false);
     setIsSubmitting(true);
 
     try {
@@ -151,21 +152,34 @@ export default function CheckoutPage() {
         formData,
         cart,
         totalItems,
-        totalPrice
+        totalPrice,
+        paymentMethod
       });
+
+      // Crear FormData para enviar archivo si existe
+      const formDataToSend = new FormData();
+
+      // Agregar datos del formulario
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('dni', formData.dni);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('address', formData.address);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('cart', JSON.stringify(cart));
+      formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
+      formDataToSend.append('totalItems', totalItems.toString());
+      formDataToSend.append('totalPrice', totalPrice.toString());
+      formDataToSend.append('paymentMethod', paymentMethod || 'contraentrega');
+      formDataToSend.append('timestamp', new Date().toISOString());
+
+      // Agregar comprobante de pago si existe
+      if (paymentProof) {
+        formDataToSend.append('paymentProof', paymentProof);
+      }
 
       const response = await fetch("/api/orders", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          cart: cart,
-          totalItems: totalItems,
-          totalPrice: totalPrice,
-          timestamp: new Date().toISOString(),
-        }),
+        body: formDataToSend,
       });
 
       console.log("Respuesta del servidor:", response.status, response.ok);
@@ -173,8 +187,12 @@ export default function CheckoutPage() {
       if (response.ok) {
         const data = await response.json();
         console.log("Pedido creado exitosamente:", data);
+
+        // Limpiar estados
         clearCart();
+        localStorage.removeItem("santo-dilema-fat-orders");
         setOrderPlaced(true);
+
         setTimeout(() => {
           router.push("/");
         }, 4000);
@@ -631,16 +649,18 @@ export default function CheckoutPage() {
               </p>
             </div>
 
-            {/* QR Code - Aquí va tu QR de Yape/Plin */}
+            {/* QR Code */}
             <div className="bg-white rounded-lg p-4 mb-4">
-              <div className="aspect-square bg-gray-100 rounded flex items-center justify-center">
-                {/* Placeholder para QR - reemplazar con tu imagen QR real */}
-                <div className="text-center">
-                  <div className="text-6xl mb-2">📷</div>
-                  <p className="text-gray-600 text-sm font-bold">Código QR</p>
-                  <p className="text-gray-500 text-xs">Yape / Plin / BCP</p>
-                </div>
+              <div className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+                <img
+                  src="/qr-yape-plin.png"
+                  alt="QR Pago Yape/Plin"
+                  className="w-full h-full object-contain"
+                />
               </div>
+              <p className="text-center text-gray-600 text-xs mt-2 font-bold">
+                Escanea con Yape, Plin o tu app bancaria
+              </p>
             </div>
 
             {/* Instrucciones */}
