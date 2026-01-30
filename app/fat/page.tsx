@@ -587,15 +587,6 @@ export default function FatPage() {
 
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center">
-          {/* Left Arrow - Hide on mobile */}
-          <button
-            onClick={() => scroll('left')}
-            className="absolute -left-8 md:-left-12 top-1/2 -translate-y-1/2 z-10 text-red-400 hover:text-red-300 text-2xl md:text-4xl font-bold transition-all neon-glow-fat hidden sm:block"
-            aria-label="Anterior"
-          >
-            &lt;
-          </button>
-
           {/* Scrollable Products */}
           <div
             ref={scrollContainerRef}
@@ -986,15 +977,6 @@ export default function FatPage() {
               );
             })}
           </div>
-
-          {/* Right Arrow - Hide on mobile */}
-          <button
-            onClick={() => scroll('right')}
-            className="absolute -right-8 md:-right-12 top-1/2 -translate-y-1/2 z-10 text-red-400 hover:text-red-300 text-2xl md:text-4xl font-bold transition-all neon-glow-fat hidden sm:block"
-            aria-label="Siguiente"
-          >
-            &gt;
-          </button>
         </div>
 
         {/* Sección de órdenes agregadas */}
