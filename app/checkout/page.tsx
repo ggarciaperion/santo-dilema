@@ -689,7 +689,7 @@ export default function CheckoutPage() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-green-400 text-xs font-bold truncate">{paymentProof.name}</p>
+                    <p className="text-green-400 text-xs font-bold">Pago subido con éxito</p>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
