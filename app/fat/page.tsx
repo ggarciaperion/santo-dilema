@@ -98,6 +98,7 @@ export default function FatPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
+  const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -315,7 +316,8 @@ export default function FatPage() {
 
   const handleCloseCard = () => {
     setExpandedCard(null);
-    setIsEditingOrder(false); // Resetear flag de edición
+    setIsEditingOrder(false);
+    setEditingOrderIndex(null);
     // Limpiar estados
     if (expandedCard) {
       setShowSalsas((prev) => ({ ...prev, [expandedCard]: false }));
@@ -367,6 +369,8 @@ export default function FatPage() {
       // Si llega a 0, colapsar el card y limpiar carrito
       if (currentQty === 1) {
         setExpandedCard(null);
+        setIsEditingOrder(false);
+        setEditingOrderIndex(null);
         setShowSalsas((prev) => ({ ...prev, [productId]: false }));
         setShowBebidas((prev) => ({ ...prev, [productId]: false }));
         setShowExtras((prev) => ({ ...prev, [productId]: false }));
@@ -502,7 +506,12 @@ export default function FatPage() {
       salsas: selectedSalsas[product.id] || [],
       complementIds: complementsInCart[product.id] || []
     };
-    setCompletedOrders((prev) => [...prev, completedOrder]);
+    if (isEditingOrder && editingOrderIndex !== null) {
+      setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
+      setEditingOrderIndex(null);
+    } else {
+      setCompletedOrders((prev) => [...prev, completedOrder]);
+    }
 
     // Limpiar selecciones y cerrar el card
     setSelectedSalsas((prev) => ({ ...prev, [product.id]: [] }));
@@ -532,11 +541,8 @@ export default function FatPage() {
     const order = completedOrders[orderIndex];
     if (!order) return;
 
-    // Eliminar esta orden de completedOrders
-    setCompletedOrders((prev) => prev.filter((_, idx) => idx !== orderIndex));
-
-    // NO eliminar del carrito - mantener items para que el total no cambie
-    // Los items serán actualizados cuando se confirme la edición
+    // Guardar el índice para reemplazar en completedOrders al confirmar
+    setEditingOrderIndex(orderIndex);
 
     // Restaurar los estados para editar
     setOrderQuantity((prev) => ({ ...prev, [order.productId]: order.quantity }));
