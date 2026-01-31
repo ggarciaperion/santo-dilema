@@ -74,6 +74,9 @@ const availableComplements: Record<string, { name: string; price: number }> = {
   "extra-salsa": { name: "Extra salsa", price: 3.00 }
 };
 
+// Variable de módulo: persiste entre navegaciones client-side, se resetea en reload/refresh
+let fatPageInitialized = false;
+
 export default function FatPage() {
   const { cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -138,26 +141,18 @@ export default function FatPage() {
 
   // Cargar órdenes existentes o limpiar según el tipo de navegación
   useEffect(() => {
-    const navType = performance.getEntriesByType('navigation')[0]?.type;
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromCheckout = urlParams.get('from') === 'checkout';
 
-    // Solo limpiar datos en una recarga de página
-    if (navType === 'reload') {
-      localStorage.removeItem("santo-dilema-fat-orders");
-      localStorage.removeItem("santo-dilema-cart");
-      clearCart();
-      return;
-    }
+    // Botón "Volver" desde checkout: siempre restaurar
+    if (fromCheckout) {
+      fatPageInitialized = true;
+      const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
+      if (savedOrders) {
+        try {
+          const orders = JSON.parse(savedOrders);
+          setCompletedOrders(orders);
 
-    // En cualquier otra navegación, intentar restaurar órdenes desde localStorage
-    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
-    if (savedOrders) {
-      try {
-        const orders = JSON.parse(savedOrders);
-        setCompletedOrders(orders);
-
-        // Si viene del botón "Volver" del checkout, reconstruir carrito y hacer scroll
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('from') === 'checkout') {
           clearCart();
           orders.forEach((order: CompletedOrder) => {
             const product = products.find(p => p.id === order.productId);
@@ -188,7 +183,31 @@ export default function FatPage() {
               orderSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
           }, 500);
+        } catch (error) {
+          console.error("Error loading orders:", error);
+          localStorage.removeItem("santo-dilema-fat-orders");
+          localStorage.removeItem("santo-dilema-cart");
+          clearCart();
         }
+      }
+      return;
+    }
+
+    // Primera carga del módulo en esta sesión (reload/refresh resets fatPageInitialized)
+    if (!fatPageInitialized) {
+      fatPageInitialized = true;
+      localStorage.removeItem("santo-dilema-fat-orders");
+      localStorage.removeItem("santo-dilema-cart");
+      clearCart();
+      return;
+    }
+
+    // Remontaje por navegación client-side (botón atrás del navegador)
+    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
+    if (savedOrders) {
+      try {
+        const orders = JSON.parse(savedOrders);
+        setCompletedOrders(orders);
       } catch (error) {
         console.error("Error loading orders:", error);
         localStorage.removeItem("santo-dilema-fat-orders");
