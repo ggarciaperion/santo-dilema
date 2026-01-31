@@ -766,7 +766,7 @@ export default function FatPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-4 md:py-8">
+      <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-8 md:py-14">
         <div className="container mx-auto px-2 md:px-4 text-center">
           <div className="text-3xl md:text-6xl mb-1 md:mb-3 filter drop-shadow-lg">🍗</div>
           <h2 className="text-2xl md:text-5xl font-black mb-2 md:mb-3 text-red-400 neon-glow-fat">
@@ -780,11 +780,6 @@ export default function FatPage() {
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-6 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
-        <h3 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-4 flex items-center gap-2">
-          <span className="text-red-400 neon-glow-fat">Nuestras Alitas</span>
-          <span className="text-amber-400 gold-glow text-sm md:text-lg">★</span>
-        </h3>
-
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible">
           {/* Scrollable Products */}
