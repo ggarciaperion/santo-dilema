@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 
@@ -97,6 +98,42 @@ export default function FatPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
+  const router = useRouter();
+
+  const completedTotal = completedOrders.reduce((total, order) => {
+    const product = products.find(p => p.id === order.productId);
+    if (!product) return total;
+    let orderTotal = product.price * order.quantity;
+    order.complementIds.forEach(compId => {
+      const complement = availableComplements[compId];
+      if (complement) orderTotal += complement.price;
+    });
+    return total + orderTotal;
+  }, 0);
+
+  const navigateToCheckout = () => {
+    clearCart();
+    completedOrders.forEach(order => {
+      const product = products.find(p => p.id === order.productId);
+      if (product) {
+        addToCart(product, order.quantity);
+        order.complementIds.forEach(compId => {
+          const complement = availableComplements[compId];
+          if (complement) {
+            addToCart({
+              id: compId,
+              name: complement.name,
+              description: "",
+              price: complement.price,
+              image: "🥤",
+              category: "bebida"
+            }, 1);
+          }
+        });
+      }
+    });
+    router.push('/checkout');
+  };
 
   // Cargar órdenes existentes si vienen del checkout, limpiar si es recarga normal
   useEffect(() => {
@@ -742,7 +779,7 @@ export default function FatPage() {
       </section>
 
       {/* Products Carousel */}
-      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-6 transition-all duration-300 overflow-visible ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-6 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
         <h3 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-4 flex items-center gap-2">
           <span className="text-red-400 neon-glow-fat">Nuestras Alitas</span>
           <span className="text-amber-400 gold-glow text-sm md:text-lg">★</span>
@@ -1245,22 +1282,22 @@ export default function FatPage() {
       </section>
 
       {/* Cart Summary Bar */}
-      {totalItems > 0 && completedOrders.length > 0 && (
+      {completedOrders.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-red-500/50 shadow-2xl shadow-red-500/30 z-50">
           <div className="container mx-auto px-4 md:px-6 py-4 md:py-5">
             <div className="flex justify-between items-center gap-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-sm md:text-lg">Total</span>
                 <span className="text-amber-400 font-black text-xl md:text-3xl gold-glow">
-                  S/ {totalPrice.toFixed(2)}
+                  S/ {completedTotal.toFixed(2)}
                 </span>
               </div>
-              <Link
-                href="/checkout"
+              <button
+                onClick={navigateToCheckout}
                 className="bg-red-500 hover:bg-red-400 active:scale-95 text-white px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-fat"
               >
                 Continuar<span className="hidden sm:inline"> Pedido</span> →
-              </Link>
+              </button>
             </div>
           </div>
         </div>
