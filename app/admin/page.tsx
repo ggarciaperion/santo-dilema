@@ -2273,6 +2273,7 @@ export default function AdminPage() {
                                 const newSearchTerms = [...productSearchTerms];
                                 newSearchTerms[idx] = e.target.value;
                                 setProductSearchTerms(newSearchTerms);
+                                updateInventoryItem(idx, 'productName', e.target.value);
                                 setActiveDropdownIndex(idx);
                               }}
                               onFocus={() => setActiveDropdownIndex(idx)}
