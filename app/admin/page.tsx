@@ -2057,6 +2057,7 @@ export default function AdminPage() {
                       <option value="INSUMO">INSUMO</option>
                       <option value="SERVICIO">SERVICIO</option>
                       <option value="COSTO FIJO">COSTO FIJO</option>
+                      <option value="UTENCILIO">UTENCILIO</option>
                     </select>
                   </div>
 
