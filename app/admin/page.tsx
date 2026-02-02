@@ -2120,8 +2120,8 @@ export default function AdminPage() {
 
           {/* Inventory Modal */}
           {showInventoryModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto">
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
                 <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
 
                 {/* Información Compacta en Grid */}
@@ -2215,7 +2215,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  <div className="space-y-2 pr-1">
                     {inventoryForm.items.map((item, idx) => (
                       <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
                         <div className="grid grid-cols-12 gap-2">
@@ -2236,7 +2236,7 @@ export default function AdminPage() {
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             />
                             {activeDropdownIndex === idx && (productSearchTerms[idx]?.length >= 3 || !productSearchTerms[idx]) && (
-                              <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-fuchsia-500/30 rounded max-h-40 overflow-y-auto">
+                              <div className="absolute z-[200] w-full mt-1 bg-gray-800 border border-fuchsia-500/30 rounded max-h-40 overflow-y-auto shadow-2xl" style={{ position: 'absolute' }}>
                                 {(() => {
                                   const searchTerm = productSearchTerms[idx]?.toLowerCase() || "";
                                   const filteredProducts = searchTerm.length >= 3
