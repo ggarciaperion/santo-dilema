@@ -2284,10 +2284,6 @@ export default function AdminPage() {
                                 console.log('🔥 onFocus ejecutado, idx:', idx);
                                 setActiveDropdownIndex(idx);
                               }}
-                              onBlur={() => {
-                                console.log('🔥 onBlur ejecutado');
-                                setTimeout(() => setActiveDropdownIndex(null), 200);
-                              }}
                               placeholder="Escribir o seleccionar producto *"
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             />
@@ -2315,13 +2311,28 @@ export default function AdminPage() {
                                       key={product.id}
                                       onMouseDown={(e) => {
                                         e.preventDefault();
-                                        console.log('🔥 Producto seleccionado:', product.name);
-                                        updateInventoryItem(idx, 'productName', product.name);
-                                        updateInventoryItem(idx, 'unit', product.unit);
+                                        e.stopPropagation();
+                                        console.log('🔥 onMouseDown - Producto a seleccionar:', product.name);
+
+                                        // Actualizar el nombre del producto y la unidad
+                                        const newItems = [...inventoryForm.items];
+                                        newItems[idx] = {
+                                          ...newItems[idx],
+                                          productName: product.name,
+                                          unit: product.unit
+                                        };
+
+                                        setInventoryForm({ ...inventoryForm, items: newItems });
+
+                                        // Actualizar searchTerms
                                         const newSearchTerms = [...productSearchTerms];
                                         newSearchTerms[idx] = product.name;
                                         setProductSearchTerms(newSearchTerms);
+
+                                        // Cerrar dropdown
                                         setActiveDropdownIndex(null);
+
+                                        console.log('🔥 Producto guardado:', product.name);
                                       }}
                                       className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer border-b border-fuchsia-500/10 last:border-b-0"
                                     >
