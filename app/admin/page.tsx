@@ -1774,8 +1774,8 @@ export default function AdminPage() {
                                   <p className="text-xs font-bold text-white">{purchase.supplier}</p>
                                   {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
-                                  {item.productName}
+                                <td className="border border-gray-700 px-3 py-2 text-xs text-white font-bold">
+                                  {item.productName || '-'}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-center text-xs text-white">
                                   {item.quantity}
@@ -1783,13 +1783,11 @@ export default function AdminPage() {
                                 <td className="border border-gray-700 px-3 py-2 text-center text-xs text-gray-300">
                                   {item.unit}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center">
-                                  <span className="text-xs">
-                                    {purchase.paymentMethod === 'plin-yape' && '📱'}
-                                    {purchase.paymentMethod === 'efectivo' && '💵'}
-                                    {purchase.paymentMethod === 'transferencia' && '🏦'}
-                                    {purchase.paymentMethod === 'tarjeta' && '💳'}
-                                  </span>
+                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-cyan-400">
+                                  {purchase.paymentMethod === 'plin-yape' && 'PLIN-YAPE'}
+                                  {purchase.paymentMethod === 'efectivo' && 'EFECTIVO'}
+                                  {purchase.paymentMethod === 'transferencia' && 'TRANSFERENCIA'}
+                                  {purchase.paymentMethod === 'tarjeta' && 'TARJETA'}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-right">
                                   <p className="text-xs font-bold text-fuchsia-400">S/ {item.unitCost.toFixed(2)}</p>
