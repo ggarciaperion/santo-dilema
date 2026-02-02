@@ -52,7 +52,7 @@ export default function AdminPage() {
     supplierRuc: "",
     supplierPhone: "",
     paymentMethod: "plin-yape",
-    items: [{ productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }],
+    items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
     totalAmount: 0,
     purchaseDate: new Date().toISOString().split('T')[0]
   });
@@ -373,7 +373,7 @@ export default function AdminPage() {
           supplierRuc: "",
           supplierPhone: "",
           paymentMethod: "plin-yape",
-          items: [{ productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }],
+          items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
           totalAmount: 0,
           purchaseDate: new Date().toISOString().split('T')[0]
         });
@@ -403,7 +403,7 @@ export default function AdminPage() {
   const addInventoryItem = () => {
     setInventoryForm({
       ...inventoryForm,
-      items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }]
+      items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }]
     });
     setProductSearchTerms([...productSearchTerms, ""]);
   };
@@ -2374,8 +2374,8 @@ export default function AdminPage() {
                             <input
                               type="number"
                               step="1"
-                              value={item.volume === 0 || item.volume === 1 ? '' : item.volume}
-                              onChange={(e) => updateInventoryItem(idx, 'volume', parseFloat(e.target.value) || 1)}
+                              value={item.volume || ''}
+                              onChange={(e) => updateInventoryItem(idx, 'volume', parseFloat(e.target.value) || 0)}
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               placeholder=""
                             />
@@ -2455,7 +2455,7 @@ export default function AdminPage() {
                         supplierRuc: "",
                         supplierPhone: "",
                         paymentMethod: "plin-yape",
-                        items: [{ productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }],
+                        items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
                         totalAmount: 0,
                         purchaseDate: new Date().toISOString().split('T')[0]
                       });
