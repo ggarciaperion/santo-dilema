@@ -1561,54 +1561,65 @@ export default function AdminPage() {
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="bg-black/50">
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">Fecha</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">Proveedor</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">Artículos</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">Pago</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">Total</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">Acción</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {inventory.map((purchase) => (
-                            <tr key={purchase.id} className="hover:bg-fuchsia-500/5 transition-all">
-                              <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
-                                {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                              </td>
-                              <td className="border border-gray-700 px-3 py-2">
-                                <p className="text-sm font-bold text-white">{purchase.supplier}</p>
-                                {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
-                              </td>
-                              <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
-                                {purchase.items.map((item: any, idx: number) => (
-                                  <span key={idx}>
-                                    {item.productName} ({item.quantity} {item.unit})
-                                    {idx < purchase.items.length - 1 ? ', ' : ''}
+                          {inventory.map((purchase) =>
+                            purchase.items.map((item: any, itemIdx: number) => (
+                              <tr key={`${purchase.id}-${itemIdx}`} className="hover:bg-fuchsia-500/5 transition-all">
+                                <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
+                                  {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2">
+                                  <p className="text-xs font-bold text-white">{purchase.supplier}</p>
+                                  {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
+                                  {item.productName}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-white">
+                                  {item.quantity}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-gray-300">
+                                  {item.unit}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-center">
+                                  <span className="text-xs">
+                                    {purchase.paymentMethod === 'plin-yape' && '📱'}
+                                    {purchase.paymentMethod === 'efectivo' && '💵'}
+                                    {purchase.paymentMethod === 'transferencia' && '🏦'}
+                                    {purchase.paymentMethod === 'tarjeta' && '💳'}
                                   </span>
-                                ))}
-                              </td>
-                              <td className="border border-gray-700 px-3 py-2 text-center">
-                                <span className="text-xs">
-                                  {purchase.paymentMethod === 'plin-yape' && '📱'}
-                                  {purchase.paymentMethod === 'efectivo' && '💵'}
-                                  {purchase.paymentMethod === 'transferencia' && '🏦'}
-                                  {purchase.paymentMethod === 'tarjeta' && '💳'}
-                                </span>
-                              </td>
-                              <td className="border border-gray-700 px-3 py-2 text-right">
-                                <p className="text-sm font-bold text-fuchsia-400">S/ {purchase.totalAmount.toFixed(2)}</p>
-                              </td>
-                              <td className="border border-gray-700 px-3 py-2 text-center">
-                                <button
-                                  onClick={() => handleDeleteInventory(purchase.id)}
-                                  className="text-red-400 hover:text-red-300 text-xs"
-                                  title="Eliminar"
-                                >
-                                  🗑️
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-right">
+                                  <p className="text-xs font-bold text-fuchsia-400">S/ {item.unitCost.toFixed(2)}</p>
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-right">
+                                  <p className="text-xs font-bold text-amber-400">S/ {item.total.toFixed(2)}</p>
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-center">
+                                  {itemIdx === 0 && (
+                                    <button
+                                      onClick={() => handleDeleteInventory(purchase.id)}
+                                      className="text-red-400 hover:text-red-300 text-xs"
+                                      title="Eliminar"
+                                    >
+                                      🗑️
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
