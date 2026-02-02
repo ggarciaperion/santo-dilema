@@ -54,7 +54,6 @@ export default function AdminPage() {
     paymentMethod: "plin-yape",
     items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
     totalAmount: 0,
-    notes: "",
     purchaseDate: new Date().toISOString().split('T')[0]
   });
   const [promotions, setPromotions] = useState<any[]>([]);
@@ -368,7 +367,6 @@ export default function AdminPage() {
           paymentMethod: "plin-yape",
           items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
           totalAmount: 0,
-          notes: "",
           purchaseDate: new Date().toISOString().split('T')[0]
         });
         setProductSearchTerms([""]);
@@ -2345,20 +2343,6 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Notas */}
-                <div className="mb-3">
-                  <label className="block text-xs font-bold text-gray-400 mb-1">
-                    <span>📝</span> Notas Adicionales (opcional)
-                  </label>
-                  <textarea
-                    value={inventoryForm.notes}
-                    onChange={(e) => setInventoryForm({ ...inventoryForm, notes: e.target.value })}
-                    className="w-full px-2 py-1.5 text-sm rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                    rows={2}
-                    placeholder="Info adicional, número de factura, etc."
-                  />
-                </div>
-
                 {/* Total */}
                 <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-lg p-3 border-2 border-fuchsia-500/50 mb-3">
                   <div className="flex justify-between items-center">
@@ -2387,7 +2371,6 @@ export default function AdminPage() {
                         paymentMethod: "plin-yape",
                         items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
                         totalAmount: 0,
-                        notes: "",
                         purchaseDate: new Date().toISOString().split('T')[0]
                       });
                       setProductSearchTerms([""]);
