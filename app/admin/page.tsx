@@ -52,6 +52,10 @@ export default function AdminPage() {
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
   const [inventorySection, setInventorySection] = useState<"purchases" | "stock" | "movements">("purchases");
+  const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
+  const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
+  const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
+  const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [promotionForm, setPromotionForm] = useState({
     name: "",
     description: "",
@@ -1515,6 +1519,33 @@ export default function AdminPage() {
 
             {inventorySection === "purchases" && (
               <>
+                {(() => {
+                  // Filtrar inventario
+                  const filteredInventory = inventory.filter((purchase) => {
+                    // Filtro por fecha
+                    if (inventoryDateFilter) {
+                      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+                      if (purchaseDate !== inventoryDateFilter) {
+                        return false;
+                      }
+                    }
+
+                    // Filtro por nombre de producto
+                    if (inventorySearchTerm) {
+                      const searchLower = inventorySearchTerm.toLowerCase();
+                      const hasMatchingProduct = purchase.items.some((item: any) =>
+                        item.productName.toLowerCase().includes(searchLower)
+                      );
+                      if (!hasMatchingProduct) {
+                        return false;
+                      }
+                    }
+
+                    return true;
+                  });
+
+                  return (
+                    <>
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h3 className="text-2xl font-bold text-white">Registro de Compras</h3>
@@ -1532,29 +1563,71 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                   <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
                     <p className="text-gray-400 text-sm font-semibold">Total Compras</p>
-                    <p className="text-5xl font-black text-white mt-2">{inventory.length}</p>
+                    <p className="text-5xl font-black text-white mt-2">{filteredInventory.length}</p>
                   </div>
                   <div className="bg-gray-900 rounded-xl border-2 border-red-500/50 p-6">
                     <p className="text-red-400 text-sm font-bold">Gasto Total</p>
                     <p className="text-4xl font-black text-red-400 mt-2">
-                      S/ {inventory.reduce((sum, i) => sum + i.totalAmount, 0).toFixed(2)}
+                      S/ {filteredInventory.reduce((sum, i) => sum + i.totalAmount, 0).toFixed(2)}
                     </p>
                   </div>
                   <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
                     <p className="text-amber-400 text-sm font-bold">Compra Promedio</p>
                     <p className="text-4xl font-black text-amber-400 mt-2">
-                      S/ {inventory.length > 0 ? (inventory.reduce((sum, i) => sum + i.totalAmount, 0) / inventory.length).toFixed(2) : '0.00'}
+                      S/ {filteredInventory.length > 0 ? (filteredInventory.reduce((sum, i) => sum + i.totalAmount, 0) / filteredInventory.length).toFixed(2) : '0.00'}
                     </p>
                   </div>
                 </div>
 
+                {/* Filtros */}
+                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-2">Buscar por producto</label>
+                      <input
+                        type="text"
+                        value={inventorySearchTerm}
+                        onChange={(e) => setInventorySearchTerm(e.target.value)}
+                        placeholder="Escribe el nombre del producto..."
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-2">Filtrar por fecha</label>
+                      <input
+                        type="date"
+                        value={inventoryDateFilter}
+                        onChange={(e) => setInventoryDateFilter(e.target.value)}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
+                      />
+                    </div>
+                  </div>
+                  {(inventorySearchTerm || inventoryDateFilter) && (
+                    <div className="mt-3">
+                      <button
+                        onClick={() => {
+                          setInventorySearchTerm("");
+                          setInventoryDateFilter("");
+                        }}
+                        className="text-xs text-gray-400 hover:text-white transition-all"
+                      >
+                        ✕ Limpiar filtros
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Inventory List - Formato Tabla Excel */}
                 <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                  {inventory.length === 0 ? (
+                  {filteredInventory.length === 0 ? (
                     <div className="text-center py-12">
                       <span className="text-6xl block mb-4">📦</span>
-                      <p className="text-2xl text-gray-400 font-bold">No hay compras registradas</p>
-                      <p className="text-sm text-gray-500 mt-2">Comienza registrando tu primera compra</p>
+                      <p className="text-2xl text-gray-400 font-bold">
+                        {inventory.length === 0 ? 'No hay compras registradas' : 'No se encontraron resultados'}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        {inventory.length === 0 ? 'Comienza registrando tu primera compra' : 'Intenta con otros filtros'}
+                      </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -1573,7 +1646,7 @@ export default function AdminPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {inventory.map((purchase) =>
+                          {filteredInventory.map((purchase) =>
                             purchase.items.map((item: any, itemIdx: number) => (
                               <tr key={`${purchase.id}-${itemIdx}`} className="hover:bg-fuchsia-500/5 transition-all">
                                 <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
@@ -1608,13 +1681,25 @@ export default function AdminPage() {
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-center">
                                   {itemIdx === 0 && (
-                                    <button
-                                      onClick={() => handleDeleteInventory(purchase.id)}
-                                      className="text-red-400 hover:text-red-300 text-xs"
-                                      title="Eliminar"
-                                    >
-                                      🗑️
-                                    </button>
+                                    <div className="flex items-center justify-center gap-2">
+                                      <button
+                                        onClick={() => {
+                                          setSelectedPurchaseDetail(purchase);
+                                          setShowInventoryDetailModal(true);
+                                        }}
+                                        className="text-cyan-400 hover:text-cyan-300 text-sm"
+                                        title="Ver detalles"
+                                      >
+                                        🔍
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteInventory(purchase.id)}
+                                        className="text-red-400 hover:text-red-300 text-sm font-bold"
+                                        title="Eliminar"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
                                   )}
                                 </td>
                               </tr>
@@ -1625,6 +1710,134 @@ export default function AdminPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Modal de Detalles */}
+                {showInventoryDetailModal && selectedPurchaseDetail && (
+                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-2xl font-black text-fuchsia-400">Detalle de Compra</h3>
+                        <button
+                          onClick={() => setShowInventoryDetailModal(false)}
+                          className="text-gray-400 hover:text-white text-2xl"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {/* Información del Proveedor */}
+                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 Información del Proveedor</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-gray-400">Proveedor:</p>
+                            <p className="text-white font-bold">{selectedPurchaseDetail.supplier}</p>
+                          </div>
+                          {selectedPurchaseDetail.supplierRuc && (
+                            <div>
+                              <p className="text-gray-400">RUC:</p>
+                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierRuc}</p>
+                            </div>
+                          )}
+                          {selectedPurchaseDetail.supplierPhone && (
+                            <div>
+                              <p className="text-gray-400">Teléfono:</p>
+                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierPhone}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-gray-400">Fecha de Compra:</p>
+                            <p className="text-white font-bold">
+                              {new Date(selectedPurchaseDetail.purchaseDate).toLocaleDateString('es-PE', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">Método de Pago:</p>
+                            <p className="text-white font-bold">
+                              {selectedPurchaseDetail.paymentMethod === 'plin-yape' && '📱 Plin / Yape'}
+                              {selectedPurchaseDetail.paymentMethod === 'efectivo' && '💵 Efectivo'}
+                              {selectedPurchaseDetail.paymentMethod === 'transferencia' && '🏦 Transferencia'}
+                              {selectedPurchaseDetail.paymentMethod === 'tarjeta' && '💳 Tarjeta'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400">ID de Compra:</p>
+                            <p className="text-white font-bold">#{selectedPurchaseDetail.id}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Lista de Artículos */}
+                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📦 Artículos Comprados</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr className="bg-gray-900">
+                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-left">Producto</th>
+                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-center">Cantidad</th>
+                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-center">Unidad</th>
+                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-right">Total</th>
+                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-right">C. Unit.</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selectedPurchaseDetail.items.map((item: any, idx: number) => (
+                                <tr key={idx}>
+                                  <td className="border border-gray-700 px-2 py-2 text-xs text-white">{item.productName}</td>
+                                  <td className="border border-gray-700 px-2 py-2 text-xs text-center text-white">{item.quantity}</td>
+                                  <td className="border border-gray-700 px-2 py-2 text-xs text-center text-gray-300">{item.unit}</td>
+                                  <td className="border border-gray-700 px-2 py-2 text-xs text-right text-fuchsia-400 font-bold">
+                                    S/ {item.unitCost.toFixed(2)}
+                                  </td>
+                                  <td className="border border-gray-700 px-2 py-2 text-xs text-right text-amber-400 font-bold">
+                                    S/ {item.total.toFixed(2)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Total */}
+                      <div className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-lg p-4 border-2 border-fuchsia-500/50 mb-4">
+                        <div className="flex justify-between items-center">
+                          <p className="text-white font-bold">TOTAL DE LA COMPRA</p>
+                          <p className="text-3xl font-black text-fuchsia-400">
+                            S/ {selectedPurchaseDetail.totalAmount.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Notas */}
+                      {selectedPurchaseDetail.notes && (
+                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                          <p className="text-sm text-gray-400">
+                            <span className="font-bold text-amber-400">📝 Notas:</span> {selectedPurchaseDetail.notes}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Botón Cerrar */}
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={() => setShowInventoryDetailModal(false)}
+                          className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-bold transition-all"
+                        >
+                          Cerrar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                    </>
+                  );
+                })()}
               </>
             )}
 
