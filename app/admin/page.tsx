@@ -2468,7 +2468,11 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={handleCreateInventory}
-                    className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
+                    disabled={
+                      !inventoryForm.supplier.trim() ||
+                      !inventoryForm.items.some(i => i.productName && i.productName.trim() !== '')
+                    }
+                    className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
                   >
                     ✅ Registrar Compra
                   </button>
