@@ -16,6 +16,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log("🔥 Body recibido:", body);
+    console.log("🔥 Items recibidos:", body.items);
 
     const newPurchase = {
       id: Date.now().toString(),
@@ -30,6 +32,7 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
+    console.log("🔥 Compra a guardar:", newPurchase);
     const savedPurchase = await storage.saveInventoryPurchase(newPurchase);
 
     return NextResponse.json(savedPurchase, { status: 201 });

@@ -349,6 +349,9 @@ export default function AdminPage() {
   // Inventory functions
   const handleCreateInventory = async () => {
     try {
+      console.log("📦 Datos a enviar:", inventoryForm);
+      console.log("📦 Items:", inventoryForm.items);
+
       const response = await fetch("/api/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
