@@ -2305,7 +2305,9 @@ export default function AdminPage() {
                                   return filteredProducts.map((product) => (
                                     <div
                                       key={product.id}
-                                      onClick={() => {
+                                      onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        console.log('🔥 Producto seleccionado:', product.name);
                                         updateInventoryItem(idx, 'productName', product.name);
                                         updateInventoryItem(idx, 'unit', product.unit);
                                         const newSearchTerms = [...productSearchTerms];
