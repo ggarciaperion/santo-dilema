@@ -280,13 +280,17 @@ export default function AdminPage() {
     const newItems = [...inventoryForm.items];
     newItems[index] = { ...newItems[index], [field]: value };
 
-    // Auto-calculate total for item
+    // Auto-calculate unit cost (total / quantity)
     if (field === 'quantity' || field === 'unitCost') {
-      newItems[index].total = newItems[index].quantity * newItems[index].unitCost;
+      if (newItems[index].quantity > 0) {
+        newItems[index].total = newItems[index].unitCost / newItems[index].quantity;
+      } else {
+        newItems[index].total = 0;
+      }
     }
 
     // Calculate total amount
-    const totalAmount = newItems.reduce((sum, item) => sum + item.total, 0);
+    const totalAmount = newItems.reduce((sum, item) => sum + item.unitCost, 0);
 
     setInventoryForm({ ...inventoryForm, items: newItems, totalAmount });
   };
@@ -1916,12 +1920,12 @@ export default function AdminPage() {
                 {/* Información Compacta en Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">RUC *</label>
+                    <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
                     <input
                       type="text"
                       value={inventoryForm.supplierRuc}
                       onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
                       placeholder="20123456789"
                       maxLength={11}
                     />
@@ -1931,18 +1935,18 @@ export default function AdminPage() {
                     <input
                       type="text"
                       value={inventoryForm.supplier}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value })}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value.toUpperCase() })}
                       className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                       placeholder="Nombre proveedor"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Teléfono *</label>
+                    <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
                     <input
                       type="tel"
                       value={inventoryForm.supplierPhone}
                       onChange={(e) => setInventoryForm({ ...inventoryForm, supplierPhone: e.target.value })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
                       placeholder="987654321"
                     />
                   </div>
