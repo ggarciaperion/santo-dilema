@@ -16,6 +16,7 @@ let fs: any = null;
 let path: any = null;
 let dataDir: string = '';
 let ordersFilePath: string = '';
+let inventoryFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -23,6 +24,7 @@ if (!isProduction) {
   path = require('path');
   dataDir = path.join(process.cwd(), 'data');
   ordersFilePath = path.join(dataDir, 'orders.json');
+  inventoryFilePath = path.join(dataDir, 'inventory.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -33,6 +35,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(ordersFilePath)) {
       fs.writeFileSync(ordersFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(inventoryFilePath)) {
+      fs.writeFileSync(inventoryFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -50,6 +55,25 @@ interface Order {
   status: string;
   createdAt: string;
   timestamp?: string;
+}
+
+interface InventoryPurchase {
+  id: string;
+  supplier: string;
+  supplierRuc?: string;
+  supplierPhone?: string;
+  paymentMethod: string;
+  items: Array<{
+    productName: string;
+    quantity: number;
+    unit: string;
+    unitCost: number;
+    total: number;
+  }>;
+  totalAmount: number;
+  notes?: string;
+  purchaseDate: string;
+  createdAt: string;
 }
 
 export const storage = {
@@ -136,5 +160,69 @@ export const storage = {
         email: customerOrder.email || '',
       },
     };
+  },
+
+  // ========== MÉTODOS DE INVENTARIO ==========
+
+  // Obtener todas las compras de inventario
+  async getInventory(): Promise<InventoryPurchase[]> {
+    if (isProduction) {
+      if (!redis) {
+        console.error('⚠️ Redis no configurado en producción.');
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: usar Redis
+      const inventory = await redis.get<InventoryPurchase[]>('inventory');
+      return inventory || [];
+    } else {
+      // Desarrollo: usar archivo
+      ensureDataDirectory();
+      const data = fs.readFileSync(inventoryFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  // Guardar una nueva compra de inventario
+  async saveInventoryPurchase(purchase: InventoryPurchase): Promise<InventoryPurchase> {
+    const inventory = await this.getInventory();
+    inventory.unshift(purchase);
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: guardar en Redis
+      await redis.set('inventory', inventory);
+      console.log('✅ Compra guardada en Redis');
+    } else {
+      // Desarrollo: guardar en archivo
+      ensureDataDirectory();
+      fs.writeFileSync(inventoryFilePath, JSON.stringify(inventory, null, 2));
+      console.log('✅ Compra guardada en archivo local');
+    }
+
+    return purchase;
+  },
+
+  // Eliminar una compra de inventario
+  async deleteInventoryPurchase(id: string): Promise<boolean> {
+    const inventory = await this.getInventory();
+    const filteredInventory = inventory.filter((p) => p.id !== id);
+
+    if (filteredInventory.length === inventory.length) {
+      return false; // No se encontró el registro
+    }
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('inventory', filteredInventory);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(inventoryFilePath, JSON.stringify(filteredInventory, null, 2));
+    }
+
+    return true;
   },
 };
