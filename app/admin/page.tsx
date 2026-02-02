@@ -52,7 +52,7 @@ export default function AdminPage() {
     supplierRuc: "",
     supplierPhone: "",
     paymentMethod: "plin-yape",
-    items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
+    items: [{ productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }],
     totalAmount: 0,
     purchaseDate: new Date().toISOString().split('T')[0]
   });
@@ -373,7 +373,7 @@ export default function AdminPage() {
           supplierRuc: "",
           supplierPhone: "",
           paymentMethod: "plin-yape",
-          items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
+          items: [{ productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }],
           totalAmount: 0,
           purchaseDate: new Date().toISOString().split('T')[0]
         });
@@ -403,7 +403,7 @@ export default function AdminPage() {
   const addInventoryItem = () => {
     setInventoryForm({
       ...inventoryForm,
-      items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }]
+      items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }]
     });
     setProductSearchTerms([...productSearchTerms, ""]);
   };
@@ -419,10 +419,14 @@ export default function AdminPage() {
     const newItems = [...inventoryForm.items];
     newItems[index] = { ...newItems[index], [field]: value };
 
-    // Auto-calculate unit cost (total / quantity)
-    if (field === 'quantity' || field === 'unitCost') {
-      if (newItems[index].quantity > 0) {
-        newItems[index].total = newItems[index].unitCost / newItems[index].quantity;
+    // Auto-calculate unit cost (Costo total / (Cantidad × Volumen))
+    if (field === 'quantity' || field === 'unitCost' || field === 'volume') {
+      const quantity = newItems[index].quantity || 0;
+      const volume = newItems[index].volume || 1;
+      const totalUnits = quantity * volume;
+
+      if (totalUnits > 0) {
+        newItems[index].total = newItems[index].unitCost / totalUnits;
       } else {
         newItems[index].total = 0;
       }
@@ -2132,8 +2136,15 @@ export default function AdminPage() {
                       <option value="UNIDAD">UNIDAD</option>
                       <option value="KG">KG</option>
                       <option value="LITROS">LITROS</option>
-                      <option value="SERVICIO">SERVICIO</option>
                       <option value="GRAMOS">GRAMOS</option>
+                      <option value="SERVICIO">SERVICIO</option>
+                      <option value="CIENTO">CIENTO</option>
+                      <option value="MEDIO MILLAR">MEDIO MILLAR</option>
+                      <option value="MILLAR">MILLAR</option>
+                      <option value="PAQUETE">PAQUETE</option>
+                      <option value="CAJA">CAJA</option>
+                      <option value="BOLSA">BOLSA</option>
+                      <option value="BALDE">BALDE</option>
                     </select>
                   </div>
                 </div>
@@ -2240,14 +2251,17 @@ export default function AdminPage() {
 
                   {/* Encabezados de columnas */}
                   <div className="hidden md:grid grid-cols-12 gap-2 mb-2 px-2">
-                    <div className="col-span-4">
+                    <div className="col-span-3">
                       <p className="text-xs font-bold text-gray-400">Producto</p>
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-1">
                       <p className="text-xs font-bold text-gray-400">Cantidad</p>
                     </div>
                     <div className="col-span-2">
                       <p className="text-xs font-bold text-gray-400">Unidad de medida</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-gray-400">Volumen</p>
                     </div>
                     <div className="col-span-2">
                       <p className="text-xs font-bold text-gray-400">Costo total</p>
@@ -2262,7 +2276,7 @@ export default function AdminPage() {
                       <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
                         <div className="grid grid-cols-12 gap-2">
                           {/* Producto */}
-                          <div className="col-span-12 md:col-span-4 relative product-autocomplete">
+                          <div className="col-span-12 md:col-span-3 relative product-autocomplete">
                             <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Producto</label>
                             <input
                               type="text"
@@ -2320,7 +2334,7 @@ export default function AdminPage() {
                             )}
                           </div>
                           {/* Cantidad */}
-                          <div className="col-span-6 md:col-span-2">
+                          <div className="col-span-6 md:col-span-1">
                             <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Cantidad</label>
                             <input
                               type="number"
@@ -2343,9 +2357,28 @@ export default function AdminPage() {
                               <option value="UNIDAD">UNIDAD</option>
                               <option value="KG">KG</option>
                               <option value="LITROS">LITROS</option>
-                              <option value="SERVICIO">SERVICIO</option>
                               <option value="GRAMOS">GRAMOS</option>
+                              <option value="SERVICIO">SERVICIO</option>
+                              <option value="CIENTO">CIENTO</option>
+                              <option value="MEDIO MILLAR">MEDIO MILLAR</option>
+                              <option value="MILLAR">MILLAR</option>
+                              <option value="PAQUETE">PAQUETE</option>
+                              <option value="CAJA">CAJA</option>
+                              <option value="BOLSA">BOLSA</option>
+                              <option value="BALDE">BALDE</option>
                             </select>
+                          </div>
+                          {/* Volumen */}
+                          <div className="col-span-6 md:col-span-2">
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Volumen (unid/pres.)</label>
+                            <input
+                              type="number"
+                              step="1"
+                              value={item.volume === 0 ? '' : item.volume}
+                              onChange={(e) => updateInventoryItem(idx, 'volume', parseFloat(e.target.value) || 1)}
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="1"
+                            />
                           </div>
                           {/* Costo total */}
                           <div className="col-span-6 md:col-span-2">
@@ -2422,7 +2455,7 @@ export default function AdminPage() {
                         supplierRuc: "",
                         supplierPhone: "",
                         paymentMethod: "plin-yape",
-                        items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
+                        items: [{ productName: "", quantity: 0, unit: "kg", volume: 1, unitCost: 0, total: 0 }],
                         totalAmount: 0,
                         purchaseDate: new Date().toISOString().split('T')[0]
                       });

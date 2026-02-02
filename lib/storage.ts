@@ -81,6 +81,7 @@ interface InventoryPurchase {
     productName: string;
     quantity: number;
     unit: string;
+    volume: number;
     unitCost: number;
     total: number;
   }>;
