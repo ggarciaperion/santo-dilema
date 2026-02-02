@@ -1951,9 +1951,12 @@ export default function AdminPage() {
                     <input
                       type="tel"
                       value={inventoryForm.supplierPhone}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplierPhone: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setInventoryForm({ ...inventoryForm, supplierPhone: value });
+                      }}
                       className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                      placeholder="987654321"
+                      maxLength={9}
                     />
                   </div>
                   <div>
