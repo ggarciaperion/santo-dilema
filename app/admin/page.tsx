@@ -1482,9 +1482,13 @@ export default function AdminPage() {
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                             product.category === 'fit' ? 'bg-cyan-500/20 text-cyan-400' :
                             product.category === 'fat' ? 'bg-red-500/20 text-red-400' :
+                            product.category === 'extra-papas' ? 'bg-amber-500/20 text-amber-400' :
+                            product.category === 'extra-salsas' ? 'bg-orange-500/20 text-orange-400' :
                             'bg-purple-500/20 text-purple-400'
                           }`}>
-                            {product.category.toUpperCase()}
+                            {product.category === 'extra-papas' ? 'EXTRA PAPAS' :
+                             product.category === 'extra-salsas' ? 'EXTRA SALSAS' :
+                             product.category.toUpperCase()}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right text-green-400 font-black">S/ {(product.price || 0).toFixed(2)}</td>
@@ -1553,6 +1557,8 @@ export default function AdminPage() {
                       <option value="fit">FIT (Ensaladas)</option>
                       <option value="fat">FAT (Alitas)</option>
                       <option value="bebida">Bebidas</option>
+                      <option value="extra-papas">EXTRA PAPAS</option>
+                      <option value="extra-salsas">EXTRA SALSAS</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
