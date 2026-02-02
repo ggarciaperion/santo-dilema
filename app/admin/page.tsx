@@ -2007,15 +2007,18 @@ export default function AdminPage() {
                   inventory.forEach((purchase) => {
                     purchase.items.forEach((item: any) => {
                       const key = `${item.productName}-${item.unit}`;
+                      // Calcular stock: cantidad × volumen
+                      const stockQuantity = item.quantity * (item.volume || 1);
+
                       if (stockMap.has(key)) {
                         const existing = stockMap.get(key)!;
-                        existing.totalQuantity += item.quantity;
+                        existing.totalQuantity += stockQuantity;
                         existing.purchases += 1;
                       } else {
                         stockMap.set(key, {
                           productName: item.productName,
                           unit: item.unit,
-                          totalQuantity: item.quantity,
+                          totalQuantity: stockQuantity,
                           purchases: 1
                         });
                       }
