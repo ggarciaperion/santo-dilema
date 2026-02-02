@@ -1,6 +1,33 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
+// Función para generar productId automático basado en categoría
+async function generateProductId(category: string): Promise<string> {
+  const products = await storage.getProducts();
+
+  // Obtener prefijo de 3 letras de la categoría
+  const prefix = category.substring(0, 3).toUpperCase();
+
+  // Filtrar productos que empiezan con este prefijo
+  const categoryProducts = products.filter(p => p.productId?.startsWith(prefix));
+
+  // Encontrar el número más alto
+  let maxNumber = 0;
+  categoryProducts.forEach(p => {
+    const match = p.productId?.match(/\d+$/);
+    if (match) {
+      const num = parseInt(match[0], 10);
+      if (num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+  });
+
+  // Generar el siguiente número correlativo
+  const nextNumber = maxNumber + 1;
+  return `${prefix}${nextNumber.toString().padStart(3, '0')}`;
+}
+
 // GET - Obtener todos los productos
 export async function GET() {
   try {
@@ -17,9 +44,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Generar productId automáticamente si no se proporciona
+    const productId = body.productId?.trim()
+      ? body.productId.toUpperCase()
+      : await generateProductId(body.category);
+
     const newProduct = {
       id: Date.now().toString(),
-      productId: body.productId.toUpperCase(),
+      productId,
       name: body.name.toUpperCase(),
       category: body.category || "",
       unit: body.unit || "unidad",

@@ -174,11 +174,6 @@ export default function AdminPage() {
 
   const handleCreateCatalogProduct = async () => {
     try {
-      if (!catalogForm.productId.trim()) {
-        alert("El ID del producto es requerido");
-        return;
-      }
-
       if (!catalogForm.name.trim()) {
         alert("El nombre del producto es requerido");
         return;
@@ -2088,14 +2083,21 @@ export default function AdminPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2">ID del Producto *</label>
-                    <input
-                      type="text"
-                      value={catalogForm.productId}
-                      onChange={(e) => setCatalogForm({ ...catalogForm, productId: e.target.value.toUpperCase() })}
-                      placeholder="ID ÚNICO"
-                      className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
-                    />
+                    <label className="block text-xs font-bold text-gray-400 mb-2">
+                      ID del Producto {editingCatalogProduct ? '' : '(Auto-generado)'}
+                    </label>
+                    {editingCatalogProduct ? (
+                      <input
+                        type="text"
+                        value={catalogForm.productId}
+                        readOnly
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-400 rounded cursor-not-allowed"
+                      />
+                    ) : (
+                      <div className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-cyan-400 rounded text-sm">
+                        {catalogForm.category ? `${catalogForm.category.substring(0, 3).toUpperCase()}###` : 'Selecciona una categoría primero'}
+                      </div>
+                    )}
                   </div>
 
                   <div>
