@@ -1448,7 +1448,10 @@ export default function AdminPage() {
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
                 <p className="text-purple-400 text-sm font-bold">Margen Promedio</p>
                 <p className="text-4xl font-black text-purple-400 mt-2">
-                  {products.length > 0 ? (products.reduce((sum, p) => sum + ((p.price - p.cost) / p.price * 100), 0) / products.length).toFixed(1) : '0'}%
+                  {products.length > 0 ? (products.reduce((sum, p) => {
+                    if (!p.price || p.price === 0) return sum;
+                    return sum + ((p.price - p.cost) / p.price * 100);
+                  }, 0) / products.length).toFixed(1) : '0'}%
                 </p>
               </div>
             </div>
@@ -1469,7 +1472,9 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {products.map((product, idx) => {
-                    const margin = ((product.price - product.cost) / product.price * 100);
+                    const margin = product.price && product.price > 0
+                      ? ((product.price - product.cost) / product.price * 100)
+                      : 0;
                     return (
                       <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-black/50 transition-all ${idx % 2 === 0 ? 'bg-gray-900/50' : ''}`}>
                         <td className="px-6 py-4 text-white font-bold">{product.name}</td>
@@ -1482,8 +1487,8 @@ export default function AdminPage() {
                             {product.category.toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right text-green-400 font-black">S/ {product.price.toFixed(2)}</td>
-                        <td className="px-6 py-4 text-right text-gray-400">S/ {product.cost.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-right text-green-400 font-black">S/ {(product.price || 0).toFixed(2)}</td>
+                        <td className="px-6 py-4 text-right text-gray-400">S/ {(product.cost || 0).toFixed(2)}</td>
                         <td className="px-6 py-4 text-right">
                           <span className={`font-black ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
                             {margin.toFixed(1)}%
