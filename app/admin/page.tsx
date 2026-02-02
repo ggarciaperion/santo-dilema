@@ -73,6 +73,8 @@ export default function AdminPage() {
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [catalogForm, setCatalogForm] = useState({ name: "", category: "", unit: "" });
+  const [productSearchTerms, setProductSearchTerms] = useState<string[]>([]);
+  const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(null);
   const [promotionForm, setPromotionForm] = useState({
     name: "",
     description: "",
@@ -104,6 +106,18 @@ export default function AdminPage() {
       loadCatalogProducts();
     }, 10000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.product-autocomplete')) {
+        setActiveDropdownIndex(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const loadOrders = async () => {
@@ -357,6 +371,7 @@ export default function AdminPage() {
           notes: "",
           purchaseDate: new Date().toISOString().split('T')[0]
         });
+        setProductSearchTerms([""]);
         alert("Compra registrada exitosamente");
       } else {
         const errorData = await response.json();
@@ -384,11 +399,14 @@ export default function AdminPage() {
       ...inventoryForm,
       items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }]
     });
+    setProductSearchTerms([...productSearchTerms, ""]);
   };
 
   const removeInventoryItem = (index: number) => {
     const newItems = inventoryForm.items.filter((_, i) => i !== index);
+    const newSearchTerms = productSearchTerms.filter((_, i) => i !== index);
     setInventoryForm({ ...inventoryForm, items: newItems });
+    setProductSearchTerms(newSearchTerms);
   };
 
   const updateInventoryItem = (index: number, field: string, value: any) => {
@@ -1658,7 +1676,10 @@ export default function AdminPage() {
                       className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
                     />
                     <button
-                      onClick={() => setShowInventoryModal(true)}
+                      onClick={() => {
+                        setShowInventoryModal(true);
+                        setProductSearchTerms([""]);
+                      }}
                       className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
                     >
                       + Nueva Compra
@@ -2201,20 +2222,55 @@ export default function AdminPage() {
                       <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
                         <div className="grid grid-cols-12 gap-2">
                           {/* Producto */}
-                          <div className="col-span-12 md:col-span-4">
+                          <div className="col-span-12 md:col-span-4 relative product-autocomplete">
                             <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Producto</label>
-                            <select
-                              value={item.productName}
-                              onChange={(e) => updateInventoryItem(idx, 'productName', e.target.value)}
+                            <input
+                              type="text"
+                              value={productSearchTerms[idx] || item.productName || ""}
+                              onChange={(e) => {
+                                const newSearchTerms = [...productSearchTerms];
+                                newSearchTerms[idx] = e.target.value;
+                                setProductSearchTerms(newSearchTerms);
+                                setActiveDropdownIndex(idx);
+                              }}
+                              onFocus={() => setActiveDropdownIndex(idx)}
+                              placeholder="Escribir o seleccionar producto *"
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                            >
-                              <option value="">Seleccionar producto *</option>
-                              {catalogProducts.map((product) => (
-                                <option key={product.id} value={product.name}>
-                                  {product.name}
-                                </option>
-                              ))}
-                            </select>
+                            />
+                            {activeDropdownIndex === idx && (productSearchTerms[idx]?.length >= 3 || !productSearchTerms[idx]) && (
+                              <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-fuchsia-500/30 rounded max-h-40 overflow-y-auto">
+                                {(() => {
+                                  const searchTerm = productSearchTerms[idx]?.toLowerCase() || "";
+                                  const filteredProducts = searchTerm.length >= 3
+                                    ? catalogProducts.filter(p => p.name.toLowerCase().includes(searchTerm))
+                                    : catalogProducts;
+
+                                  if (filteredProducts.length === 0) {
+                                    return (
+                                      <div className="px-3 py-2 text-xs text-gray-400">
+                                        No se encontraron productos
+                                      </div>
+                                    );
+                                  }
+
+                                  return filteredProducts.map((product) => (
+                                    <div
+                                      key={product.id}
+                                      onClick={() => {
+                                        updateInventoryItem(idx, 'productName', product.name);
+                                        const newSearchTerms = [...productSearchTerms];
+                                        newSearchTerms[idx] = product.name;
+                                        setProductSearchTerms(newSearchTerms);
+                                        setActiveDropdownIndex(null);
+                                      }}
+                                      className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer"
+                                    >
+                                      {product.name}
+                                    </div>
+                                  ));
+                                })()}
+                              </div>
+                            )}
                           </div>
                           {/* Cantidad */}
                           <div className="col-span-6 md:col-span-2">
@@ -2334,6 +2390,8 @@ export default function AdminPage() {
                         notes: "",
                         purchaseDate: new Date().toISOString().split('T')[0]
                       });
+                      setProductSearchTerms([""]);
+                      setActiveDropdownIndex(null);
                     }}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
                   >
