@@ -39,7 +39,10 @@ export default function AdminPage() {
   const [productForm, setProductForm] = useState({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
   const [inventoryForm, setInventoryForm] = useState({
     supplier: "",
-    items: [{ productName: "", quantity: 0, unitCost: 0, total: 0 }],
+    supplierRuc: "",
+    supplierPhone: "",
+    paymentMethod: "efectivo",
+    items: [{ productName: "", category: "proteinas", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
     totalAmount: 0,
     notes: "",
     purchaseDate: new Date().toISOString().split('T')[0]
@@ -264,7 +267,7 @@ export default function AdminPage() {
   const addInventoryItem = () => {
     setInventoryForm({
       ...inventoryForm,
-      items: [...inventoryForm.items, { productName: "", quantity: 0, unitCost: 0, total: 0 }]
+      items: [...inventoryForm.items, { productName: "", category: "proteinas", quantity: 0, unit: "kg", unitCost: 0, total: 0 }]
     });
   };
 
@@ -1459,81 +1462,7 @@ export default function AdminPage() {
         /* Inventory Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            {/* New Advanced Inventory System Banner */}
-            <div className="mb-8 bg-gradient-to-r from-fuchsia-500/20 via-purple-500/20 to-pink-500/20 border-2 border-fuchsia-500/50 rounded-2xl p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 text-9xl opacity-10">🏭</div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="text-6xl">🚀</span>
-                  <div>
-                    <h2 className="text-4xl font-black text-fuchsia-400 neon-glow-purple mb-2">
-                      ¡Sistema de Inventario Avanzado Disponible!
-                    </h2>
-                    <p className="text-xl text-white font-bold">
-                      Sistema Profesional de Gestión de Inventario, Compras y Proveedores
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-black/30 rounded-lg p-4 border border-fuchsia-500/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">📦</span>
-                      <h4 className="font-bold text-white">Gestión de Artículos</h4>
-                    </div>
-                    <p className="text-sm text-gray-300">15 unidades de medida, control de stock en tiempo real, alertas automáticas</p>
-                  </div>
-                  <div className="bg-black/30 rounded-lg p-4 border border-fuchsia-500/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">🛒</span>
-                      <h4 className="font-bold text-white">Compras Sofisticadas</h4>
-                    </div>
-                    <p className="text-sm text-gray-300">Órdenes de compra completas, seguimiento de pagos, control de lotes y vencimientos</p>
-                  </div>
-                  <div className="bg-black/30 rounded-lg p-4 border border-fuchsia-500/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">📊</span>
-                      <h4 className="font-bold text-white">Analytics Avanzado</h4>
-                    </div>
-                    <p className="text-sm text-gray-300">Análisis ABC, rotación de inventario, sugerencias automáticas de reorden</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Link
-                    href="/admin-inventory"
-                    className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-8 py-4 rounded-xl font-black text-lg transition-all transform hover:scale-105 neon-border-purple shadow-2xl flex items-center gap-3"
-                  >
-                    <span className="text-2xl">🏭</span>
-                    ABRIR SISTEMA AVANZADO
-                    <span className="text-2xl">→</span>
-                  </Link>
-                  <a
-                    href="/INVENTORY_SYSTEM_GUIDE.md"
-                    target="_blank"
-                    className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-4 rounded-xl font-bold transition-all border-2 border-gray-600 flex items-center gap-2"
-                  >
-                    📖 Ver Documentación Completa
-                  </a>
-                </div>
-
-                <div className="mt-6 bg-amber-500/10 border border-amber-500/50 rounded-lg p-4">
-                  <p className="text-amber-400 font-bold mb-2">✨ Características Principales:</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-amber-300">
-                    <div>✅ 13 Categorías de productos</div>
-                    <div>✅ Gestión de proveedores</div>
-                    <div>✅ Seguimiento de lotes</div>
-                    <div>✅ Control de vencimientos</div>
-                    <div>✅ Movimientos de inventario</div>
-                    <div>✅ Valorización de stock</div>
-                    <div>✅ Mermas y desperdicios</div>
-                    <div>✅ Reportes avanzados</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Control de Inventario (Sistema Básico)</h2>
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Control de Inventario</h2>
 
             {/* Sub-tabs */}
             <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
@@ -1608,46 +1537,91 @@ export default function AdminPage() {
                 <div className="space-y-4">
                   {inventory.length === 0 ? (
                     <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
-                      <p className="text-2xl text-gray-400">No hay compras registradas</p>
+                      <span className="text-6xl block mb-4">📦</span>
+                      <p className="text-2xl text-gray-400 font-bold">No hay compras registradas</p>
+                      <p className="text-sm text-gray-500 mt-2">Comienza registrando tu primera compra</p>
                     </div>
                   ) : (
                     inventory.map((purchase) => (
-                      <div key={purchase.id} className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 hover:border-fuchsia-500 transition-all">
+                      <div key={purchase.id} className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 hover:border-fuchsia-500 transition-all hover:shadow-lg hover:shadow-fuchsia-500/20">
+                        {/* Header */}
                         <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-xl font-black text-white mb-1">{purchase.supplier}</h3>
-                            <p className="text-sm text-gray-400">
-                              {new Date(purchase.purchaseDate).toLocaleDateString('es-PE')} - ID: #{purchase.id}
-                            </p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-2xl font-black text-white">{purchase.supplier}</h3>
+                              {purchase.paymentMethod && (
+                                <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500 rounded-full text-xs font-bold text-cyan-400">
+                                  {purchase.paymentMethod === 'efectivo' && '💵 Efectivo'}
+                                  {purchase.paymentMethod === 'transferencia' && '🏦 Transferencia'}
+                                  {purchase.paymentMethod === 'yape' && '📱 Yape'}
+                                  {purchase.paymentMethod === 'plin' && '📱 Plin'}
+                                  {purchase.paymentMethod === 'credito' && '💳 Crédito'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex gap-4 text-sm text-gray-400">
+                              <span>📅 {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                              <span>🆔 #{purchase.id}</span>
+                              {purchase.supplierRuc && <span>🏢 RUC: {purchase.supplierRuc}</span>}
+                              {purchase.supplierPhone && <span>📞 {purchase.supplierPhone}</span>}
+                            </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-3xl font-black text-red-400">S/ {purchase.totalAmount.toFixed(2)}</p>
+                            <p className="text-4xl font-black text-fuchsia-400 mb-2">S/ {purchase.totalAmount.toFixed(2)}</p>
                             <button
                               onClick={() => handleDeleteInventory(purchase.id)}
-                              className="mt-2 bg-red-600 hover:bg-red-500 text-white px-4 py-1 rounded text-xs font-bold transition-all"
+                              className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105"
                             >
-                              Eliminar
+                              🗑️ Eliminar
                             </button>
                           </div>
                         </div>
 
-                        {/* Items */}
+                        {/* Items Grid */}
                         <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/20">
-                          <h4 className="text-sm font-bold text-fuchsia-400 mb-3">Artículos:</h4>
+                          <h4 className="text-sm font-bold text-fuchsia-400 mb-3 flex items-center gap-2">
+                            <span>📋</span> Artículos Comprados:
+                          </h4>
                           <div className="space-y-2">
                             {purchase.items.map((item: any, idx: number) => (
-                              <div key={idx} className="flex justify-between items-center text-sm">
-                                <span className="text-white">{item.productName}</span>
-                                <span className="text-gray-400">{item.quantity} unidades x S/ {item.unitCost.toFixed(2)}</span>
-                                <span className="text-amber-400 font-bold">S/ {item.total.toFixed(2)}</span>
+                              <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-900/50 rounded-lg p-3 hover:bg-gray-900 transition-all">
+                                <div className="col-span-5">
+                                  <p className="text-white font-bold">{item.productName}</p>
+                                  {item.category && (
+                                    <p className="text-xs text-gray-500">
+                                      {item.category === 'proteinas' && '🍗 Proteínas'}
+                                      {item.category === 'vegetales' && '🥬 Vegetales'}
+                                      {item.category === 'frutas' && '🍎 Frutas'}
+                                      {item.category === 'lacteos' && '🥛 Lácteos'}
+                                      {item.category === 'abarrotes' && '🛒 Abarrotes'}
+                                      {item.category === 'bebidas' && '🥤 Bebidas'}
+                                      {item.category === 'empaques' && '📦 Empaques'}
+                                      {item.category === 'limpieza' && '🧹 Limpieza'}
+                                      {item.category === 'otros' && '📋 Otros'}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="col-span-3 text-center">
+                                  <p className="text-white font-bold">{item.quantity} {item.unit || 'unidades'}</p>
+                                </div>
+                                <div className="col-span-2 text-center">
+                                  <p className="text-gray-400 text-sm">S/ {item.unitCost.toFixed(2)}</p>
+                                  <p className="text-xs text-gray-500">c/u</p>
+                                </div>
+                                <div className="col-span-2 text-right">
+                                  <p className="text-amber-400 font-black text-lg">S/ {item.total.toFixed(2)}</p>
+                                </div>
                               </div>
                             ))}
                           </div>
                         </div>
 
+                        {/* Notas */}
                         {purchase.notes && (
-                          <div className="mt-3 text-sm text-gray-400">
-                            <span className="font-bold">Notas:</span> {purchase.notes}
+                          <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                            <p className="text-sm text-gray-400">
+                              <span className="font-bold text-amber-400">📝 Notas:</span> {purchase.notes}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -1936,22 +1910,57 @@ export default function AdminPage() {
           {/* Inventory Modal */}
           {showInventoryModal && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-3xl w-full my-8">
-                <h3 className="text-2xl font-black text-fuchsia-400 mb-4">Registrar Nueva Compra</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-4xl w-full my-8">
+                <h3 className="text-2xl font-black text-fuchsia-400 mb-6">📦 Registrar Nueva Compra</h3>
+
+                {/* Información del Proveedor */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                    <span>🏢</span> Datos del Proveedor
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Proveedor</label>
+                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Nombre del Proveedor *</label>
                       <input
                         type="text"
                         value={inventoryForm.supplier}
                         onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value })}
                         className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="Nombre del proveedor"
+                        placeholder="Ej: Distribuidora San Juan"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Fecha de Compra</label>
+                      <label className="block text-sm font-bold text-gray-400 mb-1">RUC (opcional)</label>
+                      <input
+                        type="text"
+                        value={inventoryForm.supplierRuc}
+                        onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                        placeholder="20123456789"
+                        maxLength={11}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-1">Teléfono (opcional)</label>
+                      <input
+                        type="tel"
+                        value={inventoryForm.supplierPhone}
+                        onChange={(e) => setInventoryForm({ ...inventoryForm, supplierPhone: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                        placeholder="987654321"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Información de la Compra */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                    <span>📅</span> Información de la Compra
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Fecha de Compra *</label>
                       <input
                         type="date"
                         value={inventoryForm.purchaseDate}
@@ -1959,117 +1968,196 @@ export default function AdminPage() {
                         className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-sm font-bold text-fuchsia-400">Artículos</label>
-                      <button
-                        onClick={addInventoryItem}
-                        className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
+                    <div>
+                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Método de Pago *</label>
+                      <select
+                        value={inventoryForm.paymentMethod}
+                        onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                       >
-                        + Agregar Item
-                      </button>
-                    </div>
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {inventoryForm.items.map((item, idx) => (
-                        <div key={idx} className="bg-black/50 rounded-lg p-3 border border-fuchsia-500/20">
-                          <div className="grid grid-cols-12 gap-2 items-end">
-                            <div className="col-span-5">
-                              <label className="block text-xs text-gray-400 mb-1">Producto</label>
-                              <input
-                                type="text"
-                                value={item.productName}
-                                onChange={(e) => updateInventoryItem(idx, 'productName', e.target.value)}
-                                className="w-full px-2 py-1 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
-                                placeholder="Nombre"
-                              />
-                            </div>
-                            <div className="col-span-2">
-                              <label className="block text-xs text-gray-400 mb-1">Cantidad</label>
-                              <input
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) => updateInventoryItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                                className="w-full px-2 py-1 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
-                              />
-                            </div>
-                            <div className="col-span-2">
-                              <label className="block text-xs text-gray-400 mb-1">Costo Unit.</label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={item.unitCost}
-                                onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
-                                className="w-full px-2 py-1 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
-                              />
-                            </div>
-                            <div className="col-span-2">
-                              <label className="block text-xs text-gray-400 mb-1">Total</label>
-                              <input
-                                type="text"
-                                value={item.total.toFixed(2)}
-                                disabled
-                                className="w-full px-2 py-1 rounded bg-gray-800 border border-fuchsia-500/30 text-amber-400 font-bold text-sm"
-                              />
-                            </div>
-                            <div className="col-span-1">
-                              {inventoryForm.items.length > 1 && (
-                                <button
-                                  onClick={() => removeInventoryItem(idx)}
-                                  className="w-full bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded text-xs font-bold transition-all"
-                                >
-                                  X
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Notas (opcional)</label>
-                    <textarea
-                      value={inventoryForm.notes}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, notes: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      rows={2}
-                      placeholder="Información adicional sobre la compra"
-                    />
-                  </div>
-
-                  <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/30">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-white">Total de la Compra:</span>
-                      <span className="text-3xl font-black text-red-400">S/ {inventoryForm.totalAmount.toFixed(2)}</span>
+                        <option value="efectivo">💵 Efectivo</option>
+                        <option value="transferencia">🏦 Transferencia</option>
+                        <option value="yape">📱 Yape</option>
+                        <option value="plin">📱 Plin</option>
+                        <option value="credito">💳 Crédito</option>
+                      </select>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                {/* Lista de Artículos */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                      <span>📋</span> Lista de Artículos
+                    </h4>
+                    <button
+                      onClick={addInventoryItem}
+                      className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105"
+                    >
+                      + Agregar Item
+                    </button>
+                  </div>
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                    {inventoryForm.items.map((item, idx) => (
+                      <div key={idx} className="bg-black/50 rounded-lg p-4 border-2 border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all">
+                        <div className="grid grid-cols-12 gap-3">
+                          {/* Producto */}
+                          <div className="col-span-12 md:col-span-4">
+                            <label className="block text-xs font-bold text-gray-400 mb-1">Producto *</label>
+                            <input
+                              type="text"
+                              value={item.productName}
+                              onChange={(e) => updateInventoryItem(idx, 'productName', e.target.value)}
+                              className="w-full px-3 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
+                              placeholder="Ej: Pechuga de pollo"
+                            />
+                          </div>
+                          {/* Categoría */}
+                          <div className="col-span-6 md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-400 mb-1">Categoría</label>
+                            <select
+                              value={item.category}
+                              onChange={(e) => updateInventoryItem(idx, 'category', e.target.value)}
+                              className="w-full px-2 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
+                            >
+                              <option value="proteinas">🍗 Proteínas</option>
+                              <option value="vegetales">🥬 Vegetales</option>
+                              <option value="frutas">🍎 Frutas</option>
+                              <option value="lacteos">🥛 Lácteos</option>
+                              <option value="abarrotes">🛒 Abarrotes</option>
+                              <option value="bebidas">🥤 Bebidas</option>
+                              <option value="empaques">📦 Empaques</option>
+                              <option value="limpieza">🧹 Limpieza</option>
+                              <option value="otros">📋 Otros</option>
+                            </select>
+                          </div>
+                          {/* Cantidad */}
+                          <div className="col-span-6 md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-400 mb-1">Cantidad *</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={item.quantity}
+                              onChange={(e) => updateInventoryItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                              className="w-full px-3 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
+                              placeholder="0"
+                            />
+                          </div>
+                          {/* Unidad */}
+                          <div className="col-span-6 md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-400 mb-1">Unidad</label>
+                            <select
+                              value={item.unit}
+                              onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
+                              className="w-full px-2 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
+                            >
+                              <option value="kg">kg</option>
+                              <option value="g">g</option>
+                              <option value="l">l</option>
+                              <option value="ml">ml</option>
+                              <option value="unidad">unidad</option>
+                              <option value="paquete">paquete</option>
+                              <option value="caja">caja</option>
+                              <option value="bolsa">bolsa</option>
+                              <option value="docena">docena</option>
+                            </select>
+                          </div>
+                          {/* Costo Unitario */}
+                          <div className="col-span-6 md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-400 mb-1">Costo Unit. *</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={item.unitCost}
+                              onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
+                              className="w-full px-3 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
+                              placeholder="0.00"
+                            />
+                          </div>
+                          {/* Total */}
+                          <div className="col-span-6 md:col-span-2">
+                            <label className="block text-xs font-bold text-gray-400 mb-1">Total</label>
+                            <input
+                              type="text"
+                              value={`S/ ${item.total.toFixed(2)}`}
+                              disabled
+                              className="w-full px-3 py-2 rounded bg-gray-800 border border-fuchsia-500/30 text-amber-400 font-bold text-sm"
+                            />
+                          </div>
+                          {/* Eliminar */}
+                          <div className="col-span-12 flex justify-end">
+                            {inventoryForm.items.length > 1 && (
+                              <button
+                                onClick={() => removeInventoryItem(idx)}
+                                className="bg-red-600 hover:bg-red-500 text-white px-4 py-1 rounded text-xs font-bold transition-all"
+                              >
+                                🗑️ Eliminar
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notas */}
+                <div className="mb-6">
+                  <label className="block text-sm font-bold text-gray-400 mb-1">
+                    <span>📝</span> Notas Adicionales (opcional)
+                  </label>
+                  <textarea
+                    value={inventoryForm.notes}
+                    onChange={(e) => setInventoryForm({ ...inventoryForm, notes: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                    rows={3}
+                    placeholder="Información adicional sobre la compra, número de factura, condiciones especiales, etc."
+                  />
+                </div>
+
+                {/* Total */}
+                <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-xl p-6 border-2 border-fuchsia-500/50 mb-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1">Total de la Compra</p>
+                      <p className="text-xs text-gray-500">{inventoryForm.items.length} item(s)</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-4xl font-black text-fuchsia-400">
+                        S/ {inventoryForm.totalAmount.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">{inventoryForm.paymentMethod}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botones */}
+                <div className="flex gap-3">
                   <button
                     onClick={() => {
                       setShowInventoryModal(false);
                       setInventoryForm({
                         supplier: "",
-                        items: [{ productName: "", quantity: 0, unitCost: 0, total: 0 }],
+                        supplierRuc: "",
+                        supplierPhone: "",
+                        paymentMethod: "efectivo",
+                        items: [{ productName: "", category: "proteinas", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
                         totalAmount: 0,
                         notes: "",
                         purchaseDate: new Date().toISOString().split('T')[0]
                       });
                     }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all"
                   >
-                    Cancelar
+                    ❌ Cancelar
                   </button>
                   <button
                     onClick={handleCreateInventory}
                     disabled={!inventoryForm.supplier || inventoryForm.items.some(i => !i.productName || i.quantity <= 0 || i.unitCost <= 0)}
-                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
                   >
-                    Registrar Compra
+                    ✅ Registrar Compra
                   </button>
                 </div>
               </div>
