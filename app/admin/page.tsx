@@ -22,6 +22,16 @@ interface Order {
 }
 
 export default function AdminPage() {
+  // Helper para obtener nombre del mes en español
+  const getMonthName = (yearMonth: string) => {
+    const months = [
+      "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+      "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    ];
+    const [year, month] = yearMonth.split('-');
+    return `${months[parseInt(month) - 1]} ${year}`;
+  };
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
@@ -54,6 +64,10 @@ export default function AdminPage() {
   const [inventorySection, setInventorySection] = useState<"purchases" | "stock" | "movements">("purchases");
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
   const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
+  const [inventoryMonthFilter, setInventoryMonthFilter] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [promotionForm, setPromotionForm] = useState({
@@ -1522,7 +1536,16 @@ export default function AdminPage() {
                 {(() => {
                   // Filtrar inventario
                   const filteredInventory = inventory.filter((purchase) => {
-                    // Filtro por fecha
+                    // Filtro por mes (por defecto mes actual)
+                    if (inventoryMonthFilter) {
+                      const purchaseDate = new Date(purchase.purchaseDate);
+                      const purchaseYearMonth = `${purchaseDate.getFullYear()}-${String(purchaseDate.getMonth() + 1).padStart(2, '0')}`;
+                      if (purchaseYearMonth !== inventoryMonthFilter) {
+                        return false;
+                      }
+                    }
+
+                    // Filtro por fecha específica
                     if (inventoryDateFilter) {
                       const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
                       if (purchaseDate !== inventoryDateFilter) {
@@ -1548,15 +1571,23 @@ export default function AdminPage() {
                     <>
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-white">Registro de Compras</h3>
+                    <h3 className="text-2xl font-bold text-white">COMPRAS {getMonthName(inventoryMonthFilter)}</h3>
                     <p className="text-gray-400 text-sm">Administra tus compras a proveedores y gastos operativos</p>
                   </div>
-                  <button
-                    onClick={() => setShowInventoryModal(true)}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-                  >
-                    + Nueva Compra
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="month"
+                      value={inventoryMonthFilter}
+                      onChange={(e) => setInventoryMonthFilter(e.target.value)}
+                      className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
+                    />
+                    <button
+                      onClick={() => setShowInventoryModal(true)}
+                      className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
+                    >
+                      + Nueva Compra
+                    </button>
+                  </div>
                 </div>
 
                 {/* Stats */}
