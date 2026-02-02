@@ -1459,7 +1459,81 @@ export default function AdminPage() {
         /* Inventory Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Control de Inventario</h2>
+            {/* New Advanced Inventory System Banner */}
+            <div className="mb-8 bg-gradient-to-r from-fuchsia-500/20 via-purple-500/20 to-pink-500/20 border-2 border-fuchsia-500/50 rounded-2xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 text-9xl opacity-10">🏭</div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-6xl">🚀</span>
+                  <div>
+                    <h2 className="text-4xl font-black text-fuchsia-400 neon-glow-purple mb-2">
+                      ¡Sistema de Inventario Avanzado Disponible!
+                    </h2>
+                    <p className="text-xl text-white font-bold">
+                      Sistema Profesional de Gestión de Inventario, Compras y Proveedores
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-black/30 rounded-lg p-4 border border-fuchsia-500/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">📦</span>
+                      <h4 className="font-bold text-white">Gestión de Artículos</h4>
+                    </div>
+                    <p className="text-sm text-gray-300">15 unidades de medida, control de stock en tiempo real, alertas automáticas</p>
+                  </div>
+                  <div className="bg-black/30 rounded-lg p-4 border border-fuchsia-500/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">🛒</span>
+                      <h4 className="font-bold text-white">Compras Sofisticadas</h4>
+                    </div>
+                    <p className="text-sm text-gray-300">Órdenes de compra completas, seguimiento de pagos, control de lotes y vencimientos</p>
+                  </div>
+                  <div className="bg-black/30 rounded-lg p-4 border border-fuchsia-500/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">📊</span>
+                      <h4 className="font-bold text-white">Analytics Avanzado</h4>
+                    </div>
+                    <p className="text-sm text-gray-300">Análisis ABC, rotación de inventario, sugerencias automáticas de reorden</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Link
+                    href="/admin-inventory"
+                    className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-8 py-4 rounded-xl font-black text-lg transition-all transform hover:scale-105 neon-border-purple shadow-2xl flex items-center gap-3"
+                  >
+                    <span className="text-2xl">🏭</span>
+                    ABRIR SISTEMA AVANZADO
+                    <span className="text-2xl">→</span>
+                  </Link>
+                  <a
+                    href="/INVENTORY_SYSTEM_GUIDE.md"
+                    target="_blank"
+                    className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-4 rounded-xl font-bold transition-all border-2 border-gray-600 flex items-center gap-2"
+                  >
+                    📖 Ver Documentación Completa
+                  </a>
+                </div>
+
+                <div className="mt-6 bg-amber-500/10 border border-amber-500/50 rounded-lg p-4">
+                  <p className="text-amber-400 font-bold mb-2">✨ Características Principales:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-amber-300">
+                    <div>✅ 13 Categorías de productos</div>
+                    <div>✅ Gestión de proveedores</div>
+                    <div>✅ Seguimiento de lotes</div>
+                    <div>✅ Control de vencimientos</div>
+                    <div>✅ Movimientos de inventario</div>
+                    <div>✅ Valorización de stock</div>
+                    <div>✅ Mermas y desperdicios</div>
+                    <div>✅ Reportes avanzados</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Control de Inventario (Sistema Básico)</h2>
 
             {/* Sub-tabs */}
             <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">

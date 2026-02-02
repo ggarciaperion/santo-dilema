@@ -25,6 +25,7 @@ const salsas: { id: string; name: string }[] = [
 ];
 
 const availableComplements: Record<string, { name: string; price: number }> = {
+  "agua-mineral": { name: "Agua mineral", price: 4.00 },
   "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
   "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
   "sprite": { name: "Sprite 500ml", price: 4.00 },
