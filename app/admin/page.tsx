@@ -244,7 +244,10 @@ export default function AdminPage() {
       setShowInventoryModal(false);
       setInventoryForm({
         supplier: "",
-        items: [{ productName: "", quantity: 0, unitCost: 0, total: 0 }],
+        supplierRuc: "",
+        supplierPhone: "",
+        paymentMethod: "plin-yape",
+        items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
         totalAmount: 0,
         notes: "",
         purchaseDate: new Date().toISOString().split('T')[0]
@@ -1555,8 +1558,10 @@ export default function AdminPage() {
                               <h3 className="text-2xl font-black text-white">{purchase.supplier}</h3>
                               {purchase.paymentMethod && (
                                 <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500 rounded-full text-xs font-bold text-cyan-400">
+                                  {purchase.paymentMethod === 'plin-yape' && '📱 Plin / Yape'}
                                   {purchase.paymentMethod === 'efectivo' && '💵 Efectivo'}
                                   {purchase.paymentMethod === 'transferencia' && '🏦 Transferencia'}
+                                  {purchase.paymentMethod === 'tarjeta' && '💳 Tarjeta'}
                                   {purchase.paymentMethod === 'yape' && '📱 Yape'}
                                   {purchase.paymentMethod === 'plin' && '📱 Plin'}
                                   {purchase.paymentMethod === 'credito' && '💳 Crédito'}
@@ -1610,10 +1615,11 @@ export default function AdminPage() {
                                 </div>
                                 <div className="col-span-2 text-center">
                                   <p className="text-gray-400 text-sm">S/ {item.unitCost.toFixed(2)}</p>
-                                  <p className="text-xs text-gray-500">c/u</p>
+                                  <p className="text-xs text-gray-500">Costo total</p>
                                 </div>
                                 <div className="col-span-2 text-right">
                                   <p className="text-amber-400 font-black text-lg">S/ {item.total.toFixed(2)}</p>
+                                  <p className="text-xs text-gray-500">Costo unitario</p>
                                 </div>
                               </div>
                             ))}

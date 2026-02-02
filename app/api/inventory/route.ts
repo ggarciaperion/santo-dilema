@@ -38,7 +38,10 @@ export async function POST(request: Request) {
     const newPurchase = {
       id: Date.now().toString(),
       supplier: body.supplier,
-      items: body.items, // Array de { productName, quantity, unitCost, total }
+      supplierRuc: body.supplierRuc || "",
+      supplierPhone: body.supplierPhone || "",
+      paymentMethod: body.paymentMethod || "efectivo",
+      items: body.items, // Array de { productName, quantity, unit, unitCost, total }
       totalAmount: body.totalAmount,
       notes: body.notes || "",
       purchaseDate: body.purchaseDate || new Date().toISOString(),
