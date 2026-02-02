@@ -55,6 +55,12 @@ export async function POST(request: Request) {
       name: body.name.toUpperCase(),
       category: body.category || "",
       unit: body.unit || "unidad",
+      price: body.price || 0,
+      cost: body.cost || 0,
+      active: body.active !== undefined ? body.active : true,
+      stock: body.stock || 0,
+      minStock: body.minStock || 10,
+      maxStock: body.maxStock || 100,
       createdAt: new Date().toISOString(),
     };
 
@@ -84,6 +90,12 @@ export async function PATCH(request: Request) {
       name: body.name?.toUpperCase(),
       category: body.category,
       unit: body.unit,
+      price: body.price,
+      cost: body.cost,
+      active: body.active,
+      stock: body.stock,
+      minStock: body.minStock,
+      maxStock: body.maxStock,
     };
 
     const updatedProduct = await storage.updateProduct(id, updates);

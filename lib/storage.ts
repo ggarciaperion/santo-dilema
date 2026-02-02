@@ -68,6 +68,12 @@ interface Product {
   name: string;
   category?: string;
   unit: string; // kg, unidad
+  price?: number;
+  cost?: number;
+  active?: boolean;
+  stock?: number;
+  minStock?: number;
+  maxStock?: number;
   createdAt: string;
 }
 
