@@ -17,6 +17,7 @@ let path: any = null;
 let dataDir: string = '';
 let ordersFilePath: string = '';
 let inventoryFilePath: string = '';
+let productsFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -25,6 +26,7 @@ if (!isProduction) {
   dataDir = path.join(process.cwd(), 'data');
   ordersFilePath = path.join(dataDir, 'orders.json');
   inventoryFilePath = path.join(dataDir, 'inventory.json');
+  productsFilePath = path.join(dataDir, 'products.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -38,6 +40,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(inventoryFilePath)) {
       fs.writeFileSync(inventoryFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(productsFilePath)) {
+      fs.writeFileSync(productsFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -55,6 +60,14 @@ interface Order {
   status: string;
   createdAt: string;
   timestamp?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  category?: string;
+  unit: string; // kg, unidad
+  createdAt: string;
 }
 
 interface InventoryPurchase {
@@ -221,6 +234,70 @@ export const storage = {
     } else {
       ensureDataDirectory();
       fs.writeFileSync(inventoryFilePath, JSON.stringify(filteredInventory, null, 2));
+    }
+
+    return true;
+  },
+
+  // ========== MÉTODOS DE PRODUCTOS ==========
+
+  // Obtener todos los productos
+  async getProducts(): Promise<Product[]> {
+    if (isProduction) {
+      if (!redis) {
+        console.error('⚠️ Redis no configurado en producción.');
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: usar Redis
+      const products = await redis.get<Product[]>('products');
+      return products || [];
+    } else {
+      // Desarrollo: usar archivo
+      ensureDataDirectory();
+      const data = fs.readFileSync(productsFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  // Guardar un nuevo producto
+  async saveProduct(product: Product): Promise<Product> {
+    const products = await this.getProducts();
+    products.unshift(product);
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: guardar en Redis
+      await redis.set('products', products);
+      console.log('✅ Producto guardado en Redis');
+    } else {
+      // Desarrollo: guardar en archivo
+      ensureDataDirectory();
+      fs.writeFileSync(productsFilePath, JSON.stringify(products, null, 2));
+      console.log('✅ Producto guardado en archivo local');
+    }
+
+    return product;
+  },
+
+  // Eliminar un producto
+  async deleteProduct(id: string): Promise<boolean> {
+    const products = await this.getProducts();
+    const filteredProducts = products.filter((p) => p.id !== id);
+
+    if (filteredProducts.length === products.length) {
+      return false; // No se encontró el producto
+    }
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('products', filteredProducts);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(productsFilePath, JSON.stringify(filteredProducts, null, 2));
     }
 
     return true;
