@@ -41,8 +41,8 @@ export default function AdminPage() {
     supplier: "",
     supplierRuc: "",
     supplierPhone: "",
-    paymentMethod: "efectivo",
-    items: [{ productName: "", category: "proteinas", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
+    paymentMethod: "plin-yape",
+    items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
     totalAmount: 0,
     notes: "",
     purchaseDate: new Date().toISOString().split('T')[0]
@@ -267,7 +267,7 @@ export default function AdminPage() {
   const addInventoryItem = () => {
     setInventoryForm({
       ...inventoryForm,
-      items: [...inventoryForm.items, { productName: "", category: "proteinas", quantity: 0, unit: "kg", unitCost: 0, total: 0 }]
+      items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }]
     });
   };
 
@@ -1916,7 +1916,18 @@ export default function AdminPage() {
                 {/* Información Compacta en Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Proveedor *</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">RUC *</label>
+                    <input
+                      type="text"
+                      value={inventoryForm.supplierRuc}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      placeholder="20123456789"
+                      maxLength={11}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Nombre del proveedor *</label>
                     <input
                       type="text"
                       value={inventoryForm.supplier}
@@ -1926,28 +1937,17 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
-                    <input
-                      type="text"
-                      value={inventoryForm.supplierRuc}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                      placeholder="20123456789"
-                      maxLength={11}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Teléfono *</label>
                     <input
                       type="tel"
                       value={inventoryForm.supplierPhone}
                       onChange={(e) => setInventoryForm({ ...inventoryForm, supplierPhone: e.target.value })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                       placeholder="987654321"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Fecha *</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Fecha de compra *</label>
                     <input
                       type="date"
                       value={inventoryForm.purchaseDate}
@@ -1956,17 +1956,16 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Pago *</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Método de pago *</label>
                     <select
                       value={inventoryForm.paymentMethod}
                       onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
                       className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                     >
+                      <option value="plin-yape">📱 Plin / Yape</option>
                       <option value="efectivo">💵 Efectivo</option>
-                      <option value="transferencia">🏦 Transfer</option>
-                      <option value="yape">📱 Yape</option>
-                      <option value="plin">📱 Plin</option>
-                      <option value="credito">💳 Crédito</option>
+                      <option value="transferencia">🏦 Transferencia</option>
+                      <option value="tarjeta">💳 Tarjeta</option>
                     </select>
                   </div>
                 </div>
@@ -1996,54 +1995,36 @@ export default function AdminPage() {
                               placeholder="Producto *"
                             />
                           </div>
-                          {/* Categoría */}
-                          <div className="col-span-6 md:col-span-2">
-                            <select
-                              value={item.category}
-                              onChange={(e) => updateInventoryItem(idx, 'category', e.target.value)}
-                              className="w-full px-1 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                            >
-                              <option value="proteinas">🍗</option>
-                              <option value="vegetales">🥬</option>
-                              <option value="frutas">🍎</option>
-                              <option value="lacteos">🥛</option>
-                              <option value="abarrotes">🛒</option>
-                              <option value="bebidas">🥤</option>
-                              <option value="empaques">📦</option>
-                              <option value="limpieza">🧹</option>
-                              <option value="otros">📋</option>
-                            </select>
-                          </div>
                           {/* Cantidad */}
-                          <div className="col-span-6 md:col-span-1">
+                          <div className="col-span-6 md:col-span-2">
                             <input
                               type="number"
                               step="0.01"
                               value={item.quantity}
                               onChange={(e) => updateInventoryItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                              placeholder="Cant"
+                              placeholder="Cantidad *"
                             />
                           </div>
                           {/* Unidad */}
-                          <div className="col-span-6 md:col-span-1">
+                          <div className="col-span-6 md:col-span-2">
                             <select
                               value={item.unit}
                               onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
-                              className="w-full px-1 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             >
-                              <option value="kg">kg</option>
-                              <option value="g">g</option>
-                              <option value="l">l</option>
-                              <option value="ml">ml</option>
-                              <option value="unidad">u</option>
-                              <option value="paquete">paq</option>
-                              <option value="caja">cj</option>
-                              <option value="bolsa">bls</option>
-                              <option value="docena">doc</option>
+                              <option value="kg">Kg</option>
+                              <option value="paquete-6">Paquete (6 und)</option>
+                              <option value="paquete-12">Paquete (12 und)</option>
+                              <option value="paquete-24">Paquete (24 und)</option>
+                              <option value="unidad">Unidad</option>
+                              <option value="medio-ciento">Medio ciento (50)</option>
+                              <option value="ciento">Ciento (100)</option>
+                              <option value="medio-millar">Medio millar (500)</option>
+                              <option value="millar">Millar (1000)</option>
                             </select>
                           </div>
-                          {/* Costo */}
+                          {/* Precio unitario */}
                           <div className="col-span-6 md:col-span-2">
                             <input
                               type="number"
@@ -2051,10 +2032,10 @@ export default function AdminPage() {
                               value={item.unitCost}
                               onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                              placeholder="Costo"
+                              placeholder="Precio unitario *"
                             />
                           </div>
-                          {/* Total */}
+                          {/* Costo total */}
                           <div className="col-span-6 md:col-span-2">
                             <input
                               type="text"
@@ -2129,8 +2110,8 @@ export default function AdminPage() {
                         supplier: "",
                         supplierRuc: "",
                         supplierPhone: "",
-                        paymentMethod: "efectivo",
-                        items: [{ productName: "", category: "proteinas", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
+                        paymentMethod: "plin-yape",
+                        items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
                         totalAmount: 0,
                         notes: "",
                         purchaseDate: new Date().toISOString().split('T')[0]
