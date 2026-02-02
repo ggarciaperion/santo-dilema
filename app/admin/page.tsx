@@ -2273,13 +2273,21 @@ export default function AdminPage() {
                               type="text"
                               value={item.productName || ""}
                               onChange={(e) => {
+                                console.log('🔥 onChange ejecutado:', e.target.value);
                                 updateInventoryItem(idx, 'productName', e.target.value);
                                 const newSearchTerms = [...productSearchTerms];
                                 newSearchTerms[idx] = e.target.value;
                                 setProductSearchTerms(newSearchTerms);
                                 setActiveDropdownIndex(idx);
                               }}
-                              onFocus={() => setActiveDropdownIndex(idx)}
+                              onFocus={() => {
+                                console.log('🔥 onFocus ejecutado, idx:', idx);
+                                setActiveDropdownIndex(idx);
+                              }}
+                              onBlur={() => {
+                                console.log('🔥 onBlur ejecutado');
+                                setTimeout(() => setActiveDropdownIndex(null), 200);
+                              }}
                               placeholder="Escribir o seleccionar producto *"
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             />
