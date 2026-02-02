@@ -350,7 +350,19 @@ export default function AdminPage() {
   const handleCreateInventory = async () => {
     try {
       console.log("📦 Datos a enviar:", inventoryForm);
-      console.log("📦 Items:", inventoryForm.items);
+      console.log("📦 Items a enviar:", inventoryForm.items);
+      console.log("📦 Total de items:", inventoryForm.items.length);
+      console.log("📦 Detalle de cada item:");
+      inventoryForm.items.forEach((item, idx) => {
+        console.log(`   Item ${idx + 1}:`, {
+          productName: item.productName,
+          quantity: item.quantity,
+          unit: item.unit,
+          volume: item.volume,
+          unitCost: item.unitCost,
+          total: item.total
+        });
+      });
 
       const response = await fetch("/api/inventory", {
         method: "POST",
@@ -358,7 +370,12 @@ export default function AdminPage() {
         body: JSON.stringify(inventoryForm),
       });
 
+      console.log("📦 Response status:", response.status);
+      console.log("📦 Response ok:", response.ok);
+
       if (response.ok) {
+        const savedData = await response.json();
+        console.log("📦 Datos guardados en servidor:", savedData);
         await loadInventory();
         setShowInventoryModal(false);
         setInventoryForm({
@@ -374,11 +391,11 @@ export default function AdminPage() {
         alert("Compra registrada exitosamente");
       } else {
         const errorData = await response.json();
-        console.error("Error al registrar compra:", errorData);
+        console.error("❌ Error al registrar compra:", errorData);
         alert("Error al registrar la compra. Por favor, intenta de nuevo.");
       }
     } catch (error) {
-      console.error("Error al registrar compra:", error);
+      console.error("❌ Error de conexión:", error);
       alert("Error de conexión. Por favor, intenta de nuevo.");
     }
   };
