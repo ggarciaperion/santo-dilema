@@ -61,7 +61,7 @@ export default function AdminPage() {
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
-  const [inventorySection, setInventorySection] = useState<"purchases" | "stock" | "movements">("purchases");
+  const [inventorySection, setInventorySection] = useState<"purchases" | "stock">("purchases");
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
   const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
   const [inventoryMonthFilter, setInventoryMonthFilter] = useState<string>(() => {
@@ -1519,16 +1519,6 @@ export default function AdminPage() {
               >
                 📊 Control de Stock
               </button>
-              <button
-                onClick={() => setInventorySection("movements")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  inventorySection === "movements"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                📋 Movimientos
-              </button>
             </div>
 
             {inventorySection === "purchases" && (
@@ -2077,64 +2067,6 @@ export default function AdminPage() {
                   </div>
                 </div>
               </>
-            )}
-
-            {inventorySection === "movements" && (
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-8">
-                <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Historial de Movimientos</h3>
-                  <p className="text-gray-400 mb-8">
-                    Registro detallado de entradas, salidas y ajustes de inventario
-                  </p>
-                  <div className="max-w-4xl mx-auto">
-                    <div className="bg-black/50 rounded-lg p-8 border border-fuchsia-500/20">
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between pb-4 border-b border-fuchsia-500/20">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                              <span className="text-2xl">📥</span>
-                            </div>
-                            <div className="text-left">
-                              <p className="text-white font-bold">Entradas</p>
-                              <p className="text-sm text-gray-400">Compras de proveedores</p>
-                            </div>
-                          </div>
-                          <p className="text-2xl font-black text-green-400">{inventory.length}</p>
-                        </div>
-                        <div className="flex items-center justify-between pb-4 border-b border-fuchsia-500/20">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
-                              <span className="text-2xl">📤</span>
-                            </div>
-                            <div className="text-left">
-                              <p className="text-white font-bold">Salidas</p>
-                              <p className="text-sm text-gray-400">Ventas y pedidos</p>
-                            </div>
-                          </div>
-                          <p className="text-2xl font-black text-red-400">{orders.filter(o => o.status === "delivered").length}</p>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                              <span className="text-2xl">🔧</span>
-                            </div>
-                            <div className="text-left">
-                              <p className="text-white font-bold">Ajustes</p>
-                              <p className="text-sm text-gray-400">Correcciones de inventario</p>
-                            </div>
-                          </div>
-                          <p className="text-2xl font-black text-purple-400">0</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-8 p-6 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/30 max-w-2xl mx-auto">
-                    <p className="text-fuchsia-300 text-sm">
-                      💡 <strong>Próximamente:</strong> Registro automático de movimientos con trazabilidad completa y reportes detallados
-                    </p>
-                  </div>
-                </div>
-              </div>
             )}
           </section>
 
