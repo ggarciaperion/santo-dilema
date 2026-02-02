@@ -235,25 +235,33 @@ export default function AdminPage() {
   // Inventory functions
   const handleCreateInventory = async () => {
     try {
-      await fetch("/api/inventory", {
+      const response = await fetch("/api/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inventoryForm),
       });
-      loadInventory();
-      setShowInventoryModal(false);
-      setInventoryForm({
-        supplier: "",
-        supplierRuc: "",
-        supplierPhone: "",
-        paymentMethod: "plin-yape",
-        items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
-        totalAmount: 0,
-        notes: "",
-        purchaseDate: new Date().toISOString().split('T')[0]
-      });
+
+      if (response.ok) {
+        await loadInventory();
+        setShowInventoryModal(false);
+        setInventoryForm({
+          supplier: "",
+          supplierRuc: "",
+          supplierPhone: "",
+          paymentMethod: "plin-yape",
+          items: [{ productName: "", quantity: 0, unit: "kg", unitCost: 0, total: 0 }],
+          totalAmount: 0,
+          notes: "",
+          purchaseDate: new Date().toISOString().split('T')[0]
+        });
+      } else {
+        const errorData = await response.json();
+        console.error("Error al registrar compra:", errorData);
+        alert("Error al registrar la compra. Por favor, intenta de nuevo.");
+      }
     } catch (error) {
       console.error("Error al registrar compra:", error);
+      alert("Error de conexión. Por favor, intenta de nuevo.");
     }
   };
 
