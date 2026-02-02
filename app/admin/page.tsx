@@ -1909,231 +1909,219 @@ export default function AdminPage() {
 
           {/* Inventory Modal */}
           {showInventoryModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-4xl w-full my-8">
-                <h3 className="text-2xl font-black text-fuchsia-400 mb-6">📦 Registrar Nueva Compra</h3>
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto">
+                <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
 
-                {/* Información del Proveedor */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                    <span>🏢</span> Datos del Proveedor
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Nombre del Proveedor *</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.supplier}
-                        onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="Ej: Distribuidora San Juan"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-1">RUC (opcional)</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.supplierRuc}
-                        onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="20123456789"
-                        maxLength={11}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-1">Teléfono (opcional)</label>
-                      <input
-                        type="tel"
-                        value={inventoryForm.supplierPhone}
-                        onChange={(e) => setInventoryForm({ ...inventoryForm, supplierPhone: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="987654321"
-                      />
-                    </div>
+                {/* Información Compacta en Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
+                  <div>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Proveedor *</label>
+                    <input
+                      type="text"
+                      value={inventoryForm.supplier}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value })}
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      placeholder="Nombre proveedor"
+                    />
                   </div>
-                </div>
-
-                {/* Información de la Compra */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                    <span>📅</span> Información de la Compra
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Fecha de Compra *</label>
-                      <input
-                        type="date"
-                        value={inventoryForm.purchaseDate}
-                        onChange={(e) => setInventoryForm({ ...inventoryForm, purchaseDate: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Método de Pago *</label>
-                      <select
-                        value={inventoryForm.paymentMethod}
-                        onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      >
-                        <option value="efectivo">💵 Efectivo</option>
-                        <option value="transferencia">🏦 Transferencia</option>
-                        <option value="yape">📱 Yape</option>
-                        <option value="plin">📱 Plin</option>
-                        <option value="credito">💳 Crédito</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
+                    <input
+                      type="text"
+                      value={inventoryForm.supplierRuc}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                      placeholder="20123456789"
+                      maxLength={11}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
+                    <input
+                      type="tel"
+                      value={inventoryForm.supplierPhone}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplierPhone: e.target.value })}
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                      placeholder="987654321"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Fecha *</label>
+                    <input
+                      type="date"
+                      value={inventoryForm.purchaseDate}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, purchaseDate: e.target.value })}
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Pago *</label>
+                    <select
+                      value={inventoryForm.paymentMethod}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
+                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                    >
+                      <option value="efectivo">💵 Efectivo</option>
+                      <option value="transferencia">🏦 Transfer</option>
+                      <option value="yape">📱 Yape</option>
+                      <option value="plin">📱 Plin</option>
+                      <option value="credito">💳 Crédito</option>
+                    </select>
                   </div>
                 </div>
 
                 {/* Lista de Artículos */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                      <span>📋</span> Lista de Artículos
-                    </h4>
+                <div className="mb-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
                     <button
                       onClick={addInventoryItem}
-                      className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105"
+                      className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
                     >
-                      + Agregar Item
+                      + Item
                     </button>
                   </div>
-                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                     {inventoryForm.items.map((item, idx) => (
-                      <div key={idx} className="bg-black/50 rounded-lg p-4 border-2 border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all">
-                        <div className="grid grid-cols-12 gap-3">
+                      <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
+                        <div className="grid grid-cols-12 gap-2">
                           {/* Producto */}
                           <div className="col-span-12 md:col-span-4">
-                            <label className="block text-xs font-bold text-gray-400 mb-1">Producto *</label>
                             <input
                               type="text"
                               value={item.productName}
                               onChange={(e) => updateInventoryItem(idx, 'productName', e.target.value)}
-                              className="w-full px-3 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
-                              placeholder="Ej: Pechuga de pollo"
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                              placeholder="Producto *"
                             />
                           </div>
                           {/* Categoría */}
                           <div className="col-span-6 md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-400 mb-1">Categoría</label>
                             <select
                               value={item.category}
                               onChange={(e) => updateInventoryItem(idx, 'category', e.target.value)}
-                              className="w-full px-2 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
+                              className="w-full px-1 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             >
-                              <option value="proteinas">🍗 Proteínas</option>
-                              <option value="vegetales">🥬 Vegetales</option>
-                              <option value="frutas">🍎 Frutas</option>
-                              <option value="lacteos">🥛 Lácteos</option>
-                              <option value="abarrotes">🛒 Abarrotes</option>
-                              <option value="bebidas">🥤 Bebidas</option>
-                              <option value="empaques">📦 Empaques</option>
-                              <option value="limpieza">🧹 Limpieza</option>
-                              <option value="otros">📋 Otros</option>
+                              <option value="proteinas">🍗</option>
+                              <option value="vegetales">🥬</option>
+                              <option value="frutas">🍎</option>
+                              <option value="lacteos">🥛</option>
+                              <option value="abarrotes">🛒</option>
+                              <option value="bebidas">🥤</option>
+                              <option value="empaques">📦</option>
+                              <option value="limpieza">🧹</option>
+                              <option value="otros">📋</option>
                             </select>
                           </div>
                           {/* Cantidad */}
-                          <div className="col-span-6 md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-400 mb-1">Cantidad *</label>
+                          <div className="col-span-6 md:col-span-1">
                             <input
                               type="number"
                               step="0.01"
                               value={item.quantity}
                               onChange={(e) => updateInventoryItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
-                              placeholder="0"
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                              placeholder="Cant"
                             />
                           </div>
                           {/* Unidad */}
-                          <div className="col-span-6 md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-400 mb-1">Unidad</label>
+                          <div className="col-span-6 md:col-span-1">
                             <select
                               value={item.unit}
                               onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
-                              className="w-full px-2 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
+                              className="w-full px-1 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             >
                               <option value="kg">kg</option>
                               <option value="g">g</option>
                               <option value="l">l</option>
                               <option value="ml">ml</option>
-                              <option value="unidad">unidad</option>
-                              <option value="paquete">paquete</option>
-                              <option value="caja">caja</option>
-                              <option value="bolsa">bolsa</option>
-                              <option value="docena">docena</option>
+                              <option value="unidad">u</option>
+                              <option value="paquete">paq</option>
+                              <option value="caja">cj</option>
+                              <option value="bolsa">bls</option>
+                              <option value="docena">doc</option>
                             </select>
                           </div>
-                          {/* Costo Unitario */}
+                          {/* Costo */}
                           <div className="col-span-6 md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-400 mb-1">Costo Unit. *</label>
                             <input
                               type="number"
                               step="0.01"
                               value={item.unitCost}
                               onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-gray-900 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-400 focus:outline-none"
-                              placeholder="0.00"
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                              placeholder="Costo"
                             />
                           </div>
                           {/* Total */}
                           <div className="col-span-6 md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-400 mb-1">Total</label>
                             <input
                               type="text"
                               value={`S/ ${item.total.toFixed(2)}`}
                               disabled
-                              className="w-full px-3 py-2 rounded bg-gray-800 border border-fuchsia-500/30 text-amber-400 font-bold text-sm"
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-800 border border-fuchsia-500/30 text-amber-400 font-bold"
                             />
                           </div>
-                          {/* Eliminar */}
-                          <div className="col-span-12 flex justify-end">
-                            {inventoryForm.items.length > 1 && (
+                          {inventoryForm.items.length > 1 && (
+                            <div className="col-span-12 md:col-span-0 md:flex items-center justify-center hidden">
                               <button
                                 onClick={() => removeInventoryItem(idx)}
-                                className="bg-red-600 hover:bg-red-500 text-white px-4 py-1 rounded text-xs font-bold transition-all"
+                                className="text-red-400 hover:text-red-300 text-xs"
+                                title="Eliminar"
                               >
-                                🗑️ Eliminar
+                                ❌
                               </button>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
+                        {inventoryForm.items.length > 1 && (
+                          <div className="md:hidden mt-1 text-right">
+                            <button
+                              onClick={() => removeInventoryItem(idx)}
+                              className="text-red-400 hover:text-red-300 text-xs"
+                            >
+                              ❌ Eliminar
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Notas */}
-                <div className="mb-6">
-                  <label className="block text-sm font-bold text-gray-400 mb-1">
+                <div className="mb-3">
+                  <label className="block text-xs font-bold text-gray-400 mb-1">
                     <span>📝</span> Notas Adicionales (opcional)
                   </label>
                   <textarea
                     value={inventoryForm.notes}
                     onChange={(e) => setInventoryForm({ ...inventoryForm, notes: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                    rows={3}
-                    placeholder="Información adicional sobre la compra, número de factura, condiciones especiales, etc."
+                    className="w-full px-2 py-1.5 text-sm rounded-lg bg-black border-2 border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                    rows={2}
+                    placeholder="Info adicional, número de factura, etc."
                   />
                 </div>
 
                 {/* Total */}
-                <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-xl p-6 border-2 border-fuchsia-500/50 mb-6">
+                <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-lg p-3 border-2 border-fuchsia-500/50 mb-3">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm text-gray-400 mb-1">Total de la Compra</p>
+                      <p className="text-xs text-gray-400">Total de la Compra</p>
                       <p className="text-xs text-gray-500">{inventoryForm.items.length} item(s)</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-4xl font-black text-fuchsia-400">
+                      <p className="text-2xl font-black text-fuchsia-400">
                         S/ {inventoryForm.totalAmount.toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">{inventoryForm.paymentMethod}</p>
+                      <p className="text-xs text-gray-400">{inventoryForm.paymentMethod}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Botones */}
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     onClick={() => {
                       setShowInventoryModal(false);
@@ -2148,14 +2136,14 @@ export default function AdminPage() {
                         purchaseDate: new Date().toISOString().split('T')[0]
                       });
                     }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
                   >
                     ❌ Cancelar
                   </button>
                   <button
                     onClick={handleCreateInventory}
                     disabled={!inventoryForm.supplier || inventoryForm.items.some(i => !i.productName || i.quantity <= 0 || i.unitCost <= 0)}
-                    className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                    className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
                   >
                     ✅ Registrar Compra
                   </button>
