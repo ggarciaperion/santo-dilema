@@ -2082,23 +2082,17 @@ export default function AdminPage() {
                 </h3>
 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2">
-                      ID del Producto {editingCatalogProduct ? '' : '(Auto-generado)'}
-                    </label>
-                    {editingCatalogProduct ? (
+                  {editingCatalogProduct && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-2">ID del Producto</label>
                       <input
                         type="text"
                         value={catalogForm.productId}
                         readOnly
                         className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-400 rounded cursor-not-allowed"
                       />
-                    ) : (
-                      <div className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-cyan-400 rounded text-sm">
-                        {catalogForm.category ? `${catalogForm.category.substring(0, 3).toUpperCase()}###` : 'Selecciona una categoría primero'}
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-bold text-gray-400 mb-2">Nombre del Producto *</label>
