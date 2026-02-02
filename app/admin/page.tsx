@@ -1548,102 +1548,69 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Inventory List */}
-                <div className="space-y-4">
+                {/* Inventory List - Formato Tabla Compacta */}
+                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
                   {inventory.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
+                    <div className="text-center py-12">
                       <span className="text-6xl block mb-4">📦</span>
                       <p className="text-2xl text-gray-400 font-bold">No hay compras registradas</p>
                       <p className="text-sm text-gray-500 mt-2">Comienza registrando tu primera compra</p>
                     </div>
                   ) : (
-                    inventory.map((purchase) => (
-                      <div key={purchase.id} className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 hover:border-fuchsia-500 transition-all hover:shadow-lg hover:shadow-fuchsia-500/20">
-                        {/* Header */}
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-2xl font-black text-white">{purchase.supplier}</h3>
-                              {purchase.paymentMethod && (
-                                <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500 rounded-full text-xs font-bold text-cyan-400">
-                                  {purchase.paymentMethod === 'plin-yape' && '📱 Plin / Yape'}
-                                  {purchase.paymentMethod === 'efectivo' && '💵 Efectivo'}
-                                  {purchase.paymentMethod === 'transferencia' && '🏦 Transferencia'}
-                                  {purchase.paymentMethod === 'tarjeta' && '💳 Tarjeta'}
-                                  {purchase.paymentMethod === 'yape' && '📱 Yape'}
-                                  {purchase.paymentMethod === 'plin' && '📱 Plin'}
-                                  {purchase.paymentMethod === 'credito' && '💳 Crédito'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex gap-4 text-sm text-gray-400">
-                              <span>📅 {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
-                              <span>🆔 #{purchase.id}</span>
-                              {purchase.supplierRuc && <span>🏢 RUC: {purchase.supplierRuc}</span>}
-                              {purchase.supplierPhone && <span>📞 {purchase.supplierPhone}</span>}
-                            </div>
+                    <div className="overflow-x-auto">
+                      {/* Encabezados de tabla */}
+                      <div className="grid grid-cols-12 gap-3 bg-black/50 px-4 py-2 border-b border-fuchsia-500/30 text-xs font-bold text-gray-400">
+                        <div className="col-span-2">Fecha</div>
+                        <div className="col-span-2">Proveedor</div>
+                        <div className="col-span-4">Artículos</div>
+                        <div className="col-span-1 text-center">Pago</div>
+                        <div className="col-span-2 text-right">Total</div>
+                        <div className="col-span-1 text-center">Acción</div>
+                      </div>
+
+                      {/* Filas de datos */}
+                      {inventory.map((purchase) => (
+                        <div key={purchase.id} className="grid grid-cols-12 gap-3 px-4 py-2 border-b border-gray-800 hover:bg-fuchsia-500/5 transition-all items-center">
+                          <div className="col-span-2 text-xs text-gray-300">
+                            {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                           </div>
-                          <div className="text-right">
-                            <p className="text-4xl font-black text-fuchsia-400 mb-2">S/ {purchase.totalAmount.toFixed(2)}</p>
+                          <div className="col-span-2">
+                            <p className="text-sm font-bold text-white truncate">{purchase.supplier}</p>
+                            {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
+                          </div>
+                          <div className="col-span-4">
+                            <p className="text-xs text-gray-300 truncate">
+                              {purchase.items.map((item: any, idx: number) => (
+                                <span key={idx}>
+                                  {item.productName} ({item.quantity} {item.unit})
+                                  {idx < purchase.items.length - 1 ? ', ' : ''}
+                                </span>
+                              ))}
+                            </p>
+                          </div>
+                          <div className="col-span-1 text-center">
+                            <span className="text-xs">
+                              {purchase.paymentMethod === 'plin-yape' && '📱'}
+                              {purchase.paymentMethod === 'efectivo' && '💵'}
+                              {purchase.paymentMethod === 'transferencia' && '🏦'}
+                              {purchase.paymentMethod === 'tarjeta' && '💳'}
+                            </span>
+                          </div>
+                          <div className="col-span-2 text-right">
+                            <p className="text-sm font-bold text-fuchsia-400">S/ {purchase.totalAmount.toFixed(2)}</p>
+                          </div>
+                          <div className="col-span-1 text-center">
                             <button
                               onClick={() => handleDeleteInventory(purchase.id)}
-                              className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105"
+                              className="text-red-400 hover:text-red-300 text-xs"
+                              title="Eliminar"
                             >
-                              🗑️ Eliminar
+                              🗑️
                             </button>
                           </div>
                         </div>
-
-                        {/* Items Grid */}
-                        <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/20">
-                          <h4 className="text-sm font-bold text-fuchsia-400 mb-3 flex items-center gap-2">
-                            <span>📋</span> Artículos Comprados:
-                          </h4>
-                          <div className="space-y-2">
-                            {purchase.items.map((item: any, idx: number) => (
-                              <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-900/50 rounded-lg p-3 hover:bg-gray-900 transition-all">
-                                <div className="col-span-5">
-                                  <p className="text-white font-bold">{item.productName}</p>
-                                  {item.category && (
-                                    <p className="text-xs text-gray-500">
-                                      {item.category === 'proteinas' && '🍗 Proteínas'}
-                                      {item.category === 'vegetales' && '🥬 Vegetales'}
-                                      {item.category === 'frutas' && '🍎 Frutas'}
-                                      {item.category === 'lacteos' && '🥛 Lácteos'}
-                                      {item.category === 'abarrotes' && '🛒 Abarrotes'}
-                                      {item.category === 'bebidas' && '🥤 Bebidas'}
-                                      {item.category === 'empaques' && '📦 Empaques'}
-                                      {item.category === 'limpieza' && '🧹 Limpieza'}
-                                      {item.category === 'otros' && '📋 Otros'}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="col-span-3 text-center">
-                                  <p className="text-white font-bold">{item.quantity} {item.unit || 'unidades'}</p>
-                                </div>
-                                <div className="col-span-2 text-center">
-                                  <p className="text-gray-400 text-sm">S/ {item.unitCost.toFixed(2)}</p>
-                                  <p className="text-xs text-gray-500">Costo total</p>
-                                </div>
-                                <div className="col-span-2 text-right">
-                                  <p className="text-amber-400 font-black text-lg">S/ {item.total.toFixed(2)}</p>
-                                  <p className="text-xs text-gray-500">Costo unitario</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Notas */}
-                        {purchase.notes && (
-                          <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-                            <p className="text-sm text-gray-400">
-                              <span className="font-bold text-amber-400">📝 Notas:</span> {purchase.notes}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
               </>
