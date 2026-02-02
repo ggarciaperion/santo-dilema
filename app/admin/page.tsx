@@ -1994,10 +1994,10 @@ export default function AdminPage() {
                       <p className="text-xs font-bold text-gray-400">Unidad de medida</p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs font-bold text-gray-400">Precio unitario</p>
+                      <p className="text-xs font-bold text-gray-400">Costo total</p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs font-bold text-gray-400">Costo total</p>
+                      <p className="text-xs font-bold text-gray-400">Costo unitario</p>
                     </div>
                   </div>
 
@@ -2024,8 +2024,8 @@ export default function AdminPage() {
                               step="0.01"
                               value={item.quantity === 0 ? '' : item.quantity}
                               onChange={(e) => updateInventoryItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                              placeholder="Cantidad *"
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="0"
                             />
                           </div>
                           {/* Unidad */}
@@ -2037,31 +2037,24 @@ export default function AdminPage() {
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             >
                               <option value="kg">Kg</option>
-                              <option value="paquete-6">Paquete (6 und)</option>
-                              <option value="paquete-12">Paquete (12 und)</option>
-                              <option value="paquete-24">Paquete (24 und)</option>
-                              <option value="unidad">Unidad</option>
-                              <option value="medio-ciento">Medio ciento (50)</option>
-                              <option value="ciento">Ciento (100)</option>
-                              <option value="medio-millar">Medio millar (500)</option>
-                              <option value="millar">Millar (1000)</option>
+                              <option value="unidad">Und</option>
                             </select>
                           </div>
-                          {/* Precio unitario */}
+                          {/* Costo total */}
                           <div className="col-span-6 md:col-span-2">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Precio unitario</label>
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Costo total</label>
                             <input
                               type="number"
                               step="0.01"
                               value={item.unitCost === 0 ? '' : item.unitCost}
                               onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                              placeholder="Precio unitario *"
+                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="0"
                             />
                           </div>
-                          {/* Costo total */}
+                          {/* Costo unitario */}
                           <div className="col-span-6 md:col-span-2">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Costo total</label>
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Costo unitario</label>
                             <input
                               type="text"
                               value={`S/ ${item.total.toFixed(2)}`}
