@@ -1580,40 +1580,30 @@ export default function AdminPage() {
                 </div>
 
                 {/* Filtros */}
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-4 mb-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-2">Buscar por producto</label>
-                      <input
-                        type="text"
-                        value={inventorySearchTerm}
-                        onChange={(e) => setInventorySearchTerm(e.target.value)}
-                        placeholder="Escribe el nombre del producto..."
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-2">Filtrar por fecha</label>
-                      <input
-                        type="date"
-                        value={inventoryDateFilter}
-                        onChange={(e) => setInventoryDateFilter(e.target.value)}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                      />
-                    </div>
-                  </div>
+                <div className="flex justify-end items-center gap-3 mb-4">
+                  <input
+                    type="text"
+                    value={inventorySearchTerm}
+                    onChange={(e) => setInventorySearchTerm(e.target.value)}
+                    placeholder="Buscar producto..."
+                    className="w-48 px-3 py-1.5 text-xs rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
+                  />
+                  <input
+                    type="date"
+                    value={inventoryDateFilter}
+                    onChange={(e) => setInventoryDateFilter(e.target.value)}
+                    className="w-40 px-3 py-1.5 text-xs rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
+                  />
                   {(inventorySearchTerm || inventoryDateFilter) && (
-                    <div className="mt-3">
-                      <button
-                        onClick={() => {
-                          setInventorySearchTerm("");
-                          setInventoryDateFilter("");
-                        }}
-                        className="text-xs text-gray-400 hover:text-white transition-all"
-                      >
-                        ✕ Limpiar filtros
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => {
+                        setInventorySearchTerm("");
+                        setInventoryDateFilter("");
+                      }}
+                      className="text-xs text-gray-400 hover:text-white transition-all px-2 py-1 hover:bg-gray-800 rounded"
+                    >
+                      ✕ Limpiar
+                    </button>
                   )}
                 </div>
 
