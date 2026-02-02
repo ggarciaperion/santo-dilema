@@ -136,7 +136,9 @@ export default function AdminPage() {
     try {
       const response = await fetch("/api/products");
       const data = await response.json();
-      setProducts(data);
+      // Filtrar solo productos de venta (no de inventario)
+      const saleProducts = data.filter((p: any) => p.type === "sale");
+      setProducts(saleProducts);
     } catch (error) {
       console.error("Error al cargar productos:", error);
     }
@@ -166,7 +168,9 @@ export default function AdminPage() {
     try {
       const response = await fetch("/api/products");
       const data = await response.json();
-      setCatalogProducts(data);
+      // Filtrar solo productos de inventario (materias primas)
+      const inventoryProducts = data.filter((p: any) => p.type === "inventory" || !p.type);
+      setCatalogProducts(inventoryProducts);
     } catch (error) {
       console.error("Error al cargar catálogo de productos:", error);
     }
@@ -198,7 +202,7 @@ export default function AdminPage() {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(catalogForm),
+        body: JSON.stringify({ ...catalogForm, type: "inventory" }), // Marcar como producto de inventario
       });
 
       if (response.ok) {
@@ -295,7 +299,7 @@ export default function AdminPage() {
       await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productForm),
+        body: JSON.stringify({ ...productForm, type: "sale" }), // Marcar como producto de venta
       });
       loadProducts();
       setShowProductModal(false);
@@ -310,7 +314,7 @@ export default function AdminPage() {
       await fetch("/api/products", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...productForm, id: editingProduct.id }),
+        body: JSON.stringify({ ...productForm, id: editingProduct.id, type: "sale" }),
       });
       loadProducts();
       setShowProductModal(false);

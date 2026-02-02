@@ -74,6 +74,7 @@ interface Product {
   stock?: number;
   minStock?: number;
   maxStock?: number;
+  type?: string; // "inventory" para materias primas, "sale" para productos de venta
   createdAt: string;
 }
 
