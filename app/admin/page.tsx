@@ -1981,12 +1981,33 @@ export default function AdminPage() {
                       + Item
                     </button>
                   </div>
+
+                  {/* Encabezados de columnas */}
+                  <div className="hidden md:grid grid-cols-12 gap-2 mb-2 px-2">
+                    <div className="col-span-4">
+                      <p className="text-xs font-bold text-gray-400">Producto</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-gray-400">Cantidad</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-gray-400">Unidad de medida</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-gray-400">Precio unitario</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-gray-400">Costo total</p>
+                    </div>
+                  </div>
+
                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                     {inventoryForm.items.map((item, idx) => (
                       <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
                         <div className="grid grid-cols-12 gap-2">
                           {/* Producto */}
                           <div className="col-span-12 md:col-span-4">
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Producto</label>
                             <input
                               type="text"
                               value={item.productName}
@@ -1997,10 +2018,11 @@ export default function AdminPage() {
                           </div>
                           {/* Cantidad */}
                           <div className="col-span-6 md:col-span-2">
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Cantidad</label>
                             <input
                               type="number"
                               step="0.01"
-                              value={item.quantity}
+                              value={item.quantity === 0 ? '' : item.quantity}
                               onChange={(e) => updateInventoryItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                               placeholder="Cantidad *"
@@ -2008,6 +2030,7 @@ export default function AdminPage() {
                           </div>
                           {/* Unidad */}
                           <div className="col-span-6 md:col-span-2">
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Unidad de medida</label>
                             <select
                               value={item.unit}
                               onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
@@ -2026,10 +2049,11 @@ export default function AdminPage() {
                           </div>
                           {/* Precio unitario */}
                           <div className="col-span-6 md:col-span-2">
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Precio unitario</label>
                             <input
                               type="number"
                               step="0.01"
-                              value={item.unitCost}
+                              value={item.unitCost === 0 ? '' : item.unitCost}
                               onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                               placeholder="Precio unitario *"
@@ -2037,6 +2061,7 @@ export default function AdminPage() {
                           </div>
                           {/* Costo total */}
                           <div className="col-span-6 md:col-span-2">
+                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Costo total</label>
                             <input
                               type="text"
                               value={`S/ ${item.total.toFixed(2)}`}
