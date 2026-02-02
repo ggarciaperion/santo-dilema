@@ -2374,10 +2374,10 @@ export default function AdminPage() {
                             <input
                               type="number"
                               step="1"
-                              value={item.volume === 0 ? '' : item.volume}
+                              value={item.volume === 0 || item.volume === 1 ? '' : item.volume}
                               onChange={(e) => updateInventoryItem(idx, 'volume', parseFloat(e.target.value) || 1)}
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              placeholder="1"
+                              placeholder=""
                             />
                           </div>
                           {/* Costo total */}
