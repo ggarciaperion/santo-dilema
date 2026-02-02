@@ -2271,22 +2271,22 @@ export default function AdminPage() {
                             <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Producto</label>
                             <input
                               type="text"
-                              value={productSearchTerms[idx] || item.productName || ""}
+                              value={item.productName || ""}
                               onChange={(e) => {
+                                updateInventoryItem(idx, 'productName', e.target.value);
                                 const newSearchTerms = [...productSearchTerms];
                                 newSearchTerms[idx] = e.target.value;
                                 setProductSearchTerms(newSearchTerms);
-                                updateInventoryItem(idx, 'productName', e.target.value);
                                 setActiveDropdownIndex(idx);
                               }}
                               onFocus={() => setActiveDropdownIndex(idx)}
                               placeholder="Escribir o seleccionar producto *"
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             />
-                            {activeDropdownIndex === idx && (productSearchTerms[idx]?.length >= 3 || !productSearchTerms[idx]) && (
+                            {activeDropdownIndex === idx && (item.productName?.length >= 3 || !item.productName) && (
                               <div className="absolute z-[200] w-full mt-1 bg-gray-800 border border-fuchsia-500/30 rounded max-h-40 overflow-y-auto shadow-2xl" style={{ position: 'absolute' }}>
                                 {(() => {
-                                  const searchTerm = productSearchTerms[idx]?.toLowerCase() || "";
+                                  const searchTerm = item.productName?.toLowerCase() || "";
                                   const filteredProducts = searchTerm.length >= 3
                                     ? catalogProducts.filter(p =>
                                         p.name.toLowerCase().includes(searchTerm) ||
