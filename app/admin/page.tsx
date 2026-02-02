@@ -1654,6 +1654,16 @@ export default function AdminPage() {
               >
                 📊 Control de Stock
               </button>
+              <button
+                onClick={() => setInventorySection("catalog")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  inventorySection === "catalog"
+                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                📚 Catálogo
+              </button>
             </div>
 
             {inventorySection === "purchases" && (
@@ -1989,6 +1999,104 @@ export default function AdminPage() {
             )}
 
             {inventorySection === "stock" && (
+              <>
+                {(() => {
+                  // Calcular stock basado en compras
+                  const stockMap = new Map<string, { productName: string; unit: string; totalQuantity: number; purchases: number }>();
+
+                  inventory.forEach((purchase) => {
+                    purchase.items.forEach((item: any) => {
+                      const key = `${item.productName}-${item.unit}`;
+                      if (stockMap.has(key)) {
+                        const existing = stockMap.get(key)!;
+                        existing.totalQuantity += item.quantity;
+                        existing.purchases += 1;
+                      } else {
+                        stockMap.set(key, {
+                          productName: item.productName,
+                          unit: item.unit,
+                          totalQuantity: item.quantity,
+                          purchases: 1
+                        });
+                      }
+                    });
+                  });
+
+                  const stockItems = Array.from(stockMap.values()).sort((a, b) =>
+                    a.productName.localeCompare(b.productName)
+                  );
+
+                  return (
+                    <>
+                      <div className="mb-6">
+                        <h3 className="text-2xl font-bold text-white">Control de Stock</h3>
+                        <p className="text-gray-400 text-sm">Stock calculado automáticamente desde las compras registradas</p>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
+                          <p className="text-gray-400 text-sm font-semibold">Total Productos en Stock</p>
+                          <p className="text-5xl font-black text-white mt-2">{stockItems.length}</p>
+                        </div>
+                        <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
+                          <p className="text-cyan-400 text-sm font-bold">Compras Registradas</p>
+                          <p className="text-4xl font-black text-cyan-400 mt-2">
+                            {inventory.length}
+                          </p>
+                        </div>
+                        <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
+                          <p className="text-amber-400 text-sm font-bold">Items Comprados</p>
+                          <p className="text-4xl font-black text-amber-400 mt-2">
+                            {inventory.reduce((sum, p) => sum + p.items.length, 0)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Tabla de Stock */}
+                      <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                        {stockItems.length === 0 ? (
+                          <div className="text-center py-12">
+                            <span className="text-6xl block mb-4">📦</span>
+                            <p className="text-2xl text-gray-400 font-bold">No hay stock registrado</p>
+                            <p className="text-sm text-gray-500 mt-2">Registra compras para ver el stock aquí</p>
+                          </div>
+                        ) : (
+                          <table className="w-full" style={{ borderCollapse: "collapse" }}>
+                            <thead className="bg-black">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">PRODUCTO</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">UNIDAD</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">CANTIDAD EN STOCK</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30"># COMPRAS</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {stockItems.map((item, idx) => (
+                                <tr key={idx} className="hover:bg-black/50 transition-all">
+                                  <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{item.productName}</td>
+                                  <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
+                                    {item.unit}
+                                  </td>
+                                  <td className="px-6 py-3 text-center text-green-400 font-black text-lg border border-fuchsia-500/10">
+                                    {item.totalQuantity}
+                                  </td>
+                                  <td className="px-6 py-3 text-center text-gray-400 border border-fuchsia-500/10">
+                                    {item.purchases}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </>
+            )}
+
+            {inventorySection === "catalog" && (
               <>
                 <div className="flex justify-between items-center mb-6">
                   <div>
