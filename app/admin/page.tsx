@@ -349,16 +349,6 @@ export default function AdminPage() {
   // Inventory functions
   const handleCreateInventory = async () => {
     try {
-      // Validar que todos los productos existan en el catálogo
-      const invalidProducts = inventoryForm.items.filter(item => {
-        return item.productName && !catalogProducts.some(p => p.name === item.productName);
-      });
-
-      if (invalidProducts.length > 0) {
-        alert(`Los siguientes productos no existen en el catálogo:\n${invalidProducts.map(p => p.productName).join(', ')}\n\nPor favor, registra estos productos en la sección "Control de Stock" antes de continuar.`);
-        return;
-      }
-
       const response = await fetch("/api/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
