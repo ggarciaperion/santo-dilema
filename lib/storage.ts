@@ -64,6 +64,7 @@ interface Order {
 
 interface Product {
   id: string;
+  productId: string;
   name: string;
   category?: string;
   unit: string; // kg, unidad
@@ -279,6 +280,30 @@ export const storage = {
     }
 
     return product;
+  },
+
+  // Actualizar un producto
+  async updateProduct(id: string, updates: Partial<Product>): Promise<Product | null> {
+    const products = await this.getProducts();
+    const productIndex = products.findIndex((p) => p.id === id);
+
+    if (productIndex === -1) {
+      return null;
+    }
+
+    products[productIndex] = { ...products[productIndex], ...updates };
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('products', products);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(productsFilePath, JSON.stringify(products, null, 2));
+    }
+
+    return products[productIndex];
   },
 
   // Eliminar un producto

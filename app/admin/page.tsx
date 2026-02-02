@@ -71,7 +71,8 @@ export default function AdminPage() {
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
-  const [catalogForm, setCatalogForm] = useState({ name: "", category: "", unit: "" });
+  const [editingCatalogProduct, setEditingCatalogProduct] = useState<any>(null);
+  const [catalogForm, setCatalogForm] = useState({ productId: "", name: "", category: "", unit: "" });
   const [productSearchTerms, setProductSearchTerms] = useState<string[]>([]);
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(null);
   const [promotionForm, setPromotionForm] = useState({
@@ -173,6 +174,11 @@ export default function AdminPage() {
 
   const handleCreateCatalogProduct = async () => {
     try {
+      if (!catalogForm.productId.trim()) {
+        alert("El ID del producto es requerido");
+        return;
+      }
+
       if (!catalogForm.name.trim()) {
         alert("El nombre del producto es requerido");
         return;
@@ -188,8 +194,14 @@ export default function AdminPage() {
         return;
       }
 
-      const response = await fetch("/api/products", {
-        method: "POST",
+      const isEditing = !!editingCatalogProduct;
+      const url = isEditing
+        ? `/api/products?id=${editingCatalogProduct.id}`
+        : "/api/products";
+      const method = isEditing ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(catalogForm),
       });
@@ -197,15 +209,16 @@ export default function AdminPage() {
       if (response.ok) {
         await loadCatalogProducts();
         setShowCatalogModal(false);
-        setCatalogForm({ name: "", category: "", unit: "" });
-        alert("Producto registrado exitosamente");
+        setCatalogForm({ productId: "", name: "", category: "", unit: "" });
+        setEditingCatalogProduct(null);
+        alert(isEditing ? "Producto actualizado exitosamente" : "Producto registrado exitosamente");
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.error || "No se pudo registrar el producto"}`);
+        alert(`Error: ${errorData.error || "No se pudo " + (isEditing ? "actualizar" : "registrar") + " el producto"}`);
       }
     } catch (error) {
-      console.error("Error al crear producto:", error);
-      alert("Error al registrar producto");
+      console.error("Error al crear/actualizar producto:", error);
+      alert("Error al procesar el producto");
     }
   };
 
@@ -2010,6 +2023,7 @@ export default function AdminPage() {
                     <table className="w-full" style={{ borderCollapse: "collapse" }}>
                       <thead className="bg-black">
                         <tr>
+                          <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">ID</th>
                           <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">PRODUCTO</th>
                           <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">CATEGORÍA</th>
                           <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">UNIDAD</th>
@@ -2020,6 +2034,7 @@ export default function AdminPage() {
                       <tbody>
                         {catalogProducts.map((product) => (
                           <tr key={product.id} className="hover:bg-black/50 transition-all">
+                            <td className="px-6 py-3 text-cyan-400 font-bold border border-fuchsia-500/10">{product.productId || "-"}</td>
                             <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{product.name}</td>
                             <td className="px-6 py-3 text-gray-400 border border-fuchsia-500/10">{product.category || "-"}</td>
                             <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
@@ -2029,12 +2044,29 @@ export default function AdminPage() {
                               {new Date(product.createdAt).toLocaleDateString("es-PE")}
                             </td>
                             <td className="px-6 py-3 text-center border border-fuchsia-500/10">
-                              <button
-                                onClick={() => handleDeleteCatalogProduct(product.id)}
-                                className="text-red-400 hover:text-red-300 text-sm font-bold"
-                              >
-                                ✕
-                              </button>
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingCatalogProduct(product);
+                                    setCatalogForm({
+                                      productId: product.productId || "",
+                                      name: product.name || "",
+                                      category: product.category || "",
+                                      unit: product.unit || ""
+                                    });
+                                    setShowCatalogModal(true);
+                                  }}
+                                  className="text-amber-400 hover:text-amber-300 text-sm font-bold"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteCatalogProduct(product.id)}
+                                  className="text-red-400 hover:text-red-300 text-sm font-bold"
+                                >
+                                  ✕
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -2050,9 +2082,22 @@ export default function AdminPage() {
           {showCatalogModal && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full">
-                <h3 className="text-xl font-black text-fuchsia-400 mb-4">📦 Nuevo Producto</h3>
+                <h3 className="text-xl font-black text-fuchsia-400 mb-4">
+                  {editingCatalogProduct ? '✏️ Editar Producto' : '📦 Nuevo Producto'}
+                </h3>
 
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-2">ID del Producto *</label>
+                    <input
+                      type="text"
+                      value={catalogForm.productId}
+                      onChange={(e) => setCatalogForm({ ...catalogForm, productId: e.target.value.toUpperCase() })}
+                      placeholder="ID ÚNICO"
+                      className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-gray-400 mb-2">Nombre del Producto *</label>
                     <input
@@ -2101,7 +2146,8 @@ export default function AdminPage() {
                   <button
                     onClick={() => {
                       setShowCatalogModal(false);
-                      setCatalogForm({ name: "", category: "", unit: "" });
+                      setCatalogForm({ productId: "", name: "", category: "", unit: "" });
+                      setEditingCatalogProduct(null);
                     }}
                     className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition-all"
                   >
@@ -2240,7 +2286,10 @@ export default function AdminPage() {
                                 {(() => {
                                   const searchTerm = productSearchTerms[idx]?.toLowerCase() || "";
                                   const filteredProducts = searchTerm.length >= 3
-                                    ? catalogProducts.filter(p => p.name.toLowerCase().includes(searchTerm))
+                                    ? catalogProducts.filter(p =>
+                                        p.name.toLowerCase().includes(searchTerm) ||
+                                        p.productId?.toLowerCase().includes(searchTerm)
+                                      )
                                     : catalogProducts;
 
                                   if (filteredProducts.length === 0) {
@@ -2256,14 +2305,18 @@ export default function AdminPage() {
                                       key={product.id}
                                       onClick={() => {
                                         updateInventoryItem(idx, 'productName', product.name);
+                                        updateInventoryItem(idx, 'unit', product.unit);
                                         const newSearchTerms = [...productSearchTerms];
                                         newSearchTerms[idx] = product.name;
                                         setProductSearchTerms(newSearchTerms);
                                         setActiveDropdownIndex(null);
                                       }}
-                                      className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer"
+                                      className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer border-b border-fuchsia-500/10 last:border-b-0"
                                     >
-                                      {product.name}
+                                      <div className="font-bold">{product.name}</div>
+                                      {product.productId && (
+                                        <div className="text-cyan-400 text-[10px] mt-0.5">ID: {product.productId}</div>
+                                      )}
                                     </div>
                                   ));
                                 })()}
@@ -2290,8 +2343,12 @@ export default function AdminPage() {
                               onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
                               className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                             >
-                              <option value="kg">Kg</option>
-                              <option value="unidad">Und</option>
+                              <option value="">Seleccionar</option>
+                              <option value="UNIDAD">UNIDAD</option>
+                              <option value="KG">KG</option>
+                              <option value="LITROS">LITROS</option>
+                              <option value="SERVICIO">SERVICIO</option>
+                              <option value="GRAMOS">GRAMOS</option>
                             </select>
                           </div>
                           {/* Costo total */}

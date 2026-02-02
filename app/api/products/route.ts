@@ -19,6 +19,7 @@ export async function POST(request: Request) {
 
     const newProduct = {
       id: Date.now().toString(),
+      productId: body.productId.toUpperCase(),
       name: body.name.toUpperCase(),
       category: body.category || "",
       unit: body.unit || "unidad",
@@ -31,6 +32,38 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error al registrar producto:", error);
     return NextResponse.json({ error: "Error al registrar producto", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+  }
+}
+
+// PATCH - Actualizar producto
+export async function PATCH(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID es requerido" }, { status: 400 });
+    }
+
+    const body = await request.json();
+
+    const updates = {
+      productId: body.productId?.toUpperCase(),
+      name: body.name?.toUpperCase(),
+      category: body.category,
+      unit: body.unit,
+    };
+
+    const updatedProduct = await storage.updateProduct(id, updates);
+
+    if (!updatedProduct) {
+      return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedProduct);
+  } catch (error) {
+    console.error("Error al actualizar producto:", error);
+    return NextResponse.json({ error: "Error al actualizar producto", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
