@@ -72,7 +72,7 @@ export default function AdminPage() {
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
-  const [catalogForm, setCatalogForm] = useState({ name: "", category: "", unit: "unidad" });
+  const [catalogForm, setCatalogForm] = useState({ name: "", category: "", unit: "" });
   const [promotionForm, setPromotionForm] = useState({
     name: "",
     description: "",
@@ -165,6 +165,16 @@ export default function AdminPage() {
         return;
       }
 
+      if (!catalogForm.category.trim()) {
+        alert("La categoría es requerida");
+        return;
+      }
+
+      if (!catalogForm.unit.trim()) {
+        alert("La unidad de medida es requerida");
+        return;
+      }
+
       const response = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -174,7 +184,7 @@ export default function AdminPage() {
       if (response.ok) {
         await loadCatalogProducts();
         setShowCatalogModal(false);
-        setCatalogForm({ name: "", category: "", unit: "unidad" });
+        setCatalogForm({ name: "", category: "", unit: "" });
         alert("Producto registrado exitosamente");
       } else {
         const errorData = await response.json();
@@ -1944,21 +1954,27 @@ export default function AdminPage() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                   <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
                     <p className="text-gray-400 text-sm font-semibold">Total Productos</p>
                     <p className="text-5xl font-black text-white mt-2">{catalogProducts.length}</p>
                   </div>
                   <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                    <p className="text-cyan-400 text-sm font-bold">Unidad: Kg</p>
+                    <p className="text-cyan-400 text-sm font-bold">Insumos</p>
                     <p className="text-4xl font-black text-cyan-400 mt-2">
-                      {catalogProducts.filter(p => p.unit === "kg").length}
+                      {catalogProducts.filter(p => p.category === "INSUMO").length}
                     </p>
                   </div>
                   <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                    <p className="text-amber-400 text-sm font-bold">Unidad: Und</p>
+                    <p className="text-amber-400 text-sm font-bold">Empaques</p>
                     <p className="text-4xl font-black text-amber-400 mt-2">
-                      {catalogProducts.filter(p => p.unit === "unidad").length}
+                      {catalogProducts.filter(p => p.category === "EMPAQUE").length}
+                    </p>
+                  </div>
+                  <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
+                    <p className="text-purple-400 text-sm font-bold">Servicios</p>
+                    <p className="text-4xl font-black text-purple-400 mt-2">
+                      {catalogProducts.filter(p => p.category === "SERVICIO").length}
                     </p>
                   </div>
                 </div>
@@ -1988,7 +2004,7 @@ export default function AdminPage() {
                             <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{product.name}</td>
                             <td className="px-6 py-3 text-gray-400 border border-fuchsia-500/10">{product.category || "-"}</td>
                             <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
-                              {product.unit === "kg" ? "Kg" : "Und"}
+                              {product.unit}
                             </td>
                             <td className="px-6 py-3 text-center text-gray-400 text-sm border border-fuchsia-500/10">
                               {new Date(product.createdAt).toLocaleDateString("es-PE")}
@@ -2030,14 +2046,18 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2">Categoría (Opcional)</label>
-                    <input
-                      type="text"
+                    <label className="block text-xs font-bold text-gray-400 mb-2">Categoría *</label>
+                    <select
                       value={catalogForm.category}
                       onChange={(e) => setCatalogForm({ ...catalogForm, category: e.target.value })}
-                      placeholder="Ej: Verduras, Carnes, Lácteos..."
                       className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
-                    />
+                    >
+                      <option value="">Seleccionar categoría *</option>
+                      <option value="EMPAQUE">EMPAQUE</option>
+                      <option value="INSUMO">INSUMO</option>
+                      <option value="SERVICIO">SERVICIO</option>
+                      <option value="COSTO FIJO">COSTO FIJO</option>
+                    </select>
                   </div>
 
                   <div>
@@ -2047,8 +2067,12 @@ export default function AdminPage() {
                       onChange={(e) => setCatalogForm({ ...catalogForm, unit: e.target.value })}
                       className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
                     >
-                      <option value="unidad">Unidad</option>
-                      <option value="kg">Kilogramo</option>
+                      <option value="">Seleccionar unidad *</option>
+                      <option value="UNIDAD">UNIDAD</option>
+                      <option value="KG">KG</option>
+                      <option value="LITROS">LITROS</option>
+                      <option value="SERVICIO">SERVICIO</option>
+                      <option value="GRAMOS">GRAMOS</option>
                     </select>
                   </div>
                 </div>
@@ -2057,7 +2081,7 @@ export default function AdminPage() {
                   <button
                     onClick={() => {
                       setShowCatalogModal(false);
-                      setCatalogForm({ name: "", category: "", unit: "unidad" });
+                      setCatalogForm({ name: "", category: "", unit: "" });
                     }}
                     className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition-all"
                   >
