@@ -1548,7 +1548,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Inventory List - Formato Tabla Compacta */}
+                {/* Inventory List - Formato Tabla Excel */}
                 <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
                   {inventory.length === 0 ? (
                     <div className="text-center py-12">
@@ -1558,58 +1558,59 @@ export default function AdminPage() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      {/* Encabezados de tabla */}
-                      <div className="grid grid-cols-12 gap-3 bg-black/50 px-4 py-2 border-b border-fuchsia-500/30 text-xs font-bold text-gray-400">
-                        <div className="col-span-2">Fecha</div>
-                        <div className="col-span-2">Proveedor</div>
-                        <div className="col-span-4">Artículos</div>
-                        <div className="col-span-1 text-center">Pago</div>
-                        <div className="col-span-2 text-right">Total</div>
-                        <div className="col-span-1 text-center">Acción</div>
-                      </div>
-
-                      {/* Filas de datos */}
-                      {inventory.map((purchase) => (
-                        <div key={purchase.id} className="grid grid-cols-12 gap-3 px-4 py-2 border-b border-gray-800 hover:bg-fuchsia-500/5 transition-all items-center">
-                          <div className="col-span-2 text-xs text-gray-300">
-                            {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                          </div>
-                          <div className="col-span-2">
-                            <p className="text-sm font-bold text-white truncate">{purchase.supplier}</p>
-                            {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
-                          </div>
-                          <div className="col-span-4">
-                            <p className="text-xs text-gray-300 truncate">
-                              {purchase.items.map((item: any, idx: number) => (
-                                <span key={idx}>
-                                  {item.productName} ({item.quantity} {item.unit})
-                                  {idx < purchase.items.length - 1 ? ', ' : ''}
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-black/50">
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">Fecha</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">Proveedor</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">Artículos</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">Pago</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">Total</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">Acción</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {inventory.map((purchase) => (
+                            <tr key={purchase.id} className="hover:bg-fuchsia-500/5 transition-all">
+                              <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
+                                {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                              </td>
+                              <td className="border border-gray-700 px-3 py-2">
+                                <p className="text-sm font-bold text-white">{purchase.supplier}</p>
+                                {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
+                              </td>
+                              <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
+                                {purchase.items.map((item: any, idx: number) => (
+                                  <span key={idx}>
+                                    {item.productName} ({item.quantity} {item.unit})
+                                    {idx < purchase.items.length - 1 ? ', ' : ''}
+                                  </span>
+                                ))}
+                              </td>
+                              <td className="border border-gray-700 px-3 py-2 text-center">
+                                <span className="text-xs">
+                                  {purchase.paymentMethod === 'plin-yape' && '📱'}
+                                  {purchase.paymentMethod === 'efectivo' && '💵'}
+                                  {purchase.paymentMethod === 'transferencia' && '🏦'}
+                                  {purchase.paymentMethod === 'tarjeta' && '💳'}
                                 </span>
-                              ))}
-                            </p>
-                          </div>
-                          <div className="col-span-1 text-center">
-                            <span className="text-xs">
-                              {purchase.paymentMethod === 'plin-yape' && '📱'}
-                              {purchase.paymentMethod === 'efectivo' && '💵'}
-                              {purchase.paymentMethod === 'transferencia' && '🏦'}
-                              {purchase.paymentMethod === 'tarjeta' && '💳'}
-                            </span>
-                          </div>
-                          <div className="col-span-2 text-right">
-                            <p className="text-sm font-bold text-fuchsia-400">S/ {purchase.totalAmount.toFixed(2)}</p>
-                          </div>
-                          <div className="col-span-1 text-center">
-                            <button
-                              onClick={() => handleDeleteInventory(purchase.id)}
-                              className="text-red-400 hover:text-red-300 text-xs"
-                              title="Eliminar"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                              </td>
+                              <td className="border border-gray-700 px-3 py-2 text-right">
+                                <p className="text-sm font-bold text-fuchsia-400">S/ {purchase.totalAmount.toFixed(2)}</p>
+                              </td>
+                              <td className="border border-gray-700 px-3 py-2 text-center">
+                                <button
+                                  onClick={() => handleDeleteInventory(purchase.id)}
+                                  className="text-red-400 hover:text-red-300 text-xs"
+                                  title="Eliminar"
+                                >
+                                  🗑️
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </div>
