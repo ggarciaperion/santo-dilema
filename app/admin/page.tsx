@@ -48,7 +48,7 @@ function TimeCounter({ createdAt }: { createdAt: string }) {
     return () => clearInterval(interval);
   }, [createdAt]);
 
-  return <span className="font-mono text-xs font-black text-yellow-400">{elapsed}</span>;
+  return <span className="font-mono text-lg font-black text-yellow-400">{elapsed}</span>;
 }
 
 export default function AdminPage() {
@@ -993,8 +993,7 @@ export default function AdminPage() {
                       })}
                     </p>
                     {/* CONTADOR DE TIEMPO EN COLA */}
-                    <div className="mt-2 bg-black/30 rounded px-2 py-1 border border-yellow-500/50">
-                      <p className="text-[10px] text-gray-400 uppercase mb-0.5">En cola:</p>
+                    <div className="mt-2">
                       <TimeCounter createdAt={order.createdAt} />
                     </div>
                   </div>
