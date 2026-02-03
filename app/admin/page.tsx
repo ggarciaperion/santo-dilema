@@ -978,26 +978,34 @@ export default function AdminPage() {
                     📋 Detalle del Pedido
                   </p>
                   <div className="space-y-2">
-                    {order.cart && order.cart.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-start border-b border-gray-700 pb-2 last:border-b-0">
-                        <div className="flex-1">
-                          <p className="text-white font-semibold">{item.name}</p>
-                          <p className="text-xs text-gray-400">Cantidad: {item.quantity}</p>
+                    {order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
+                      order.cart.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-start border-b border-gray-700 pb-2 last:border-b-0">
+                          <div className="flex-1">
+                            <p className="text-white font-semibold">{item.name || 'Producto sin nombre'}</p>
+                            <p className="text-xs text-gray-400">Cantidad: {item.quantity || 0}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white font-bold">
+                              S/ {((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                            </p>
+                            <p className="text-xs text-gray-400">S/ {(item.price || 0).toFixed(2)} c/u</p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-white font-bold">S/ {(item.price * item.quantity).toFixed(2)}</p>
-                          <p className="text-xs text-gray-400">S/ {item.price.toFixed(2)} c/u</p>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-gray-400 text-sm">No hay productos en este pedido</p>
+                    )}
                   </div>
                   <div className="mt-4 pt-3 border-t-2 border-fuchsia-500/30">
                     <div className="flex justify-between items-center">
                       <p className="text-lg font-bold text-fuchsia-400">TOTAL</p>
-                      <p className="text-2xl font-black text-cyan-400">S/ {order.totalPrice?.toFixed(2) || '0.00'}</p>
+                      <p className="text-2xl font-black text-cyan-400">
+                        S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
+                      </p>
                     </div>
                     <p className="text-xs text-gray-400 text-right mt-1">
-                      {order.totalItems || 0} {order.totalItems === 1 ? 'producto' : 'productos'}
+                      {order.totalItems || 0} {(order.totalItems || 0) === 1 ? 'producto' : 'productos'}
                     </p>
                   </div>
                   {order.paymentMethod && (
