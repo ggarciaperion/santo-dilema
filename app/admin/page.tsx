@@ -1027,6 +1027,47 @@ export default function AdminPage() {
 
     const productsArray = Array.from(productSales.values()).sort((a, b) => b.quantity - a.quantity);
 
+    // NUEVO: Ranking de los 5 días con más órdenes del mes anterior
+    const dayOrdersMap = new Map<string, number>();
+    lastMonthOrders.forEach((order: any) => {
+      const orderDate = getPeruDate(order.createdAt);
+      const dayKey = orderDate.toLocaleDateString("es-PE"); // Formato: dd/mm/yyyy
+      dayOrdersMap.set(dayKey, (dayOrdersMap.get(dayKey) || 0) + 1);
+    });
+    const topDaysLastMonth = Array.from(dayOrdersMap.entries())
+      .map(([day, count]) => ({ day, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // NUEVO: Productos más y menos vendidos del mes anterior
+    const lastMonthProductSales = new Map();
+    lastMonthOrders.forEach((order: any) => {
+      if (order.cart) {
+        order.cart.forEach((item: any) => {
+          const productId = item.product.id;
+          const productName = item.product.name;
+          const quantity = item.quantity;
+
+          if (lastMonthProductSales.has(productId)) {
+            const existing = lastMonthProductSales.get(productId);
+            existing.quantity += quantity;
+            existing.revenue += item.product.price * quantity;
+          } else {
+            lastMonthProductSales.set(productId, {
+              name: productName,
+              quantity: quantity,
+              revenue: item.product.price * quantity,
+              category: item.product.category
+            });
+          }
+        });
+      }
+    });
+
+    const lastMonthProductsArray = Array.from(lastMonthProductSales.values()).sort((a, b) => b.quantity - a.quantity);
+    const topProductLastMonth = lastMonthProductsArray[0] || null;
+    const leastProductLastMonth = lastMonthProductsArray[lastMonthProductsArray.length - 1] || null;
+
     // Clientes frecuentes (solo con pedidos entregados, 3+ pedidos)
     const frequentCustomers = allCustomers.filter((c: any) => c.totalOrders >= 3);
 
@@ -1049,7 +1090,10 @@ export default function AdminPage() {
       currentMonthOrdersCount: currentMonthOrders.length,
       lastMonthOrdersCount: lastMonthOrders.length,
       frequentCustomers,
-      inactiveCustomers
+      inactiveCustomers,
+      topDaysLastMonth,
+      topProductLastMonth,
+      leastProductLastMonth
     };
   };
 
@@ -1954,59 +1998,82 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Customer Segments */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Frequent Customers */}
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 p-6">
-                <h3 className="text-xl font-black text-amber-400 mb-4">⭐ Clientes Frecuentes (3+ pedidos)</h3>
-                {analytics.frequentCustomers.length === 0 ? (
-                  <p className="text-gray-400 text-center py-8">No hay clientes frecuentes aún</p>
+            {/* Nuevos Carteles de Estadísticas del Mes Anterior */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* 1. RANKING DE LOS 5 DÍAS CON MÁS ÓRDENES DEL MES ANTERIOR */}
+              <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6">
+                <h3 className="text-xl font-black text-blue-400 mb-4">📅 Top 5 Días - Mes Anterior</h3>
+                {analytics.topDaysLastMonth.length === 0 ? (
+                  <p className="text-gray-400 text-center py-8">No hay datos del mes anterior</p>
                 ) : (
-                  <div className="space-y-2">
-                    {analytics.frequentCustomers.slice(0, 5).map((customer: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-amber-500/20 hover:border-amber-500/50 cursor-pointer transition-all" onClick={() => { setActiveTab("customers"); setSelectedCustomer(customer); }}>
-                        <div>
-                          <p className="text-white font-bold text-sm">{customer.name}</p>
-                          <p className="text-gray-400 text-xs">DNI: {customer.dni}</p>
+                  <div className="space-y-3">
+                    {analytics.topDaysLastMonth.map((dayData: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-blue-500/20">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-black text-blue-400">{idx + 1}</span>
+                          <div>
+                            <p className="text-white font-bold text-sm">{dayData.day}</p>
+                            <p className="text-gray-400 text-xs">Órdenes entregadas</p>
+                          </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-amber-400 font-black gold-glow">{customer.totalOrders} pedidos</p>
-                          <p className="text-gray-400 text-xs">S/ {customer.totalSpent.toFixed(2)}</p>
+                          <p className="text-blue-400 font-black text-lg">{dayData.count}</p>
+                          <p className="text-gray-400 text-xs">pedidos</p>
                         </div>
                       </div>
                     ))}
-                    {analytics.frequentCustomers.length > 5 && (
-                      <p className="text-center text-xs text-gray-400 pt-2">+ {analytics.frequentCustomers.length - 5} clientes más</p>
-                    )}
                   </div>
                 )}
               </div>
 
-              {/* Inactive Customers */}
-              <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-6">
-                <h3 className="text-xl font-black text-red-400 mb-4">⚠️ Clientes Inactivos (30+ días)</h3>
-                {analytics.inactiveCustomers.length === 0 ? (
-                  <p className="text-gray-400 text-center py-8">No hay clientes inactivos</p>
+              {/* 2. PRODUCTO MÁS VENDIDO DEL MES ANTERIOR */}
+              <div className="bg-gray-900 rounded-xl border-2 border-green-500/30 p-6">
+                <h3 className="text-xl font-black text-green-400 mb-4">🏆 Más Vendido - Mes Anterior</h3>
+                {!analytics.topProductLastMonth ? (
+                  <p className="text-gray-400 text-center py-8">No hay datos del mes anterior</p>
                 ) : (
-                  <div className="space-y-2">
-                    {analytics.inactiveCustomers.slice(0, 5).map((customer: any, idx: number) => {
-                      const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
-                      return (
-                        <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-red-500/20 hover:border-red-500/50 cursor-pointer transition-all" onClick={() => { setActiveTab("customers"); setSelectedCustomer(customer); }}>
-                          <div>
-                            <p className="text-white font-bold text-sm">{customer.name}</p>
-                            <p className="text-gray-400 text-xs">DNI: {customer.dni}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-red-400 font-bold text-sm">{daysSinceLastOrder} días</p>
-                            <p className="text-gray-400 text-xs">{customer.totalOrders} pedidos totales</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {analytics.inactiveCustomers.length > 5 && (
-                      <p className="text-center text-xs text-gray-400 pt-2">+ {analytics.inactiveCustomers.length - 5} clientes más</p>
-                    )}
+                  <div className="bg-black/50 rounded-lg p-6 border border-green-500/30">
+                    <div className="text-center mb-4">
+                      <p className="text-6xl mb-4">👑</p>
+                      <p className="text-white font-black text-2xl mb-2">{analytics.topProductLastMonth.name}</p>
+                      <p className="text-gray-400 text-sm mb-4">{analytics.topProductLastMonth.category}</p>
+                    </div>
+                    <div className="border-t border-green-500/20 pt-4 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400 text-sm">Cantidad vendida:</span>
+                        <span className="text-green-400 font-black">{analytics.topProductLastMonth.quantity} unidades</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400 text-sm">Ingresos:</span>
+                        <span className="text-amber-400 font-black gold-glow">S/ {analytics.topProductLastMonth.revenue.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. PRODUCTO MENOS VENDIDO DEL MES ANTERIOR */}
+              <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-6">
+                <h3 className="text-xl font-black text-red-400 mb-4">📉 Menos Vendido - Mes Anterior</h3>
+                {!analytics.leastProductLastMonth ? (
+                  <p className="text-gray-400 text-center py-8">No hay datos del mes anterior</p>
+                ) : (
+                  <div className="bg-black/50 rounded-lg p-6 border border-red-500/30">
+                    <div className="text-center mb-4">
+                      <p className="text-6xl mb-4">⚠️</p>
+                      <p className="text-white font-black text-2xl mb-2">{analytics.leastProductLastMonth.name}</p>
+                      <p className="text-gray-400 text-sm mb-4">{analytics.leastProductLastMonth.category}</p>
+                    </div>
+                    <div className="border-t border-red-500/20 pt-4 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400 text-sm">Cantidad vendida:</span>
+                        <span className="text-red-400 font-black">{analytics.leastProductLastMonth.quantity} unidades</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400 text-sm">Ingresos:</span>
+                        <span className="text-amber-400 font-black gold-glow">S/ {analytics.leastProductLastMonth.revenue.toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
