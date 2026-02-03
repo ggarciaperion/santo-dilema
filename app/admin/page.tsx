@@ -1639,10 +1639,10 @@ export default function AdminPage() {
                     )}
 
                     {/* Agregar componente */}
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-12 gap-2">
                       <select
                         id="component-product-select"
-                        className="flex-1 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
+                        className="col-span-8 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
                         defaultValue=""
                       >
                         <option value="">Seleccionar material del inventario...</option>
@@ -1687,9 +1687,16 @@ export default function AdminPage() {
                       <input
                         type="number"
                         id="component-quantity-input"
-                        step="0.01"
-                        placeholder="Cant."
-                        className="w-20 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
+                        min="1"
+                        step="1"
+                        placeholder="Cantidad"
+                        onKeyDown={(e) => {
+                          // Prevenir decimales: solo permite números enteros
+                          if (e.key === '.' || e.key === ',') {
+                            e.preventDefault();
+                          }
+                        }}
+                        className="col-span-3 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <button
                         onClick={() => {
@@ -1698,9 +1705,9 @@ export default function AdminPage() {
 
                           if (select.value && quantityInput.value) {
                             const selectedProduct = JSON.parse(select.value);
-                            const quantity = parseFloat(quantityInput.value);
+                            const quantity = parseInt(quantityInput.value, 10);
 
-                            if (quantity > 0) {
+                            if (quantity > 0 && Number.isInteger(quantity)) {
                               setProductForm({
                                 ...productForm,
                                 components: [
@@ -1719,7 +1726,7 @@ export default function AdminPage() {
                             }
                           }
                         }}
-                        className="px-3 py-1 text-xs bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold transition-all"
+                        className="col-span-1 px-2 py-1 text-xs bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold transition-all"
                       >
                         +
                       </button>
