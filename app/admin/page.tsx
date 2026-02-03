@@ -949,32 +949,60 @@ export default function AdminPage() {
 
   // Analytics - con filtro de fechas
   const getAnalytics = () => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+    const now = getPeruDate();
 
-    // Usar pedidos filtrados por fecha
-    const ordersToAnalyze = isDateFiltered && dateFrom && dateTo
-      ? orders.filter((order: any) => {
-          const orderDate = new Date(order.createdAt);
-          const fromDate = new Date(dateFrom);
-          const toDate = new Date(dateTo);
-          toDate.setHours(23, 59, 59, 999);
-          return orderDate >= fromDate && orderDate <= toDate;
-        })
-      : orders;
-
-    // Clientes inactivos (sin comprar en los últimos 30 días)
-    const inactiveCustomers = customers.filter((c: any) =>
-      new Date(c.lastOrderDate) < thirtyDaysAgo
+    // Filtrar solo pedidos entregados
+    const deliveredOrders = orders.filter((order: any) =>
+      order.status === "delivered" ||
+      order.status === "Entregado" ||
+      order.status?.toLowerCase() === "entregado"
     );
 
-    // Clientes frecuentes (más de 3 pedidos)
-    const frequentCustomers = customers.filter((c: any) => c.totalOrders >= 3);
+    // Definir rangos de fechas
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-    // Productos vendidos
+    const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+
+    // 1. VENTAS DEL DÍA - Importe S/ del día en curso
+    const todayOrders = deliveredOrders.filter((order: any) => {
+      const orderDate = getPeruDate(order.createdAt);
+      return orderDate >= startOfToday && orderDate <= endOfToday;
+    });
+    const dailySales = todayOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+
+    // 2. VENTAS DEL MES - Importe S/ del mes en curso
+    const currentMonthOrders = deliveredOrders.filter((order: any) => {
+      const orderDate = getPeruDate(order.createdAt);
+      return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
+    });
+    const monthlySales = currentMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+
+    // 3. VENTAS DEL MES ANTERIOR - Para comparación
+    const lastMonthOrders = deliveredOrders.filter((order: any) => {
+      const orderDate = getPeruDate(order.createdAt);
+      return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
+    });
+    const lastMonthSales = lastMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+
+    // PORCENTAJE DE AVANCE - Mes actual sobre mes anterior
+    const progressPercentage = lastMonthSales > 0 ? (monthlySales / lastMonthSales) * 100 : 0;
+
+    // 4. TICKET PROMEDIO - Promedio del mes anterior
+    const lastMonthAverageTicket = lastMonthOrders.length > 0
+      ? lastMonthSales / lastMonthOrders.length
+      : 0;
+
+    // 5. INGRESOS TOTALES - Desde el día uno
+    const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+
+    // Productos vendidos (solo de pedidos entregados)
     const productSales = new Map();
-    ordersToAnalyze.forEach((order: any) => {
+    deliveredOrders.forEach((order: any) => {
       if (order.cart) {
         order.cart.forEach((item: any) => {
           const productId = item.product.id;
@@ -999,24 +1027,18 @@ export default function AdminPage() {
 
     const productsArray = Array.from(productSales.values()).sort((a, b) => b.quantity - a.quantity);
 
-    // Ingresos totales (basado en pedidos filtrados)
-    const totalRevenue = ordersToAnalyze.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-
-    // Pedidos en los últimos 30 días (o en el rango seleccionado)
-    const recentOrders = ordersToAnalyze.filter((o: any) => new Date(o.createdAt) > thirtyDaysAgo);
-
-    // Ticket promedio (basado en pedidos filtrados)
-    const averageTicket = ordersToAnalyze.length > 0 ? totalRevenue / ordersToAnalyze.length : 0;
-
     return {
-      inactiveCustomers,
-      frequentCustomers,
+      dailySales,
+      monthlySales,
+      lastMonthSales,
+      progressPercentage,
+      lastMonthAverageTicket,
+      totalRevenue,
       topProducts: productsArray.slice(0, 5),
       leastSoldProducts: productsArray.slice(-5).reverse(),
-      totalRevenue,
-      recentOrders: recentOrders.length,
-      averageTicket,
-      allProducts: productsArray
+      allProducts: productsArray,
+      currentMonthOrdersCount: currentMonthOrders.length,
+      lastMonthOrdersCount: lastMonthOrders.length
     };
   };
 
@@ -1832,22 +1854,46 @@ export default function AdminPage() {
 
           <section className="container mx-auto px-4 py-8">
             {/* Main KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold mb-2">Ingresos Totales</p>
-                <p className="text-4xl font-black text-green-400">S/ {analytics.totalRevenue.toFixed(2)}</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+              {/* 1. VENTAS DEL DÍA */}
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                <p className="text-cyan-400 text-sm font-bold mb-2">Ticket Promedio</p>
-                <p className="text-4xl font-black text-cyan-400">S/ {analytics.averageTicket.toFixed(2)}</p>
+                <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
+                <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
+                <p className="text-gray-400 text-xs mt-2">{new Date().toLocaleDateString("es-PE")}</p>
               </div>
+
+              {/* 2. VENTAS DEL MES */}
+              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
+                <p className="text-green-400 text-sm font-bold mb-2">📊 Ventas del Mes</p>
+                <p className="text-4xl font-black text-green-400">S/ {analytics.monthlySales.toFixed(2)}</p>
+                <p className="text-gray-400 text-xs mt-2">{analytics.currentMonthOrdersCount} pedidos</p>
+              </div>
+
+              {/* 3. BARRA DE PORCENTAJE DE AVANCE */}
+              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
+                <p className="text-purple-400 text-sm font-bold mb-2">📈 Avance vs Mes Anterior</p>
+                <p className="text-4xl font-black text-purple-400">{analytics.progressPercentage.toFixed(1)}%</p>
+                <div className="mt-3 bg-black/50 rounded-full h-3 overflow-hidden border border-purple-500/30">
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-600 transition-all duration-500"
+                    style={{ width: `${Math.min(analytics.progressPercentage, 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-gray-400 text-xs mt-2">Mes anterior: S/ {analytics.lastMonthSales.toFixed(2)}</p>
+              </div>
+
+              {/* 4. TICKET PROMEDIO */}
               <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold mb-2">Pedidos (30 días)</p>
-                <p className="text-4xl font-black text-amber-400">{analytics.recentOrders}</p>
+                <p className="text-amber-400 text-sm font-bold mb-2">🎫 Ticket Promedio</p>
+                <p className="text-4xl font-black text-amber-400">S/ {analytics.lastMonthAverageTicket.toFixed(2)}</p>
+                <p className="text-gray-400 text-xs mt-2">Mes anterior ({analytics.lastMonthOrdersCount} pedidos)</p>
               </div>
+
+              {/* 5. INGRESOS TOTALES */}
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/50 p-6">
-                <p className="text-fuchsia-400 text-sm font-bold mb-2">Clientes Frecuentes</p>
-                <p className="text-4xl font-black text-fuchsia-400">{analytics.frequentCustomers.length}</p>
+                <p className="text-fuchsia-400 text-sm font-bold mb-2">💎 Ingresos Totales</p>
+                <p className="text-4xl font-black text-fuchsia-400">S/ {analytics.totalRevenue.toFixed(2)}</p>
+                <p className="text-gray-400 text-xs mt-2">Desde el día 1</p>
               </div>
             </div>
 
