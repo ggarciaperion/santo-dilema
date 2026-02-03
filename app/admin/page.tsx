@@ -1794,7 +1794,7 @@ export default function AdminPage() {
 
                   return (
                     <>
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-4">
                   <h3 className="text-2xl font-bold text-white">Compras {getMonthName(inventoryMonthFilter)}</h3>
                   <div className="flex items-center gap-3">
                     <input
@@ -1812,6 +1812,22 @@ export default function AdminPage() {
                     >
                       + Nueva Compra
                     </button>
+                  </div>
+                </div>
+
+                {/* Pequeño cartel con totales */}
+                <div className="flex gap-3 mb-6">
+                  <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-fuchsia-500/20">
+                    <p className="text-xs text-gray-400">Compras del mes</p>
+                    <p className="text-sm font-bold text-fuchsia-400">
+                      S/ {filteredInventory.reduce((sum, p) => sum + p.totalAmount, 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-cyan-500/20">
+                    <p className="text-xs text-gray-400">Compras totales</p>
+                    <p className="text-sm font-bold text-cyan-400">
+                      S/ {inventory.reduce((sum, p) => sum + p.totalAmount, 0).toFixed(2)}
+                    </p>
                   </div>
                 </div>
 
