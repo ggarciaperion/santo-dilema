@@ -19,6 +19,36 @@ interface Order {
   status: "pending" | "confirmed" | "delivered" | "cancelled";
   createdAt: string;
   updatedAt?: string;
+  paymentMethod?: string;
+}
+
+// Componente para el contador de tiempo
+function TimeCounter({ createdAt }: { createdAt: string }) {
+  const [elapsed, setElapsed] = useState("");
+
+  useEffect(() => {
+    const updateElapsed = () => {
+      const now = new Date().getTime();
+      const created = new Date(createdAt).getTime();
+      const diff = Math.floor((now - created) / 1000); // diferencia en segundos
+
+      const minutes = Math.floor(diff / 60);
+      const seconds = diff % 60;
+
+      if (minutes > 0) {
+        setElapsed(`${minutes}m ${seconds}s`);
+      } else {
+        setElapsed(`${seconds}s`);
+      }
+    };
+
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+
+    return () => clearInterval(interval);
+  }, [createdAt]);
+
+  return <span className="font-mono text-xs font-black text-yellow-400">{elapsed}</span>;
 }
 
 export default function AdminPage() {
@@ -35,6 +65,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "products" | "inventory" | "marketing">("orders");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -130,12 +161,50 @@ export default function AdminPage() {
     try {
       const response = await fetch("/api/orders");
       const data = await response.json();
+
+      // Detectar nuevo pedido y reproducir sonido
+      if (previousOrderCount > 0 && data.length > previousOrderCount) {
+        // Nuevo pedido detectado - reproducir sonido
+        playNotificationSound();
+      }
+
+      setPreviousOrderCount(data.length);
       setOrders(data);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función para reproducir sonido de notificación
+  const playNotificationSound = () => {
+    // Crear contexto de audio
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+    // Sonido de notificación agradable (dos tonos)
+    const playBeep = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + startTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + startTime + duration);
+
+      oscillator.start(audioContext.currentTime + startTime);
+      oscillator.stop(audioContext.currentTime + startTime + duration);
+    };
+
+    // Dos tonos: primero más bajo, luego más alto
+    playBeep(800, 0, 0.2);      // Primer beep
+    playBeep(1000, 0.25, 0.2);  // Segundo beep
+    playBeep(1200, 0.5, 0.3);   // Tercer beep más largo
   };
 
   const loadProducts = async () => {
@@ -923,6 +992,11 @@ export default function AdminPage() {
                         minute: '2-digit'
                       })}
                     </p>
+                    {/* CONTADOR DE TIEMPO EN COLA */}
+                    <div className="mt-2 bg-black/30 rounded px-2 py-1 border border-yellow-500/50">
+                      <p className="text-[10px] text-gray-400 uppercase mb-0.5">En cola:</p>
+                      <TimeCounter createdAt={order.createdAt} />
+                    </div>
                   </div>
 
                   {/* SECCIÓN 1: PRODUCTOS */}
