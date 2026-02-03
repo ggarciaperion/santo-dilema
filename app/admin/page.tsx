@@ -769,7 +769,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            🍽️ Productos
+            📋 Ordenes
           </button>
           <button
             onClick={() => setActiveTab("inventory")}
@@ -1430,7 +1430,7 @@ export default function AdminPage() {
         <>
           <section className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple">Gestión de Productos</h2>
+              <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple">Gestión de Ordenes</h2>
               <button
                 onClick={() => {
                   setEditingProduct(null);
@@ -1439,14 +1439,14 @@ export default function AdminPage() {
                 }}
                 className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
               >
-                + Nuevo Producto
+                + Nueva Orden
               </button>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                <p className="text-gray-400 text-sm font-semibold">Total Productos</p>
+                <p className="text-gray-400 text-sm font-semibold">Total Ordenes</p>
                 <p className="text-5xl font-black text-white mt-2">{products.length}</p>
               </div>
               <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
@@ -1550,17 +1550,17 @@ export default function AdminPage() {
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full">
                 <h3 className="text-2xl font-black text-fuchsia-400 mb-4">
-                  {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
+                  {editingProduct ? 'Editar Orden' : 'Nueva Orden'}
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Nombre</label>
+                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Nombre de la Orden</label>
                     <input
                       type="text"
                       value={productForm.name}
                       onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      placeholder="Nombre del producto"
+                      placeholder="Ej: PEQUEÑO DILEMA, DUO DILEMA"
                     />
                   </div>
                   <div>
@@ -1613,8 +1613,8 @@ export default function AdminPage() {
 
                   {/* Sección de Componentes/Receta */}
                   <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/30">
-                    <p className="text-sm font-bold text-cyan-400 mb-1">Componentes/Receta</p>
-                    <p className="text-xs text-gray-400 mb-3">Selecciona los materiales que componen este producto</p>
+                    <p className="text-sm font-bold text-cyan-400 mb-1">Materiales/Empaques</p>
+                    <p className="text-xs text-gray-400 mb-3">Selecciona los materiales e insumos que se usan en esta orden</p>
 
                     {/* Lista de componentes */}
                     {productForm.components.length > 0 && (
