@@ -131,6 +131,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -465,10 +466,21 @@ export default function AdminPage() {
   // Obtener solo pedidos del día actual (en hora de Perú)
   const todayOrdersPeru = orders.filter((order) => isSameDayPeru(order.createdAt));
 
-  // Filtrar pedidos por fecha y estado
+  // Filtrar pedidos por fecha, estado y búsqueda
   const filteredOrders = todayOrdersPeru.filter((order) => {
     // Filtro por estado
     const statusMatch = filter === "all" || order.status === filter;
+
+    // Filtro de búsqueda en tiempo real
+    const searchMatch = searchTerm === "" ||
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.phone.includes(searchTerm) ||
+      order.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.cart && order.cart.some((item: any) => {
+        const productName = item.product?.name || item.name || '';
+        return productName.toLowerCase().includes(searchTerm.toLowerCase());
+      }));
 
     // Si hay filtro de rango de fechas, usarlo
     if (isDateFiltered && dateFrom && dateTo) {
@@ -477,11 +489,11 @@ export default function AdminPage() {
       const toDate = getPeruDate(dateTo);
       toDate.setHours(23, 59, 59, 999); // Incluir todo el día final
 
-      return statusMatch && orderDate >= fromDate && orderDate <= toDate;
+      return statusMatch && searchMatch && orderDate >= fromDate && orderDate <= toDate;
     }
 
-    // Por defecto, aplicar solo filtro de estado (ya están filtrados por día)
-    return statusMatch;
+    // Por defecto, aplicar filtros de estado y búsqueda
+    return statusMatch && searchMatch;
   });
 
   const statusColors = {
@@ -1020,47 +1032,84 @@ export default function AdminPage() {
 
       {/* Filters - Solo pedidos de HOY */}
       <section className="container mx-auto px-4 pb-6">
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-              filter === "all"
-                ? "bg-fuchsia-600 text-white neon-border-purple"
-                : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-            }`}
-          >
-            Todos ({todayOrdersPeru.length})
-          </button>
-          <button
-            onClick={() => setFilter("pending")}
-            className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-              filter === "pending"
-                ? "bg-yellow-600 text-black"
-                : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-            }`}
-          >
-            Pendientes ({todayOrdersPeru.filter((o) => o.status === "pending").length})
-          </button>
-          <button
-            onClick={() => setFilter("confirmed")}
-            className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-              filter === "confirmed"
-                ? "bg-cyan-600 text-white"
-                : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-            }`}
-          >
-            Confirmados ({todayOrdersPeru.filter((o) => o.status === "confirmed").length})
-          </button>
-          <button
-            onClick={() => setFilter("delivered")}
-            className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-              filter === "delivered"
-                ? "bg-green-600 text-white"
-                : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-            }`}
-          >
-            Entregados ({todayOrdersPeru.filter((o) => o.status === "delivered").length})
-          </button>
+        <div className="flex gap-3 flex-wrap items-center justify-between">
+          {/* Botones de filtro */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setFilter("all")}
+              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
+                filter === "all"
+                  ? "bg-fuchsia-600 text-white neon-border-purple"
+                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+              }`}
+            >
+              Todos ({todayOrdersPeru.length})
+            </button>
+            <button
+              onClick={() => setFilter("pending")}
+              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
+                filter === "pending"
+                  ? "bg-yellow-600 text-black"
+                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+              }`}
+            >
+              Pendientes ({todayOrdersPeru.filter((o) => o.status === "pending").length})
+            </button>
+            <button
+              onClick={() => setFilter("confirmed")}
+              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
+                filter === "confirmed"
+                  ? "bg-cyan-600 text-white"
+                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+              }`}
+            >
+              Confirmados ({todayOrdersPeru.filter((o) => o.status === "confirmed").length})
+            </button>
+            <button
+              onClick={() => setFilter("delivered")}
+              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
+                filter === "delivered"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+              }`}
+            >
+              Entregados ({todayOrdersPeru.filter((o) => o.status === "delivered").length})
+            </button>
+          </div>
+
+          {/* Buscador en tiempo real */}
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar pedido, cliente, dirección, menú..."
+              className="w-full sm:w-80 px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
