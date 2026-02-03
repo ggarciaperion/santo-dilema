@@ -850,14 +850,14 @@ export default function AdminPage() {
         return firstOrderDate >= firstDayOfMonth && firstOrderDate <= lastDayOfMonth;
       }),
 
-      // RECURRENTES: Al menos 2 pedidos en los últimos 30 días
+      // RECURRENTES: Al menos 4 pedidos en los últimos 30 días
       recurrent: allCustomers.filter((c: any) => {
-        if (!c.orders || c.orders.length < 2) return false;
+        if (!c.orders || c.orders.length < 4) return false;
         const recentOrders = c.orders.filter((order: any) => {
           const orderDate = getPeruDate(order.createdAt);
           return orderDate >= thirtyDaysAgo;
         });
-        return recentOrders.length >= 2;
+        return recentOrders.length >= 4;
       }),
 
       // INACTIVOS: Más de 15 días sin comprar
