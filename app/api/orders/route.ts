@@ -57,9 +57,35 @@ export async function POST(request: Request) {
     // Determinar estado del pedido según método de pago
     const status = paymentMethod === 'anticipado' ? 'pendiente-verificacion' : 'pending';
 
+    // Generar ID con formato SD + correlativo + día + mes
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+
+    // Obtener pedidos existentes para calcular el correlativo
+    const existingOrders = await storage.getOrders();
+
+    // Filtrar pedidos del día actual que empiecen con "SD"
+    const todayOrders = existingOrders.filter((order: any) => {
+      if (!order.id.startsWith('SD')) return false;
+
+      const orderDate = new Date(order.createdAt);
+      return (
+        orderDate.getDate() === today.getDate() &&
+        orderDate.getMonth() === today.getMonth() &&
+        orderDate.getFullYear() === today.getFullYear()
+      );
+    });
+
+    // Calcular el siguiente número correlativo del día
+    const nextCorrelative = (todayOrders.length + 1).toString().padStart(4, '0');
+
+    // Formato: SD + correlativo (4 dígitos) + día (2 dígitos) + mes (2 dígitos)
+    const orderId = `SD${nextCorrelative}${day}${month}`;
+
     // Crear nuevo pedido con ID único
     const newOrder = {
-      id: Date.now().toString(),
+      id: orderId,
       name,
       dni,
       phone,

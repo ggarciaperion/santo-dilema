@@ -278,9 +278,16 @@ export default function AdminPage() {
     // Filtro por estado
     const statusMatch = filter === "all" || order.status === filter;
 
-    // Filtro por rango de fechas
+    // Filtro por día en curso (solo mostrar pedidos de hoy)
+    const orderDate = new Date(order.createdAt);
+    const today = new Date();
+    const isSameDay =
+      orderDate.getDate() === today.getDate() &&
+      orderDate.getMonth() === today.getMonth() &&
+      orderDate.getFullYear() === today.getFullYear();
+
+    // Si hay filtro de rango de fechas, usarlo
     if (isDateFiltered && dateFrom && dateTo) {
-      const orderDate = new Date(order.createdAt);
       const fromDate = new Date(dateFrom);
       const toDate = new Date(dateTo);
       toDate.setHours(23, 59, 59, 999); // Incluir todo el día final
@@ -288,7 +295,8 @@ export default function AdminPage() {
       return statusMatch && orderDate >= fromDate && orderDate <= toDate;
     }
 
-    return statusMatch;
+    // Por defecto, mostrar solo pedidos del día en curso
+    return statusMatch && isSameDay;
   });
 
   const statusColors = {
@@ -935,7 +943,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-sm font-bold text-fuchsia-400 mb-1">
                       Teléfono
@@ -948,17 +956,72 @@ export default function AdminPage() {
                     </p>
                     <p className="text-white">{order.address}</p>
                   </div>
-                  {order.notes && (
-                    <div className="md:col-span-2">
+                  <div>
+                    <p className="text-sm font-bold text-fuchsia-400 mb-1">
+                      DNI
+                    </p>
+                    <p className="text-white">{order.dni || 'No registrado'}</p>
+                  </div>
+                  {order.email && (
+                    <div>
                       <p className="text-sm font-bold text-fuchsia-400 mb-1">
-                        Notas
+                        Email
                       </p>
-                      <p className="text-white bg-black/50 p-3 rounded-lg border border-fuchsia-500/20">
-                        {order.notes}
+                      <p className="text-white">{order.email}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Detalles del pedido con precios */}
+                <div className="bg-black/50 rounded-lg border border-fuchsia-500/20 p-4 mb-4">
+                  <p className="text-sm font-bold text-fuchsia-400 mb-3">
+                    📋 Detalle del Pedido
+                  </p>
+                  <div className="space-y-2">
+                    {order.cart && order.cart.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between items-start border-b border-gray-700 pb-2 last:border-b-0">
+                        <div className="flex-1">
+                          <p className="text-white font-semibold">{item.name}</p>
+                          <p className="text-xs text-gray-400">Cantidad: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-bold">S/ {(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="text-xs text-gray-400">S/ {item.price.toFixed(2)} c/u</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-3 border-t-2 border-fuchsia-500/30">
+                    <div className="flex justify-between items-center">
+                      <p className="text-lg font-bold text-fuchsia-400">TOTAL</p>
+                      <p className="text-2xl font-black text-cyan-400">S/ {order.totalPrice?.toFixed(2) || '0.00'}</p>
+                    </div>
+                    <p className="text-xs text-gray-400 text-right mt-1">
+                      {order.totalItems || 0} {order.totalItems === 1 ? 'producto' : 'productos'}
+                    </p>
+                  </div>
+                  {order.paymentMethod && (
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <p className="text-xs text-gray-400">Método de pago</p>
+                      <p className="text-white font-semibold">
+                        {order.paymentMethod === 'anticipado' ? '💳 Pago Anticipado' :
+                         order.paymentMethod === 'contraentrega' ? '💵 Contra Entrega' :
+                         order.paymentMethod}
                       </p>
                     </div>
                   )}
                 </div>
+
+                {order.notes && (
+                  <div>
+                    <p className="text-sm font-bold text-fuchsia-400 mb-1">
+                      📝 Notas
+                    </p>
+                    <p className="text-white bg-black/50 p-3 rounded-lg border border-fuchsia-500/20">
+                      {order.notes}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
