@@ -46,6 +46,8 @@ export default function AdminPage() {
   const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
+  const [showNewMaterialForm, setShowNewMaterialForm] = useState(false);
+  const [newMaterialForm, setNewMaterialForm] = useState({ productName: "", unit: "" });
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] as Array<{ productName: string; unit: string; quantity: number }> });
   const [inventoryForm, setInventoryForm] = useState({
@@ -1611,8 +1613,82 @@ export default function AdminPage() {
 
                   {/* Sección de Componentes/Receta */}
                   <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/30">
-                    <p className="text-sm font-bold text-cyan-400 mb-2">Componentes/Receta</p>
-                    <p className="text-xs text-gray-400 mb-3">Define los materiales e insumos que componen este producto</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-bold text-cyan-400">Componentes/Receta</p>
+                        <p className="text-xs text-gray-400">Define los materiales e insumos que componen este producto</p>
+                      </div>
+                      <button
+                        onClick={() => setShowNewMaterialForm(!showNewMaterialForm)}
+                        className="px-2 py-1 text-xs bg-amber-600 hover:bg-amber-500 text-white rounded font-bold transition-all"
+                      >
+                        + Nuevo Material
+                      </button>
+                    </div>
+
+                    {/* Formulario para nuevo material */}
+                    {showNewMaterialForm && (
+                      <div className="bg-gray-900 rounded-lg p-2 mb-3 border border-amber-500/30">
+                        <p className="text-xs font-bold text-amber-400 mb-2">Agregar Nuevo Material</p>
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            placeholder="Nombre del material"
+                            value={newMaterialForm.productName}
+                            onChange={(e) => setNewMaterialForm({ ...newMaterialForm, productName: e.target.value.toUpperCase() })}
+                            className="flex-1 px-2 py-1 text-xs rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
+                          />
+                          <select
+                            value={newMaterialForm.unit}
+                            onChange={(e) => setNewMaterialForm({ ...newMaterialForm, unit: e.target.value })}
+                            className="w-24 px-2 py-1 text-xs rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
+                          >
+                            <option value="">Unidad</option>
+                            <option value="UNIDAD">UNIDAD</option>
+                            <option value="KG">KG</option>
+                            <option value="LITROS">LITROS</option>
+                            <option value="GRAMOS">GRAMOS</option>
+                            <option value="CIENTO">CIENTO</option>
+                            <option value="PAQUETE">PAQUETE</option>
+                            <option value="CAJA">CAJA</option>
+                            <option value="BOLSA">BOLSA</option>
+                          </select>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setShowNewMaterialForm(false);
+                              setNewMaterialForm({ productName: "", unit: "" });
+                            }}
+                            className="flex-1 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded font-bold transition-all"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (newMaterialForm.productName && newMaterialForm.unit) {
+                                // Agregar el material al dropdown temporalmente
+                                // (se puede usar en componentes de inmediato)
+                                setShowNewMaterialForm(false);
+                                // El material estará disponible en el dropdown
+                                const select = document.getElementById('component-product-select') as HTMLSelectElement;
+                                const newOption = document.createElement('option');
+                                newOption.value = JSON.stringify(newMaterialForm);
+                                newOption.text = `${newMaterialForm.productName} (${newMaterialForm.unit})`;
+                                select.appendChild(newOption);
+                                select.value = JSON.stringify(newMaterialForm);
+
+                                setNewMaterialForm({ productName: "", unit: "" });
+                                alert(`Material "${newMaterialForm.productName}" agregado. Ahora selecciónalo del dropdown y agrega la cantidad.`);
+                              }
+                            }}
+                            className="flex-1 px-2 py-1 text-xs bg-amber-600 hover:bg-amber-500 text-white rounded font-bold transition-all"
+                          >
+                            Agregar
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Lista de componentes */}
                     {productForm.components.length > 0 && (
