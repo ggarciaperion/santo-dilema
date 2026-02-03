@@ -929,33 +929,53 @@ export default function AdminPage() {
 
                   {/* COLUMNA 1: Info del Cliente */}
                   <div className="col-span-12 md:col-span-3 space-y-3">
-                    <div>
-                      <h3 className="text-base font-bold text-white mb-1 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-fuchsia-500 rounded-full"></span>
+                    {/* Tarjeta de Cliente */}
+                    <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-lg border border-gray-700/50 p-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-3 h-3 bg-fuchsia-500 rounded-full"></span>
+                        <h4 className="text-xs font-bold text-fuchsia-300 uppercase tracking-wide">Cliente</h4>
+                      </div>
+
+                      <h3 className="text-lg font-bold text-white mb-4">
                         {order.name}
                       </h3>
-                      <div className="space-y-1 text-xs text-gray-300 ml-4">
-                        <p className="flex items-center gap-2">
-                          <span className="text-gray-500">📱</span>
-                          <span className="font-medium">{order.phone}</span>
-                        </p>
-                        <p className="flex items-start gap-2">
-                          <span className="text-gray-500 mt-0.5">📍</span>
-                          <span className="flex-1 leading-tight">{order.address}</span>
-                        </p>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">📱</span>
+                          <div className="flex-1">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Teléfono</p>
+                            <p className="text-sm font-bold text-white">{order.phone}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl mt-1">📍</span>
+                          <div className="flex-1">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Dirección</p>
+                            <p className="text-sm font-medium text-white leading-snug">{order.address}</p>
+                          </div>
+                        </div>
+
                         {order.dni && (
-                          <p className="flex items-center gap-2">
-                            <span className="text-gray-500">🆔</span>
-                            <span className="font-mono">{order.dni}</span>
-                          </p>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">🆔</span>
+                            <div className="flex-1">
+                              <p className="text-[10px] text-gray-400 uppercase tracking-wide">DNI</p>
+                              <p className="text-sm font-mono font-bold text-white">{order.dni}</p>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
 
                     {order.notes && (
-                      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2">
-                        <p className="text-[10px] text-yellow-400 font-bold mb-1">📝 NOTA ESPECIAL</p>
-                        <p className="text-xs text-yellow-200">{order.notes}</p>
+                      <div className="bg-gradient-to-br from-yellow-900/20 to-amber-900/20 border border-yellow-500/30 rounded-lg p-3">
+                        <p className="text-xs text-yellow-400 font-bold mb-2 flex items-center gap-2">
+                          <span className="text-base">📝</span>
+                          NOTA ESPECIAL
+                        </p>
+                        <p className="text-sm text-yellow-100 leading-tight">{order.notes}</p>
                       </div>
                     )}
                   </div>
