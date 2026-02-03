@@ -23,12 +23,17 @@ interface Order {
 }
 
 // Componente para el contador de tiempo
-function TimeCounter({ createdAt, orderId }: { createdAt: string; orderId: string }) {
+function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderId: string; status: string }) {
   const [elapsed, setElapsed] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [alerted, setAlerted] = useState(false);
 
   useEffect(() => {
+    // Si el pedido está cancelado o entregado, detener el contador
+    if (status === 'cancelled' || status === 'delivered') {
+      return; // No iniciar el interval
+    }
+
     const updateElapsed = () => {
       const now = new Date().getTime();
       const created = new Date(createdAt).getTime();
@@ -59,7 +64,7 @@ function TimeCounter({ createdAt, orderId }: { createdAt: string; orderId: strin
     const interval = setInterval(updateElapsed, 1000);
 
     return () => clearInterval(interval);
-  }, [createdAt, alerted]);
+  }, [createdAt, alerted, status]);
 
   return (
     <>
@@ -1089,7 +1094,7 @@ export default function AdminPage() {
                     </p>
                     {/* CONTADOR DE TIEMPO EN COLA */}
                     <div className="mt-2">
-                      <TimeCounter createdAt={order.createdAt} orderId={order.id} />
+                      <TimeCounter createdAt={order.createdAt} orderId={order.id} status={order.status} />
                     </div>
                   </div>
 
