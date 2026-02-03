@@ -99,6 +99,25 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
 }
 
 export default function AdminPage() {
+  // Helper para obtener fecha/hora en zona horaria de Perú (UTC-5)
+  const getPeruDate = (date?: Date | string) => {
+    const d = date ? new Date(date) : new Date();
+    // Convertir a hora de Perú (UTC-5)
+    return new Date(d.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+  };
+
+  // Helper para verificar si dos fechas son del mismo día en Perú
+  const isSameDayPeru = (date1: Date | string, date2?: Date | string) => {
+    const d1 = getPeruDate(date1);
+    const d2 = date2 ? getPeruDate(date2) : getPeruDate();
+
+    return (
+      d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear()
+    );
+  };
+
   // Helper para obtener nombre del mes en español
   const getMonthName = (yearMonth: string) => {
     const months = [
@@ -443,30 +462,26 @@ export default function AdminPage() {
     }
   };
 
+  // Obtener solo pedidos del día actual (en hora de Perú)
+  const todayOrdersPeru = orders.filter((order) => isSameDayPeru(order.createdAt));
+
   // Filtrar pedidos por fecha y estado
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = todayOrdersPeru.filter((order) => {
     // Filtro por estado
     const statusMatch = filter === "all" || order.status === filter;
 
-    // Filtro por día en curso (solo mostrar pedidos de hoy)
-    const orderDate = new Date(order.createdAt);
-    const today = new Date();
-    const isSameDay =
-      orderDate.getDate() === today.getDate() &&
-      orderDate.getMonth() === today.getMonth() &&
-      orderDate.getFullYear() === today.getFullYear();
-
     // Si hay filtro de rango de fechas, usarlo
     if (isDateFiltered && dateFrom && dateTo) {
-      const fromDate = new Date(dateFrom);
-      const toDate = new Date(dateTo);
+      const orderDate = getPeruDate(order.createdAt);
+      const fromDate = getPeruDate(dateFrom);
+      const toDate = getPeruDate(dateTo);
       toDate.setHours(23, 59, 59, 999); // Incluir todo el día final
 
       return statusMatch && orderDate >= fromDate && orderDate <= toDate;
     }
 
-    // Por defecto, mostrar solo pedidos del día en curso
-    return statusMatch && isSameDay;
+    // Por defecto, aplicar solo filtro de estado (ya están filtrados por día)
+    return statusMatch;
   });
 
   const statusColors = {
@@ -975,35 +990,35 @@ export default function AdminPage() {
 
       {activeTab === "orders" ? (
         <>
-          {/* Stats */}
+          {/* Stats - Solo pedidos de HOY en hora de Perú */}
           <section className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 neon-border-purple">
-                <p className="text-gray-400 text-sm font-semibold">Total Pedidos</p>
-                <p className="text-5xl font-black text-white mt-2">{orders.length}</p>
+                <p className="text-gray-400 text-sm font-semibold">Total Pedidos (Hoy)</p>
+                <p className="text-5xl font-black text-white mt-2">{todayOrdersPeru.length}</p>
               </div>
               <div className="bg-gray-900 rounded-xl border-2 border-yellow-500/50 p-6">
                 <p className="text-yellow-400 text-sm font-bold">Pendientes</p>
                 <p className="text-5xl font-black text-yellow-400 mt-2">
-                  {orders.filter((o) => o.status === "pending").length}
+                  {todayOrdersPeru.filter((o) => o.status === "pending").length}
                 </p>
               </div>
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
                 <p className="text-cyan-400 text-sm font-bold">Confirmados</p>
                 <p className="text-5xl font-black text-cyan-400 mt-2">
-                  {orders.filter((o) => o.status === "confirmed").length}
+                  {todayOrdersPeru.filter((o) => o.status === "confirmed").length}
                 </p>
               </div>
               <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
                 <p className="text-green-400 text-sm font-bold">Entregados</p>
                 <p className="text-5xl font-black text-green-400 mt-2">
-                  {orders.filter((o) => o.status === "delivered").length}
+                  {todayOrdersPeru.filter((o) => o.status === "delivered").length}
                 </p>
               </div>
             </div>
           </section>
 
-      {/* Filters */}
+      {/* Filters - Solo pedidos de HOY */}
       <section className="container mx-auto px-4 pb-6">
         <div className="flex gap-2 flex-wrap">
           <button
@@ -1014,7 +1029,7 @@ export default function AdminPage() {
                 : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
             }`}
           >
-            Todos ({orders.length})
+            Todos ({todayOrdersPeru.length})
           </button>
           <button
             onClick={() => setFilter("pending")}
@@ -1024,7 +1039,7 @@ export default function AdminPage() {
                 : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
             }`}
           >
-            Pendientes ({orders.filter((o) => o.status === "pending").length})
+            Pendientes ({todayOrdersPeru.filter((o) => o.status === "pending").length})
           </button>
           <button
             onClick={() => setFilter("confirmed")}
@@ -1034,7 +1049,7 @@ export default function AdminPage() {
                 : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
             }`}
           >
-            Confirmados ({orders.filter((o) => o.status === "confirmed").length})
+            Confirmados ({todayOrdersPeru.filter((o) => o.status === "confirmed").length})
           </button>
           <button
             onClick={() => setFilter("delivered")}
@@ -1044,7 +1059,7 @@ export default function AdminPage() {
                 : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
             }`}
           >
-            Entregados ({orders.filter((o) => o.status === "delivered").length})
+            Entregados ({todayOrdersPeru.filter((o) => o.status === "delivered").length})
           </button>
         </div>
       </section>
