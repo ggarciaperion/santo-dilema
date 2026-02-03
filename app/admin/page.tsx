@@ -29,8 +29,9 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
   const [alerted, setAlerted] = useState(false);
 
   useEffect(() => {
-    // Si el pedido está cancelado o entregado, detener el contador
+    // Si el pedido está cancelado o entregado, detener el contador y cerrar alerta
     if (status === 'cancelled' || status === 'delivered') {
+      setShowAlert(false); // Cerrar alerta si está abierta
       return; // No iniciar el interval
     }
 
@@ -47,8 +48,8 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
       const minutes = Math.floor(diff / 60);
       const seconds = diff % 60;
 
-      // Alerta a los 20 minutos
-      if (minutes >= 20 && !alerted) {
+      // Alerta a los 20 minutos SOLO si el pedido está pendiente o confirmado
+      if (minutes >= 20 && !alerted && (status === 'pending' || status === 'confirmed')) {
         setShowAlert(true);
         setAlerted(true);
       }
