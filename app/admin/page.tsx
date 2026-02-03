@@ -894,168 +894,125 @@ export default function AdminPage() {
             {filteredOrders.map((order) => (
               <div
                 key={order.id}
-                className="bg-gray-900 rounded-lg border border-fuchsia-500/30 hover:border-fuchsia-500 transition-all p-3"
+                className="bg-gray-900 rounded border border-fuchsia-500/30 hover:border-fuchsia-500 transition-all p-2"
               >
-                {/* Layout de 3 columnas */}
-                <div className="grid grid-cols-12 gap-3">
+                {/* Layout de 3 columnas ULTRA COMPACTO */}
+                <div className="grid grid-cols-12 gap-2">
 
                   {/* COLUMNA IZQUIERDA: Datos del Cliente */}
-                  <div className="col-span-12 md:col-span-4 space-y-2">
-                    {/* Nombre y estado */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-bold text-white">
-                          {order.name}
-                        </h3>
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            statusColors[order.status]
-                          }`}
-                        >
-                          {statusLabels[order.status]}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-gray-400">
-                        Pedido #{order.id}
-                      </p>
-                      <p className="text-[10px] text-gray-400">
+                  <div className="col-span-12 md:col-span-3 space-y-1">
+                    {/* Header compacto */}
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                          statusColors[order.status]
+                        }`}
+                      >
+                        {statusLabels[order.status]}
+                      </span>
+                      <span className="text-[9px] text-gray-500">#{order.id}</span>
+                      <span className="text-[9px] text-gray-500">
                         {new Date(order.createdAt).toLocaleString("es-PE", {
-                          day: '2-digit',
-                          month: '2-digit',
                           hour: '2-digit',
                           minute: '2-digit'
                         })}
-                      </p>
+                      </span>
                     </div>
 
-                    {/* Info del cliente */}
-                    <div className="space-y-1.5 text-xs">
-                      <div>
-                        <p className="text-gray-400 text-[10px]">📱 Teléfono</p>
-                        <p className="text-white font-semibold">{order.phone}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-[10px]">📍 Dirección</p>
-                        <p className="text-white font-semibold">{order.address}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-[10px]">🆔 DNI</p>
-                        <p className="text-white font-semibold">{order.dni || '-'}</p>
-                      </div>
-                      {order.email && (
-                        <div>
-                          <p className="text-gray-400 text-[10px]">📧 Email</p>
-                          <p className="text-white font-semibold text-[11px]">{order.email}</p>
-                        </div>
+                    <h3 className="text-sm font-bold text-white leading-tight">{order.name}</h3>
+
+                    {/* Info compacta */}
+                    <div className="space-y-0.5 text-[10px]">
+                      <p className="text-white">📱 {order.phone}</p>
+                      <p className="text-gray-300 leading-tight">{order.address}</p>
+                      {order.notes && (
+                        <p className="text-yellow-400 italic">📝 {order.notes}</p>
                       )}
                     </div>
-
-                    {order.notes && (
-                      <div className="pt-2 border-t border-gray-700">
-                        <p className="text-gray-400 text-[10px]">📝 Notas</p>
-                        <p className="text-white text-xs">{order.notes}</p>
-                      </div>
-                    )}
                   </div>
 
-                  {/* COLUMNA CENTRAL: Detalle del Pedido */}
-                  <div className="col-span-12 md:col-span-5 bg-black/30 rounded border border-fuchsia-500/20 p-2">
-                    <p className="text-xs font-bold text-fuchsia-400 mb-2">📋 Detalle del Pedido</p>
-
-                    {/* Lista de productos */}
-                    <div className="space-y-1 mb-2">
+                  {/* COLUMNA CENTRAL: Detalle del Pedido - ULTRA DENSO */}
+                  <div className="col-span-12 md:col-span-6 bg-black/40 rounded border border-fuchsia-500/20 p-1.5">
+                    {/* Lista de productos COMPACTA */}
+                    <div className="space-y-0.5 mb-1.5">
                       {order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
                         order.cart.map((item: any, idx: number) => {
-                          const productName = item.product?.name || item.name || 'Producto sin nombre';
+                          const productName = item.product?.name || item.name || 'Sin nombre';
                           const productPrice = item.product?.price || item.price || 0;
                           const quantity = item.quantity || 0;
                           const subtotal = productPrice * quantity;
 
                           return (
-                            <div key={idx} className="flex justify-between items-center text-xs border-b border-gray-700/50 pb-1 last:border-b-0">
-                              <div className="flex-1">
-                                <span className="text-white font-medium">{productName}</span>
-                                <span className="text-gray-400 ml-1">x{quantity}</span>
+                            <div key={idx} className="flex items-center justify-between gap-1 bg-gray-800/50 px-1.5 py-0.5 rounded">
+                              <div className="flex items-center gap-1 flex-1 min-w-0">
+                                <span className="bg-fuchsia-600 text-white text-[9px] font-bold px-1 py-0.5 rounded flex-shrink-0">
+                                  {quantity}x
+                                </span>
+                                <span className="text-white font-semibold text-xs truncate">{productName}</span>
                               </div>
-                              <div className="text-right">
-                                <span className="text-white font-bold">S/ {subtotal.toFixed(2)}</span>
-                              </div>
+                              <span className="text-cyan-400 font-bold text-xs flex-shrink-0">S/ {subtotal.toFixed(2)}</span>
                             </div>
                           );
                         })
                       ) : (
-                        <p className="text-gray-400 text-xs">Sin productos</p>
+                        <p className="text-gray-400 text-[10px]">Sin productos</p>
                       )}
                     </div>
 
-                    {/* Total y método de pago */}
-                    <div className="pt-2 border-t-2 border-fuchsia-500/30 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-bold text-fuchsia-400">TOTAL</span>
-                        <span className="text-xl font-black text-cyan-400">
+                    {/* Total y pago en línea compacta */}
+                    <div className="border-t border-fuchsia-500/30 pt-1.5 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-fuchsia-400">TOTAL</span>
+                        <span className="text-2xl font-black text-cyan-400">
                           S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
                         </span>
                       </div>
-                      <div className="text-[10px] text-gray-400">
-                        <span>{order.totalItems || 0} item{(order.totalItems || 0) !== 1 ? 's' : ''}</span>
-                      </div>
 
-                      {/* Detalles del método de pago */}
+                      {/* Método de pago ULTRA COMPACTO */}
                       {order.paymentMethod && (
-                        <div className="bg-gray-800/50 rounded p-2 border border-gray-700">
-                          <p className="text-[10px] text-gray-400 mb-1">Método de Pago</p>
+                        <div className="bg-gray-800/70 rounded px-1.5 py-1">
                           {order.paymentMethod === 'anticipado' ? (
-                            <div className="space-y-0.5">
-                              <p className="text-white font-bold text-xs">💳 Pago Anticipado</p>
-                              <p className="text-cyan-400 text-[10px]">✓ Yape/Plin (Pagado)</p>
+                            <div className="flex items-center gap-1">
+                              <span className="text-cyan-400 text-[10px] font-bold">💳 PAGADO</span>
+                              <span className="text-gray-400 text-[9px]">(Yape/Plin)</span>
                             </div>
                           ) : order.paymentMethod === 'contraentrega-yape-plin' ? (
-                            <div className="space-y-0.5">
-                              <p className="text-white font-bold text-xs">🏍️ Contra Entrega</p>
-                              <p className="text-yellow-400 text-[10px]">📱 Yape o Plin al recibir</p>
-                            </div>
+                            <div className="text-yellow-400 text-[10px] font-bold">📱 YAPE/PLIN al recibir</div>
                           ) : order.paymentMethod === 'contraentrega-efectivo-exacto' ? (
-                            <div className="space-y-0.5">
-                              <p className="text-white font-bold text-xs">🏍️ Contra Entrega</p>
-                              <p className="text-green-400 text-[10px]">💵 Efectivo EXACTO</p>
-                              <p className="text-gray-400 text-[10px]">Cliente paga: S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}</p>
-                            </div>
+                            <div className="text-green-400 text-[10px] font-bold">💵 EFECTIVO EXACTO S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}</div>
                           ) : order.paymentMethod === 'contraentrega-efectivo-cambio' ? (
-                            <div className="space-y-0.5">
-                              <p className="text-white font-bold text-xs">🏍️ Contra Entrega</p>
-                              <p className="text-amber-400 text-[10px]">💵 Efectivo (Necesita cambio)</p>
+                            <div>
+                              <div className="text-amber-400 text-[10px] font-bold">💵 EFECTIVO (con cambio)</div>
                               {(order as any).cantoCancelo && (
-                                <>
-                                  <p className="text-white text-[10px]">Cliente paga con: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}</p>
-                                  <p className="text-cyan-400 text-[10px] font-bold">
+                                <div className="flex justify-between text-[9px] mt-0.5">
+                                  <span className="text-white">Paga: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}</span>
+                                  <span className="text-cyan-300 font-bold">
                                     Devolver: S/ {(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
-                                  </p>
-                                </>
+                                  </span>
+                                </div>
                               )}
                             </div>
                           ) : (
-                            <p className="text-white font-semibold text-xs">
-                              {order.paymentMethod === 'contraentrega' ? '🏍️ Contra Entrega' : order.paymentMethod}
-                            </p>
+                            <div className="text-white text-[10px] font-bold">🏍️ {order.paymentMethod}</div>
                           )}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* COLUMNA DERECHA: Botones de Acción */}
-                  <div className="col-span-12 md:col-span-3 flex md:flex-col gap-2 md:justify-start">
+                  {/* COLUMNA DERECHA: Botones COMPACTOS */}
+                  <div className="col-span-12 md:col-span-3 flex md:flex-col gap-1">
                     {order.status === "pending" && (
                       <>
                         <button
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 md:flex-none bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded text-xs font-bold transition-all"
+                          className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-1.5 rounded text-[10px] font-bold transition-all"
                         >
                           ✓ Confirmar
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="flex-1 md:flex-none bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded text-xs font-bold transition-all"
+                          className="flex-1 bg-red-600 hover:bg-red-500 text-white px-2 py-1.5 rounded text-[10px] font-bold transition-all"
                         >
                           ✕ Cancelar
                         </button>
@@ -1065,26 +1022,26 @@ export default function AdminPage() {
                       <>
                         <button
                           onClick={() => updateOrderStatus(order.id, "delivered")}
-                          className="flex-1 md:flex-none bg-green-600 hover:bg-green-500 text-white px-3 py-2 rounded text-xs font-bold transition-all"
+                          className="flex-1 bg-green-600 hover:bg-green-500 text-white px-2 py-1.5 rounded text-[10px] font-bold transition-all"
                         >
-                          ✓ Marcar Entregado
+                          ✓ Entregado
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="flex-1 md:flex-none bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded text-xs font-bold transition-all"
+                          className="flex-1 bg-red-600 hover:bg-red-500 text-white px-2 py-1.5 rounded text-[10px] font-bold transition-all"
                         >
                           ✕ Cancelar
                         </button>
                       </>
                     )}
                     {order.status === "delivered" && (
-                      <div className="flex-1 md:flex-none bg-green-900/30 border border-green-500/30 text-green-400 px-3 py-2 rounded text-xs font-bold text-center">
-                        ✓ Pedido Entregado
+                      <div className="bg-green-900/30 border border-green-500/30 text-green-400 px-2 py-1.5 rounded text-[10px] font-bold text-center">
+                        ✓ Entregado
                       </div>
                     )}
                     {order.status === "cancelled" && (
-                      <div className="flex-1 md:flex-none bg-red-900/30 border border-red-500/30 text-red-400 px-3 py-2 rounded text-xs font-bold text-center">
-                        ✕ Pedido Cancelado
+                      <div className="bg-red-900/30 border border-red-500/30 text-red-400 px-2 py-1.5 rounded text-[10px] font-bold text-center">
+                        ✕ Cancelado
                       </div>
                     )}
                   </div>
