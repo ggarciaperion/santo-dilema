@@ -2511,17 +2511,24 @@ export default function AdminPage() {
                               <div className="absolute z-[200] w-full mt-1 bg-gray-800 border border-fuchsia-500/30 rounded max-h-40 overflow-y-auto shadow-2xl" style={{ position: 'absolute' }}>
                                 {(() => {
                                   const searchTerm = item.productName?.toLowerCase() || "";
+
+                                  // Filtrar solo materiales del inventario (no ordenes de venta)
+                                  const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
+                                  const inventoryMaterials = catalogProducts.filter(p =>
+                                    materialCategories.includes(p.category)
+                                  );
+
                                   const filteredProducts = searchTerm.length >= 3
-                                    ? catalogProducts.filter(p =>
+                                    ? inventoryMaterials.filter(p =>
                                         p.name.toLowerCase().includes(searchTerm) ||
                                         p.productId?.toLowerCase().includes(searchTerm)
                                       )
-                                    : catalogProducts;
+                                    : inventoryMaterials;
 
                                   if (filteredProducts.length === 0) {
                                     return (
                                       <div className="px-3 py-2 text-xs text-gray-400">
-                                        No se encontraron productos
+                                        No se encontraron materiales
                                       </div>
                                     );
                                   }
