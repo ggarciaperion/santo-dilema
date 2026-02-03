@@ -43,10 +43,11 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [customerSegment, setCustomerSegment] = useState<string>("all");
   const [inventory, setInventory] = useState<any[]>([]);
+  const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [productForm, setProductForm] = useState({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
+  const [productForm, setProductForm] = useState({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] as Array<{ productName: string; unit: string; quantity: number }> });
   const [inventoryForm, setInventoryForm] = useState({
     supplier: "",
     supplierRuc: "",
@@ -95,6 +96,7 @@ export default function AdminPage() {
     loadOrders();
     loadProducts();
     loadInventory();
+    loadDeductions();
     loadPromotions();
     loadCatalogProducts();
     // Auto-refresh cada 10 segundos
@@ -102,6 +104,7 @@ export default function AdminPage() {
       loadOrders();
       loadProducts();
       loadInventory();
+      loadDeductions();
       loadPromotions();
       loadCatalogProducts();
     }, 10000);
@@ -149,6 +152,16 @@ export default function AdminPage() {
       setInventory(data);
     } catch (error) {
       console.error("Error al cargar inventario:", error);
+    }
+  };
+
+  const loadDeductions = async () => {
+    try {
+      const response = await fetch("/api/deductions");
+      const data = await response.json();
+      setDeductions(data);
+    } catch (error) {
+      console.error("Error al cargar deducciones:", error);
     }
   };
 
@@ -299,7 +312,7 @@ export default function AdminPage() {
       });
       loadProducts();
       setShowProductModal(false);
-      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
+      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
     } catch (error) {
       console.error("Error al crear producto:", error);
     }
@@ -315,7 +328,7 @@ export default function AdminPage() {
       loadProducts();
       setShowProductModal(false);
       setEditingProduct(null);
-      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
+      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
     } catch (error) {
       console.error("Error al actualizar producto:", error);
     }
@@ -342,6 +355,7 @@ export default function AdminPage() {
       stock: product.stock || 0,
       minStock: product.minStock || 10,
       maxStock: product.maxStock || 100,
+      components: product.components || [],
     });
     setShowProductModal(true);
   };
@@ -1418,7 +1432,7 @@ export default function AdminPage() {
               <button
                 onClick={() => {
                   setEditingProduct(null);
-                  setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
+                  setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
                   setShowProductModal(true);
                 }}
                 className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
@@ -1594,6 +1608,105 @@ export default function AdminPage() {
                     />
                     <label className="text-sm text-white">Producto activo</label>
                   </div>
+
+                  {/* Sección de Componentes/Receta */}
+                  <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/30">
+                    <p className="text-sm font-bold text-cyan-400 mb-2">Componentes/Receta</p>
+                    <p className="text-xs text-gray-400 mb-3">Define los materiales e insumos que componen este producto</p>
+
+                    {/* Lista de componentes */}
+                    {productForm.components.length > 0 && (
+                      <div className="mb-3 space-y-1">
+                        {productForm.components.map((comp, idx) => (
+                          <div key={idx} className="flex items-center justify-between bg-gray-900 rounded px-2 py-1 text-xs">
+                            <span className="text-white">
+                              <span className="font-bold">{comp.quantity}</span> {comp.unit} de <span className="text-cyan-400">{comp.productName}</span>
+                            </span>
+                            <button
+                              onClick={() => {
+                                const newComponents = productForm.components.filter((_, i) => i !== idx);
+                                setProductForm({ ...productForm, components: newComponents });
+                              }}
+                              className="text-red-400 hover:text-red-300 ml-2"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Agregar componente */}
+                    <div className="flex gap-2">
+                      <select
+                        id="component-product-select"
+                        className="flex-1 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
+                        defaultValue=""
+                      >
+                        <option value="">Seleccionar material...</option>
+                        {(() => {
+                          // Obtener productos únicos del stock
+                          const stockMap = new Map<string, { productName: string; unit: string }>();
+                          inventory.forEach((purchase: any) => {
+                            purchase.items.forEach((item: any) => {
+                              const key = `${item.productName}-${item.unit}`;
+                              if (!stockMap.has(key)) {
+                                stockMap.set(key, {
+                                  productName: item.productName,
+                                  unit: item.unit,
+                                });
+                              }
+                            });
+                          });
+                          return Array.from(stockMap.values()).map((item, idx) => (
+                            <option key={idx} value={JSON.stringify(item)}>
+                              {item.productName} ({item.unit})
+                            </option>
+                          ));
+                        })()}
+                      </select>
+                      <input
+                        type="number"
+                        id="component-quantity-input"
+                        step="0.01"
+                        placeholder="Cant."
+                        className="w-20 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => {
+                          const select = document.getElementById('component-product-select') as HTMLSelectElement;
+                          const quantityInput = document.getElementById('component-quantity-input') as HTMLInputElement;
+
+                          if (select.value && quantityInput.value) {
+                            const selectedProduct = JSON.parse(select.value);
+                            const quantity = parseFloat(quantityInput.value);
+
+                            if (quantity > 0) {
+                              setProductForm({
+                                ...productForm,
+                                components: [
+                                  ...productForm.components,
+                                  {
+                                    productName: selectedProduct.productName,
+                                    unit: selectedProduct.unit,
+                                    quantity: quantity,
+                                  }
+                                ]
+                              });
+
+                              // Reset inputs
+                              select.value = "";
+                              quantityInput.value = "";
+                            }
+                          }
+                        }}
+                        className="px-3 py-1 text-xs bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold transition-all"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
                   {productForm.price > 0 && productForm.cost > 0 && (
                     <div className="bg-black/50 rounded-lg p-3 border border-fuchsia-500/30">
                       <p className="text-xs text-gray-400 mb-1">Margen de ganancia:</p>
@@ -1609,7 +1722,7 @@ export default function AdminPage() {
                     onClick={() => {
                       setShowProductModal(false);
                       setEditingProduct(null);
-                      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100 });
+                      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
                     }}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
                   >
@@ -1695,10 +1808,7 @@ export default function AdminPage() {
                   return (
                     <>
                 <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">COMPRAS {getMonthName(inventoryMonthFilter)}</h3>
-                    <p className="text-gray-400 text-sm">Administra tus compras a proveedores y gastos operativos</p>
-                  </div>
+                  <h3 className="text-2xl font-bold text-white">Compras {getMonthName(inventoryMonthFilter)}</h3>
                   <div className="flex items-center gap-3">
                     <input
                       type="month"
@@ -1711,72 +1821,18 @@ export default function AdminPage() {
                         setShowInventoryModal(true);
                         setProductSearchTerms([""]);
                       }}
-                      className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
+                      className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
                     >
                       + Nueva Compra
                     </button>
                   </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                    <p className="text-gray-400 text-sm font-semibold">Total Compras</p>
-                    <p className="text-5xl font-black text-white mt-2">{filteredInventory.length}</p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-red-500/50 p-6">
-                    <p className="text-red-400 text-sm font-bold">Gasto Total</p>
-                    <p className="text-4xl font-black text-red-400 mt-2">
-                      S/ {filteredInventory.reduce((sum, i) => sum + i.totalAmount, 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                    <p className="text-amber-400 text-sm font-bold">Compra Promedio</p>
-                    <p className="text-4xl font-black text-amber-400 mt-2">
-                      S/ {filteredInventory.length > 0 ? (filteredInventory.reduce((sum, i) => sum + i.totalAmount, 0) / filteredInventory.length).toFixed(2) : '0.00'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Filtros */}
-                <div className="flex justify-end items-center gap-3 mb-4">
-                  <input
-                    type="text"
-                    value={inventorySearchTerm}
-                    onChange={(e) => setInventorySearchTerm(e.target.value)}
-                    placeholder="Buscar producto..."
-                    className="w-48 px-3 py-1.5 text-xs rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                  />
-                  <input
-                    type="date"
-                    value={inventoryDateFilter}
-                    onChange={(e) => setInventoryDateFilter(e.target.value)}
-                    className="w-40 px-3 py-1.5 text-xs rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                  />
-                  {(inventorySearchTerm || inventoryDateFilter) && (
-                    <button
-                      onClick={() => {
-                        setInventorySearchTerm("");
-                        setInventoryDateFilter("");
-                      }}
-                      className="text-xs text-gray-400 hover:text-white transition-all px-2 py-1 hover:bg-gray-800 rounded"
-                    >
-                      ✕ Limpiar
-                    </button>
-                  )}
-                </div>
-
                 {/* Inventory List - Formato Tabla Excel */}
                 <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
                   {filteredInventory.length === 0 ? (
                     <div className="text-center py-12">
-                      <span className="text-6xl block mb-4">📦</span>
-                      <p className="text-2xl text-gray-400 font-bold">
-                        {inventory.length === 0 ? 'No hay compras registradas' : 'No se encontraron resultados'}
-                      </p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        {inventory.length === 0 ? 'Comienza registrando tu primera compra' : 'Intenta con otros filtros'}
-                      </p>
+                      <p className="text-xl text-gray-400">No hay compras en este mes</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -2015,6 +2071,17 @@ export default function AdminPage() {
                     });
                   });
 
+                  // Restar deducciones del stock
+                  deductions.forEach((deduction: any) => {
+                    deduction.items.forEach((item: any) => {
+                      const key = `${item.productName}-${item.unit}`;
+                      if (stockMap.has(key)) {
+                        const existing = stockMap.get(key)!;
+                        existing.totalQuantity -= item.quantity;
+                      }
+                    });
+                  });
+
                   const stockItems = Array.from(stockMap.values()).sort((a, b) =>
                     a.productName.localeCompare(b.productName)
                   );
@@ -2023,36 +2090,13 @@ export default function AdminPage() {
                     <>
                       <div className="mb-6">
                         <h3 className="text-2xl font-bold text-white">Control de Stock</h3>
-                        <p className="text-gray-400 text-sm">Stock calculado automáticamente desde las compras registradas</p>
-                      </div>
-
-                      {/* Stats */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                          <p className="text-gray-400 text-sm font-semibold">Total Productos en Stock</p>
-                          <p className="text-5xl font-black text-white mt-2">{stockItems.length}</p>
-                        </div>
-                        <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                          <p className="text-cyan-400 text-sm font-bold">Compras Registradas</p>
-                          <p className="text-4xl font-black text-cyan-400 mt-2">
-                            {inventory.length}
-                          </p>
-                        </div>
-                        <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                          <p className="text-amber-400 text-sm font-bold">Items Comprados</p>
-                          <p className="text-4xl font-black text-amber-400 mt-2">
-                            {inventory.reduce((sum, p) => sum + p.items.length, 0)}
-                          </p>
-                        </div>
                       </div>
 
                       {/* Tabla de Stock */}
                       <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
                         {stockItems.length === 0 ? (
                           <div className="text-center py-12">
-                            <span className="text-6xl block mb-4">📦</span>
-                            <p className="text-2xl text-gray-400 font-bold">No hay stock registrado</p>
-                            <p className="text-sm text-gray-500 mt-2">Registra compras para ver el stock aquí</p>
+                            <p className="text-xl text-gray-400">No hay stock registrado</p>
                           </div>
                         ) : (
                           <table className="w-full" style={{ borderCollapse: "collapse" }}>

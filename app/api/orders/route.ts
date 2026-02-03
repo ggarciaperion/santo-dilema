@@ -112,6 +112,64 @@ export async function PATCH(request: Request) {
       );
     }
 
+    // Si el pedido se marca como "Entregado", descontar automáticamente del stock
+    if (status === "Entregado") {
+      console.log("📦 Pedido marcado como Entregado. Iniciando descuento automático de stock...");
+
+      // Obtener todos los productos para acceder a sus componentes
+      const products = await storage.getProducts();
+
+      // Calcular los componentes totales necesarios
+      const deductionItems: Array<{ productName: string; quantity: number; unit: string }> = [];
+
+      updatedOrder.cart.forEach((cartItem: any) => {
+        const product = products.find((p: any) => p.name === cartItem.name);
+
+        if (product && product.components && product.components.length > 0) {
+          console.log(`✅ Producto "${product.name}" tiene ${product.components.length} componentes`);
+
+          // Para cada componente del producto
+          product.components.forEach((component: any) => {
+            const totalQuantity = cartItem.quantity * component.quantity;
+
+            // Buscar si ya existe este componente en la lista
+            const existingItem = deductionItems.find(
+              (item) => item.productName === component.productName && item.unit === component.unit
+            );
+
+            if (existingItem) {
+              existingItem.quantity += totalQuantity;
+            } else {
+              deductionItems.push({
+                productName: component.productName,
+                quantity: totalQuantity,
+                unit: component.unit,
+              });
+            }
+          });
+        } else {
+          console.log(`⚠️ Producto "${cartItem.name}" no tiene componentes definidos`);
+        }
+      });
+
+      // Guardar la deducción si hay items
+      if (deductionItems.length > 0) {
+        const deduction = {
+          id: Date.now().toString(),
+          orderId: updatedOrder.id,
+          orderName: `Pedido #${updatedOrder.id} - ${updatedOrder.name}`,
+          items: deductionItems,
+          deductionDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        };
+
+        await storage.saveDeduction(deduction);
+        console.log(`✅ Deducción guardada: ${deductionItems.length} items descontados del stock`);
+      } else {
+        console.log("⚠️ No hay componentes para descontar del stock");
+      }
+    }
+
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar pedido:", error);

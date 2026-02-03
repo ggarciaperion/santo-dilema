@@ -18,6 +18,7 @@ let dataDir: string = '';
 let ordersFilePath: string = '';
 let inventoryFilePath: string = '';
 let productsFilePath: string = '';
+let deductionsFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -27,6 +28,7 @@ if (!isProduction) {
   ordersFilePath = path.join(dataDir, 'orders.json');
   inventoryFilePath = path.join(dataDir, 'inventory.json');
   productsFilePath = path.join(dataDir, 'products.json');
+  deductionsFilePath = path.join(dataDir, 'deductions.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -43,6 +45,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(productsFilePath)) {
       fs.writeFileSync(productsFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(deductionsFilePath)) {
+      fs.writeFileSync(deductionsFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -100,6 +105,19 @@ interface InventoryPurchase {
   totalAmount: number;
   notes?: string;
   purchaseDate: string;
+  createdAt: string;
+}
+
+interface StockDeduction {
+  id: string;
+  orderId: string;
+  orderName: string;
+  items: Array<{
+    productName: string;
+    quantity: number;
+    unit: string;
+  }>;
+  deductionDate: string;
   createdAt: string;
 }
 
@@ -339,5 +357,47 @@ export const storage = {
     }
 
     return true;
+  },
+
+  // ========== MÉTODOS DE DEDUCCIONES DE STOCK ==========
+
+  // Obtener todas las deducciones de stock
+  async getDeductions(): Promise<StockDeduction[]> {
+    if (isProduction) {
+      if (!redis) {
+        console.error('⚠️ Redis no configurado en producción.');
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: usar Redis
+      const deductions = await redis.get<StockDeduction[]>('deductions');
+      return deductions || [];
+    } else {
+      // Desarrollo: usar archivo
+      ensureDataDirectory();
+      const data = fs.readFileSync(deductionsFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  // Guardar una nueva deducción de stock
+  async saveDeduction(deduction: StockDeduction): Promise<StockDeduction> {
+    const deductions = await this.getDeductions();
+    deductions.unshift(deduction);
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: guardar en Redis
+      await redis.set('deductions', deductions);
+      console.log('✅ Deducción guardada en Redis');
+    } else {
+      // Desarrollo: guardar en archivo
+      ensureDataDirectory();
+      fs.writeFileSync(deductionsFilePath, JSON.stringify(deductions, null, 2));
+      console.log('✅ Deducción guardada en archivo local');
+    }
+
+    return deduction;
   },
 };
