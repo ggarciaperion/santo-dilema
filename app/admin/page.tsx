@@ -65,6 +65,7 @@ export default function AdminPage() {
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
   const [inventorySection, setInventorySection] = useState<"purchases" | "stock">("purchases");
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
+  const [stockSearchTerm, setStockSearchTerm] = useState<string>("");
   const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
   const [inventoryMonthFilter, setInventoryMonthFilter] = useState<string>(() => {
     const now = new Date();
@@ -2128,15 +2129,29 @@ export default function AdminPage() {
                     a.productName.localeCompare(b.productName)
                   );
 
+                  // Filtrar items de stock según búsqueda
+                  const filteredStockItems = stockItems.filter((item) => {
+                    if (!stockSearchTerm) return true;
+                    const searchLower = stockSearchTerm.toLowerCase();
+                    return item.productName.toLowerCase().includes(searchLower);
+                  });
+
                   return (
                     <>
-                      <div className="mb-6">
+                      <div className="flex justify-between items-center mb-6">
                         <h3 className="text-2xl font-bold text-white">Control de Stock</h3>
+                        <input
+                          type="text"
+                          value={stockSearchTerm}
+                          onChange={(e) => setStockSearchTerm(e.target.value)}
+                          placeholder="🔍 Buscar producto..."
+                          className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-cyan-400 focus:outline-none w-64"
+                        />
                       </div>
 
                       {/* Tabla de Stock */}
                       <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                        {stockItems.length === 0 ? (
+                        {filteredStockItems.length === 0 ? (
                           <div className="text-center py-12">
                             <p className="text-xl text-gray-400">No hay stock registrado</p>
                           </div>
@@ -2151,7 +2166,7 @@ export default function AdminPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {stockItems.map((item, idx) => (
+                              {filteredStockItems.map((item, idx) => (
                                 <tr key={idx} className="hover:bg-black/50 transition-all">
                                   <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{item.productName}</td>
                                   <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
