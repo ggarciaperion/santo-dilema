@@ -132,6 +132,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filter, setFilter] = useState<string>("all");
+  const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -869,7 +870,20 @@ export default function AdminPage() {
   };
 
   const customerSegments = getCustomerSegments();
-  const customers = customerSegments[customerSegment as keyof typeof customerSegments] || allCustomers;
+  const segmentCustomers = customerSegments[customerSegment as keyof typeof customerSegments] || allCustomers;
+
+  // Filtrar clientes por búsqueda en tiempo real
+  const customers = segmentCustomers.filter((customer: any) => {
+    if (customerSearchTerm === "") return true;
+    const searchLower = customerSearchTerm.toLowerCase();
+    return (
+      customer.dni?.toLowerCase().includes(searchLower) ||
+      customer.name?.toLowerCase().includes(searchLower) ||
+      customer.phone?.includes(customerSearchTerm) ||
+      customer.email?.toLowerCase().includes(searchLower) ||
+      customer.address?.toLowerCase().includes(searchLower)
+    );
+  });
 
   // Analytics - con filtro de fechas
   const getAnalytics = () => {
@@ -1592,7 +1606,44 @@ export default function AdminPage() {
                 <p className="text-2xl text-gray-400">No hay clientes registrados</p>
               </div>
             ) : (
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+              <>
+                {/* Buscador de clientes */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={customerSearchTerm}
+                      onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                      placeholder="Buscar cliente por DNI, nombre, teléfono, email..."
+                      className="w-full px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
+                    />
+                    <svg
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    {customerSearchTerm && (
+                      <button
+                        onClick={() => setCustomerSearchTerm("")}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-fuchsia-500/10 border-b-2 border-fuchsia-500/30">
                     <tr>
@@ -1653,6 +1704,7 @@ export default function AdminPage() {
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </section>
         </>
