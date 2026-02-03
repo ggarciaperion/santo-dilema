@@ -791,8 +791,15 @@ export default function AdminPage() {
       if (!dni) return;
 
       // Solo contabilizar pedidos entregados
-      const isDelivered = order.status === "delivered" || order.status === "Entregado";
-      if (!isDelivered) return;
+      const isDelivered =
+        order.status === "delivered" ||
+        order.status === "Entregado" ||
+        order.status?.toLowerCase() === "entregado";
+
+      if (!isDelivered) {
+        // No procesar pedidos que no están entregados
+        return;
+      }
 
       if (!customersMap.has(dni)) {
         customersMap.set(dni, {
@@ -848,7 +855,10 @@ export default function AdminPage() {
       vip: allCustomers.filter((c: any) => {
         if (!c.orders || c.orders.length === 0) return false;
         const lastMonthOrders = c.orders.filter((order: any) => {
-          const isDelivered = order.status === "delivered" || order.status === "Entregado";
+          const isDelivered =
+            order.status === "delivered" ||
+            order.status === "Entregado" ||
+            order.status?.toLowerCase() === "entregado";
           if (!isDelivered) return false;
           const orderDate = getPeruDate(order.createdAt);
           return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
@@ -862,7 +872,9 @@ export default function AdminPage() {
         if (!c.orders || c.orders.length === 0) return false;
         // Filtrar solo pedidos entregados
         const deliveredOrders = c.orders.filter((order: any) =>
-          order.status === "delivered" || order.status === "Entregado"
+          order.status === "delivered" ||
+          order.status === "Entregado" ||
+          order.status?.toLowerCase() === "entregado"
         );
         if (deliveredOrders.length === 0) return false;
         // Encontrar el primer pedido entregado del cliente
@@ -877,7 +889,10 @@ export default function AdminPage() {
       active: allCustomers.filter((c: any) => {
         if (!c.orders || c.orders.length === 0) return false;
         const currentMonthOrders = c.orders.filter((order: any) => {
-          const isDelivered = order.status === "delivered" || order.status === "Entregado";
+          const isDelivered =
+            order.status === "delivered" ||
+            order.status === "Entregado" ||
+            order.status?.toLowerCase() === "entregado";
           if (!isDelivered) return false;
           const orderDate = getPeruDate(order.createdAt);
           return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
@@ -889,7 +904,10 @@ export default function AdminPage() {
       recurrent: allCustomers.filter((c: any) => {
         if (!c.orders || c.orders.length < 4) return false;
         const lastMonthOrders = c.orders.filter((order: any) => {
-          const isDelivered = order.status === "delivered" || order.status === "Entregado";
+          const isDelivered =
+            order.status === "delivered" ||
+            order.status === "Entregado" ||
+            order.status?.toLowerCase() === "entregado";
           if (!isDelivered) return false;
           const orderDate = getPeruDate(order.createdAt);
           return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
