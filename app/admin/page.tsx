@@ -1646,17 +1646,43 @@ export default function AdminPage() {
                         defaultValue=""
                       >
                         <option value="">Seleccionar material del inventario...</option>
-                        {catalogProducts
-                          .filter((product: any) => {
-                            // Filtrar solo materiales del inventario (no ordenes de venta)
+                        {(() => {
+                          // Obtener productos únicos del inventario (compras registradas)
+                          const stockMap = new Map<string, { productName: string; unit: string }>();
+                          inventory.forEach((purchase: any) => {
+                            purchase.items.forEach((item: any) => {
+                              const key = `${item.productName}-${item.unit}`;
+                              if (!stockMap.has(key)) {
+                                stockMap.set(key, {
+                                  productName: item.productName,
+                                  unit: item.unit,
+                                });
+                              }
+                            });
+                          });
+
+                          // También agregar materiales del catálogo con categoría de inventario
+                          catalogProducts.forEach((product: any) => {
                             const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
-                            return materialCategories.includes(product.category);
-                          })
-                          .map((product: any, idx: number) => (
-                            <option key={idx} value={JSON.stringify({ productName: product.name, unit: product.unit })}>
-                              {product.name} ({product.unit})
-                            </option>
-                          ))}
+                            if (materialCategories.includes(product.category)) {
+                              const key = `${product.name}-${product.unit}`;
+                              if (!stockMap.has(key)) {
+                                stockMap.set(key, {
+                                  productName: product.name,
+                                  unit: product.unit,
+                                });
+                              }
+                            }
+                          });
+
+                          return Array.from(stockMap.values())
+                            .sort((a, b) => a.productName.localeCompare(b.productName))
+                            .map((item, idx) => (
+                              <option key={idx} value={JSON.stringify(item)}>
+                                {item.productName} ({item.unit})
+                              </option>
+                            ));
+                        })()}
                       </select>
                       <input
                         type="number"
