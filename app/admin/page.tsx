@@ -825,23 +825,46 @@ export default function AdminPage() {
 
   // Segmentación avanzada de clientes
   const getCustomerSegments = () => {
-    const now = new Date();
+    const now = getPeruDate(); // Usar hora de Perú
+    const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    // Obtener primer y último día del mes actual en Perú
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
     return {
       all: allCustomers,
-      vip: allCustomers.filter((c: any) => c.totalOrders >= 5 && c.totalSpent >= 200),
-      frequent: allCustomers.filter((c: any) => c.totalOrders >= 3 && c.totalOrders < 5),
-      new: allCustomers.filter((c: any) => c.totalOrders === 1),
-      recurrent: allCustomers.filter((c: any) => c.totalOrders > 1),
-      inactive: allCustomers.filter((c: any) => new Date(c.lastOrderDate) < thirtyDaysAgo),
-      at_risk: allCustomers.filter((c: any) => {
-        const lastOrder = new Date(c.lastOrderDate);
-        return lastOrder < thirtyDaysAgo && lastOrder >= sixtyDaysAgo && c.totalOrders >= 2;
+
+      // VIP: Análisis histórico completo - 5+ pedidos O S/ 200+ gastados
+      vip: allCustomers.filter((c: any) => c.totalOrders >= 5 || c.totalSpent >= 200),
+
+      // NUEVOS: Primer pedido en el mes actual
+      new: allCustomers.filter((c: any) => {
+        if (!c.orders || c.orders.length === 0) return false;
+        // Encontrar el primer pedido del cliente
+        const firstOrder = c.orders.reduce((earliest: any, order: any) => {
+          return new Date(order.createdAt) < new Date(earliest.createdAt) ? order : earliest;
+        });
+        const firstOrderDate = getPeruDate(firstOrder.createdAt);
+        return firstOrderDate >= firstDayOfMonth && firstOrderDate <= lastDayOfMonth;
       }),
-      high_value: allCustomers.filter((c: any) => c.totalSpent >= 150),
-      low_engagement: allCustomers.filter((c: any) => c.totalOrders <= 2 && c.totalSpent < 50),
+
+      // RECURRENTES: Al menos 2 pedidos en los últimos 30 días
+      recurrent: allCustomers.filter((c: any) => {
+        if (!c.orders || c.orders.length < 2) return false;
+        const recentOrders = c.orders.filter((order: any) => {
+          const orderDate = getPeruDate(order.createdAt);
+          return orderDate >= thirtyDaysAgo;
+        });
+        return recentOrders.length >= 2;
+      }),
+
+      // INACTIVOS: Más de 15 días sin comprar
+      inactive: allCustomers.filter((c: any) => {
+        const lastOrder = getPeruDate(c.lastOrderDate);
+        return lastOrder < fifteenDaysAgo;
+      }),
     };
   };
 
