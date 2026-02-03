@@ -23,17 +23,30 @@ interface Order {
 }
 
 // Componente para el contador de tiempo
-function TimeCounter({ createdAt }: { createdAt: string }) {
+function TimeCounter({ createdAt, orderId }: { createdAt: string; orderId: string }) {
   const [elapsed, setElapsed] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [alerted, setAlerted] = useState(false);
 
   useEffect(() => {
     const updateElapsed = () => {
       const now = new Date().getTime();
       const created = new Date(createdAt).getTime();
-      const diff = Math.floor((now - created) / 1000); // diferencia en segundos
+      let diff = Math.floor((now - created) / 1000); // diferencia en segundos
+
+      // Asegurar que no sea negativo (inicia en 0)
+      if (diff < 0) {
+        diff = 0;
+      }
 
       const minutes = Math.floor(diff / 60);
       const seconds = diff % 60;
+
+      // Alerta a los 20 minutos
+      if (minutes >= 20 && !alerted) {
+        setShowAlert(true);
+        setAlerted(true);
+      }
 
       if (minutes > 0) {
         setElapsed(`${minutes}m ${seconds}s`);
@@ -46,9 +59,37 @@ function TimeCounter({ createdAt }: { createdAt: string }) {
     const interval = setInterval(updateElapsed, 1000);
 
     return () => clearInterval(interval);
-  }, [createdAt]);
+  }, [createdAt, alerted]);
 
-  return <span className="font-mono text-lg font-black text-yellow-400">{elapsed}</span>;
+  return (
+    <>
+      <span className="font-mono text-lg font-black text-yellow-400">{elapsed}</span>
+
+      {/* Alerta de 20 minutos */}
+      {showAlert && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowAlert(false)}>
+          <div className="bg-red-600 rounded-xl p-8 max-w-md mx-4 shadow-2xl animate-pulse" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h3 className="text-3xl font-black text-white mb-4">¡ALERTA DE TIEMPO!</h3>
+              <p className="text-xl text-white mb-2">
+                El pedido <span className="font-mono font-black">#{orderId}</span>
+              </p>
+              <p className="text-2xl font-black text-yellow-300 mb-6">
+                ¡Lleva más de 20 minutos en cola!
+              </p>
+              <button
+                onClick={() => setShowAlert(false)}
+                className="bg-white text-red-600 px-8 py-3 rounded-lg font-black text-lg hover:bg-gray-100 transition-all"
+              >
+                ENTENDIDO
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 export default function AdminPage() {
@@ -1048,7 +1089,7 @@ export default function AdminPage() {
                     </p>
                     {/* CONTADOR DE TIEMPO EN COLA */}
                     <div className="mt-2">
-                      <TimeCounter createdAt={order.createdAt} />
+                      <TimeCounter createdAt={order.createdAt} orderId={order.id} />
                     </div>
                   </div>
 
