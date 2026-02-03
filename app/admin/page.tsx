@@ -197,6 +197,11 @@ export default function AdminPage() {
     targetSegment: "all"
   });
 
+  // Resetear cliente seleccionado cuando cambia el segmento de clientes
+  useEffect(() => {
+    setSelectedCustomer(null);
+  }, [customerSegment]);
+
   // Inicializar AudioContext con interacción del usuario (requerido por navegadores)
   useEffect(() => {
     const initAudio = () => {
