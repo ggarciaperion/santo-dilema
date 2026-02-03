@@ -1051,19 +1051,19 @@ export default function AdminPage() {
       {/* Barra de herramientas */}
       <section className="container mx-auto px-4 pb-6">
         <div className="flex gap-2 items-center justify-end">
-            {/* Botón de calendario */}
-            <button
-              onClick={() => setShowDateModal(true)}
-              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
-              title="Filtrar por fechas"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </button>
+          {/* Botón de calendario */}
+          <button
+            onClick={() => setShowDateModal(true)}
+            className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
+            title="Filtrar por fechas"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
 
-            {/* Buscador en tiempo real */}
-            <div className="relative">
+          {/* Buscador en tiempo real */}
+          <div className="relative">
             <input
               type="text"
               value={searchTerm}
@@ -1094,7 +1094,6 @@ export default function AdminPage() {
                 </svg>
               </button>
             )}
-            </div>
           </div>
         </div>
       </section>
