@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       minStock: body.minStock || 10,
       maxStock: body.maxStock || 100,
       type: body.type || "inventory", // Por defecto es "inventory" para mantener compatibilidad
+      components: body.components || [], // Componentes/receta del producto
       createdAt: new Date().toISOString(),
     };
 
@@ -98,6 +99,7 @@ export async function PATCH(request: Request) {
       minStock: body.minStock,
       maxStock: body.maxStock,
       type: body.type,
+      components: body.components,
     };
 
     const updatedProduct = await storage.updateProduct(id, updates);

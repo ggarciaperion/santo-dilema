@@ -75,6 +75,11 @@ interface Product {
   minStock?: number;
   maxStock?: number;
   type?: string; // "inventory" para materias primas, "sale" para productos de venta
+  components?: Array<{ // Componentes/receta para productos de venta
+    productName: string;
+    unit: string;
+    quantity: number;
+  }>;
   createdAt: string;
 }
 
