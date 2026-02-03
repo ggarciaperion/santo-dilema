@@ -130,7 +130,6 @@ export default function AdminPage() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
@@ -497,11 +496,8 @@ export default function AdminPage() {
     dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
   }
 
-  // Filtrar pedidos por estado y búsqueda
+  // Filtrar pedidos por búsqueda
   const filteredOrders = dateFilteredOrders.filter((order) => {
-    // Filtro por estado
-    const statusMatch = filter === "all" || order.status === filter;
-
     // Filtro de búsqueda en tiempo real
     const searchMatch = searchTerm === "" ||
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -513,7 +509,7 @@ export default function AdminPage() {
         return productName.toLowerCase().includes(searchTerm.toLowerCase());
       }));
 
-    return statusMatch && searchMatch;
+    return searchMatch;
   });
 
   const statusColors = {
@@ -1174,7 +1170,7 @@ export default function AdminPage() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
-            <p className="text-2xl text-gray-400">No hay pedidos {filter !== "all" ? statusLabels[filter as keyof typeof statusLabels].toLowerCase() + "s" : ""}</p>
+            <p className="text-2xl text-gray-400">No hay pedidos</p>
           </div>
         ) : (
           <div className="space-y-3">
