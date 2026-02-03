@@ -1027,6 +1027,15 @@ export default function AdminPage() {
 
     const productsArray = Array.from(productSales.values()).sort((a, b) => b.quantity - a.quantity);
 
+    // Clientes frecuentes (solo con pedidos entregados, 3+ pedidos)
+    const frequentCustomers = allCustomers.filter((c: any) => c.totalOrders >= 3);
+
+    // Clientes inactivos (más de 15 días sin comprar)
+    const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
+    const inactiveCustomers = allCustomers.filter((c: any) =>
+      getPeruDate(c.lastOrderDate) < fifteenDaysAgo
+    );
+
     return {
       dailySales,
       monthlySales,
@@ -1038,7 +1047,9 @@ export default function AdminPage() {
       leastSoldProducts: productsArray.slice(-5).reverse(),
       allProducts: productsArray,
       currentMonthOrdersCount: currentMonthOrders.length,
-      lastMonthOrdersCount: lastMonthOrders.length
+      lastMonthOrdersCount: lastMonthOrders.length,
+      frequentCustomers,
+      inactiveCustomers
     };
   };
 
