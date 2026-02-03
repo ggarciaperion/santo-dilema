@@ -2512,18 +2512,47 @@ export default function AdminPage() {
                                 {(() => {
                                   const searchTerm = item.productName?.toLowerCase() || "";
 
-                                  // Filtrar solo materiales del inventario (no ordenes de venta)
-                                  const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
-                                  const inventoryMaterials = catalogProducts.filter(p =>
-                                    materialCategories.includes(p.category)
-                                  );
+                                  // Obtener materiales únicos del inventario (compras registradas)
+                                  const materialsMap = new Map<string, { productName: string; unit: string; productId?: string }>();
 
+                                  inventory.forEach((purchase: any) => {
+                                    purchase.items.forEach((purchaseItem: any) => {
+                                      const key = `${purchaseItem.productName}-${purchaseItem.unit}`;
+                                      if (!materialsMap.has(key)) {
+                                        materialsMap.set(key, {
+                                          productName: purchaseItem.productName,
+                                          unit: purchaseItem.unit,
+                                        });
+                                      }
+                                    });
+                                  });
+
+                                  // También agregar materiales del catálogo con categoría de inventario
+                                  const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
+                                  catalogProducts.forEach((product: any) => {
+                                    if (materialCategories.includes(product.category)) {
+                                      const key = `${product.name}-${product.unit}`;
+                                      if (!materialsMap.has(key)) {
+                                        materialsMap.set(key, {
+                                          productName: product.name,
+                                          unit: product.unit,
+                                          productId: product.productId,
+                                        });
+                                      }
+                                    }
+                                  });
+
+                                  // Convertir a array y filtrar por búsqueda
+                                  const allMaterials = Array.from(materialsMap.values());
                                   const filteredProducts = searchTerm.length >= 3
-                                    ? inventoryMaterials.filter(p =>
-                                        p.name.toLowerCase().includes(searchTerm) ||
-                                        p.productId?.toLowerCase().includes(searchTerm)
+                                    ? allMaterials.filter(m =>
+                                        m.productName.toLowerCase().includes(searchTerm) ||
+                                        m.productId?.toLowerCase().includes(searchTerm)
                                       )
-                                    : inventoryMaterials;
+                                    : allMaterials;
+
+                                  // Ordenar alfabéticamente
+                                  filteredProducts.sort((a, b) => a.productName.localeCompare(b.productName));
 
                                   if (filteredProducts.length === 0) {
                                     return (
@@ -2533,40 +2562,41 @@ export default function AdminPage() {
                                     );
                                   }
 
-                                  return filteredProducts.map((product) => (
+                                  return filteredProducts.map((material, materialIdx) => (
                                     <div
-                                      key={product.id}
+                                      key={`${material.productName}-${material.unit}-${materialIdx}`}
                                       onMouseDown={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log('🔥 onMouseDown - Producto a seleccionar:', product.name);
+                                        console.log('🔥 onMouseDown - Material a seleccionar:', material.productName);
 
                                         // Actualizar el nombre del producto y la unidad
                                         const newItems = [...inventoryForm.items];
                                         newItems[idx] = {
                                           ...newItems[idx],
-                                          productName: product.name,
-                                          unit: product.unit
+                                          productName: material.productName,
+                                          unit: material.unit
                                         };
 
                                         setInventoryForm({ ...inventoryForm, items: newItems });
 
                                         // Actualizar searchTerms
                                         const newSearchTerms = [...productSearchTerms];
-                                        newSearchTerms[idx] = product.name;
+                                        newSearchTerms[idx] = material.productName;
                                         setProductSearchTerms(newSearchTerms);
 
                                         // Cerrar dropdown
                                         setActiveDropdownIndex(null);
 
-                                        console.log('🔥 Producto guardado:', product.name);
+                                        console.log('🔥 Material guardado:', material.productName);
                                       }}
                                       className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer border-b border-fuchsia-500/10 last:border-b-0"
                                     >
-                                      <div className="font-bold">{product.name}</div>
-                                      {product.productId && (
-                                        <div className="text-cyan-400 text-[10px] mt-0.5">ID: {product.productId}</div>
-                                      )}
+                                      <div className="font-bold">{material.productName}</div>
+                                      <div className="text-cyan-400 text-[10px] mt-0.5">
+                                        {material.productId && `ID: ${material.productId} • `}
+                                        Unidad: {material.unit}
+                                      </div>
                                     </div>
                                   ));
                                 })()}
