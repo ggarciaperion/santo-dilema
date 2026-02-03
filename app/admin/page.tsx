@@ -1645,12 +1645,18 @@ export default function AdminPage() {
                         className="flex-1 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
                         defaultValue=""
                       >
-                        <option value="">Seleccionar material del catálogo...</option>
-                        {catalogProducts.map((product: any, idx: number) => (
-                          <option key={idx} value={JSON.stringify({ productName: product.name, unit: product.unit })}>
-                            {product.name} ({product.unit})
-                          </option>
-                        ))}
+                        <option value="">Seleccionar material del inventario...</option>
+                        {catalogProducts
+                          .filter((product: any) => {
+                            // Filtrar solo materiales del inventario (no ordenes de venta)
+                            const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
+                            return materialCategories.includes(product.category);
+                          })
+                          .map((product: any, idx: number) => (
+                            <option key={idx} value={JSON.stringify({ productName: product.name, unit: product.unit })}>
+                              {product.name} ({product.unit})
+                            </option>
+                          ))}
                       </select>
                       <input
                         type="number"
