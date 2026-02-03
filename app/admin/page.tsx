@@ -1955,7 +1955,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Top Products */}
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                <h3 className="text-xl font-black text-fuchsia-400 mb-4">🏆 Productos Más Vendidos</h3>
+                <h3 className="text-xl font-black text-fuchsia-400 mb-4">🏆 Productos Más Vendidos (Todos los tiempos)</h3>
                 <div className="space-y-3">
                   {analytics.topProducts.map((product: any, idx: number) => (
                     <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-fuchsia-500/20">
@@ -1977,7 +1977,7 @@ export default function AdminPage() {
 
               {/* Least Sold Products */}
               <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-6">
-                <h3 className="text-xl font-black text-red-400 mb-4">📉 Productos Menos Vendidos</h3>
+                <h3 className="text-xl font-black text-red-400 mb-4">📉 Productos Menos Vendidos (Todos los tiempos)</h3>
                 <div className="space-y-3">
                   {analytics.leastSoldProducts.map((product: any, idx: number) => (
                     <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-red-500/20">
