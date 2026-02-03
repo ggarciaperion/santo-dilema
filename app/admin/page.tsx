@@ -1052,55 +1052,9 @@ export default function AdminPage() {
             </div>
           </section>
 
-      {/* Filters - Estado de pedidos */}
+      {/* Barra de herramientas */}
       <section className="container mx-auto px-4 pb-6">
-        <div className="flex gap-3 flex-wrap items-center justify-between">
-          {/* Botones de filtro */}
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-                filter === "all"
-                  ? "bg-fuchsia-600 text-white neon-border-purple"
-                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-              }`}
-            >
-              Todos ({dateFilteredOrders.length})
-            </button>
-            <button
-              onClick={() => setFilter("pending")}
-              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-                filter === "pending"
-                  ? "bg-yellow-600 text-black"
-                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-              }`}
-            >
-              Pendientes ({dateFilteredOrders.filter((o) => o.status === "pending").length})
-            </button>
-            <button
-              onClick={() => setFilter("confirmed")}
-              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-                filter === "confirmed"
-                  ? "bg-cyan-600 text-white"
-                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-              }`}
-            >
-              Confirmados ({dateFilteredOrders.filter((o) => o.status === "confirmed").length})
-            </button>
-            <button
-              onClick={() => setFilter("delivered")}
-              className={`px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 ${
-                filter === "delivered"
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-              }`}
-            >
-              Entregados ({dateFilteredOrders.filter((o) => o.status === "delivered").length})
-            </button>
-          </div>
-
-          {/* Botón de calendario y buscador */}
-          <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center justify-end">
             {/* Botón de calendario */}
             <button
               onClick={() => setShowDateModal(true)}
