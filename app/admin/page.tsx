@@ -1654,16 +1654,6 @@ export default function AdminPage() {
               >
                 📊 Control de Stock
               </button>
-              <button
-                onClick={() => setInventorySection("catalog")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  inventorySection === "catalog"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                📚 Catálogo
-              </button>
             </div>
 
             {inventorySection === "purchases" && (
@@ -2099,112 +2089,6 @@ export default function AdminPage() {
               </>
             )}
 
-            {inventorySection === "catalog" && (
-              <>
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">Catálogo de Productos</h3>
-                    <p className="text-gray-400 text-sm">Administra el catálogo maestro de productos para inventario</p>
-                  </div>
-                  <button
-                    onClick={() => setShowCatalogModal(true)}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-                  >
-                    + Nuevo Producto
-                  </button>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                    <p className="text-gray-400 text-sm font-semibold">Total Productos</p>
-                    <p className="text-5xl font-black text-white mt-2">{catalogProducts.length}</p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                    <p className="text-cyan-400 text-sm font-bold">Insumos</p>
-                    <p className="text-4xl font-black text-cyan-400 mt-2">
-                      {catalogProducts.filter(p => p.category === "INSUMO").length}
-                    </p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                    <p className="text-amber-400 text-sm font-bold">Empaques</p>
-                    <p className="text-4xl font-black text-amber-400 mt-2">
-                      {catalogProducts.filter(p => p.category === "EMPAQUE").length}
-                    </p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                    <p className="text-purple-400 text-sm font-bold">Servicios</p>
-                    <p className="text-4xl font-black text-purple-400 mt-2">
-                      {catalogProducts.filter(p => p.category === "SERVICIO").length}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Lista de Productos del Catálogo */}
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                  {catalogProducts.length === 0 ? (
-                    <div className="text-center py-12">
-                      <span className="text-6xl block mb-4">📦</span>
-                      <p className="text-2xl text-gray-400 font-bold">No hay productos registrados</p>
-                      <p className="text-sm text-gray-500 mt-2">Comienza registrando tu primer producto</p>
-                    </div>
-                  ) : (
-                    <table className="w-full" style={{ borderCollapse: "collapse" }}>
-                      <thead className="bg-black">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">PRODUCTO</th>
-                          <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">CATEGORÍA</th>
-                          <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">UNIDAD</th>
-                          <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">FECHA REGISTRO</th>
-                          <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">ACCIONES</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {catalogProducts.map((product) => (
-                          <tr key={product.id} className="hover:bg-black/50 transition-all">
-                            <td className="px-6 py-3 text-cyan-400 font-bold border border-fuchsia-500/10">{product.productId || "-"}</td>
-                            <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{product.name}</td>
-                            <td className="px-6 py-3 text-gray-400 border border-fuchsia-500/10">{product.category || "-"}</td>
-                            <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
-                              {product.unit}
-                            </td>
-                            <td className="px-6 py-3 text-center text-gray-400 text-sm border border-fuchsia-500/10">
-                              {new Date(product.createdAt).toLocaleDateString("es-PE")}
-                            </td>
-                            <td className="px-6 py-3 text-center border border-fuchsia-500/10">
-                              <div className="flex items-center justify-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    setEditingCatalogProduct(product);
-                                    setCatalogForm({
-                                      productId: product.productId || "",
-                                      name: product.name || "",
-                                      category: product.category || "",
-                                      unit: product.unit || ""
-                                    });
-                                    setShowCatalogModal(true);
-                                  }}
-                                  className="text-amber-400 hover:text-amber-300 text-sm font-bold"
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteCatalogProduct(product.id)}
-                                  className="text-red-400 hover:text-red-300 text-sm font-bold"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              </>
-            )}
           </section>
 
           {/* Catalog Product Modal */}
