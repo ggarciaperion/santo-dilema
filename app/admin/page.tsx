@@ -828,17 +828,28 @@ export default function AdminPage() {
   const getCustomerSegments = () => {
     const now = getPeruDate(); // Usar hora de Perú
     const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Obtener primer y último día del mes actual en Perú
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    // Obtener primer y último día del mes pasado en Perú
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
     return {
       all: allCustomers,
 
-      // VIP: Análisis histórico completo - 5+ pedidos O S/ 200+ gastados
-      vip: allCustomers.filter((c: any) => c.totalOrders >= 5 || c.totalSpent >= 200),
+      // VIP: Mejores clientes del mes pasado (5+ pedidos O S/ 200+ gastados en el mes pasado)
+      vip: allCustomers.filter((c: any) => {
+        if (!c.orders || c.orders.length === 0) return false;
+        const lastMonthOrders = c.orders.filter((order: any) => {
+          const orderDate = getPeruDate(order.createdAt);
+          return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
+        });
+        const lastMonthSpent = lastMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+        return lastMonthOrders.length >= 5 || lastMonthSpent >= 200;
+      }),
 
       // NUEVOS: Primer pedido en el mes actual
       new: allCustomers.filter((c: any) => {
@@ -848,17 +859,27 @@ export default function AdminPage() {
           return new Date(order.createdAt) < new Date(earliest.createdAt) ? order : earliest;
         });
         const firstOrderDate = getPeruDate(firstOrder.createdAt);
-        return firstOrderDate >= firstDayOfMonth && firstOrderDate <= lastDayOfMonth;
+        return firstOrderDate >= firstDayOfCurrentMonth && firstOrderDate <= lastDayOfCurrentMonth;
       }),
 
-      // RECURRENTES: Al menos 4 pedidos en los últimos 30 días
+      // ACTIVOS: Al menos un pedido en el mes actual
+      active: allCustomers.filter((c: any) => {
+        if (!c.orders || c.orders.length === 0) return false;
+        const currentMonthOrders = c.orders.filter((order: any) => {
+          const orderDate = getPeruDate(order.createdAt);
+          return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
+        });
+        return currentMonthOrders.length >= 1;
+      }),
+
+      // RECURRENTES: Al menos 4 pedidos en el mes pasado
       recurrent: allCustomers.filter((c: any) => {
         if (!c.orders || c.orders.length < 4) return false;
-        const recentOrders = c.orders.filter((order: any) => {
+        const lastMonthOrders = c.orders.filter((order: any) => {
           const orderDate = getPeruDate(order.createdAt);
-          return orderDate >= thirtyDaysAgo;
+          return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
         });
-        return recentOrders.length >= 4;
+        return lastMonthOrders.length >= 4;
       }),
 
       // INACTIVOS: Más de 15 días sin comprar
@@ -866,6 +887,9 @@ export default function AdminPage() {
         const lastOrder = getPeruDate(c.lastOrderDate);
         return lastOrder < fifteenDaysAgo;
       }),
+
+      // EMAIL PENDIENTE: Clientes sin email registrado
+      email_pending: allCustomers.filter((c: any) => !c.email || c.email.trim() === ""),
     };
   };
 
@@ -1475,6 +1499,16 @@ export default function AdminPage() {
                   ✨ Nuevos ({customerSegments.new.length})
                 </button>
                 <button
+                  onClick={() => setCustomerSegment("active")}
+                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
+                    customerSegment === "active"
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                  }`}
+                >
+                  🟢 Activos ({customerSegments.active.length})
+                </button>
+                <button
                   onClick={() => setCustomerSegment("recurrent")}
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "recurrent"
@@ -1494,25 +1528,16 @@ export default function AdminPage() {
                 >
                   💤 Inactivos ({customerSegments.inactive.length})
                 </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 neon-border-purple">
-                <p className="text-gray-400 text-sm font-semibold">Clientes Mostrados</p>
-                <p className="text-5xl font-black text-white mt-2">{customers.length}</p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold">Total Gastado (Segmento)</p>
-                <p className="text-4xl font-black text-amber-400 mt-2">
-                  S/ {customers.reduce((sum: number, c: any) => sum + c.totalSpent, 0).toFixed(2)}
-                </p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold">Pedidos Promedio</p>
-                <p className="text-5xl font-black text-green-400 mt-2">
-                  {customers.length > 0 ? (customers.reduce((sum: number, c: any) => sum + c.totalOrders, 0) / customers.length).toFixed(1) : 0}
-                </p>
+                <button
+                  onClick={() => setCustomerSegment("email_pending")}
+                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
+                    customerSegment === "email_pending"
+                      ? "bg-orange-600 text-white"
+                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                  }`}
+                >
+                  📧 Email Pendiente ({customerSegments.email_pending.length})
+                </button>
               </div>
             </div>
           </section>
