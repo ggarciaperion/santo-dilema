@@ -1428,16 +1428,6 @@ export default function AdminPage() {
                   👑 VIP ({customerSegments.vip.length})
                 </button>
                 <button
-                  onClick={() => setCustomerSegment("frequent")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "frequent"
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  🔄 Frecuentes ({customerSegments.frequent.length})
-                </button>
-                <button
                   onClick={() => setCustomerSegment("new")}
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "new"
@@ -1466,36 +1456,6 @@ export default function AdminPage() {
                   }`}
                 >
                   💤 Inactivos ({customerSegments.inactive.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("at_risk")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "at_risk"
-                      ? "bg-orange-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  ⚠️ En Riesgo ({customerSegments.at_risk.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("high_value")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "high_value"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  💎 Alto Valor ({customerSegments.high_value.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("low_engagement")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "low_engagement"
-                      ? "bg-gray-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  📉 Bajo Engagement ({customerSegments.low_engagement.length})
                 </button>
               </div>
             </div>
