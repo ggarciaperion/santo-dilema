@@ -66,6 +66,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
+  const [audioContextInitialized, setAudioContextInitialized] = useState(false);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "products" | "inventory" | "marketing">("orders");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -126,6 +128,34 @@ export default function AdminPage() {
     targetSegment: "all"
   });
 
+  // Inicializar AudioContext con interacción del usuario (requerido por navegadores)
+  useEffect(() => {
+    const initAudio = () => {
+      if (!audioContextInitialized) {
+        try {
+          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          setAudioContext(ctx);
+          setAudioContextInitialized(true);
+          console.log("✅ AudioContext inicializado");
+          // Remover listeners después de inicializar
+          document.removeEventListener('click', initAudio);
+          document.removeEventListener('keydown', initAudio);
+        } catch (error) {
+          console.error("Error al inicializar AudioContext:", error);
+        }
+      }
+    };
+
+    // Escuchar clicks o teclas para inicializar el audio
+    document.addEventListener('click', initAudio);
+    document.addEventListener('keydown', initAudio);
+
+    return () => {
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('keydown', initAudio);
+    };
+  }, [audioContextInitialized]);
+
   useEffect(() => {
     loadOrders();
     loadProducts();
@@ -180,28 +210,40 @@ export default function AdminPage() {
   // Función para reproducir sonido de notificación (2+ segundos)
   const playNotificationSound = () => {
     try {
-      // Crear contexto de audio
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Usar el audioContext inicializado o crear uno nuevo
+      let ctx = audioContext;
+      if (!ctx) {
+        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioContext(ctx);
+        setAudioContextInitialized(true);
+      }
+
+      // Resume el contexto si está suspendido (requerido en Chrome/Edge)
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(() => {
+          console.log("🎵 AudioContext resumed");
+        });
+      }
 
       // Función para crear un beep con volumen y duración personalizados
       const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.4) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        const oscillator = ctx!.createOscillator();
+        const gainNode = ctx!.createGain();
 
         oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        gainNode.connect(ctx!.destination);
 
         oscillator.frequency.value = frequency;
         oscillator.type = 'sine';
 
         // Envelope: fade in y fade out suaves
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
-        gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + startTime + 0.05);
-        gainNode.gain.linearRampToValueAtTime(volume * 0.7, audioContext.currentTime + startTime + duration - 0.05);
-        gainNode.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + startTime + duration);
+        gainNode.gain.setValueAtTime(0, ctx!.currentTime + startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx!.currentTime + startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(volume * 0.7, ctx!.currentTime + startTime + duration - 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.001, ctx!.currentTime + startTime + duration);
 
-        oscillator.start(audioContext.currentTime + startTime);
-        oscillator.stop(audioContext.currentTime + startTime + duration);
+        oscillator.start(ctx!.currentTime + startTime);
+        oscillator.stop(ctx!.currentTime + startTime + duration);
       };
 
       // Secuencia de beeps tipo "notificación de pedido" - Duración total: 2.5 segundos
@@ -213,9 +255,9 @@ export default function AdminPage() {
       // Tono de confirmación final (más suave)
       playBeep(784, 1.6, 0.4, 0.3);      // Cuarto tono (Sol, confirmación suave)
 
-      console.log("🔔 Sonido de nuevo pedido reproducido");
+      console.log("🔔 Sonido de nuevo pedido reproducido - Estado del contexto:", ctx.state);
     } catch (error) {
-      console.error("Error al reproducir sonido:", error);
+      console.error("❌ Error al reproducir sonido:", error);
     }
   };
 
