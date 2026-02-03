@@ -177,34 +177,46 @@ export default function AdminPage() {
     }
   };
 
-  // Función para reproducir sonido de notificación
+  // Función para reproducir sonido de notificación (2+ segundos)
   const playNotificationSound = () => {
-    // Crear contexto de audio
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    try {
+      // Crear contexto de audio
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-    // Sonido de notificación agradable (dos tonos)
-    const playBeep = (frequency: number, startTime: number, duration: number) => {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      // Función para crear un beep con volumen y duración personalizados
+      const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.4) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
 
-      oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
 
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
-      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + startTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + startTime + duration);
+        // Envelope: fade in y fade out suaves
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(volume * 0.7, audioContext.currentTime + startTime + duration - 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + startTime + duration);
 
-      oscillator.start(audioContext.currentTime + startTime);
-      oscillator.stop(audioContext.currentTime + startTime + duration);
-    };
+        oscillator.start(audioContext.currentTime + startTime);
+        oscillator.stop(audioContext.currentTime + startTime + duration);
+      };
 
-    // Dos tonos: primero más bajo, luego más alto
-    playBeep(800, 0, 0.2);      // Primer beep
-    playBeep(1000, 0.25, 0.2);  // Segundo beep
-    playBeep(1200, 0.5, 0.3);   // Tercer beep más largo
+      // Secuencia de beeps tipo "notificación de pedido" - Duración total: 2.5 segundos
+      // Patrón: BEEP-BEEP-BEEEEP (ding-ding-dooong)
+      playBeep(880, 0, 0.3, 0.5);        // Primer tono (La alto)
+      playBeep(880, 0.35, 0.3, 0.5);     // Segundo tono (repetición)
+      playBeep(1047, 0.75, 0.8, 0.6);    // Tercer tono largo (Do más alto y sostenido)
+
+      // Tono de confirmación final (más suave)
+      playBeep(784, 1.6, 0.4, 0.3);      // Cuarto tono (Sol, confirmación suave)
+
+      console.log("🔔 Sonido de nuevo pedido reproducido");
+    } catch (error) {
+      console.error("Error al reproducir sonido:", error);
+    }
   };
 
   const loadProducts = async () => {
