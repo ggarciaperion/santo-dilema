@@ -958,11 +958,11 @@ export default function AdminPage() {
                   <div className="flex-shrink-0 w-48 bg-gray-800 rounded px-3 py-2">
                     <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">👤 Cliente</h4>
                     <p className="text-xs font-bold text-white mb-1 truncate">{order.name}</p>
-                    <p className="text-[10px] text-gray-300 flex items-center gap-1 mb-1">
+                    <p className="text-xs font-bold text-white flex items-center gap-1 mb-1">
                       <span>📱</span>
                       <span className="font-mono">{order.phone}</span>
                     </p>
-                    <p className="text-[10px] text-gray-300 flex items-start gap-1">
+                    <p className="text-xs font-bold text-white flex items-start gap-1">
                       <span>📍</span>
                       <span className="line-clamp-2">{order.address}</span>
                     </p>
@@ -1003,9 +1003,14 @@ export default function AdminPage() {
                       <div>
                         <p className="text-sm font-black text-white">EFECTIVO</p>
                         {(order as any).cantoCancelo && (
-                          <p className="text-[10px] text-white/90 font-bold">
-                            Vuelto: S/ {(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
-                          </p>
+                          <>
+                            <p className="text-[10px] text-white/90 font-bold">
+                              Cancela con: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}
+                            </p>
+                            <p className="text-[10px] text-white/90 font-bold">
+                              Vuelto: S/ {(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
+                            </p>
+                          </>
                         )}
                       </div>
                     ) : (
