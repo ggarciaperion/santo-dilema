@@ -989,21 +989,57 @@ export default function AdminPage() {
                     </div>
 
                     {/* Total y método de pago */}
-                    <div className="pt-2 border-t-2 border-fuchsia-500/30 space-y-1">
+                    <div className="pt-2 border-t-2 border-fuchsia-500/30 space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-bold text-fuchsia-400">TOTAL</span>
                         <span className="text-xl font-black text-cyan-400">
                           S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-[10px] text-gray-400">
+                      <div className="text-[10px] text-gray-400">
                         <span>{order.totalItems || 0} item{(order.totalItems || 0) !== 1 ? 's' : ''}</span>
-                        {order.paymentMethod && (
-                          <span className="text-white font-semibold">
-                            {order.paymentMethod === 'anticipado' ? '💳 Pago Anticipado' : '💵 Contra Entrega'}
-                          </span>
-                        )}
                       </div>
+
+                      {/* Detalles del método de pago */}
+                      {order.paymentMethod && (
+                        <div className="bg-gray-800/50 rounded p-2 border border-gray-700">
+                          <p className="text-[10px] text-gray-400 mb-1">Método de Pago</p>
+                          {order.paymentMethod === 'anticipado' ? (
+                            <div className="space-y-0.5">
+                              <p className="text-white font-bold text-xs">💳 Pago Anticipado</p>
+                              <p className="text-cyan-400 text-[10px]">✓ Yape/Plin (Pagado)</p>
+                            </div>
+                          ) : order.paymentMethod === 'contraentrega-yape-plin' ? (
+                            <div className="space-y-0.5">
+                              <p className="text-white font-bold text-xs">🏍️ Contra Entrega</p>
+                              <p className="text-yellow-400 text-[10px]">📱 Yape o Plin al recibir</p>
+                            </div>
+                          ) : order.paymentMethod === 'contraentrega-efectivo-exacto' ? (
+                            <div className="space-y-0.5">
+                              <p className="text-white font-bold text-xs">🏍️ Contra Entrega</p>
+                              <p className="text-green-400 text-[10px]">💵 Efectivo EXACTO</p>
+                              <p className="text-gray-400 text-[10px]">Cliente paga: S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}</p>
+                            </div>
+                          ) : order.paymentMethod === 'contraentrega-efectivo-cambio' ? (
+                            <div className="space-y-0.5">
+                              <p className="text-white font-bold text-xs">🏍️ Contra Entrega</p>
+                              <p className="text-amber-400 text-[10px]">💵 Efectivo (Necesita cambio)</p>
+                              {(order as any).cantoCancelo && (
+                                <>
+                                  <p className="text-white text-[10px]">Cliente paga con: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}</p>
+                                  <p className="text-cyan-400 text-[10px] font-bold">
+                                    Devolver: S/ {(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-white font-semibold text-xs">
+                              {order.paymentMethod === 'contraentrega' ? '🏍️ Contra Entrega' : order.paymentMethod}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 

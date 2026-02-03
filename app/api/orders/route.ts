@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     const totalItems = parseInt(formData.get('totalItems') as string);
     const totalPrice = parseFloat(formData.get('totalPrice') as string);
     const paymentMethod = formData.get('paymentMethod') as string;
+    const cantoCancelo = formData.get('cantoCancelo') as string | null;
     const timestamp = formData.get('timestamp') as string;
     const paymentProof = formData.get('paymentProof') as File | null;
 
@@ -96,6 +97,7 @@ export async function POST(request: Request) {
       totalItems,
       totalPrice,
       paymentMethod,
+      cantoCancelo: cantoCancelo || undefined,
       paymentProofPath,
       timestamp,
       status,
