@@ -894,32 +894,37 @@ export default function AdminPage() {
             {filteredOrders.map((order) => (
               <div
                 key={order.id}
-                className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 hover:border-fuchsia-500 transition-all p-6"
+                className="bg-gray-900 rounded-lg border border-fuchsia-500/30 hover:border-fuchsia-500 transition-all p-3"
               >
-                <div className="flex justify-between items-start mb-4">
+                {/* Header compacto */}
+                <div className="flex justify-between items-start mb-2">
                   <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-2xl font-bold text-white">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-white">
                         {order.name}
                       </h3>
                       <span
-                        className={`px-4 py-1 rounded-full text-sm font-bold border-2 ${
+                        className={`px-2 py-0.5 rounded text-xs font-bold ${
                           statusColors[order.status]
                         }`}
                       >
                         {statusLabels[order.status]}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400">
-                      Pedido #{order.id} -{" "}
-                      {new Date(order.createdAt).toLocaleString("es-PE")}
+                    <p className="text-xs text-gray-400">
+                      #{order.id} • {new Date(order.createdAt).toLocaleString("es-PE", {
+                        day: '2-digit',
+                        month: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1">
                     {order.status === "pending" && (
                       <button
                         onClick={() => updateOrderStatus(order.id, "confirmed")}
-                        className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105"
+                        className="bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-1 rounded text-xs font-bold transition-all"
                       >
                         Confirmar
                       </button>
@@ -927,15 +932,15 @@ export default function AdminPage() {
                     {order.status === "confirmed" && (
                       <button
                         onClick={() => updateOrderStatus(order.id, "delivered")}
-                        className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105"
+                        className="bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded text-xs font-bold transition-all"
                       >
-                        Marcar Entregado
+                        Entregado
                       </button>
                     )}
                     {(order.status === "pending" || order.status === "confirmed") && (
                       <button
                         onClick={() => updateOrderStatus(order.id, "cancelled")}
-                        className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105"
+                        className="bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded text-xs font-bold transition-all"
                       >
                         Cancelar
                       </button>
@@ -943,91 +948,69 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* Info del cliente - compacto */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 text-xs">
                   <div>
-                    <p className="text-sm font-bold text-fuchsia-400 mb-1">
-                      Teléfono
-                    </p>
-                    <p className="text-white">{order.phone}</p>
+                    <p className="text-gray-400">📱 Teléfono</p>
+                    <p className="text-white font-semibold">{order.phone}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-gray-400">📍 Dirección</p>
+                    <p className="text-white font-semibold">{order.address}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-fuchsia-400 mb-1">
-                      Dirección
-                    </p>
-                    <p className="text-white">{order.address}</p>
+                    <p className="text-gray-400">🆔 DNI</p>
+                    <p className="text-white font-semibold">{order.dni || '-'}</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-fuchsia-400 mb-1">
-                      DNI
-                    </p>
-                    <p className="text-white">{order.dni || 'No registrado'}</p>
-                  </div>
-                  {order.email && (
-                    <div>
-                      <p className="text-sm font-bold text-fuchsia-400 mb-1">
-                        Email
-                      </p>
-                      <p className="text-white">{order.email}</p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Detalles del pedido con precios */}
-                <div className="bg-black/50 rounded-lg border border-fuchsia-500/20 p-4 mb-4">
-                  <p className="text-sm font-bold text-fuchsia-400 mb-3">
-                    📋 Detalle del Pedido
-                  </p>
-                  <div className="space-y-2">
+                {/* Detalles del pedido - MUY compacto */}
+                <div className="bg-black/30 rounded border border-fuchsia-500/20 p-2">
+                  <p className="text-xs font-bold text-fuchsia-400 mb-1.5">📋 Productos</p>
+                  <div className="space-y-1">
                     {order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
-                      order.cart.map((item: any, idx: number) => (
-                        <div key={idx} className="flex justify-between items-start border-b border-gray-700 pb-2 last:border-b-0">
-                          <div className="flex-1">
-                            <p className="text-white font-semibold">{item.name || 'Producto sin nombre'}</p>
-                            <p className="text-xs text-gray-400">Cantidad: {item.quantity || 0}</p>
+                      order.cart.map((item: any, idx: number) => {
+                        // Obtener nombre y precio desde item.product si existe, sino directamente desde item
+                        const productName = item.product?.name || item.name || 'Producto sin nombre';
+                        const productPrice = item.product?.price || item.price || 0;
+                        const quantity = item.quantity || 0;
+                        const subtotal = productPrice * quantity;
+
+                        return (
+                          <div key={idx} className="flex justify-between items-center text-xs border-b border-gray-700/50 pb-1 last:border-b-0">
+                            <div className="flex-1">
+                              <span className="text-white font-medium">{productName}</span>
+                              <span className="text-gray-400 ml-1">x{quantity}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-white font-bold">S/ {subtotal.toFixed(2)}</span>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-white font-bold">
-                              S/ {((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                            </p>
-                            <p className="text-xs text-gray-400">S/ {(item.price || 0).toFixed(2)} c/u</p>
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
-                      <p className="text-gray-400 text-sm">No hay productos en este pedido</p>
+                      <p className="text-gray-400 text-xs">Sin productos</p>
                     )}
                   </div>
-                  <div className="mt-4 pt-3 border-t-2 border-fuchsia-500/30">
-                    <div className="flex justify-between items-center">
-                      <p className="text-lg font-bold text-fuchsia-400">TOTAL</p>
-                      <p className="text-2xl font-black text-cyan-400">
+
+                  {/* Total */}
+                  <div className="mt-2 pt-2 border-t border-fuchsia-500/30 flex justify-between items-center">
+                    <span className="text-sm font-bold text-fuchsia-400">TOTAL</span>
+                    <div className="text-right">
+                      <p className="text-lg font-black text-cyan-400">
                         S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
                       </p>
-                    </div>
-                    <p className="text-xs text-gray-400 text-right mt-1">
-                      {order.totalItems || 0} {(order.totalItems || 0) === 1 ? 'producto' : 'productos'}
-                    </p>
-                  </div>
-                  {order.paymentMethod && (
-                    <div className="mt-3 pt-3 border-t border-gray-700">
-                      <p className="text-xs text-gray-400">Método de pago</p>
-                      <p className="text-white font-semibold">
-                        {order.paymentMethod === 'anticipado' ? '💳 Pago Anticipado' :
-                         order.paymentMethod === 'contraentrega' ? '💵 Contra Entrega' :
-                         order.paymentMethod}
+                      <p className="text-[10px] text-gray-400">
+                        {order.totalItems || 0} item{(order.totalItems || 0) !== 1 ? 's' : ''}
+                        {order.paymentMethod && ` • ${order.paymentMethod === 'anticipado' ? '💳 Anticipado' : '💵 Contraentrega'}`}
                       </p>
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {order.notes && (
-                  <div>
-                    <p className="text-sm font-bold text-fuchsia-400 mb-1">
-                      📝 Notas
-                    </p>
-                    <p className="text-white bg-black/50 p-3 rounded-lg border border-fuchsia-500/20">
-                      {order.notes}
-                    </p>
+                  <div className="mt-2">
+                    <p className="text-xs font-bold text-gray-400">📝 {order.notes}</p>
                   </div>
                 )}
               </div>
