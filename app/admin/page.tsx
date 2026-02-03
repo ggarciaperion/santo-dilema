@@ -140,8 +140,7 @@ export default function AdminPage() {
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [isDateFiltered, setIsDateFiltered] = useState(false);
-  const [dateFilterType, setDateFilterType] = useState<"today" | "month" | "year" | "custom">("today");
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [customerSegment, setCustomerSegment] = useState<string>("all");
   const [inventory, setInventory] = useState<any[]>([]);
@@ -465,54 +464,26 @@ export default function AdminPage() {
     }
   };
 
-  // Funciones para manejar filtros de fecha
-  const handleDateFilter = (type: "today" | "month" | "year" | "custom") => {
-    setDateFilterType(type);
-    const now = getPeruDate();
-
-    if (type === "today") {
-      setIsDateFiltered(false);
-      setShowDatePicker(false);
-    } else if (type === "month") {
-      // Primer día del mes actual
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      // Último día del mes actual
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-      setDateFrom(firstDay.toISOString().split('T')[0]);
-      setDateTo(lastDay.toISOString().split('T')[0]);
-      setIsDateFiltered(true);
-      setShowDatePicker(false);
-    } else if (type === "year") {
-      // Primer día del año
-      const firstDay = new Date(now.getFullYear(), 0, 1);
-      // Último día del año
-      const lastDay = new Date(now.getFullYear(), 11, 31);
-
-      setDateFrom(firstDay.toISOString().split('T')[0]);
-      setDateTo(lastDay.toISOString().split('T')[0]);
-      setIsDateFiltered(true);
-      setShowDatePicker(false);
-    } else if (type === "custom") {
-      setShowDatePicker(true);
-    }
-  };
-
-  const applyCustomDateFilter = () => {
+  // Función para aplicar filtro de fechas
+  const applyDateFilter = () => {
     if (dateFrom && dateTo) {
       setIsDateFiltered(true);
-      setShowDatePicker(false);
+      setShowDateModal(false);
     }
   };
 
-  // Filtrar pedidos según el tipo de filtro de fecha
+  const clearDateFilter = () => {
+    setDateFrom("");
+    setDateTo("");
+    setIsDateFiltered(false);
+    setShowDateModal(false);
+  };
+
+  // Filtrar pedidos según el filtro de fecha
   let dateFilteredOrders = orders;
 
-  if (dateFilterType === "today") {
-    // Solo pedidos de hoy
-    dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
-  } else if (isDateFiltered && dateFrom && dateTo) {
-    // Filtro por rango de fechas (mes, año o personalizado)
+  if (isDateFiltered && dateFrom && dateTo) {
+    // Filtro por rango de fechas personalizado
     dateFilteredOrders = orders.filter((order) => {
       const orderDate = getPeruDate(order.createdAt);
       const fromDate = getPeruDate(dateFrom);
@@ -521,6 +492,9 @@ export default function AdminPage() {
 
       return orderDate >= fromDate && orderDate <= toDate;
     });
+  } else {
+    // Por defecto, solo pedidos de hoy
+    dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
   }
 
   // Filtrar pedidos por estado y búsqueda
@@ -541,9 +515,6 @@ export default function AdminPage() {
 
     return statusMatch && searchMatch;
   });
-
-  // Obtener pedidos de hoy para las estadísticas (siempre mostrar stats del día actual)
-  const todayOrdersPeru = orders.filter((order) => isSameDayPeru(order.createdAt));
 
   const statusColors = {
     pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500",
@@ -1055,125 +1026,31 @@ export default function AdminPage() {
           <section className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 neon-border-purple">
-                <p className="text-gray-400 text-sm font-semibold">Total Pedidos (Hoy)</p>
-                <p className="text-5xl font-black text-white mt-2">{todayOrdersPeru.length}</p>
+                <p className="text-gray-400 text-sm font-semibold">
+                  Total Pedidos {isDateFiltered ? "(Filtrado)" : "(Hoy)"}
+                </p>
+                <p className="text-5xl font-black text-white mt-2">{dateFilteredOrders.length}</p>
               </div>
               <div className="bg-gray-900 rounded-xl border-2 border-yellow-500/50 p-6">
                 <p className="text-yellow-400 text-sm font-bold">Pendientes</p>
                 <p className="text-5xl font-black text-yellow-400 mt-2">
-                  {todayOrdersPeru.filter((o) => o.status === "pending").length}
+                  {dateFilteredOrders.filter((o) => o.status === "pending").length}
                 </p>
               </div>
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
                 <p className="text-cyan-400 text-sm font-bold">Confirmados</p>
                 <p className="text-5xl font-black text-cyan-400 mt-2">
-                  {todayOrdersPeru.filter((o) => o.status === "confirmed").length}
+                  {dateFilteredOrders.filter((o) => o.status === "confirmed").length}
                 </p>
               </div>
               <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
                 <p className="text-green-400 text-sm font-bold">Entregados</p>
                 <p className="text-5xl font-black text-green-400 mt-2">
-                  {todayOrdersPeru.filter((o) => o.status === "delivered").length}
+                  {dateFilteredOrders.filter((o) => o.status === "delivered").length}
                 </p>
               </div>
             </div>
           </section>
-
-      {/* Filtro de Fechas */}
-      <section className="container mx-auto px-4 pb-4">
-        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
-          <div className="flex flex-col gap-3">
-            {/* Botones de filtro de fecha */}
-            <div className="flex gap-2 flex-wrap items-center">
-              <span className="text-gray-400 text-sm font-semibold mr-2">📅 Período:</span>
-              <button
-                onClick={() => handleDateFilter("today")}
-                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                  dateFilterType === "today"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                }`}
-              >
-                Hoy
-              </button>
-              <button
-                onClick={() => handleDateFilter("month")}
-                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                  dateFilterType === "month"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                }`}
-              >
-                Este Mes
-              </button>
-              <button
-                onClick={() => handleDateFilter("year")}
-                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                  dateFilterType === "year"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                }`}
-              >
-                Este Año
-              </button>
-              <button
-                onClick={() => handleDateFilter("custom")}
-                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                  dateFilterType === "custom"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                }`}
-              >
-                Personalizado
-              </button>
-            </div>
-
-            {/* Selector de rango personalizado */}
-            {showDatePicker && (
-              <div className="flex gap-3 flex-wrap items-center bg-gray-800/50 p-3 rounded-lg border border-gray-700">
-                <div className="flex gap-2 items-center">
-                  <label className="text-gray-400 text-sm font-semibold">Desde:</label>
-                  <input
-                    type="date"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                    className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label className="text-gray-400 text-sm font-semibold">Hasta:</label>
-                  <input
-                    type="date"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
-                    className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <button
-                  onClick={applyCustomDateFilter}
-                  disabled={!dateFrom || !dateTo}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-all"
-                >
-                  Aplicar
-                </button>
-                <button
-                  onClick={() => setShowDatePicker(false)}
-                  className="px-4 py-2 bg-gray-700 text-white rounded-lg font-bold text-sm hover:bg-gray-600 transition-all"
-                >
-                  Cancelar
-                </button>
-              </div>
-            )}
-
-            {/* Indicador de rango activo */}
-            {isDateFiltered && dateFrom && dateTo && (
-              <div className="text-sm text-gray-400">
-                📊 Mostrando pedidos desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* Filters - Estado de pedidos */}
       <section className="container mx-auto px-4 pb-6">
@@ -1222,8 +1099,21 @@ export default function AdminPage() {
             </button>
           </div>
 
-          {/* Buscador en tiempo real */}
-          <div className="relative">
+          {/* Botón de calendario y buscador */}
+          <div className="flex gap-2 items-center">
+            {/* Botón de calendario */}
+            <button
+              onClick={() => setShowDateModal(true)}
+              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
+              title="Filtrar por fechas"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+
+            {/* Buscador en tiempo real */}
+            <div className="relative">
             <input
               type="text"
               value={searchTerm}
@@ -1254,9 +1144,73 @@ export default function AdminPage() {
                 </svg>
               </button>
             )}
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Modal de filtro de fechas */}
+      {showDateModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowDateModal(false)}>
+          <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full mx-4 border-2 border-gray-700" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-black text-white mb-4">Filtrar por Fechas</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-gray-400 text-sm font-semibold block mb-2">Desde:</label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-gray-400 text-sm font-semibold block mb-2">Hasta:</label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={applyDateFilter}
+                  disabled={!dateFrom || !dateTo}
+                  className="flex-1 px-6 py-3 bg-fuchsia-600 text-white rounded-lg font-bold hover:bg-fuchsia-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-all"
+                >
+                  Aplicar Filtro
+                </button>
+                {isDateFiltered && (
+                  <button
+                    onClick={clearDateFilter}
+                    className="px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all"
+                  >
+                    Limpiar
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowDateModal(false)}
+                  className="px-6 py-3 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition-all"
+                >
+                  Cerrar
+                </button>
+              </div>
+
+              {isDateFiltered && dateFrom && dateTo && (
+                <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
+                  <p className="text-sm text-gray-400">
+                    📊 Filtrando desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Orders List */}
       <section className="container mx-auto px-4 pb-12">
