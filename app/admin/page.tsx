@@ -140,6 +140,8 @@ export default function AdminPage() {
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [isDateFiltered, setIsDateFiltered] = useState(false);
+  const [dateFilterType, setDateFilterType] = useState<"today" | "month" | "year" | "custom">("today");
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [customerSegment, setCustomerSegment] = useState<string>("all");
   const [inventory, setInventory] = useState<any[]>([]);
@@ -463,11 +465,66 @@ export default function AdminPage() {
     }
   };
 
-  // Obtener solo pedidos del día actual (en hora de Perú)
-  const todayOrdersPeru = orders.filter((order) => isSameDayPeru(order.createdAt));
+  // Funciones para manejar filtros de fecha
+  const handleDateFilter = (type: "today" | "month" | "year" | "custom") => {
+    setDateFilterType(type);
+    const now = getPeruDate();
 
-  // Filtrar pedidos por fecha, estado y búsqueda
-  const filteredOrders = todayOrdersPeru.filter((order) => {
+    if (type === "today") {
+      setIsDateFiltered(false);
+      setShowDatePicker(false);
+    } else if (type === "month") {
+      // Primer día del mes actual
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      // Último día del mes actual
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      setDateFrom(firstDay.toISOString().split('T')[0]);
+      setDateTo(lastDay.toISOString().split('T')[0]);
+      setIsDateFiltered(true);
+      setShowDatePicker(false);
+    } else if (type === "year") {
+      // Primer día del año
+      const firstDay = new Date(now.getFullYear(), 0, 1);
+      // Último día del año
+      const lastDay = new Date(now.getFullYear(), 11, 31);
+
+      setDateFrom(firstDay.toISOString().split('T')[0]);
+      setDateTo(lastDay.toISOString().split('T')[0]);
+      setIsDateFiltered(true);
+      setShowDatePicker(false);
+    } else if (type === "custom") {
+      setShowDatePicker(true);
+    }
+  };
+
+  const applyCustomDateFilter = () => {
+    if (dateFrom && dateTo) {
+      setIsDateFiltered(true);
+      setShowDatePicker(false);
+    }
+  };
+
+  // Filtrar pedidos según el tipo de filtro de fecha
+  let dateFilteredOrders = orders;
+
+  if (dateFilterType === "today") {
+    // Solo pedidos de hoy
+    dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
+  } else if (isDateFiltered && dateFrom && dateTo) {
+    // Filtro por rango de fechas (mes, año o personalizado)
+    dateFilteredOrders = orders.filter((order) => {
+      const orderDate = getPeruDate(order.createdAt);
+      const fromDate = getPeruDate(dateFrom);
+      const toDate = getPeruDate(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+
+      return orderDate >= fromDate && orderDate <= toDate;
+    });
+  }
+
+  // Filtrar pedidos por estado y búsqueda
+  const filteredOrders = dateFilteredOrders.filter((order) => {
     // Filtro por estado
     const statusMatch = filter === "all" || order.status === filter;
 
@@ -482,19 +539,11 @@ export default function AdminPage() {
         return productName.toLowerCase().includes(searchTerm.toLowerCase());
       }));
 
-    // Si hay filtro de rango de fechas, usarlo
-    if (isDateFiltered && dateFrom && dateTo) {
-      const orderDate = getPeruDate(order.createdAt);
-      const fromDate = getPeruDate(dateFrom);
-      const toDate = getPeruDate(dateTo);
-      toDate.setHours(23, 59, 59, 999); // Incluir todo el día final
-
-      return statusMatch && searchMatch && orderDate >= fromDate && orderDate <= toDate;
-    }
-
-    // Por defecto, aplicar filtros de estado y búsqueda
     return statusMatch && searchMatch;
   });
+
+  // Obtener pedidos de hoy para las estadísticas (siempre mostrar stats del día actual)
+  const todayOrdersPeru = orders.filter((order) => isSameDayPeru(order.createdAt));
 
   const statusColors = {
     pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500",
@@ -1030,7 +1079,103 @@ export default function AdminPage() {
             </div>
           </section>
 
-      {/* Filters - Solo pedidos de HOY */}
+      {/* Filtro de Fechas */}
+      <section className="container mx-auto px-4 pb-4">
+        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+          <div className="flex flex-col gap-3">
+            {/* Botones de filtro de fecha */}
+            <div className="flex gap-2 flex-wrap items-center">
+              <span className="text-gray-400 text-sm font-semibold mr-2">📅 Período:</span>
+              <button
+                onClick={() => handleDateFilter("today")}
+                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                  dateFilterType === "today"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                }`}
+              >
+                Hoy
+              </button>
+              <button
+                onClick={() => handleDateFilter("month")}
+                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                  dateFilterType === "month"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                }`}
+              >
+                Este Mes
+              </button>
+              <button
+                onClick={() => handleDateFilter("year")}
+                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                  dateFilterType === "year"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                }`}
+              >
+                Este Año
+              </button>
+              <button
+                onClick={() => handleDateFilter("custom")}
+                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                  dateFilterType === "custom"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                }`}
+              >
+                Personalizado
+              </button>
+            </div>
+
+            {/* Selector de rango personalizado */}
+            {showDatePicker && (
+              <div className="flex gap-3 flex-wrap items-center bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                <div className="flex gap-2 items-center">
+                  <label className="text-gray-400 text-sm font-semibold">Desde:</label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div className="flex gap-2 items-center">
+                  <label className="text-gray-400 text-sm font-semibold">Hasta:</label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <button
+                  onClick={applyCustomDateFilter}
+                  disabled={!dateFrom || !dateTo}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-all"
+                >
+                  Aplicar
+                </button>
+                <button
+                  onClick={() => setShowDatePicker(false)}
+                  className="px-4 py-2 bg-gray-700 text-white rounded-lg font-bold text-sm hover:bg-gray-600 transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
+
+            {/* Indicador de rango activo */}
+            {isDateFiltered && dateFrom && dateTo && (
+              <div className="text-sm text-gray-400">
+                📊 Mostrando pedidos desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Filters - Estado de pedidos */}
       <section className="container mx-auto px-4 pb-6">
         <div className="flex gap-3 flex-wrap items-center justify-between">
           {/* Botones de filtro */}
@@ -1043,7 +1188,7 @@ export default function AdminPage() {
                   : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
               }`}
             >
-              Todos ({todayOrdersPeru.length})
+              Todos ({dateFilteredOrders.length})
             </button>
             <button
               onClick={() => setFilter("pending")}
@@ -1053,7 +1198,7 @@ export default function AdminPage() {
                   : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
               }`}
             >
-              Pendientes ({todayOrdersPeru.filter((o) => o.status === "pending").length})
+              Pendientes ({dateFilteredOrders.filter((o) => o.status === "pending").length})
             </button>
             <button
               onClick={() => setFilter("confirmed")}
@@ -1063,7 +1208,7 @@ export default function AdminPage() {
                   : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
               }`}
             >
-              Confirmados ({todayOrdersPeru.filter((o) => o.status === "confirmed").length})
+              Confirmados ({dateFilteredOrders.filter((o) => o.status === "confirmed").length})
             </button>
             <button
               onClick={() => setFilter("delivered")}
@@ -1073,7 +1218,7 @@ export default function AdminPage() {
                   : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
               }`}
             >
-              Entregados ({todayOrdersPeru.filter((o) => o.status === "delivered").length})
+              Entregados ({dateFilteredOrders.filter((o) => o.status === "delivered").length})
             </button>
           </div>
 
