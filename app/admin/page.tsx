@@ -131,6 +131,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filter, setFilter] = useState<string>("all");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -496,8 +497,11 @@ export default function AdminPage() {
     dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
   }
 
-  // Filtrar pedidos por búsqueda
+  // Filtrar pedidos por estado y búsqueda
   const filteredOrders = dateFilteredOrders.filter((order) => {
+    // Filtro por estado
+    const statusMatch = filter === "all" || order.status === filter;
+
     // Filtro de búsqueda en tiempo real
     const searchMatch = searchTerm === "" ||
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -509,7 +513,7 @@ export default function AdminPage() {
         return productName.toLowerCase().includes(searchTerm.toLowerCase());
       }));
 
-    return searchMatch;
+    return statusMatch && searchMatch;
   });
 
   const statusColors = {
@@ -1021,30 +1025,58 @@ export default function AdminPage() {
           {/* Stats - Solo pedidos de HOY en hora de Perú */}
           <section className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 neon-border-purple">
-                <p className="text-gray-400 text-sm font-semibold">
+              <button
+                onClick={() => setFilter("all")}
+                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                  filter === "all"
+                    ? "border-fuchsia-500 neon-border-purple shadow-xl"
+                    : "border-fuchsia-500/30 hover:border-fuchsia-500/60"
+                }`}
+              >
+                <p className="text-gray-400 text-sm font-semibold text-left">
                   Total Pedidos {isDateFiltered ? "(Filtrado)" : "(Hoy)"}
                 </p>
-                <p className="text-5xl font-black text-white mt-2">{dateFilteredOrders.length}</p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-yellow-500/50 p-6">
-                <p className="text-yellow-400 text-sm font-bold">Pendientes</p>
-                <p className="text-5xl font-black text-yellow-400 mt-2">
+                <p className="text-5xl font-black text-white mt-2 text-left">{dateFilteredOrders.length}</p>
+              </button>
+              <button
+                onClick={() => setFilter("pending")}
+                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                  filter === "pending"
+                    ? "border-yellow-500 shadow-xl shadow-yellow-500/50"
+                    : "border-yellow-500/50 hover:border-yellow-500"
+                }`}
+              >
+                <p className="text-yellow-400 text-sm font-bold text-left">Pendientes</p>
+                <p className="text-5xl font-black text-yellow-400 mt-2 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "pending").length}
                 </p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                <p className="text-cyan-400 text-sm font-bold">Confirmados</p>
-                <p className="text-5xl font-black text-cyan-400 mt-2">
+              </button>
+              <button
+                onClick={() => setFilter("confirmed")}
+                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                  filter === "confirmed"
+                    ? "border-cyan-500 shadow-xl shadow-cyan-500/50"
+                    : "border-cyan-500/50 hover:border-cyan-500"
+                }`}
+              >
+                <p className="text-cyan-400 text-sm font-bold text-left">Confirmados</p>
+                <p className="text-5xl font-black text-cyan-400 mt-2 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "confirmed").length}
                 </p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold">Entregados</p>
-                <p className="text-5xl font-black text-green-400 mt-2">
+              </button>
+              <button
+                onClick={() => setFilter("delivered")}
+                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                  filter === "delivered"
+                    ? "border-green-500 shadow-xl shadow-green-500/50"
+                    : "border-green-500/50 hover:border-green-500"
+                }`}
+              >
+                <p className="text-green-400 text-sm font-bold text-left">Entregados</p>
+                <p className="text-5xl font-black text-green-400 mt-2 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "delivered").length}
                 </p>
-              </div>
+              </button>
             </div>
           </section>
 
