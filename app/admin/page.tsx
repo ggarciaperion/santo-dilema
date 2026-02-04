@@ -3993,12 +3993,8 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Inventory Modal */}
-          {(() => {
-            console.log('🔍 Estado showInventoryModal:', showInventoryModal);
-            if (!showInventoryModal) return null;
-            console.log('🟢 Renderizando modal de inventario');
-            return (
+          {/* Inventory Modal REMOVED - Now at the bottom outside tab conditionals */}
+          {false && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
                 <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
@@ -4456,8 +4452,7 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-            );
-          })()}
+          )}
         </>
       ) : activeTab === "marketing" ? (
         /* Marketing Tab */
@@ -4887,6 +4882,27 @@ export default function AdminPage() {
           )}
         </>
       ) : null}
+
+      {/* Inventory Modal - MOVED OUTSIDE TAB CONDITIONALS */}
+      {(() => {
+        console.log('🔍 Estado showInventoryModal:', showInventoryModal);
+        if (!showInventoryModal) return null;
+        console.log('🟢 Renderizando modal de inventario');
+        return showInventoryModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
+              <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
+              <p className="text-sm text-amber-400 mb-4">MODAL MOVIDO FUERA DE TABS - DEBERÍA FUNCIONAR AHORA</p>
+              <button
+                onClick={() => setShowInventoryModal(false)}
+                className="bg-red-600 text-white px-4 py-2 rounded"
+              >
+                Cerrar (Temporal)
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
