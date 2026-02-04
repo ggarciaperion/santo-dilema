@@ -137,7 +137,8 @@ export default function AdminPage() {
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "products" | "inventory" | "marketing" | "dailyclose">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing">("orders");
+  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock">("dashboard");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
@@ -1371,24 +1372,14 @@ export default function AdminPage() {
             📊 Analytics & CRM
           </button>
           <button
-            onClick={() => setActiveTab("products")}
+            onClick={() => setActiveTab("financial")}
             className={`px-6 py-3 font-bold transition-all ${
-              activeTab === "products"
+              activeTab === "financial"
                 ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            📋 Ordenes
-          </button>
-          <button
-            onClick={() => setActiveTab("inventory")}
-            className={`px-6 py-3 font-bold transition-all ${
-              activeTab === "inventory"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            📦 Inventario
+            💰 Financiero
           </button>
           <button
             onClick={() => setActiveTab("marketing")}
@@ -1399,16 +1390,6 @@ export default function AdminPage() {
             }`}
           >
             🎯 Marketing
-          </button>
-          <button
-            onClick={() => setActiveTab("dailyclose")}
-            className={`px-6 py-3 font-bold transition-all ${
-              activeTab === "dailyclose"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            💰 Cierre Diario
           </button>
         </div>
       </section>
@@ -2362,12 +2343,150 @@ export default function AdminPage() {
             </div>
           </section>
         </>
-      ) : activeTab === "products" ? (
-        /* Products Tab */
+      ) : activeTab === "financial" ? (
+        /* Financial Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple">Gestión de Ordenes (Carta de Menú)</h2>
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">💰 Módulo Financiero</h2>
+
+            {/* Sub-tabs del Módulo Financiero */}
+            <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
+              <button
+                onClick={() => setFinancialSection("dashboard")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  financialSection === "dashboard"
+                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                📊 Dashboard
+              </button>
+              <button
+                onClick={() => setFinancialSection("purchases")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  financialSection === "purchases"
+                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                🛒 Compras y Gastos
+              </button>
+              <button
+                onClick={() => setFinancialSection("products")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  financialSection === "products"
+                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                🍗 Productos de Venta
+              </button>
+              <button
+                onClick={() => setFinancialSection("stock")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  financialSection === "stock"
+                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                📦 Stock de Empaques
+              </button>
+            </div>
+
+            {/* DASHBOARD FINANCIERO */}
+            {financialSection === "dashboard" && (
+              <div>
+                <h3 className="text-2xl font-black text-cyan-400 mb-6">📊 Resumen Financiero del Mes</h3>
+
+                {(() => {
+                  // Calcular métricas financieras del mes actual
+                  const now = new Date();
+                  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+                  // Filtrar pedidos del mes actual entregados
+                  const monthOrders = orders.filter((order: any) => {
+                    const orderDate = new Date(order.createdAt);
+                    const orderMonth = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+                    return orderMonth === currentMonth && order.status === 'delivered';
+                  });
+
+                  // Calcular ingresos
+                  const ingresos = monthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+
+                  // Calcular egresos (compras + gastos del mes)
+                  const monthPurchases = inventory.filter((purchase: any) => {
+                    const purchaseDate = new Date(purchase.purchaseDate);
+                    const purchaseMonth = `${purchaseDate.getFullYear()}-${String(purchaseDate.getMonth() + 1).padStart(2, '0')}`;
+                    return purchaseMonth === currentMonth;
+                  });
+
+                  const egresos = monthPurchases.reduce((sum: number, purchase: any) => sum + (purchase.totalAmount || 0), 0);
+
+                  // Calcular utilidad
+                  const utilidad = ingresos - egresos;
+
+                  // Calcular margen
+                  const margen = ingresos > 0 ? ((utilidad / ingresos) * 100) : 0;
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      {/* Ingresos */}
+                      <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl border-2 border-green-500/50 p-6">
+                        <p className="text-green-400 text-sm font-bold mb-2">💵 INGRESOS DEL MES</p>
+                        <p className="text-5xl font-black text-green-400">S/ {ingresos.toFixed(2)}</p>
+                        <p className="text-xs text-gray-400 mt-2">{monthOrders.length} pedidos entregados</p>
+                      </div>
+
+                      {/* Egresos */}
+                      <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 rounded-xl border-2 border-red-500/50 p-6">
+                        <p className="text-red-400 text-sm font-bold mb-2">📉 EGRESOS DEL MES</p>
+                        <p className="text-5xl font-black text-red-400">S/ {egresos.toFixed(2)}</p>
+                        <p className="text-xs text-gray-400 mt-2">{monthPurchases.length} compras/gastos</p>
+                      </div>
+
+                      {/* Utilidad */}
+                      <div className={`bg-gradient-to-br ${utilidad >= 0 ? 'from-fuchsia-900/40 to-fuchsia-800/20 border-fuchsia-500/50' : 'from-amber-900/40 to-amber-800/20 border-amber-500/50'} rounded-xl border-2 p-6`}>
+                        <p className={`${utilidad >= 0 ? 'text-fuchsia-400' : 'text-amber-400'} text-sm font-bold mb-2`}>
+                          ✅ UTILIDAD NETA
+                        </p>
+                        <p className={`text-5xl font-black ${utilidad >= 0 ? 'text-fuchsia-400' : 'text-amber-400'}`}>
+                          S/ {utilidad.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-2">Ingresos - Egresos</p>
+                      </div>
+
+                      {/* Margen */}
+                      <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl border-2 border-cyan-500/50 p-6">
+                        <p className="text-cyan-400 text-sm font-bold mb-2">📈 MARGEN</p>
+                        <p className="text-5xl font-black text-cyan-400">{margen.toFixed(1)}%</p>
+                        <p className="text-xs text-gray-400 mt-2">
+                          {margen >= 50 ? '¡Excelente!' : margen >= 30 ? 'Bueno' : 'Mejorable'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* COMPRAS Y GASTOS - Reutilizar sección de inventory */}
+            {financialSection === "purchases" && (
+              <div>
+                <h3 className="text-2xl font-black text-cyan-400 mb-4">🛒 Compras y Gastos del Negocio</h3>
+                <p className="text-gray-400 mb-6">Registra todas tus compras de insumos, empaques, servicios y gastos fijos.</p>
+
+                {/* Aquí irá el contenido de compras que ya existe en inventory */}
+                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
+                  <p className="text-white text-center">Sección de Compras y Gastos - Por implementar</p>
+                </div>
+              </div>
+            )}
+
+            {/* PRODUCTOS DE VENTA */}
+            {financialSection === "products" && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-black text-cyan-400">🍗 Productos de Venta (Tu Carta)</h3>
               <button
                 onClick={() => {
                   setEditingProduct(null);
@@ -2509,6 +2628,20 @@ export default function AdminPage() {
                 </>
               );
             })()}
+              </div>
+            )}
+
+            {/* STOCK DE EMPAQUES */}
+            {financialSection === "stock" && (
+              <div>
+                <h3 className="text-2xl font-black text-cyan-400 mb-4">📦 Stock de Empaques Disponible</h3>
+                <p className="text-gray-400 mb-6">Control visual de tus empaques disponibles.</p>
+
+                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
+                  <p className="text-white text-center">Sección de Stock de Empaques - Por implementar</p>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Product Modal */}
@@ -2753,8 +2886,8 @@ export default function AdminPage() {
             </div>
           )}
         </>
-      ) : activeTab === "inventory" ? (
-        /* Inventory Tab */
+      ) : activeTab === "marketing" ? (
+        /* Marketing Tab */
         <>
           <section className="container mx-auto px-4 py-8">
             <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Control de Inventario</h2>
