@@ -540,10 +540,11 @@ export default function AdminPage() {
   // Product CRUD functions
   const handleCreateProduct = async () => {
     try {
+      // Siempre marcar como producto de venta (type: "sale") cuando se crea desde Órdenes
       await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productForm),
+        body: JSON.stringify({ ...productForm, type: "sale" }),
       });
       loadProducts();
       setShowProductModal(false);
@@ -2290,7 +2291,7 @@ export default function AdminPage() {
         <>
           <section className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple">Gestión de Ordenes</h2>
+              <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple">Gestión de Ordenes (Carta de Menú)</h2>
               <button
                 onClick={() => {
                   setEditingProduct(null);
@@ -2299,116 +2300,145 @@ export default function AdminPage() {
                 }}
                 className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
               >
-                + Nueva Orden
+                + Nuevo Producto de Venta
               </button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                <p className="text-gray-400 text-sm font-semibold">Total Ordenes</p>
-                <p className="text-5xl font-black text-white mt-2">{products.length}</p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold">Activos</p>
-                <p className="text-5xl font-black text-green-400 mt-2">
-                  {products.filter((p) => p.active).length}
-                </p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold">Precio Promedio</p>
-                <p className="text-4xl font-black text-amber-400 mt-2">
-                  S/ {products.length > 0 ? (products.reduce((sum, p) => sum + p.price, 0) / products.length).toFixed(2) : '0.00'}
-                </p>
-              </div>
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                <p className="text-purple-400 text-sm font-bold">Margen Promedio</p>
-                <p className="text-4xl font-black text-purple-400 mt-2">
-                  {products.length > 0 ? (products.reduce((sum, p) => {
-                    if (!p.price || p.price === 0) return sum;
-                    return sum + ((p.price - p.cost) / p.price * 100);
-                  }, 0) / products.length).toFixed(1) : '0'}%
-                </p>
-              </div>
-            </div>
+            {(() => {
+              // Filtrar solo productos de tipo "sale" (productos de venta)
+              const saleProducts = products.filter((p) => p.type === "sale");
 
-            {/* Products Table */}
-            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-black border-b-2 border-fuchsia-500/30">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-fuchsia-400">Nombre</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-fuchsia-400">Categoría</th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Precio Venta</th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Costo</th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Margen</th>
-                    <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Estado</th>
-                    <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product, idx) => {
-                    const margin = product.price && product.price > 0
-                      ? ((product.price - product.cost) / product.price * 100)
-                      : 0;
-                    return (
-                      <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-black/50 transition-all ${idx % 2 === 0 ? 'bg-gray-900/50' : ''}`}>
-                        <td className="px-6 py-4 text-white font-bold">{product.name}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            product.category === 'fit' ? 'bg-cyan-500/20 text-cyan-400' :
-                            product.category === 'fat' ? 'bg-red-500/20 text-red-400' :
-                            product.category === 'extra-papas' ? 'bg-amber-500/20 text-amber-400' :
-                            product.category === 'extra-salsas' ? 'bg-orange-500/20 text-orange-400' :
-                            'bg-purple-500/20 text-purple-400'
-                          }`}>
-                            {product.category === 'extra-papas' ? 'EXTRA PAPAS' :
-                             product.category === 'extra-salsas' ? 'EXTRA SALSAS' :
-                             product.category.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right text-green-400 font-black">S/ {(product.price || 0).toFixed(2)}</td>
-                        <td className="px-6 py-4 text-right text-gray-400">S/ {(product.cost || 0).toFixed(2)}</td>
-                        <td className="px-6 py-4 text-right">
-                          <span className={`font-black ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
-                            {margin.toFixed(1)}%
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            product.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                          }`}>
-                            {product.active ? 'Activo' : 'Inactivo'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex gap-2 justify-center">
-                            <button
-                              onClick={() => openEditProduct(product)}
-                              className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProduct(product.id)}
-                              className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+              return (
+                <>
+                  {/* Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
+                      <p className="text-gray-400 text-sm font-semibold">Total Productos</p>
+                      <p className="text-5xl font-black text-white mt-2">{saleProducts.length}</p>
+                    </div>
+                    <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
+                      <p className="text-green-400 text-sm font-bold">Activos</p>
+                      <p className="text-5xl font-black text-green-400 mt-2">
+                        {saleProducts.filter((p) => p.active).length}
+                      </p>
+                    </div>
+                    <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
+                      <p className="text-amber-400 text-sm font-bold">Precio Promedio</p>
+                      <p className="text-4xl font-black text-amber-400 mt-2">
+                        S/ {saleProducts.length > 0 ? (saleProducts.reduce((sum, p) => sum + p.price, 0) / saleProducts.length).toFixed(2) : '0.00'}
+                      </p>
+                    </div>
+                    <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
+                      <p className="text-purple-400 text-sm font-bold">Margen Promedio</p>
+                      <p className="text-4xl font-black text-purple-400 mt-2">
+                        {saleProducts.length > 0 ? (saleProducts.reduce((sum, p) => {
+                          if (!p.price || p.price === 0) return sum;
+                          return sum + ((p.price - p.cost) / p.price * 100);
+                        }, 0) / saleProducts.length).toFixed(1) : '0'}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Products Table */}
+                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-black border-b-2 border-fuchsia-500/30">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-bold text-fuchsia-400">Nombre</th>
+                          <th className="px-6 py-4 text-left text-sm font-bold text-fuchsia-400">Categoría</th>
+                          <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Componentes</th>
+                          <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Precio Venta</th>
+                          <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Costo</th>
+                          <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Margen</th>
+                          <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Estado</th>
+                          <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {saleProducts.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} className="px-6 py-12 text-center text-gray-400">
+                              No hay productos de venta registrados. Crea tu primer producto de la carta.
+                            </td>
+                          </tr>
+                        ) : (
+                          saleProducts.map((product, idx) => {
+                            const margin = product.price && product.price > 0
+                              ? ((product.price - product.cost) / product.price * 100)
+                              : 0;
+                            return (
+                              <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-black/50 transition-all ${idx % 2 === 0 ? 'bg-gray-900/50' : ''}`}>
+                                <td className="px-6 py-4 text-white font-bold">{product.name}</td>
+                                <td className="px-6 py-4">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                    product.category === 'fit' ? 'bg-cyan-500/20 text-cyan-400' :
+                                    product.category === 'fat' ? 'bg-red-500/20 text-red-400' :
+                                    product.category === 'extra-papas' ? 'bg-amber-500/20 text-amber-400' :
+                                    product.category === 'extra-salsas' ? 'bg-orange-500/20 text-orange-400' :
+                                    'bg-purple-500/20 text-purple-400'
+                                  }`}>
+                                    {product.category === 'extra-papas' ? 'EXTRA PAPAS' :
+                                     product.category === 'extra-salsas' ? 'EXTRA SALSAS' :
+                                     product.category.toUpperCase()}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                    product.components && product.components.length > 0
+                                      ? 'bg-green-500/20 text-green-400'
+                                      : 'bg-red-500/20 text-red-400'
+                                  }`}>
+                                    {product.components && product.components.length > 0
+                                      ? `${product.components.length} insumos`
+                                      : 'Sin insumos'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-right text-green-400 font-black">S/ {(product.price || 0).toFixed(2)}</td>
+                                <td className="px-6 py-4 text-right text-gray-400">S/ {(product.cost || 0).toFixed(2)}</td>
+                                <td className="px-6 py-4 text-right">
+                                  <span className={`font-black ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
+                                    {margin.toFixed(1)}%
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                    product.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                  }`}>
+                                    {product.active ? 'Activo' : 'Inactivo'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                  <div className="flex gap-2 justify-center">
+                                    <button
+                                      onClick={() => openEditProduct(product)}
+                                      className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
+                                    >
+                                      Editar
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteProduct(product.id)}
+                                      className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
+                                    >
+                                      Eliminar
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              );
+            })()}
           </section>
 
           {/* Product Modal */}
           {showProductModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full">
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
                 <h3 className="text-2xl font-black text-fuchsia-400 mb-4">
                   {editingProduct ? 'Editar Orden' : 'Nueva Orden'}
                 </h3>
@@ -2505,10 +2535,25 @@ export default function AdminPage() {
                         className="col-span-8 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
                         defaultValue=""
                       >
-                        <option value="">Seleccionar material del inventario...</option>
+                        <option value="">Seleccionar insumo del inventario...</option>
                         {(() => {
-                          // Obtener productos únicos del inventario (compras registradas)
+                          // Obtener productos únicos del inventario
                           const stockMap = new Map<string, { productName: string; unit: string }>();
+
+                          // 1. Agregar productos de tipo "inventory" de la tabla products
+                          products.forEach((product: any) => {
+                            if (product.type === "inventory") {
+                              const key = `${product.name}-${product.unit}`;
+                              if (!stockMap.has(key)) {
+                                stockMap.set(key, {
+                                  productName: product.name,
+                                  unit: product.unit,
+                                });
+                              }
+                            }
+                          });
+
+                          // 2. Agregar productos de compras registradas
                           inventory.forEach((purchase: any) => {
                             purchase.items.forEach((item: any) => {
                               const key = `${item.productName}-${item.unit}`;
@@ -2521,7 +2566,7 @@ export default function AdminPage() {
                             });
                           });
 
-                          // También agregar materiales del catálogo con categoría de inventario
+                          // 3. Agregar materiales del catálogo con categoría de inventario
                           catalogProducts.forEach((product: any) => {
                             const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
                             if (materialCategories.includes(product.category)) {

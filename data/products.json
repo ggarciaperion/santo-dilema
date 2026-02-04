@@ -5,7 +5,8 @@
     "category": "fit",
     "price": 18.9,
     "cost": 8.5,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "ensalada-proteica",
@@ -13,7 +14,8 @@
     "category": "fit",
     "price": 24.9,
     "cost": 12,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "ensalada-caesar",
@@ -21,7 +23,8 @@
     "category": "fit",
     "price": 22.9,
     "cost": 10.5,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "ensalada-mediterranea",
@@ -29,7 +32,8 @@
     "category": "fit",
     "price": 21.9,
     "cost": 10,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "pequeno-dilema",
@@ -37,7 +41,8 @@
     "category": "fat",
     "price": 28.9,
     "cost": 14,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "duo-dilema",
@@ -45,7 +50,8 @@
     "category": "fat",
     "price": 39.9,
     "cost": 20,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "todos-pecan",
@@ -53,7 +59,8 @@
     "category": "fat",
     "price": 49.9,
     "cost": 25,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "agua-mineral",
@@ -61,7 +68,8 @@
     "category": "bebida",
     "price": 4,
     "cost": 1.5,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "coca-cola",
@@ -69,7 +77,8 @@
     "category": "bebida",
     "price": 4,
     "cost": 2,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "inka-cola",
@@ -77,7 +86,8 @@
     "category": "bebida",
     "price": 4,
     "cost": 2,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "sprite",
@@ -85,7 +95,8 @@
     "category": "bebida",
     "price": 4,
     "cost": 2,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "fanta",
@@ -93,7 +104,8 @@
     "category": "bebida",
     "price": 4,
     "cost": 2,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "extra-papas",
@@ -101,7 +113,8 @@
     "category": "bebida",
     "price": 4,
     "cost": 1.8,
-    "active": true
+    "active": true,
+    "type": "sale"
   },
   {
     "id": "extra-salsa",
@@ -109,6 +122,7 @@
     "category": "bebida",
     "price": 3,
     "cost": 1,
-    "active": true
+    "active": true,
+    "type": "sale"
   }
 ]
