@@ -3100,73 +3100,111 @@ export default function AdminPage() {
                       </div>
 
                       {/* Components */}
-                      {recipeComponents.map((component, idx) => (
-                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-800 rounded-lg p-3 border border-purple-500/20">
-                          {/* Product Name */}
-                          <div className="col-span-5">
-                            <input
-                              type="text"
-                              value={component.productName}
-                              onChange={(e) => updateRecipeComponent(idx, 'productName', e.target.value.toUpperCase())}
-                              placeholder="Ej: CAJA DE CARTON GRANDE"
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
-                            />
-                          </div>
+                      {recipeComponents.map((component, idx) => {
+                        // Obtener lista única de productos del inventario
+                        const inventoryProducts = new Map<string, string>();
+                        inventory.forEach((purchase: any) => {
+                          purchase.items.forEach((item: any) => {
+                            const key = `${item.productName}|${item.unit}`;
+                            inventoryProducts.set(key, item.productName);
+                          });
+                        });
 
-                          {/* Unit */}
-                          <div className="col-span-3">
-                            <select
-                              value={component.unit}
-                              onChange={(e) => updateRecipeComponent(idx, 'unit', e.target.value)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
-                            >
-                              <option value="UNIDAD">UNIDAD</option>
-                              <option value="KG">KG</option>
-                              <option value="GRAMOS">GRAMOS</option>
-                              <option value="LITROS">LITROS</option>
-                              <option value="ML">ML</option>
-                              <option value="CAJA">CAJA</option>
-                              <option value="BOLSA">BOLSA</option>
-                              <option value="PAQUETE">PAQUETE</option>
-                            </select>
-                          </div>
+                        const uniqueProducts = Array.from(inventoryProducts.keys()).sort((a, b) => {
+                          const nameA = a.split('|')[0];
+                          const nameB = b.split('|')[0];
+                          return nameA.localeCompare(nameB);
+                        });
 
-                          {/* Quantity */}
-                          <div className="col-span-3">
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={component.quantity}
-                              onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm text-center focus:border-purple-400 focus:outline-none"
-                            />
-                          </div>
+                        return (
+                          <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-800 rounded-lg p-3 border border-purple-500/20">
+                            {/* Product Name - Dropdown */}
+                            <div className="col-span-5">
+                              <select
+                                value={component.productName ? `${component.productName}|${component.unit}` : ""}
+                                onChange={(e) => {
+                                  const [productName, unit] = e.target.value.split('|');
+                                  updateRecipeComponent(idx, 'productName', productName);
+                                  updateRecipeComponent(idx, 'unit', unit);
+                                }}
+                                className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                              >
+                                <option value="">-- Seleccionar empaque/insumo --</option>
+                                {uniqueProducts.length === 0 ? (
+                                  <option value="" disabled>No hay productos en compras</option>
+                                ) : (
+                                  uniqueProducts.map((key) => {
+                                    const [productName, unit] = key.split('|');
+                                    return (
+                                      <option key={key} value={key}>
+                                        {productName} ({unit})
+                                      </option>
+                                    );
+                                  })
+                                )}
+                              </select>
+                            </div>
 
-                          {/* Delete Button */}
-                          <div className="col-span-1 text-center">
-                            <button
-                              onClick={() => removeRecipeComponent(idx)}
-                              className="text-red-400 hover:text-red-300 font-bold text-lg"
-                              title="Eliminar componente"
-                            >
-                              ✕
-                            </button>
+                            {/* Unit - Auto filled, read only */}
+                            <div className="col-span-3">
+                              <input
+                                type="text"
+                                value={component.unit || ""}
+                                readOnly
+                                className="w-full px-3 py-2 rounded bg-gray-700 border border-purple-500/30 text-gray-400 text-sm cursor-not-allowed"
+                                placeholder="Se auto-completa"
+                              />
+                            </div>
+
+                            {/* Quantity */}
+                            <div className="col-span-3">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={component.quantity}
+                                onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm text-center focus:border-purple-400 focus:outline-none"
+                                placeholder="0"
+                              />
+                            </div>
+
+                            {/* Delete Button */}
+                            <div className="col-span-1 text-center">
+                              <button
+                                onClick={() => removeRecipeComponent(idx)}
+                                className="text-red-400 hover:text-red-300 font-bold text-lg"
+                                title="Eliminar componente"
+                              >
+                                ✕
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
 
                 {/* Info Box */}
                 <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 mb-6">
+                  <p className="text-cyan-300 text-sm mb-2">
+                    💡 <span className="font-bold">Importante:</span> Solo puedes seleccionar productos que ya hayas registrado en <span className="font-bold">Compras y Gastos</span>.
+                  </p>
                   <p className="text-cyan-300 text-sm">
-                    💡 <span className="font-bold">Ejemplo:</span> Si vendes "Dúo Dilema" y usas 1 caja + 2 bolsas + 500g de papas,
-                    agrega esos 3 componentes con sus cantidades exactas. Cuando entregues un pedido de "Dúo Dilema",
+                    <span className="font-bold">Ejemplo:</span> Si vendes "Dúo Dilema" y usas 1 caja + 2 bolsas + 500g de papas,
+                    selecciónalos del dropdown con sus cantidades exactas. Cuando entregues un pedido,
                     el sistema descontará automáticamente del stock.
                   </p>
                 </div>
+
+                {inventory.length === 0 && (
+                  <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 mb-6">
+                    <p className="text-amber-300 text-sm">
+                      ⚠️ <span className="font-bold">No tienes productos en el inventario.</span> Primero registra tus compras de empaques/insumos en <span className="font-bold">Compras y Gastos</span> para poder seleccionarlos aquí.
+                    </p>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex gap-3">
