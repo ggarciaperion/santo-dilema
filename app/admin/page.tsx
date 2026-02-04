@@ -177,6 +177,9 @@ export default function AdminPage() {
   });
   const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [editingRecipeProduct, setEditingRecipeProduct] = useState<any>(null);
+  const [recipeComponents, setRecipeComponents] = useState<Array<{ productName: string; unit: string; quantity: number }>>([]);
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [editingCatalogProduct, setEditingCatalogProduct] = useState<any>(null);
@@ -652,6 +655,60 @@ export default function AdminPage() {
       loadProducts();
     } catch (error) {
       console.error("Error al eliminar producto:", error);
+    }
+  };
+
+  // Funciones para configurar recetas
+  const openRecipeModal = (product: any) => {
+    setEditingRecipeProduct(product);
+    setRecipeComponents(product.components || []);
+    setShowRecipeModal(true);
+  };
+
+  const addRecipeComponent = () => {
+    setRecipeComponents([...recipeComponents, { productName: "", unit: "UNIDAD", quantity: 1 }]);
+  };
+
+  const updateRecipeComponent = (index: number, field: string, value: any) => {
+    const updated = [...recipeComponents];
+    updated[index] = { ...updated[index], [field]: value };
+    setRecipeComponents(updated);
+  };
+
+  const removeRecipeComponent = (index: number) => {
+    setRecipeComponents(recipeComponents.filter((_, i) => i !== index));
+  };
+
+  const saveRecipe = async () => {
+    try {
+      if (!editingRecipeProduct) return;
+
+      // Validar que todos los componentes tengan nombre
+      const invalidComponents = recipeComponents.filter(c => !c.productName.trim());
+      if (invalidComponents.length > 0) {
+        alert("Por favor completa todos los nombres de componentes");
+        return;
+      }
+
+      // Actualizar el producto con la nueva receta
+      const response = await fetch(`/api/products?id=${editingRecipeProduct.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ components: recipeComponents }),
+      });
+
+      if (response.ok) {
+        alert("✅ Receta guardada exitosamente!");
+        setShowRecipeModal(false);
+        setEditingRecipeProduct(null);
+        setRecipeComponents([]);
+        loadProducts();
+      } else {
+        alert("Error al guardar la receta");
+      }
+    } catch (error) {
+      console.error("Error al guardar receta:", error);
+      alert("Error al guardar la receta");
     }
   };
 
@@ -2853,6 +2910,13 @@ export default function AdminPage() {
                                 <td className="px-6 py-4 text-center">
                                   <div className="flex gap-2 justify-center">
                                     <button
+                                      onClick={() => openRecipeModal(product)}
+                                      className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
+                                      title="Configurar receta/componentes"
+                                    >
+                                      🧾 Receta
+                                    </button>
+                                    <button
                                       onClick={() => openEditProduct(product)}
                                       className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
                                     >
@@ -2983,6 +3047,149 @@ export default function AdminPage() {
               </>
             )}
           </section>
+
+          {/* Recipe Configuration Modal */}
+          {showRecipeModal && editingRecipeProduct && (
+            <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <div className="bg-gray-900 rounded-xl border-2 border-purple-500 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-2xl font-black text-purple-400">🧾 Configurar Receta</h3>
+                    <p className="text-cyan-400 text-lg font-bold mt-1">{editingRecipeProduct.name}</p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      Define qué empaques/insumos se usan para preparar este producto y en qué cantidades
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowRecipeModal(false);
+                      setEditingRecipeProduct(null);
+                      setRecipeComponents([]);
+                    }}
+                    className="text-gray-400 hover:text-white text-2xl font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Components List */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-lg font-bold text-cyan-400">Componentes de la Receta</h4>
+                    <button
+                      onClick={addRecipeComponent}
+                      className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
+                    >
+                      + Agregar Componente
+                    </button>
+                  </div>
+
+                  {recipeComponents.length === 0 ? (
+                    <div className="bg-gray-800 rounded-lg border-2 border-purple-500/30 p-8 text-center">
+                      <p className="text-gray-400 text-lg">No hay componentes configurados</p>
+                      <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Componente" para empezar</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Header */}
+                      <div className="grid grid-cols-12 gap-3 px-3 py-2 bg-black/50 rounded-lg border border-purple-500/30">
+                        <div className="col-span-5 text-xs font-bold text-purple-400">EMPAQUE/INSUMO</div>
+                        <div className="col-span-3 text-xs font-bold text-purple-400">UNIDAD</div>
+                        <div className="col-span-3 text-xs font-bold text-purple-400 text-center">CANTIDAD</div>
+                        <div className="col-span-1 text-xs font-bold text-purple-400 text-center"></div>
+                      </div>
+
+                      {/* Components */}
+                      {recipeComponents.map((component, idx) => (
+                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-800 rounded-lg p-3 border border-purple-500/20">
+                          {/* Product Name */}
+                          <div className="col-span-5">
+                            <input
+                              type="text"
+                              value={component.productName}
+                              onChange={(e) => updateRecipeComponent(idx, 'productName', e.target.value.toUpperCase())}
+                              placeholder="Ej: CAJA DE CARTON GRANDE"
+                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                            />
+                          </div>
+
+                          {/* Unit */}
+                          <div className="col-span-3">
+                            <select
+                              value={component.unit}
+                              onChange={(e) => updateRecipeComponent(idx, 'unit', e.target.value)}
+                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                            >
+                              <option value="UNIDAD">UNIDAD</option>
+                              <option value="KG">KG</option>
+                              <option value="GRAMOS">GRAMOS</option>
+                              <option value="LITROS">LITROS</option>
+                              <option value="ML">ML</option>
+                              <option value="CAJA">CAJA</option>
+                              <option value="BOLSA">BOLSA</option>
+                              <option value="PAQUETE">PAQUETE</option>
+                            </select>
+                          </div>
+
+                          {/* Quantity */}
+                          <div className="col-span-3">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={component.quantity}
+                              onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm text-center focus:border-purple-400 focus:outline-none"
+                            />
+                          </div>
+
+                          {/* Delete Button */}
+                          <div className="col-span-1 text-center">
+                            <button
+                              onClick={() => removeRecipeComponent(idx)}
+                              className="text-red-400 hover:text-red-300 font-bold text-lg"
+                              title="Eliminar componente"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Info Box */}
+                <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 mb-6">
+                  <p className="text-cyan-300 text-sm">
+                    💡 <span className="font-bold">Ejemplo:</span> Si vendes "Dúo Dilema" y usas 1 caja + 2 bolsas + 500g de papas,
+                    agrega esos 3 componentes con sus cantidades exactas. Cuando entregues un pedido de "Dúo Dilema",
+                    el sistema descontará automáticamente del stock.
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowRecipeModal(false);
+                      setEditingRecipeProduct(null);
+                      setRecipeComponents([]);
+                    }}
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={saveRecipe}
+                    className="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple"
+                  >
+                    ✓ Guardar Receta
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Product Modal */}
           {showProductModal && (
