@@ -1000,7 +1000,34 @@ export default function AdminPage() {
     // 5. INGRESOS TOTALES - Desde el día uno
     const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
-    // Productos vendidos (solo de pedidos entregados)
+    // NUEVO: Productos vendidos en el MES ACTUAL (ordenados de mayor a menor)
+    const currentMonthProductSales = new Map();
+    currentMonthOrders.forEach((order: any) => {
+      if (order.cart) {
+        order.cart.forEach((item: any) => {
+          const productId = item.product.id;
+          const productName = item.product.name;
+          const quantity = item.quantity;
+
+          if (currentMonthProductSales.has(productId)) {
+            const existing = currentMonthProductSales.get(productId);
+            existing.quantity += quantity;
+            existing.revenue += item.product.price * quantity;
+          } else {
+            currentMonthProductSales.set(productId, {
+              id: productId,
+              name: productName,
+              quantity: quantity,
+              revenue: item.product.price * quantity,
+              category: item.product.category
+            });
+          }
+        });
+      }
+    });
+    const currentMonthProductsArray = Array.from(currentMonthProductSales.values()).sort((a, b) => b.quantity - a.quantity);
+
+    // Productos vendidos de TODOS LOS TIEMPOS (para mantener compatibilidad con otros componentes)
     const productSales = new Map();
     deliveredOrders.forEach((order: any) => {
       if (order.cart) {
@@ -1039,7 +1066,7 @@ export default function AdminPage() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    // NUEVO: Productos más y menos vendidos del mes anterior
+    // NUEVO: Productos del mes anterior CON COMPARACIÓN vs mes actual
     const lastMonthProductSales = new Map();
     lastMonthOrders.forEach((order: any) => {
       if (order.cart) {
@@ -1054,6 +1081,7 @@ export default function AdminPage() {
             existing.revenue += item.product.price * quantity;
           } else {
             lastMonthProductSales.set(productId, {
+              id: productId,
               name: productName,
               quantity: quantity,
               revenue: item.product.price * quantity,
@@ -1065,6 +1093,54 @@ export default function AdminPage() {
     });
 
     const lastMonthProductsArray = Array.from(lastMonthProductSales.values()).sort((a, b) => b.quantity - a.quantity);
+
+    // Crear mapas de posiciones para comparación
+    const lastMonthPositions = new Map();
+    lastMonthProductsArray.forEach((product: any, index) => {
+      lastMonthPositions.set(product.id, index + 1);
+    });
+
+    const currentMonthPositions = new Map();
+    currentMonthProductsArray.forEach((product: any, index) => {
+      currentMonthPositions.set(product.id, index + 1);
+    });
+
+    // Agregar comparación a productos del mes anterior
+    const lastMonthProductsWithComparison = lastMonthProductsArray.map((product: any) => {
+      const lastMonthPos = lastMonthPositions.get(product.id);
+      const currentMonthPos = currentMonthPositions.get(product.id);
+
+      let trend = "new"; // Producto nuevo (no estaba en mes actual)
+      let positionChange = 0;
+
+      if (currentMonthPos !== undefined) {
+        // Comparar posiciones: si bajó el número de posición = subió en ranking (mejor)
+        positionChange = lastMonthPos - currentMonthPos;
+        if (positionChange > 0) {
+          trend = "up"; // Subió en el ranking
+        } else if (positionChange < 0) {
+          trend = "down"; // Bajó en el ranking
+        } else {
+          trend = "same"; // Se mantuvo
+        }
+      }
+
+      // Diferencia de ventas
+      const lastMonthQuantity = product.quantity;
+      const currentMonthProduct = currentMonthProductSales.get(product.id);
+      const currentMonthQuantity = currentMonthProduct?.quantity || 0;
+      const salesDifference = currentMonthQuantity - lastMonthQuantity;
+
+      return {
+        ...product,
+        trend,
+        positionChange: Math.abs(positionChange),
+        salesDifference,
+        lastMonthQuantity,
+        currentMonthQuantity
+      };
+    });
+
     const topProductLastMonth = lastMonthProductsArray[0] || null;
     const leastProductLastMonth = lastMonthProductsArray[lastMonthProductsArray.length - 1] || null;
 
@@ -1093,7 +1169,9 @@ export default function AdminPage() {
       inactiveCustomers,
       topDaysLastMonth,
       topProductLastMonth,
-      leastProductLastMonth
+      leastProductLastMonth,
+      currentMonthProductsArray,
+      lastMonthProductsWithComparison
     };
   };
 
@@ -1953,48 +2031,85 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* Top Products */}
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                <h3 className="text-xl font-black text-fuchsia-400 mb-4">🏆 Productos Más Vendidos (Todos los tiempos)</h3>
-                <div className="space-y-3">
-                  {analytics.topProducts.map((product: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-fuchsia-500/20">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl font-black text-fuchsia-400">{idx + 1}</span>
-                        <div>
-                          <p className="text-white font-bold text-sm">{product.name}</p>
-                          <p className="text-gray-400 text-xs">{product.category}</p>
+              {/* 1. PRODUCTOS DEL MES ACTUAL (ordenados de mayor a menor) */}
+              <div className="bg-gray-900 rounded-xl border-2 border-green-500/30 p-6">
+                <h3 className="text-xl font-black text-green-400 mb-4">📊 Productos - Mes Actual</h3>
+                {analytics.currentMonthProductsArray.length === 0 ? (
+                  <p className="text-gray-400 text-center py-8">No hay ventas en el mes actual</p>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {analytics.currentMonthProductsArray.map((product: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-green-500/20">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-black text-green-400">{idx + 1}</span>
+                          <div>
+                            <p className="text-white font-bold text-sm">{product.name}</p>
+                            <p className="text-gray-400 text-xs">{product.category}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-amber-400 font-black gold-glow">S/ {product.revenue.toFixed(2)}</p>
+                          <p className="text-gray-400 text-xs">{product.quantity} unidades</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-amber-400 font-black gold-glow">S/ {product.revenue.toFixed(2)}</p>
-                        <p className="text-gray-400 text-xs">{product.quantity} unidades</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Least Sold Products */}
-              <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-6">
-                <h3 className="text-xl font-black text-red-400 mb-4">📉 Productos Menos Vendidos (Todos los tiempos)</h3>
-                <div className="space-y-3">
-                  {analytics.leastSoldProducts.map((product: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-red-500/20">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl font-black text-red-400">{idx + 1}</span>
-                        <div>
-                          <p className="text-white font-bold text-sm">{product.name}</p>
-                          <p className="text-gray-400 text-xs">{product.category}</p>
+              {/* 2. PRODUCTOS DEL MES ANTERIOR con comparación */}
+              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6">
+                <h3 className="text-xl font-black text-purple-400 mb-4">📈 Productos - Mes Anterior (vs Actual)</h3>
+                {analytics.lastMonthProductsWithComparison.length === 0 ? (
+                  <p className="text-gray-400 text-center py-8">No hay ventas del mes anterior</p>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {analytics.lastMonthProductsWithComparison.map((product: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-purple-500/20">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-black text-purple-400">{idx + 1}</span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="text-white font-bold text-sm">{product.name}</p>
+                              {product.trend === "up" && (
+                                <span className="text-green-400 text-xs flex items-center gap-1">
+                                  ↑ +{product.positionChange}
+                                </span>
+                              )}
+                              {product.trend === "down" && (
+                                <span className="text-red-400 text-xs flex items-center gap-1">
+                                  ↓ -{product.positionChange}
+                                </span>
+                              )}
+                              {product.trend === "same" && (
+                                <span className="text-gray-400 text-xs">→</span>
+                              )}
+                              {product.trend === "new" && (
+                                <span className="text-cyan-400 text-xs">★ Nuevo</span>
+                              )}
+                            </div>
+                            <p className="text-gray-400 text-xs">{product.category}</p>
+                            <p className="text-gray-500 text-xs">
+                              Vendidas: {product.lastMonthQuantity} → {product.currentMonthQuantity}
+                              {product.salesDifference > 0 && (
+                                <span className="text-green-400"> (+{product.salesDifference})</span>
+                              )}
+                              {product.salesDifference < 0 && (
+                                <span className="text-red-400"> ({product.salesDifference})</span>
+                              )}
+                              {product.salesDifference === 0 && product.trend !== "new" && (
+                                <span className="text-gray-400"> (=)</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-amber-400 font-black gold-glow text-sm">S/ {product.revenue.toFixed(2)}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-amber-400 font-black gold-glow">S/ {product.revenue.toFixed(2)}</p>
-                        <p className="text-gray-400 text-xs">{product.quantity} unidades</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
