@@ -2808,14 +2808,106 @@ export default function AdminPage() {
 
             {/* STOCK DE EMPAQUES */}
             {financialSection === "stock" && (
-              <div>
-                <h3 className="text-2xl font-black text-cyan-400 mb-4">📦 Stock de Empaques Disponible</h3>
-                <p className="text-gray-400 mb-6">Control visual de tus empaques disponibles.</p>
+              <>
+                {(() => {
+                  // Calcular stock basado en compras
+                  const stockMap = new Map<string, { productName: string; unit: string; totalQuantity: number; purchases: number }>();
 
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                  <p className="text-white text-center">Sección de Stock de Empaques - Por implementar</p>
-                </div>
-              </div>
+                  inventory.forEach((purchase) => {
+                    purchase.items.forEach((item: any) => {
+                      const key = `${item.productName}-${item.unit}`;
+                      // Calcular stock: cantidad × volumen
+                      const stockQuantity = item.quantity * (item.volume || 1);
+
+                      if (stockMap.has(key)) {
+                        const existing = stockMap.get(key)!;
+                        existing.totalQuantity += stockQuantity;
+                        existing.purchases += 1;
+                      } else {
+                        stockMap.set(key, {
+                          productName: item.productName,
+                          unit: item.unit,
+                          totalQuantity: stockQuantity,
+                          purchases: 1
+                        });
+                      }
+                    });
+                  });
+
+                  // Restar deducciones del stock
+                  deductions.forEach((deduction: any) => {
+                    deduction.items.forEach((item: any) => {
+                      const key = `${item.productName}-${item.unit}`;
+                      if (stockMap.has(key)) {
+                        const existing = stockMap.get(key)!;
+                        existing.totalQuantity -= item.quantity;
+                      }
+                    });
+                  });
+
+                  const stockItems = Array.from(stockMap.values()).sort((a, b) =>
+                    a.productName.localeCompare(b.productName)
+                  );
+
+                  // Filtrar items de stock según búsqueda
+                  const filteredStockItems = stockItems.filter((item) => {
+                    if (!stockSearchTerm) return true;
+                    const searchLower = stockSearchTerm.toLowerCase();
+                    return item.productName.toLowerCase().includes(searchLower);
+                  });
+
+                  return (
+                    <>
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-bold text-white">📦 Control de Stock de Empaques</h3>
+                        <input
+                          type="text"
+                          value={stockSearchTerm}
+                          onChange={(e) => setStockSearchTerm(e.target.value)}
+                          placeholder="🔍 Buscar producto..."
+                          className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-cyan-400 focus:outline-none w-64"
+                        />
+                      </div>
+
+                      {/* Tabla de Stock */}
+                      <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                        {filteredStockItems.length === 0 ? (
+                          <div className="text-center py-12">
+                            <p className="text-xl text-gray-400">No hay stock registrado</p>
+                          </div>
+                        ) : (
+                          <table className="w-full" style={{ borderCollapse: "collapse" }}>
+                            <thead className="bg-black">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">PRODUCTO</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">UNIDAD</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">CANTIDAD EN STOCK</th>
+                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30"># COMPRAS</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredStockItems.map((item, idx) => (
+                                <tr key={idx} className="hover:bg-black/50 transition-all">
+                                  <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{item.productName}</td>
+                                  <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
+                                    {item.unit}
+                                  </td>
+                                  <td className="px-6 py-3 text-center text-green-400 font-black text-lg border border-fuchsia-500/10">
+                                    {item.totalQuantity}
+                                  </td>
+                                  <td className="px-6 py-3 text-center text-gray-400 border border-fuchsia-500/10">
+                                    {item.purchases}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </>
             )}
           </section>
 
