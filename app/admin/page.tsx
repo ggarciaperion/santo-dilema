@@ -137,7 +137,7 @@ export default function AdminPage() {
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "products" | "inventory" | "marketing">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "products" | "inventory" | "marketing" | "dailyclose">("orders");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
@@ -177,6 +177,7 @@ export default function AdminPage() {
   const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [dailyPackagingAdjustments, setDailyPackagingAdjustments] = useState<Map<string, number>>(new Map());
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [editingCatalogProduct, setEditingCatalogProduct] = useState<any>(null);
   const [catalogForm, setCatalogForm] = useState({ productId: "", name: "", category: "", unit: "" });
@@ -1333,6 +1334,16 @@ export default function AdminPage() {
             }`}
           >
             🎯 Marketing
+          </button>
+          <button
+            onClick={() => setActiveTab("dailyclose")}
+            className={`px-6 py-3 font-bold transition-all ${
+              activeTab === "dailyclose"
+                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                : "text-gray-400 hover:text-gray-300"
+            }`}
+          >
+            💰 Cierre Diario
           </button>
         </div>
       </section>
@@ -2501,41 +2512,48 @@ export default function AdminPage() {
                     <label className="text-sm text-white">Producto activo</label>
                   </div>
 
-                  {/* Sección de Componentes/Receta */}
-                  <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/30">
-                    <p className="text-sm font-bold text-cyan-400 mb-1">Materiales/Empaques</p>
-                    <p className="text-xs text-gray-400 mb-3">Selecciona los materiales e insumos que se usan en esta orden</p>
+                  {/* Sección de Empaques - SIMPLIFICADO */}
+                  <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
+                    <p className="text-sm font-bold text-cyan-400 mb-1">📦 Empaques que usa este producto</p>
+                    <p className="text-xs text-gray-400 mb-3">Define qué empaques se consumen cada vez que vendes este producto. Al final del día, el sistema calculará cuántos empaques gastaste según tus ventas.</p>
 
-                    {/* Lista de componentes */}
-                    {productForm.components.length > 0 && (
-                      <div className="mb-3 space-y-1">
+                    {/* Lista de empaques agregados */}
+                    {productForm.components.length > 0 ? (
+                      <div className="mb-3 space-y-2">
+                        <p className="text-xs font-bold text-green-400">✓ Empaques configurados:</p>
                         {productForm.components.map((comp, idx) => (
-                          <div key={idx} className="flex items-center justify-between bg-gray-900 rounded px-2 py-1 text-xs">
-                            <span className="text-white">
-                              <span className="font-bold">{comp.quantity}</span> {comp.unit} de <span className="text-cyan-400">{comp.productName}</span>
+                          <div key={idx} className="flex items-center justify-between bg-gray-900 rounded px-3 py-2 border border-cyan-500/20">
+                            <span className="text-white text-sm">
+                              <span className="font-black text-cyan-400">{comp.quantity}</span> × <span className="font-bold">{comp.productName}</span>
                             </span>
                             <button
                               onClick={() => {
                                 const newComponents = productForm.components.filter((_, i) => i !== idx);
                                 setProductForm({ ...productForm, components: newComponents });
                               }}
-                              className="text-red-400 hover:text-red-300 ml-2"
+                              className="text-red-400 hover:text-red-300 font-bold"
                             >
-                              ✕
+                              Eliminar
                             </button>
                           </div>
                         ))}
                       </div>
+                    ) : (
+                      <div className="mb-3 p-3 bg-amber-900/20 border border-amber-500/30 rounded">
+                        <p className="text-xs text-amber-400">⚠️ No has agregado empaques todavía. Agrega los empaques que usa este producto.</p>
+                      </div>
                     )}
 
-                    {/* Agregar componente */}
-                    <div className="grid grid-cols-12 gap-2">
-                      <select
-                        id="component-product-select"
-                        className="col-span-8 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
-                        defaultValue=""
-                      >
-                        <option value="">Seleccionar insumo del inventario...</option>
+                    {/* Agregar empaque */}
+                    <div className="border-t border-cyan-500/20 pt-3">
+                      <p className="text-xs font-bold text-cyan-400 mb-2">Agregar empaque:</p>
+                      <div className="grid grid-cols-12 gap-2">
+                        <select
+                          id="component-product-select"
+                          className="col-span-7 px-3 py-2 text-sm rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
+                          defaultValue=""
+                        >
+                          <option value="">Seleccionar empaque...</option>
                         {(() => {
                           // Obtener productos únicos del inventario
                           const stockMap = new Map<string, { productName: string; unit: string }>();
@@ -2589,52 +2607,52 @@ export default function AdminPage() {
                             ));
                         })()}
                       </select>
-                      <input
-                        type="number"
-                        id="component-quantity-input"
-                        min="1"
-                        step="1"
-                        placeholder="Cantidad"
-                        onKeyDown={(e) => {
-                          // Prevenir decimales: solo permite números enteros
-                          if (e.key === '.' || e.key === ',') {
-                            e.preventDefault();
-                          }
-                        }}
-                        className="col-span-3 px-2 py-1 text-xs rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <button
-                        onClick={() => {
-                          const select = document.getElementById('component-product-select') as HTMLSelectElement;
-                          const quantityInput = document.getElementById('component-quantity-input') as HTMLInputElement;
-
-                          if (select.value && quantityInput.value) {
-                            const selectedProduct = JSON.parse(select.value);
-                            const quantity = parseInt(quantityInput.value, 10);
-
-                            if (quantity > 0 && Number.isInteger(quantity)) {
-                              setProductForm({
-                                ...productForm,
-                                components: [
-                                  ...productForm.components,
-                                  {
-                                    productName: selectedProduct.productName,
-                                    unit: selectedProduct.unit,
-                                    quantity: quantity,
-                                  }
-                                ]
-                              });
-
-                              // Reset inputs
-                              select.value = "";
-                              quantityInput.value = "";
+                        <input
+                          type="number"
+                          id="component-quantity-input"
+                          min="1"
+                          step="1"
+                          placeholder="Cant."
+                          onKeyDown={(e) => {
+                            if (e.key === '.' || e.key === ',') {
+                              e.preventDefault();
                             }
-                          }
-                        }}
-                        className="col-span-1 px-2 py-1 text-xs bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold transition-all"
-                      >
-                        +
-                      </button>
+                          }}
+                          className="col-span-3 px-3 py-2 text-sm rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <button
+                          onClick={() => {
+                            const select = document.getElementById('component-product-select') as HTMLSelectElement;
+                            const quantityInput = document.getElementById('component-quantity-input') as HTMLInputElement;
+
+                            if (select.value && quantityInput.value) {
+                              const selectedProduct = JSON.parse(select.value);
+                              const quantity = parseInt(quantityInput.value, 10);
+
+                              if (quantity > 0 && Number.isInteger(quantity)) {
+                                setProductForm({
+                                  ...productForm,
+                                  components: [
+                                    ...productForm.components,
+                                    {
+                                      productName: selectedProduct.productName,
+                                      unit: selectedProduct.unit,
+                                      quantity: quantity,
+                                    }
+                                  ]
+                                });
+
+                                // Reset inputs
+                                select.value = "";
+                                quantityInput.value = "";
+                              }
+                            }
+                          }}
+                          className="col-span-2 px-3 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold transition-all"
+                        >
+                          Agregar
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -4077,6 +4095,203 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+        </>
+      ) : activeTab === "dailyclose" ? (
+        /* Daily Close Tab */
+        <>
+          <section className="container mx-auto px-4 py-8">
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">💰 Cierre de Caja Diario</h2>
+
+            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-6">
+              <p className="text-gray-300 mb-4">
+                Este módulo te ayuda a calcular cuántos empaques consumiste hoy basándose en tus ventas.
+                El sistema te mostrará una sugerencia, pero <span className="text-cyan-400 font-bold">puedes ajustar manualmente</span> las cantidades si hubo desperdicios, extras o sobrantes.
+              </p>
+            </div>
+
+            {/* Resumen de Ventas del Día */}
+            <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-6">
+              <h3 className="text-xl font-black text-cyan-400 mb-4">📊 Ventas de Hoy</h3>
+
+              {(() => {
+                // Filtrar pedidos de hoy que están entregados
+                const today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+                const todayOrders = orders.filter((order: any) => {
+                  const orderDate = new Date(order.createdAt).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+                  return orderDate === today && order.status === 'delivered';
+                });
+
+                // Contar productos vendidos
+                const productSales = new Map<string, number>();
+                todayOrders.forEach((order: any) => {
+                  order.cart?.forEach((item: any) => {
+                    const current = productSales.get(item.name) || 0;
+                    productSales.set(item.name, current + item.quantity);
+                  });
+                });
+
+                if (productSales.size === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-400">
+                      <p className="text-lg">No hay ventas entregadas hoy todavía.</p>
+                      <p className="text-sm mt-2">Las ventas aparecerán aquí cuando marques pedidos como "Entregado".</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Array.from(productSales.entries()).map(([productName, quantity]) => (
+                      <div key={productName} className="bg-black rounded-lg p-4 border border-cyan-500/20">
+                        <p className="text-white font-bold">{productName}</p>
+                        <p className="text-3xl font-black text-cyan-400 mt-2">{quantity} unidades</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Cálculo de Empaques Consumidos */}
+            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
+              <h3 className="text-xl font-black text-fuchsia-400 mb-4">📦 Empaques Consumidos (Calculado)</h3>
+
+              {(() => {
+                // Filtrar pedidos de hoy entregados
+                const today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+                const todayOrders = orders.filter((order: any) => {
+                  const orderDate = new Date(order.createdAt).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+                  return orderDate === today && order.status === 'delivered';
+                });
+
+                // Contar productos vendidos
+                const productSales = new Map<string, number>();
+                todayOrders.forEach((order: any) => {
+                  order.cart?.forEach((item: any) => {
+                    const current = productSales.get(item.name) || 0;
+                    productSales.set(item.name, current + item.quantity);
+                  });
+                });
+
+                // Calcular empaques consumidos
+                const packagingUsed = new Map<string, { quantity: number; products: string[] }>();
+
+                productSales.forEach((quantitySold, productName) => {
+                  // Buscar el producto en la lista de productos
+                  const product = products.find((p: any) => p.name === productName);
+
+                  if (product && product.components && product.components.length > 0) {
+                    product.components.forEach((comp: any) => {
+                      const totalUsed = comp.quantity * quantitySold;
+                      const current = packagingUsed.get(comp.productName) || { quantity: 0, products: [] };
+                      packagingUsed.set(comp.productName, {
+                        quantity: current.quantity + totalUsed,
+                        products: [...new Set([...current.products, productName])]
+                      });
+                    });
+                  }
+                });
+
+                if (packagingUsed.size === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-400">
+                      <p className="text-lg">No hay empaques configurados para los productos vendidos.</p>
+                      <p className="text-sm mt-2">Ve a "Gestión de Órdenes" y configura los empaques que usa cada producto.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <>
+                    <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 mb-4">
+                      <p className="text-sm text-cyan-300">
+                        💡 <span className="font-bold">Estos números son sugerencias</span> basadas en tus ventas de hoy.
+                        Ajusta manualmente si hubo desperdicios, extras o sobrantes.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {Array.from(packagingUsed.entries()).map(([packagingName, data]) => {
+                        const adjustedValue = dailyPackagingAdjustments.get(packagingName) ?? data.quantity;
+                        return (
+                          <div key={packagingName} className="bg-black rounded-lg p-4 border border-fuchsia-500/20 flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="text-white font-bold text-lg">{packagingName}</p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Usado en: {data.products.join(', ')}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <p className="text-xs text-gray-400">Sugerido:</p>
+                                <p className="text-xl font-black text-gray-500">{data.quantity}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    const newValue = Math.max(0, adjustedValue - 1);
+                                    const newMap = new Map(dailyPackagingAdjustments);
+                                    newMap.set(packagingName, newValue);
+                                    setDailyPackagingAdjustments(newMap);
+                                  }}
+                                  className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded font-bold transition-all"
+                                >
+                                  -
+                                </button>
+                                <input
+                                  type="number"
+                                  value={adjustedValue}
+                                  onChange={(e) => {
+                                    const newValue = Math.max(0, parseInt(e.target.value) || 0);
+                                    const newMap = new Map(dailyPackagingAdjustments);
+                                    newMap.set(packagingName, newValue);
+                                    setDailyPackagingAdjustments(newMap);
+                                  }}
+                                  className="w-24 px-2 py-2 text-center rounded bg-gray-900 border border-cyan-500/30 text-white font-black text-xl"
+                                />
+                                <button
+                                  onClick={() => {
+                                    const newValue = adjustedValue + 1;
+                                    const newMap = new Map(dailyPackagingAdjustments);
+                                    newMap.set(packagingName, newValue);
+                                    setDailyPackagingAdjustments(newMap);
+                                  }}
+                                  className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded font-bold transition-all"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-6 flex gap-3">
+                      <button
+                        onClick={() => {
+                          setDailyPackagingAdjustments(new Map());
+                        }}
+                        className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                      >
+                        Reiniciar Ajustes
+                      </button>
+                      <button
+                        onClick={() => {
+                          // TODO: Implementar descuento del inventario
+                          alert('Función de descuento de inventario en desarrollo. Los empaques ajustados se descontarán del inventario.');
+                          setDailyPackagingAdjustments(new Map());
+                        }}
+                        className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple"
+                      >
+                        ✓ Confirmar Consumo
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </section>
         </>
       ) : null}
     </div>
