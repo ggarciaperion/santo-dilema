@@ -460,6 +460,14 @@ export default function AdminPage() {
     newStatus: Order["status"]
   ) => {
     try {
+      // Buscar el pedido para obtener su información
+      const order = orders.find((o) => o.id === orderId);
+
+      // Si el nuevo estado es "delivered", deducir stock automáticamente
+      if (newStatus === "delivered" && order && order.status !== "delivered") {
+        await deductStockFromOrder(order);
+      }
+
       await fetch("/api/orders", {
         method: "PATCH",
         headers: {
@@ -470,6 +478,71 @@ export default function AdminPage() {
       loadOrders();
     } catch (error) {
       console.error("Error al actualizar pedido:", error);
+    }
+  };
+
+  // Función para deducir stock automáticamente cuando se entrega un pedido
+  const deductStockFromOrder = async (order: Order) => {
+    try {
+      // Calcular los componentes/empaques usados
+      const itemsToDeduct: Array<{ productName: string; quantity: number; unit: string }> = [];
+
+      // Recorrer los productos del carrito
+      order.cart?.forEach((cartItem: any) => {
+        // Buscar el producto en la lista de productos para obtener su receta
+        const product = products.find((p: any) => p.name === cartItem.name);
+
+        if (product && product.components && product.components.length > 0) {
+          // Si el producto tiene componentes/receta, calcular cuánto se usó
+          product.components.forEach((component: any) => {
+            const totalUsed = component.quantity * cartItem.quantity;
+
+            // Buscar si ya existe este componente en la lista
+            const existingItem = itemsToDeduct.find(
+              (item) => item.productName === component.productName && item.unit === component.unit
+            );
+
+            if (existingItem) {
+              existingItem.quantity += totalUsed;
+            } else {
+              itemsToDeduct.push({
+                productName: component.productName,
+                quantity: totalUsed,
+                unit: component.unit
+              });
+            }
+          });
+        }
+      });
+
+      // Si hay componentes para deducir, registrar la deducción
+      if (itemsToDeduct.length > 0) {
+        const deduction = {
+          orderId: order.id,
+          orderName: order.name,
+          items: itemsToDeduct,
+          deductionDate: new Date().toISOString(),
+        };
+
+        // Guardar la deducción en el sistema
+        const response = await fetch("/api/deductions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(deduction),
+        });
+
+        if (response.ok) {
+          console.log("✅ Stock deducido automáticamente:", itemsToDeduct);
+          // Recargar deducciones para actualizar el stock
+          loadDeductions();
+        } else {
+          console.error("❌ Error al registrar deducción automática");
+        }
+      } else {
+        console.log("ℹ️ No hay componentes configurados para los productos de este pedido");
+      }
+    } catch (error) {
+      console.error("Error al deducir stock:", error);
     }
   };
 
