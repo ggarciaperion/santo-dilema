@@ -133,6 +133,7 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filter, setFilter] = useState<string>("all");
   const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
+  const [chartTimeFilter, setChartTimeFilter] = useState<"days" | "weeks" | "months" | "years">("days");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -1144,6 +1145,17 @@ export default function AdminPage() {
     const topProductLastMonth = lastMonthProductsArray[0] || null;
     const leastProductLastMonth = lastMonthProductsArray[lastMonthProductsArray.length - 1] || null;
 
+    // Órdenes del día (solo entregadas)
+    const todayDeliveredOrders = deliveredOrders.filter((order: any) => {
+      const orderDate = getPeruDate(order.createdAt);
+      return orderDate >= startOfToday && orderDate <= endOfToday;
+    });
+
+    // Progreso de órdenes: mes actual vs mes anterior
+    const ordersProgressPercentage = lastMonthOrders.length > 0
+      ? (currentMonthOrders.length / lastMonthOrders.length) * 100
+      : 0;
+
     // Clientes frecuentes (solo con pedidos entregados, 3+ pedidos)
     const frequentCustomers = allCustomers.filter((c: any) => c.totalOrders >= 3);
 
@@ -1171,11 +1183,61 @@ export default function AdminPage() {
       topProductLastMonth,
       leastProductLastMonth,
       currentMonthProductsArray,
-      lastMonthProductsWithComparison
+      lastMonthProductsWithComparison,
+      todayDeliveredOrdersCount: todayDeliveredOrders.length,
+      ordersProgressPercentage
     };
   };
 
   const analytics = getAnalytics();
+
+  // Generar datos para la gráfica de órdenes entregadas en línea de tiempo
+  const getChartData = () => {
+    const deliveredOrders = orders.filter((order: any) =>
+      order.status === "delivered" ||
+      order.status === "Entregado" ||
+      order.status?.toLowerCase() === "entregado"
+    );
+
+    const dataMap = new Map<string, number>();
+
+    deliveredOrders.forEach((order: any) => {
+      const orderDate = getPeruDate(order.createdAt);
+      let key = "";
+
+      if (chartTimeFilter === "days") {
+        // Agrupar por día (últimos 30 días)
+        key = orderDate.toLocaleDateString("es-PE");
+      } else if (chartTimeFilter === "weeks") {
+        // Agrupar por semana (últimas 12 semanas)
+        const weekStart = new Date(orderDate);
+        weekStart.setDate(orderDate.getDate() - orderDate.getDay());
+        key = weekStart.toLocaleDateString("es-PE");
+      } else if (chartTimeFilter === "months") {
+        // Agrupar por mes
+        key = `${orderDate.getMonth() + 1}/${orderDate.getFullYear()}`;
+      } else if (chartTimeFilter === "years") {
+        // Agrupar por año
+        key = orderDate.getFullYear().toString();
+      }
+
+      dataMap.set(key, (dataMap.get(key) || 0) + 1);
+    });
+
+    // Convertir a array y ordenar
+    const chartData = Array.from(dataMap.entries())
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => {
+        if (chartTimeFilter === "years") {
+          return parseInt(a.label) - parseInt(b.label);
+        }
+        return 0; // Para días, semanas y meses mantener orden
+      });
+
+    return chartData;
+  };
+
+  const chartData = getChartData();
 
   return (
     <div className="min-h-screen bg-black">
@@ -2113,85 +2175,113 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Nuevos Carteles de Estadísticas del Mes Anterior */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* 1. RANKING DE LOS 5 DÍAS CON MÁS ÓRDENES DEL MES ANTERIOR */}
-              <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6">
-                <h3 className="text-xl font-black text-blue-400 mb-4">📅 Top 5 Días - Mes Anterior</h3>
-                {analytics.topDaysLastMonth.length === 0 ? (
-                  <p className="text-gray-400 text-center py-8">No hay datos del mes anterior</p>
-                ) : (
-                  <div className="space-y-3">
-                    {analytics.topDaysLastMonth.map((dayData: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-blue-500/20">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl font-black text-blue-400">{idx + 1}</span>
-                          <div>
-                            <p className="text-white font-bold text-sm">{dayData.day}</p>
-                            <p className="text-gray-400 text-xs">Órdenes entregadas</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-blue-400 font-black text-lg">{dayData.count}</p>
-                          <p className="text-gray-400 text-xs">pedidos</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {/* Carteles de Órdenes */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              {/* 1. ÓRDENES DEL DÍA */}
+              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
+                <p className="text-cyan-400 text-sm font-bold mb-2">📦 Órdenes del Día</p>
+                <p className="text-5xl font-black text-cyan-400">{analytics.todayDeliveredOrdersCount}</p>
+                <p className="text-gray-400 text-xs mt-2">Entregadas hoy</p>
               </div>
 
-              {/* 2. PRODUCTO MÁS VENDIDO DEL MES ANTERIOR */}
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/30 p-6">
-                <h3 className="text-xl font-black text-green-400 mb-4">🏆 Más Vendido - Mes Anterior</h3>
-                {!analytics.topProductLastMonth ? (
-                  <p className="text-gray-400 text-center py-8">No hay datos del mes anterior</p>
-                ) : (
-                  <div className="bg-black/50 rounded-lg p-6 border border-green-500/30">
-                    <div className="text-center mb-4">
-                      <p className="text-6xl mb-4">👑</p>
-                      <p className="text-white font-black text-2xl mb-2">{analytics.topProductLastMonth.name}</p>
-                      <p className="text-gray-400 text-sm mb-4">{analytics.topProductLastMonth.category}</p>
-                    </div>
-                    <div className="border-t border-green-500/20 pt-4 space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400 text-sm">Cantidad vendida:</span>
-                        <span className="text-green-400 font-black">{analytics.topProductLastMonth.quantity} unidades</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400 text-sm">Ingresos:</span>
-                        <span className="text-amber-400 font-black gold-glow">S/ {analytics.topProductLastMonth.revenue.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              {/* 2. ÓRDENES DEL MES */}
+              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
+                <p className="text-green-400 text-sm font-bold mb-2">📊 Órdenes del Mes</p>
+                <p className="text-5xl font-black text-green-400">{analytics.currentMonthOrdersCount}</p>
+                <p className="text-gray-400 text-xs mt-2">Entregadas este mes</p>
               </div>
 
-              {/* 3. PRODUCTO MENOS VENDIDO DEL MES ANTERIOR */}
-              <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-6">
-                <h3 className="text-xl font-black text-red-400 mb-4">📉 Menos Vendido - Mes Anterior</h3>
-                {!analytics.leastProductLastMonth ? (
-                  <p className="text-gray-400 text-center py-8">No hay datos del mes anterior</p>
-                ) : (
-                  <div className="bg-black/50 rounded-lg p-6 border border-red-500/30">
-                    <div className="text-center mb-4">
-                      <p className="text-6xl mb-4">⚠️</p>
-                      <p className="text-white font-black text-2xl mb-2">{analytics.leastProductLastMonth.name}</p>
-                      <p className="text-gray-400 text-sm mb-4">{analytics.leastProductLastMonth.category}</p>
-                    </div>
-                    <div className="border-t border-red-500/20 pt-4 space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400 text-sm">Cantidad vendida:</span>
-                        <span className="text-red-400 font-black">{analytics.leastProductLastMonth.quantity} unidades</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400 text-sm">Ingresos:</span>
-                        <span className="text-amber-400 font-black gold-glow">S/ {analytics.leastProductLastMonth.revenue.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              {/* 3. BARRA DE PROGRESO (Mes Actual vs Mes Anterior) */}
+              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
+                <p className="text-purple-400 text-sm font-bold mb-2">📈 Progreso vs Mes Anterior</p>
+                <p className="text-5xl font-black text-purple-400">{analytics.ordersProgressPercentage.toFixed(0)}%</p>
+                <div className="mt-3 bg-black/50 rounded-full h-3 overflow-hidden border border-purple-500/30">
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-600 transition-all duration-500"
+                    style={{ width: `${Math.min(analytics.ordersProgressPercentage, 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-gray-400 text-xs mt-2">Mes anterior: {analytics.lastMonthOrdersCount} órdenes</p>
               </div>
+
+              {/* 4. ÓRDENES MES ANTERIOR */}
+              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
+                <p className="text-amber-400 text-sm font-bold mb-2">📅 Órdenes Mes Anterior</p>
+                <p className="text-5xl font-black text-amber-400">{analytics.lastMonthOrdersCount}</p>
+                <p className="text-gray-400 text-xs mt-2">Entregadas mes pasado</p>
+              </div>
+            </div>
+
+            {/* Gráfica de Órdenes Entregadas en Línea de Tiempo */}
+            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-fuchsia-400">📈 Progreso de Órdenes Entregadas</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setChartTimeFilter("days")}
+                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                      chartTimeFilter === "days"
+                        ? "bg-fuchsia-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                    }`}
+                  >
+                    Días
+                  </button>
+                  <button
+                    onClick={() => setChartTimeFilter("weeks")}
+                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                      chartTimeFilter === "weeks"
+                        ? "bg-fuchsia-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                    }`}
+                  >
+                    Semanas
+                  </button>
+                  <button
+                    onClick={() => setChartTimeFilter("months")}
+                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                      chartTimeFilter === "months"
+                        ? "bg-fuchsia-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                    }`}
+                  >
+                    Meses
+                  </button>
+                  <button
+                    onClick={() => setChartTimeFilter("years")}
+                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                      chartTimeFilter === "years"
+                        ? "bg-fuchsia-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                    }`}
+                  >
+                    Años
+                  </button>
+                </div>
+              </div>
+
+              {/* Gráfica de barras simple */}
+              {chartData.length === 0 ? (
+                <p className="text-gray-400 text-center py-12">No hay datos para mostrar</p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {chartData.map((data: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-4">
+                      <div className="w-32 text-right">
+                        <span className="text-gray-400 text-sm font-bold">{data.label}</span>
+                      </div>
+                      <div className="flex-1 bg-black/50 rounded-full h-8 overflow-hidden border border-fuchsia-500/30 relative">
+                        <div
+                          className="h-full bg-gradient-to-r from-fuchsia-600 to-purple-600 flex items-center justify-end pr-3 transition-all duration-300"
+                          style={{ width: `${(data.count / Math.max(...chartData.map((d: any) => d.count))) * 100}%` }}
+                        >
+                          <span className="text-white font-black text-sm">{data.count}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </>
