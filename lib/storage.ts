@@ -19,6 +19,7 @@ let ordersFilePath: string = '';
 let inventoryFilePath: string = '';
 let productsFilePath: string = '';
 let deductionsFilePath: string = '';
+let dailyClosesFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -29,6 +30,7 @@ if (!isProduction) {
   inventoryFilePath = path.join(dataDir, 'inventory.json');
   productsFilePath = path.join(dataDir, 'products.json');
   deductionsFilePath = path.join(dataDir, 'deductions.json');
+  dailyClosesFilePath = path.join(dataDir, 'daily-closes.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -48,6 +50,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(deductionsFilePath)) {
       fs.writeFileSync(deductionsFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(dailyClosesFilePath)) {
+      fs.writeFileSync(dailyClosesFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -118,6 +123,24 @@ interface StockDeduction {
     unit: string;
   }>;
   deductionDate: string;
+  createdAt: string;
+}
+
+interface DailyClose {
+  id: string;
+  date: string;
+  sales: Array<{
+    productName: string;
+    quantity: number;
+  }>;
+  packagingUsed: Array<{
+    packagingName: string;
+    suggested: number;
+    actual: number;
+    difference: number;
+  }>;
+  totalDifference: number;
+  notes?: string;
   createdAt: string;
 }
 
@@ -399,5 +422,69 @@ export const storage = {
     }
 
     return deduction;
+  },
+
+  // ========== MÉTODOS DE CIERRE DIARIO ==========
+
+  // Obtener todos los cierres diarios
+  async getDailyCloses(): Promise<DailyClose[]> {
+    if (isProduction) {
+      if (!redis) {
+        console.error('⚠️ Redis no configurado en producción.');
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: usar Redis
+      const dailyCloses = await redis.get<DailyClose[]>('dailyCloses');
+      return dailyCloses || [];
+    } else {
+      // Desarrollo: usar archivo
+      ensureDataDirectory();
+      const data = fs.readFileSync(dailyClosesFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  // Guardar un nuevo cierre diario
+  async saveDailyClose(dailyClose: DailyClose): Promise<DailyClose> {
+    const dailyCloses = await this.getDailyCloses();
+    dailyCloses.unshift(dailyClose);
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      // Producción: guardar en Redis
+      await redis.set('dailyCloses', dailyCloses);
+      console.log('✅ Cierre diario guardado en Redis');
+    } else {
+      // Desarrollo: guardar en archivo
+      ensureDataDirectory();
+      fs.writeFileSync(dailyClosesFilePath, JSON.stringify(dailyCloses, null, 2));
+      console.log('✅ Cierre diario guardado en archivo local');
+    }
+
+    return dailyClose;
+  },
+
+  // Eliminar un cierre diario
+  async deleteDailyClose(id: string): Promise<boolean> {
+    const dailyCloses = await this.getDailyCloses();
+    const filteredCloses = dailyCloses.filter((c) => c.id !== id);
+
+    if (filteredCloses.length === dailyCloses.length) {
+      return false; // No se encontró el cierre
+    }
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('dailyCloses', filteredCloses);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(dailyClosesFilePath, JSON.stringify(filteredCloses, null, 2));
+    }
+
+    return true;
   },
 };

@@ -178,6 +178,8 @@ export default function AdminPage() {
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
   const [dailyPackagingAdjustments, setDailyPackagingAdjustments] = useState<Map<string, number>>(new Map());
+  const [dailyCloses, setDailyCloses] = useState<any[]>([]);
+  const [showDailyCloseHistory, setShowDailyCloseHistory] = useState(false);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [editingCatalogProduct, setEditingCatalogProduct] = useState<any>(null);
   const [catalogForm, setCatalogForm] = useState({ productId: "", name: "", category: "", unit: "" });
@@ -239,6 +241,7 @@ export default function AdminPage() {
     loadDeductions();
     loadPromotions();
     loadCatalogProducts();
+    loadDailyCloses();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
       loadOrders();
@@ -247,6 +250,7 @@ export default function AdminPage() {
       loadDeductions();
       loadPromotions();
       loadCatalogProducts();
+      loadDailyCloses();
     }, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -384,6 +388,67 @@ export default function AdminPage() {
       setCatalogProducts(data);
     } catch (error) {
       console.error("Error al cargar catálogo de productos:", error);
+    }
+  };
+
+  const loadDailyCloses = async () => {
+    try {
+      const response = await fetch("/api/daily-close");
+      const data = await response.json();
+      setDailyCloses(data);
+    } catch (error) {
+      console.error("Error al cargar cierres diarios:", error);
+    }
+  };
+
+  const handleConfirmDailyClose = async (packagingUsed: Map<string, { quantity: number; products: string[] }>, productSales: Map<string, number>) => {
+    try {
+      const today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+
+      // Preparar datos de ventas
+      const sales = Array.from(productSales.entries()).map(([productName, quantity]) => ({
+        productName,
+        quantity
+      }));
+
+      // Preparar datos de empaques
+      const packagingData = Array.from(packagingUsed.entries()).map(([packagingName, data]) => {
+        const suggested = data.quantity;
+        const actual = dailyPackagingAdjustments.get(packagingName) ?? suggested;
+        const difference = actual - suggested;
+        return {
+          packagingName,
+          suggested,
+          actual,
+          difference
+        };
+      });
+
+      // Calcular diferencia total
+      const totalDifference = packagingData.reduce((sum, item) => sum + Math.abs(item.difference), 0);
+
+      // Guardar cierre diario
+      const response = await fetch("/api/daily-close", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: today,
+          sales,
+          packagingUsed: packagingData,
+          totalDifference
+        }),
+      });
+
+      if (response.ok) {
+        alert(`✅ Cierre diario registrado exitosamente!\n\nFecha: ${today}\nProductos vendidos: ${sales.length}\nEmpaques registrados: ${packagingData.length}\nDiferencia total: ${totalDifference} unidades`);
+        setDailyPackagingAdjustments(new Map());
+        loadDailyCloses();
+      } else {
+        alert("Error al registrar el cierre diario");
+      }
+    } catch (error) {
+      console.error("Error al confirmar cierre diario:", error);
+      alert("Error de conexión al registrar el cierre");
     }
   };
 
@@ -4100,14 +4165,24 @@ export default function AdminPage() {
         /* Daily Close Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">💰 Cierre de Caja Diario</h2>
-
-            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-6">
-              <p className="text-gray-300 mb-4">
-                Este módulo te ayuda a calcular cuántos empaques consumiste hoy basándose en tus ventas.
-                El sistema te mostrará una sugerencia, pero <span className="text-cyan-400 font-bold">puedes ajustar manualmente</span> las cantidades si hubo desperdicios, extras o sobrantes.
-              </p>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple">💰 Cierre de Caja Diario</h2>
+              <button
+                onClick={() => setShowDailyCloseHistory(!showDailyCloseHistory)}
+                className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
+              >
+                {showDailyCloseHistory ? '← Volver al Cierre de Hoy' : '📋 Ver Historial'}
+              </button>
             </div>
+
+            {!showDailyCloseHistory ? (
+              <>
+                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-6">
+                  <p className="text-gray-300 mb-4">
+                    Este módulo te ayuda a calcular cuántos empaques consumiste hoy basándose en tus ventas.
+                    El sistema te mostrará una sugerencia, pero <span className="text-cyan-400 font-bold">puedes ajustar manualmente</span> las cantidades si hubo desperdicios, extras o sobrantes.
+                  </p>
+                </div>
 
             {/* Resumen de Ventas del Día */}
             <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-6">
@@ -4277,20 +4352,104 @@ export default function AdminPage() {
                         Reiniciar Ajustes
                       </button>
                       <button
-                        onClick={() => {
-                          // TODO: Implementar descuento del inventario
-                          alert('Función de descuento de inventario en desarrollo. Los empaques ajustados se descontarán del inventario.');
-                          setDailyPackagingAdjustments(new Map());
-                        }}
+                        onClick={() => handleConfirmDailyClose(packagingUsed, productSales)}
                         className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple"
                       >
-                        ✓ Confirmar Consumo
+                        ✓ Confirmar y Registrar Cierre
                       </button>
                     </div>
                   </>
                 );
               })()}
             </div>
+              </>
+            ) : (
+              /* Historial de Cierres Diarios */
+              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6">
+                <h3 className="text-2xl font-black text-cyan-400 mb-6">📋 Historial de Cierres Diarios</h3>
+
+                {dailyCloses.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <p className="text-lg">No hay cierres registrados todavía.</p>
+                    <p className="text-sm mt-2">Los cierres aparecerán aquí cuando completes tu primer cierre de caja.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {dailyCloses.map((close: any) => (
+                      <div key={close.id} className="bg-black rounded-lg p-6 border border-fuchsia-500/20">
+                        {/* Header del cierre */}
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <p className="text-2xl font-black text-fuchsia-400">
+                              {new Date(close.date).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Registrado el {new Date(close.createdAt).toLocaleString('es-PE')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-400">Diferencia Total</p>
+                            <p className={`text-2xl font-black ${close.totalDifference === 0 ? 'text-green-400' : close.totalDifference > 5 ? 'text-red-400' : 'text-amber-400'}`}>
+                              {close.totalDifference > 0 ? '+' : ''}{close.totalDifference}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Ventas del día */}
+                        <div className="mb-4">
+                          <p className="text-sm font-bold text-cyan-400 mb-2">📊 Ventas del día:</p>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                            {close.sales.map((sale: any, idx: number) => (
+                              <div key={idx} className="bg-gray-900 rounded px-3 py-2 border border-cyan-500/20">
+                                <p className="text-xs text-gray-400">{sale.productName}</p>
+                                <p className="text-lg font-black text-white">{sale.quantity} und.</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Empaques consumidos */}
+                        <div>
+                          <p className="text-sm font-bold text-fuchsia-400 mb-2">📦 Empaques consumidos:</p>
+                          <div className="space-y-2">
+                            {close.packagingUsed.map((pkg: any, idx: number) => (
+                              <div key={idx} className="bg-gray-900 rounded px-4 py-3 border border-fuchsia-500/20 flex justify-between items-center">
+                                <span className="text-white font-bold">{pkg.packagingName}</span>
+                                <div className="flex gap-4 items-center">
+                                  <div className="text-right">
+                                    <p className="text-xs text-gray-400">Sugerido</p>
+                                    <p className="text-sm font-bold text-gray-500">{pkg.suggested}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs text-gray-400">Real</p>
+                                    <p className="text-lg font-black text-white">{pkg.actual}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs text-gray-400">Diferencia</p>
+                                    <p className={`text-lg font-black ${pkg.difference === 0 ? 'text-green-400' : pkg.difference > 0 ? 'text-red-400' : 'text-amber-400'}`}>
+                                      {pkg.difference > 0 ? '+' : ''}{pkg.difference}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Análisis de diferencias */}
+                        {close.totalDifference > 5 && (
+                          <div className="mt-4 bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+                            <p className="text-sm text-red-400">
+                              ⚠️ <span className="font-bold">Diferencia significativa detectada</span> - Revisa si hubo desperdicios, extras o errores en el conteo.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </section>
         </>
       ) : null}
