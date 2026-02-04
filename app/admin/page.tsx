@@ -2584,6 +2584,7 @@ export default function AdminPage() {
                     />
                     <button
                       onClick={() => {
+                        console.log('🔥 Click en Nueva Compra');
                         setShowInventoryModal(true);
                         setProductSearchTerms([""]);
                       }}
@@ -3550,6 +3551,7 @@ export default function AdminPage() {
                     />
                     <button
                       onClick={() => {
+                        console.log('🔥 Click en Nueva Compra');
                         setShowInventoryModal(true);
                         setProductSearchTerms([""]);
                       }}
