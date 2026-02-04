@@ -3994,7 +3994,9 @@ export default function AdminPage() {
           )}
 
           {/* Inventory Modal */}
-          {showInventoryModal && (() => {
+          {(() => {
+            console.log('🔍 Estado showInventoryModal:', showInventoryModal);
+            if (!showInventoryModal) return null;
             console.log('🟢 Renderizando modal de inventario');
             return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
