@@ -3994,7 +3994,9 @@ export default function AdminPage() {
           )}
 
           {/* Inventory Modal */}
-          {showInventoryModal && (
+          {showInventoryModal && (() => {
+            console.log('🟢 Renderizando modal de inventario');
+            return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
                 <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
@@ -4452,7 +4454,8 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
         </>
       ) : activeTab === "marketing" ? (
         /* Marketing Tab */
