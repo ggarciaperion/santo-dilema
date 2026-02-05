@@ -4745,17 +4745,20 @@ export default function AdminPage() {
 
               {/* Encabezados de columnas */}
               <div className="hidden md:grid grid-cols-12 gap-2 mb-2 px-2">
-                <div className="col-span-4">
+                <div className="col-span-3">
                   <p className="text-xs font-bold text-gray-400">Producto</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-xs font-bold text-gray-400">Cantidad</p>
+                  <p className="text-xs font-bold text-gray-400">Categoría</p>
+                </div>
+                <div className="col-span-1">
+                  <p className="text-xs font-bold text-gray-400">Cant</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-xs font-bold text-gray-400">Unidad</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-xs font-bold text-gray-400">Costo unitario</p>
+                  <p className="text-xs font-bold text-gray-400">Costo unit.</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-xs font-bold text-gray-400">Total</p>
@@ -4767,7 +4770,7 @@ export default function AdminPage() {
                   <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
                     <div className="grid grid-cols-12 gap-2">
                       {/* Producto */}
-                      <div className="col-span-12 md:col-span-4">
+                      <div className="col-span-12 md:col-span-3">
                         <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Producto</label>
                         <input
                           type="text"
@@ -4777,8 +4780,23 @@ export default function AdminPage() {
                           className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                         />
                       </div>
+                      {/* Categoría */}
+                      <div className="col-span-12 md:col-span-2">
+                        <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Categoría</label>
+                        <select
+                          value={item.category || ""}
+                          onChange={(e) => updateInventoryItem(idx, 'category', e.target.value)}
+                          className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                        >
+                          <option value="">Seleccionar</option>
+                          <option value="INSUMO">🥘 INSUMO</option>
+                          <option value="EMPAQUE">📦 EMPAQUE</option>
+                          <option value="SERVICIO">⚡ SERVICIO</option>
+                          <option value="UTENCILIO">🔧 UTENCILIO</option>
+                        </select>
+                      </div>
                       {/* Cantidad */}
-                      <div className="col-span-6 md:col-span-2">
+                      <div className="col-span-6 md:col-span-1">
                         <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Cantidad</label>
                         <input
                           type="number"
