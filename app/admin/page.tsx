@@ -3079,15 +3079,6 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {/* Info Box */}
-                <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 mb-6">
-                  <p className="text-cyan-300 text-sm mb-2">
-                    💡 <span className="font-bold">Sistema 100% Manual:</span> Registra manualmente los ingredientes y empaques que usa este producto.
-                  </p>
-                  <p className="text-cyan-300 text-sm">
-                    <span className="font-bold">Ejemplo:</span> Si vendes "Dúo Dilema" y usas: 500g de pechuga (S/8), 1 caja (S/0.50), 2 bolsas (S/0.20), el costo total sería S/8.70.
-                  </p>
-                </div>
 
                 {/* Actions */}
                 <div className="flex gap-3">
