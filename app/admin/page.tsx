@@ -2960,7 +2960,6 @@ export default function AdminPage() {
                                               setStockConsumptions(newConsumptions);
 
                                               // Mostrar confirmación
-                                              playNotificationSound();
                                               alert(`✅ Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
                                             } catch (error) {
                                               console.error("Error al guardar consumo:", error);
