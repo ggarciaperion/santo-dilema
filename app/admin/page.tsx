@@ -2812,8 +2812,148 @@ export default function AdminPage() {
 
                 {/* ========== CONTROL DE STOCK (NUEVA SECCIÓN) ========== */}
                 {purchasesSubTab === "stock" && (
-                  <div>
-                    <p className="text-gray-400 text-center py-12">Sección de Stock en construcción...</p>
+                  <div className="space-y-4">
+                    {/* Encabezado */}
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-xl font-black text-cyan-400">📦 Control de Stock</h3>
+                      <input
+                        type="text"
+                        placeholder="Buscar producto..."
+                        value={stockSearchTerm}
+                        onChange={(e) => setStockSearchTerm(e.target.value)}
+                        className="px-4 py-2 rounded bg-gray-900 border border-cyan-500/30 text-white focus:border-cyan-400 focus:outline-none text-sm"
+                      />
+                    </div>
+
+                    {/* Tabla de Stock */}
+                    <div className="bg-black/50 rounded-lg border border-cyan-500/20 overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="bg-cyan-900/20 border-b border-cyan-500/30">
+                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Producto</th>
+                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Categoría</th>
+                              <th className="px-4 py-3 text-center text-xs font-bold text-green-400">Stock Actual</th>
+                              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-400">Unidad</th>
+                              <th className="px-4 py-3 text-center text-xs font-bold text-red-400">Consumo Hoy</th>
+                              <th className="px-4 py-3 text-center text-xs font-bold text-amber-400">Nuevo Stock</th>
+                              <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400">Acción</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(() => {
+                              // Agrupar items por producto
+                              const stockMap = new Map<string, { productName: string; category: string; unit: string; totalStock: number; consumption: number }>();
+
+                              inventory.forEach((purchase: any) => {
+                                purchase.items.forEach((item: any) => {
+                                  const key = `${item.productName}-${item.unit}`;
+                                  const existing = stockMap.get(key);
+                                  const itemStock = (item.quantity || 0) * (item.volume || 1);
+
+                                  if (existing) {
+                                    existing.totalStock += itemStock;
+                                  } else {
+                                    stockMap.set(key, {
+                                      productName: item.productName,
+                                      category: item.category || "SIN CATEGORÍA",
+                                      unit: item.unit,
+                                      totalStock: itemStock,
+                                      consumption: 0
+                                    });
+                                  }
+                                });
+                              });
+
+                              // Filtrar por búsqueda
+                              const filteredStock = Array.from(stockMap.values()).filter(item =>
+                                item.productName.toLowerCase().includes(stockSearchTerm.toLowerCase()) ||
+                                item.category.toLowerCase().includes(stockSearchTerm.toLowerCase())
+                              );
+
+                              if (filteredStock.length === 0) {
+                                return (
+                                  <tr>
+                                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                                      {inventory.length === 0
+                                        ? "No hay compras registradas. Registra tu primera compra para comenzar el control de stock."
+                                        : "No se encontraron productos."}
+                                    </td>
+                                  </tr>
+                                );
+                              }
+
+                              return filteredStock.map((item, idx) => {
+                                const newStock = item.totalStock - item.consumption;
+
+                                return (
+                                  <tr key={idx} className="border-b border-gray-800 hover:bg-gray-900/50">
+                                    <td className="px-4 py-3 text-sm text-white font-medium">{item.productName}</td>
+                                    <td className="px-4 py-3 text-xs text-gray-300">
+                                      <span className="px-2 py-1 rounded bg-gray-800 border border-gray-700">
+                                        {item.category === "INSUMO" && "🥘 INSUMO"}
+                                        {item.category === "EMPAQUE" && "📦 EMPAQUE"}
+                                        {item.category === "SERVICIO" && "⚡ SERVICIO"}
+                                        {item.category === "UTENCILIO" && "🔧 UTENCILIO"}
+                                        {!["INSUMO", "EMPAQUE", "SERVICIO", "UTENCILIO"].includes(item.category) && item.category}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <span className="text-green-400 font-black text-base">{item.totalStock.toLocaleString()}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center text-xs text-gray-400 font-medium">{item.unit}</td>
+                                    <td className="px-4 py-3 text-center">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max={item.totalStock}
+                                        value={item.consumption === 0 ? '' : item.consumption}
+                                        onChange={(e) => {
+                                          const value = parseInt(e.target.value) || 0;
+                                          const key = `${item.productName}-${item.unit}`;
+                                          const current = stockMap.get(key);
+                                          if (current) {
+                                            current.consumption = Math.min(value, item.totalStock);
+                                            setInventory([...inventory]); // Force re-render
+                                          }
+                                        }}
+                                        className="w-20 px-2 py-1 text-sm rounded bg-red-900/30 border border-red-500/50 text-red-300 text-center focus:border-red-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <span className={`font-black text-base ${newStock < 0 ? 'text-red-400' : 'text-amber-400'}`}>
+                                        {newStock.toLocaleString()}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <button
+                                        onClick={() => {
+                                          if (item.consumption > 0 && confirm(`¿Confirmar consumo de ${item.consumption} ${item.unit} de ${item.productName}?`)) {
+                                            // Aquí puedes implementar la lógica para guardar el consumo
+                                            alert("Función de guardar consumo en desarrollo");
+                                          }
+                                        }}
+                                        disabled={item.consumption === 0}
+                                        className="px-3 py-1 text-xs rounded font-bold bg-fuchsia-600 hover:bg-fuchsia-500 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                      >
+                                        Guardar
+                                      </button>
+                                    </td>
+                                  </tr>
+                                );
+                              });
+                            })()}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Información adicional */}
+                    <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4">
+                      <p className="text-cyan-300 text-xs">
+                        <span className="font-bold">💡 Instrucciones:</span> Ingresa la cantidad consumida en la columna "Consumo Hoy" y presiona "Guardar" para actualizar el stock.
+                      </p>
+                    </div>
                   </div>
                 )}
                     </>
