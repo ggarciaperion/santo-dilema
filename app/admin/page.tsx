@@ -3112,226 +3112,82 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Product Modal */}
+          {/* Product Modal - SIMPLE Y MANUAL */}
           {showProductModal && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
+              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-xl w-full my-8">
                 <h3 className="text-2xl font-black text-fuchsia-400 mb-4">
-                  {editingProduct ? 'Editar Orden' : 'Nueva Orden'}
+                  {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto de Venta'}
                 </h3>
-                <div className="space-y-3">
+
+                <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-3 mb-4">
+                  <p className="text-cyan-300 text-xs">
+                    💡 Registra solo los datos básicos aquí. Luego usa el botón <span className="font-bold">"🧾 Receta"</span> para agregar ingredientes y empaques con sus costos.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Nombre de la Orden</label>
+                    <label className="block text-sm font-bold text-fuchsia-400 mb-2">Nombre del Producto *</label>
                     <input
                       type="text"
                       value={productForm.name}
-                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      placeholder="Ej: PEQUEÑO DILEMA, DUO DILEMA"
+                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value.toUpperCase() })}
+                      className="w-full px-4 py-3 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      placeholder="Ej: PEQUEÑO DILEMA, DÚO DILEMA, ENSALADA CLÁSICA"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Categoría</label>
+                    <label className="block text-sm font-bold text-fuchsia-400 mb-2">Categoría *</label>
                     <select
                       value={productForm.category}
                       onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                     >
-                      <option value="fit">FIT (Ensaladas)</option>
-                      <option value="fat">FAT (Alitas)</option>
-                      <option value="bebida">Bebidas</option>
-                      <option value="extra-papas">EXTRA PAPAS</option>
-                      <option value="extra-salsas">EXTRA SALSAS</option>
+                      <option value="fit">🥗 FIT (Ensaladas)</option>
+                      <option value="fat">🍗 FAT (Alitas/Frituras)</option>
+                      <option value="bebida">🥤 Bebidas</option>
+                      <option value="extra-papas">🍟 EXTRA PAPAS</option>
+                      <option value="extra-salsas">🌶️ EXTRA SALSAS</option>
                     </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Precio Venta</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={productForm.price}
-                        onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Costo</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={productForm.cost}
-                        onChange={(e) => setProductForm({ ...productForm, cost: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
+
+                  <div>
+                    <label className="block text-sm font-bold text-fuchsia-400 mb-2">Precio de Venta (S/) *</label>
                     <input
-                      type="checkbox"
-                      checked={productForm.active}
-                      onChange={(e) => setProductForm({ ...productForm, active: e.target.checked })}
-                      className="w-4 h-4"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-4 py-3 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-lg font-bold"
+                      placeholder="0.00"
                     />
-                    <label className="text-sm text-white">Producto activo</label>
                   </div>
 
-                  {/* Sección de Empaques - SIMPLIFICADO */}
-                  <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
-                    <p className="text-sm font-bold text-cyan-400 mb-1">📦 Empaques que usa este producto</p>
-                    <p className="text-xs text-gray-400 mb-3">Define qué empaques se consumen cada vez que vendes este producto. Al final del día, el sistema calculará cuántos empaques gastaste según tus ventas.</p>
-
-                    {/* Lista de empaques agregados */}
-                    {productForm.components.length > 0 ? (
-                      <div className="mb-3 space-y-2">
-                        <p className="text-xs font-bold text-green-400">✓ Empaques configurados:</p>
-                        {productForm.components.map((comp, idx) => (
-                          <div key={idx} className="flex items-center justify-between bg-gray-900 rounded px-3 py-2 border border-cyan-500/20">
-                            <span className="text-white text-sm">
-                              <span className="font-black text-cyan-400">{comp.quantity}</span> × <span className="font-bold">{comp.productName}</span>
-                            </span>
-                            <button
-                              onClick={() => {
-                                const newComponents = productForm.components.filter((_, i) => i !== idx);
-                                setProductForm({ ...productForm, components: newComponents });
-                              }}
-                              className="text-red-400 hover:text-red-300 font-bold"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="mb-3 p-3 bg-amber-900/20 border border-amber-500/30 rounded">
-                        <p className="text-xs text-amber-400">⚠️ No has agregado empaques todavía. Agrega los empaques que usa este producto.</p>
-                      </div>
-                    )}
-
-                    {/* Agregar empaque */}
-                    <div className="border-t border-cyan-500/20 pt-3">
-                      <p className="text-xs font-bold text-cyan-400 mb-2">Agregar empaque:</p>
-                      <div className="grid grid-cols-12 gap-2">
-                        <select
-                          id="component-product-select"
-                          className="col-span-7 px-3 py-2 text-sm rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none"
-                          defaultValue=""
-                        >
-                          <option value="">Seleccionar empaque...</option>
-                        {(() => {
-                          // Obtener productos únicos del inventario
-                          const stockMap = new Map<string, { productName: string; unit: string }>();
-
-                          // 1. Agregar productos de tipo "inventory" de la tabla products
-                          products.forEach((product: any) => {
-                            if (product.type === "inventory") {
-                              const key = `${product.name}-${product.unit}`;
-                              if (!stockMap.has(key)) {
-                                stockMap.set(key, {
-                                  productName: product.name,
-                                  unit: product.unit,
-                                });
-                              }
-                            }
-                          });
-
-                          // 2. Agregar productos de compras registradas
-                          inventory.forEach((purchase: any) => {
-                            purchase.items.forEach((item: any) => {
-                              const key = `${item.productName}-${item.unit}`;
-                              if (!stockMap.has(key)) {
-                                stockMap.set(key, {
-                                  productName: item.productName,
-                                  unit: item.unit,
-                                });
-                              }
-                            });
-                          });
-
-                          // 3. Agregar materiales del catálogo con categoría de inventario
-                          catalogProducts.forEach((product: any) => {
-                            const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
-                            if (materialCategories.includes(product.category)) {
-                              const key = `${product.name}-${product.unit}`;
-                              if (!stockMap.has(key)) {
-                                stockMap.set(key, {
-                                  productName: product.name,
-                                  unit: product.unit,
-                                });
-                              }
-                            }
-                          });
-
-                          return Array.from(stockMap.values())
-                            .sort((a, b) => a.productName.localeCompare(b.productName))
-                            .map((item, idx) => (
-                              <option key={idx} value={JSON.stringify(item)}>
-                                {item.productName} ({item.unit})
-                              </option>
-                            ));
-                        })()}
-                      </select>
-                        <input
-                          type="number"
-                          id="component-quantity-input"
-                          min="1"
-                          step="1"
-                          placeholder="Cant."
-                          onKeyDown={(e) => {
-                            if (e.key === '.' || e.key === ',') {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="col-span-3 px-3 py-2 text-sm rounded bg-gray-900 border border-gray-700 text-white focus:border-cyan-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                        <button
-                          onClick={() => {
-                            const select = document.getElementById('component-product-select') as HTMLSelectElement;
-                            const quantityInput = document.getElementById('component-quantity-input') as HTMLInputElement;
-
-                            if (select.value && quantityInput.value) {
-                              const selectedProduct = JSON.parse(select.value);
-                              const quantity = parseInt(quantityInput.value, 10);
-
-                              if (quantity > 0 && Number.isInteger(quantity)) {
-                                setProductForm({
-                                  ...productForm,
-                                  components: [
-                                    ...productForm.components,
-                                    {
-                                      productName: selectedProduct.productName,
-                                      unit: selectedProduct.unit,
-                                      quantity: quantity,
-                                    }
-                                  ]
-                                });
-
-                                // Reset inputs
-                                select.value = "";
-                                quantityInput.value = "";
-                              }
-                            }
-                          }}
-                          className="col-span-2 px-3 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold transition-all"
-                        >
-                          Agregar
-                        </button>
-                      </div>
+                  <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="product-active"
+                        checked={productForm.active}
+                        onChange={(e) => setProductForm({ ...productForm, active: e.target.checked })}
+                        className="w-5 h-5 rounded border-gray-600 text-fuchsia-600 focus:ring-fuchsia-500"
+                      />
+                      <label htmlFor="product-active" className="text-sm text-white font-semibold cursor-pointer">
+                        Producto activo en la carta
+                      </label>
                     </div>
                   </div>
 
-                  {productForm.price > 0 && productForm.cost > 0 && (
-                    <div className="bg-black/50 rounded-lg p-3 border border-fuchsia-500/30">
-                      <p className="text-xs text-gray-400 mb-1">Margen de ganancia:</p>
-                      <p className="text-2xl font-black text-fuchsia-400">
-                        {((productForm.price - productForm.cost) / productForm.price * 100).toFixed(1)}%
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">Ganancia: S/ {(productForm.price - productForm.cost).toFixed(2)}</p>
-                    </div>
-                  )}
+                  <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-3">
+                    <p className="text-amber-300 text-xs">
+                      ⚠️ <span className="font-bold">Importante:</span> El costo y la receta se configuran después usando el botón "🧾 Receta" en la tabla de productos.
+                    </p>
+                  </div>
                 </div>
+
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => {
@@ -3339,15 +3195,15 @@ export default function AdminPage() {
                       setEditingProduct(null);
                       setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
                     }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
-                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all neon-border-purple"
+                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-3 rounded-lg font-bold transition-all neon-border-purple"
                   >
-                    {editingProduct ? 'Guardar' : 'Crear'}
+                    {editingProduct ? '💾 Guardar Cambios' : '✅ Crear Producto'}
                   </button>
                 </div>
               </div>
