@@ -3476,7 +3476,17 @@ export default function AdminPage() {
         /* Marketing Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Control de Inventario</h2>
+            <div className="text-center py-20">
+              <p className="text-2xl text-gray-400">🎯 Sección en desarrollo</p>
+              <p className="text-gray-500 mt-4">Aquí se implementarán promociones, campañas y fidelización</p>
+            </div>
+          </section>
+        </>
+      ) : activeTab === "marketing-OLD-DELETE" ? (
+        /* OLD INVENTORY SECTION - TO BE DELETED */
+        <>
+          <section className="container mx-auto px-4 py-8">
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">VIEJO - ELIMINAR</h2>
 
             {/* Sub-tabs */}
             <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
