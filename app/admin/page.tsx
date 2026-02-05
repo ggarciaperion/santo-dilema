@@ -168,6 +168,7 @@ export default function AdminPage() {
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
   const [inventorySection, setInventorySection] = useState<"purchases" | "stock">("purchases");
+  const [purchasesSubTab, setPurchasesSubTab] = useState<"history" | "stock">("history"); // Sub-tabs dentro de Compras y Gastos
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
   const [stockSearchTerm, setStockSearchTerm] = useState<string>("");
   const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
@@ -2564,30 +2565,63 @@ export default function AdminPage() {
 
                   return (
                     <>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold text-white">💰 Compras y Gastos {getMonthName(inventoryMonthFilter)}</h3>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="month"
-                      value={inventoryMonthFilter}
-                      onChange={(e) => setInventoryMonthFilter(e.target.value)}
-                      className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                    />
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-4">💰 Compras y Gastos {getMonthName(inventoryMonthFilter)}</h3>
+
+                  {/* Sub-tabs */}
+                  <div className="flex gap-2 mb-4 border-b-2 border-fuchsia-500/20">
                     <button
-                      onClick={() => {
-                        console.log('🔥 Click en Nueva Compra');
-                        setShowInventoryModal(true);
-                        setProductSearchTerms([""]);
-                      }}
-                      className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                      onClick={() => setPurchasesSubTab("history")}
+                      className={`px-6 py-3 font-bold transition-all text-sm ${
+                        purchasesSubTab === "history"
+                          ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                          : "text-gray-400 hover:text-gray-300"
+                      }`}
                     >
-                      + Nueva Compra
+                      📋 Historial de Compras
                     </button>
+                    <button
+                      onClick={() => setPurchasesSubTab("stock")}
+                      className={`px-6 py-3 font-bold transition-all text-sm ${
+                        purchasesSubTab === "stock"
+                          ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                          : "text-gray-400 hover:text-gray-300"
+                      }`}
+                    >
+                      📦 Control de Stock
+                    </button>
+                  </div>
+
+                  {/* Header con filtros y botón */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="month"
+                        value={inventoryMonthFilter}
+                        onChange={(e) => setInventoryMonthFilter(e.target.value)}
+                        className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
+                      />
+                    </div>
+                    {purchasesSubTab === "history" && (
+                      <button
+                        onClick={() => {
+                          console.log('🔥 Click en Nueva Compra');
+                          setShowInventoryModal(true);
+                          setProductSearchTerms([""]);
+                        }}
+                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                      >
+                        + Nueva Compra
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Pequeño cartel con totales */}
-                <div className="flex gap-3 mb-6">
+                {/* ========== HISTORIAL DE COMPRAS ========== */}
+                {purchasesSubTab === "history" && (
+                  <>
+                    {/* Pequeño cartel con totales */}
+                    <div className="flex gap-3 mb-6">
                   <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-fuchsia-500/20">
                     <p className="text-xs text-gray-400">Compras del mes</p>
                     <p className="text-sm font-bold text-fuchsia-400">
@@ -2771,6 +2805,15 @@ export default function AdminPage() {
                         )}
                       </div>
                     </div>
+                  </div>
+                )}
+                  </>
+                )}
+
+                {/* ========== CONTROL DE STOCK (NUEVA SECCIÓN) ========== */}
+                {purchasesSubTab === "stock" && (
+                  <div>
+                    <p className="text-gray-400 text-center py-12">Sección de Stock en construcción...</p>
                   </div>
                 )}
                     </>

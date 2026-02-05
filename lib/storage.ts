@@ -107,6 +107,7 @@ interface InventoryPurchase {
     volume: number;
     unitCost: number;
     total: number;
+    category?: string; // INSUMO, EMPAQUE, SERVICIO, UTENCILIO
   }>;
   totalAmount: number;
   notes?: string;
