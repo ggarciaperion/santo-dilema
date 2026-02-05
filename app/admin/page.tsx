@@ -171,6 +171,7 @@ export default function AdminPage() {
   const [purchasesSubTab, setPurchasesSubTab] = useState<"history" | "stock">("history"); // Sub-tabs dentro de Compras y Gastos
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
   const [stockSearchTerm, setStockSearchTerm] = useState<string>("");
+  const [stockConsumptions, setStockConsumptions] = useState<Map<string, number>>(new Map());
   const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
   const [inventoryMonthFilter, setInventoryMonthFilter] = useState<string>(() => {
     const now = new Date();
@@ -2843,7 +2844,7 @@ export default function AdminPage() {
                           <tbody>
                             {(() => {
                               // Agrupar items por producto
-                              const stockMap = new Map<string, { productName: string; category: string; unit: string; totalStock: number; consumption: number }>();
+                              const stockMap = new Map<string, { productName: string; category: string; unit: string; totalStock: number }>();
 
                               inventory.forEach((purchase: any) => {
                                 purchase.items.forEach((item: any) => {
@@ -2858,8 +2859,7 @@ export default function AdminPage() {
                                       productName: item.productName,
                                       category: item.category || "SIN CATEGORÍA",
                                       unit: item.unit,
-                                      totalStock: itemStock,
-                                      consumption: 0
+                                      totalStock: itemStock
                                     });
                                   }
                                 });
@@ -2884,7 +2884,9 @@ export default function AdminPage() {
                               }
 
                               return filteredStock.map((item, idx) => {
-                                const newStock = item.totalStock - item.consumption;
+                                const key = `${item.productName}-${item.unit}`;
+                                const consumption = stockConsumptions.get(key) || 0;
+                                const newStock = item.totalStock - consumption;
 
                                 return (
                                   <tr key={idx} className="border-b border-gray-800 hover:bg-gray-900/50">
@@ -2907,15 +2909,12 @@ export default function AdminPage() {
                                         type="number"
                                         min="0"
                                         max={item.totalStock}
-                                        value={item.consumption === 0 ? '' : item.consumption}
+                                        value={consumption === 0 ? '' : consumption}
                                         onChange={(e) => {
                                           const value = parseInt(e.target.value) || 0;
-                                          const key = `${item.productName}-${item.unit}`;
-                                          const current = stockMap.get(key);
-                                          if (current) {
-                                            current.consumption = Math.min(value, item.totalStock);
-                                            setInventory([...inventory]); // Force re-render
-                                          }
+                                          const newConsumptions = new Map(stockConsumptions);
+                                          newConsumptions.set(key, Math.min(value, item.totalStock));
+                                          setStockConsumptions(newConsumptions);
                                         }}
                                         className="w-20 px-2 py-1 text-sm rounded bg-red-900/30 border border-red-500/50 text-red-300 text-center focus:border-red-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                       />
@@ -2928,12 +2927,16 @@ export default function AdminPage() {
                                     <td className="px-4 py-3 text-center">
                                       <button
                                         onClick={() => {
-                                          if (item.consumption > 0 && confirm(`¿Confirmar consumo de ${item.consumption} ${item.unit} de ${item.productName}?`)) {
+                                          if (consumption > 0 && confirm(`¿Confirmar consumo de ${consumption} ${item.unit} de ${item.productName}?`)) {
                                             // Aquí puedes implementar la lógica para guardar el consumo
                                             alert("Función de guardar consumo en desarrollo");
+                                            // Limpiar consumo después de guardar
+                                            const newConsumptions = new Map(stockConsumptions);
+                                            newConsumptions.delete(key);
+                                            setStockConsumptions(newConsumptions);
                                           }
                                         }}
-                                        disabled={item.consumption === 0}
+                                        disabled={consumption === 0}
                                         className="px-3 py-1 text-xs rounded font-bold bg-fuchsia-600 hover:bg-fuchsia-500 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                       >
                                         Guardar
