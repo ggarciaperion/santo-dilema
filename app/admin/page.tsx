@@ -4783,7 +4783,6 @@ export default function AdminPage() {
                           type="text"
                           value={item.productName || ""}
                           onChange={(e) => updateInventoryItem(idx, 'productName', e.target.value.toUpperCase())}
-                          placeholder="Ej: BOLSAS, POLLO, etc."
                           className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                         />
                       </div>
@@ -4810,7 +4809,6 @@ export default function AdminPage() {
                           step="1"
                           value={item.quantity === 0 ? '' : item.quantity}
                           onChange={(e) => updateInventoryItem(idx, 'quantity', parseInt(e.target.value) || 0)}
-                          placeholder="5"
                           className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white text-center focus:border-fuchsia-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
@@ -4837,9 +4835,8 @@ export default function AdminPage() {
                         <input
                           type="number"
                           step="1"
-                          value={item.volume === 0 || item.volume === 1 ? '' : item.volume}
+                          value={item.volume === 0 ? '' : item.volume}
                           onChange={(e) => updateInventoryItem(idx, 'volume', parseInt(e.target.value) || 1)}
-                          placeholder="100"
                           title="Contenido por unidad. Ej: Si cada paquete tiene 100 bolsas, escribe 100"
                           className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
@@ -4859,7 +4856,6 @@ export default function AdminPage() {
                           step="0.01"
                           value={item.unitCost === 0 ? '' : item.unitCost}
                           onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
-                          placeholder="0.00"
                           className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
