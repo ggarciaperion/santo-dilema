@@ -179,7 +179,7 @@ export default function AdminPage() {
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [editingRecipeProduct, setEditingRecipeProduct] = useState<any>(null);
-  const [recipeComponents, setRecipeComponents] = useState<Array<{ productName: string; unit: string; quantity: number }>>([]);
+  const [recipeComponents, setRecipeComponents] = useState<Array<{ productName: string; unit: string; quantity: number; cost?: number }>>([]);
   const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [editingCatalogProduct, setEditingCatalogProduct] = useState<any>(null);
@@ -666,7 +666,7 @@ export default function AdminPage() {
   };
 
   const addRecipeComponent = () => {
-    setRecipeComponents([...recipeComponents, { productName: "", unit: "UNIDAD", quantity: 1 }]);
+    setRecipeComponents([...recipeComponents, { productName: "", unit: "UNIDAD", quantity: 1, cost: 0 }]);
   };
 
   const updateRecipeComponent = (index: number, field: string, value: any) => {
@@ -2446,16 +2446,7 @@ export default function AdminPage() {
               >
                 🍗 Productos de Venta
               </button>
-              <button
-                onClick={() => setFinancialSection("stock")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  financialSection === "stock"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                📦 Stock de Empaques
-              </button>
+              {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
             </div>
 
             {/* DASHBOARD FINANCIERO */}
@@ -2944,109 +2935,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* STOCK DE EMPAQUES */}
-            {financialSection === "stock" && (
-              <>
-                {(() => {
-                  // Calcular stock basado en compras
-                  const stockMap = new Map<string, { productName: string; unit: string; totalQuantity: number; purchases: number }>();
-
-                  inventory.forEach((purchase) => {
-                    purchase.items.forEach((item: any) => {
-                      const key = `${item.productName}-${item.unit}`;
-                      // Calcular stock: cantidad × volumen
-                      const stockQuantity = item.quantity * (item.volume || 1);
-
-                      if (stockMap.has(key)) {
-                        const existing = stockMap.get(key)!;
-                        existing.totalQuantity += stockQuantity;
-                        existing.purchases += 1;
-                      } else {
-                        stockMap.set(key, {
-                          productName: item.productName,
-                          unit: item.unit,
-                          totalQuantity: stockQuantity,
-                          purchases: 1
-                        });
-                      }
-                    });
-                  });
-
-                  // Restar deducciones del stock
-                  deductions.forEach((deduction: any) => {
-                    deduction.items.forEach((item: any) => {
-                      const key = `${item.productName}-${item.unit}`;
-                      if (stockMap.has(key)) {
-                        const existing = stockMap.get(key)!;
-                        existing.totalQuantity -= item.quantity;
-                      }
-                    });
-                  });
-
-                  const stockItems = Array.from(stockMap.values()).sort((a, b) =>
-                    a.productName.localeCompare(b.productName)
-                  );
-
-                  // Filtrar items de stock según búsqueda
-                  const filteredStockItems = stockItems.filter((item) => {
-                    if (!stockSearchTerm) return true;
-                    const searchLower = stockSearchTerm.toLowerCase();
-                    return item.productName.toLowerCase().includes(searchLower);
-                  });
-
-                  return (
-                    <>
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-2xl font-bold text-white">📦 Control de Stock de Empaques</h3>
-                        <input
-                          type="text"
-                          value={stockSearchTerm}
-                          onChange={(e) => setStockSearchTerm(e.target.value)}
-                          placeholder="🔍 Buscar producto..."
-                          className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-cyan-400 focus:outline-none w-64"
-                        />
-                      </div>
-
-                      {/* Tabla de Stock */}
-                      <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                        {filteredStockItems.length === 0 ? (
-                          <div className="text-center py-12">
-                            <p className="text-xl text-gray-400">No hay stock registrado</p>
-                          </div>
-                        ) : (
-                          <table className="w-full" style={{ borderCollapse: "collapse" }}>
-                            <thead className="bg-black">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">PRODUCTO</th>
-                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">UNIDAD</th>
-                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">CANTIDAD EN STOCK</th>
-                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30"># COMPRAS</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredStockItems.map((item, idx) => (
-                                <tr key={idx} className="hover:bg-black/50 transition-all">
-                                  <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{item.productName}</td>
-                                  <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
-                                    {item.unit}
-                                  </td>
-                                  <td className="px-6 py-3 text-center text-green-400 font-black text-lg border border-fuchsia-500/10">
-                                    {item.totalQuantity}
-                                  </td>
-                                  <td className="px-6 py-3 text-center text-gray-400 border border-fuchsia-500/10">
-                                    {item.purchases}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    </>
-                  );
-                })()}
-              </>
-            )}
+            {/* STOCK DE EMPAQUES - ELIMINADO (Sistema ahora es 100% manual) */}
           </section>
 
           {/* Recipe Configuration Modal */}
@@ -3094,118 +2983,111 @@ export default function AdminPage() {
                     <div className="space-y-3">
                       {/* Header */}
                       <div className="grid grid-cols-12 gap-3 px-3 py-2 bg-black/50 rounded-lg border border-purple-500/30">
-                        <div className="col-span-5 text-xs font-bold text-purple-400">EMPAQUE/INSUMO</div>
-                        <div className="col-span-3 text-xs font-bold text-purple-400">UNIDAD</div>
-                        <div className="col-span-3 text-xs font-bold text-purple-400 text-center">CANTIDAD</div>
+                        <div className="col-span-4 text-xs font-bold text-purple-400">INGREDIENTE/EMPAQUE</div>
+                        <div className="col-span-2 text-xs font-bold text-purple-400">CANTIDAD</div>
+                        <div className="col-span-2 text-xs font-bold text-purple-400">UNIDAD</div>
+                        <div className="col-span-3 text-xs font-bold text-purple-400">COSTO (S/)</div>
                         <div className="col-span-1 text-xs font-bold text-purple-400 text-center"></div>
                       </div>
 
-                      {/* Components */}
-                      {recipeComponents.map((component, idx) => {
-                        // Obtener lista única de productos del inventario
-                        const inventoryProducts = new Map<string, string>();
-                        inventory.forEach((purchase: any) => {
-                          purchase.items.forEach((item: any) => {
-                            const key = `${item.productName}|${item.unit}`;
-                            inventoryProducts.set(key, item.productName);
-                          });
-                        });
-
-                        const uniqueProducts = Array.from(inventoryProducts.keys()).sort((a, b) => {
-                          const nameA = a.split('|')[0];
-                          const nameB = b.split('|')[0];
-                          return nameA.localeCompare(nameB);
-                        });
-
-                        return (
-                          <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-800 rounded-lg p-3 border border-purple-500/20">
-                            {/* Product Name - Dropdown */}
-                            <div className="col-span-5">
-                              <select
-                                value={component.productName ? `${component.productName}|${component.unit}` : ""}
-                                onChange={(e) => {
-                                  const [productName, unit] = e.target.value.split('|');
-                                  updateRecipeComponent(idx, 'productName', productName);
-                                  updateRecipeComponent(idx, 'unit', unit);
-                                }}
-                                className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
-                              >
-                                <option value="">-- Seleccionar empaque/insumo --</option>
-                                {uniqueProducts.length === 0 ? (
-                                  <option value="" disabled>No hay productos en compras</option>
-                                ) : (
-                                  uniqueProducts.map((key) => {
-                                    const [productName, unit] = key.split('|');
-                                    return (
-                                      <option key={key} value={key}>
-                                        {productName} ({unit})
-                                      </option>
-                                    );
-                                  })
-                                )}
-                              </select>
-                            </div>
-
-                            {/* Unit - Auto filled, read only */}
-                            <div className="col-span-3">
-                              <input
-                                type="text"
-                                value={component.unit || ""}
-                                readOnly
-                                className="w-full px-3 py-2 rounded bg-gray-700 border border-purple-500/30 text-gray-400 text-sm cursor-not-allowed"
-                                placeholder="Se auto-completa"
-                              />
-                            </div>
-
-                            {/* Quantity */}
-                            <div className="col-span-3">
-                              <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={component.quantity}
-                                onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                                className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm text-center focus:border-purple-400 focus:outline-none"
-                                placeholder="0"
-                              />
-                            </div>
-
-                            {/* Delete Button */}
-                            <div className="col-span-1 text-center">
-                              <button
-                                onClick={() => removeRecipeComponent(idx)}
-                                className="text-red-400 hover:text-red-300 font-bold text-lg"
-                                title="Eliminar componente"
-                              >
-                                ✕
-                              </button>
-                            </div>
+                      {/* Components - MANUAL INPUT */}
+                      {recipeComponents.map((component, idx) => (
+                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-800 rounded-lg p-3 border border-purple-500/20">
+                          {/* Nombre del ingrediente/empaque - INPUT MANUAL */}
+                          <div className="col-span-4">
+                            <input
+                              type="text"
+                              value={component.productName || ""}
+                              onChange={(e) => updateRecipeComponent(idx, 'productName', e.target.value.toUpperCase())}
+                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                              placeholder="Ej: PECHUGA, CAJA, LECHUGA"
+                            />
                           </div>
-                        );
-                      })}
+
+                          {/* Cantidad - INPUT MANUAL */}
+                          <div className="col-span-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={component.quantity}
+                              onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm text-center focus:border-purple-400 focus:outline-none"
+                              placeholder="0"
+                            />
+                          </div>
+
+                          {/* Unidad - SELECT MANUAL */}
+                          <div className="col-span-2">
+                            <select
+                              value={component.unit || ""}
+                              onChange={(e) => updateRecipeComponent(idx, 'unit', e.target.value)}
+                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                            >
+                              <option value="">Seleccionar</option>
+                              <option value="UNIDAD">UNIDAD</option>
+                              <option value="KG">KG</option>
+                              <option value="GRAMOS">GRAMOS</option>
+                              <option value="LITROS">LITROS</option>
+                              <option value="ML">ML</option>
+                              <option value="CIENTO">CIENTO</option>
+                              <option value="PAQUETE">PAQUETE</option>
+                            </select>
+                          </div>
+
+                          {/* Costo - INPUT MANUAL */}
+                          <div className="col-span-3">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={component.cost || 0}
+                              onChange={(e) => updateRecipeComponent(idx, 'cost', parseFloat(e.target.value) || 0)}
+                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                              placeholder="0.00"
+                            />
+                          </div>
+
+                          {/* Delete Button */}
+                          <div className="col-span-1 text-center">
+                            <button
+                              onClick={() => removeRecipeComponent(idx)}
+                              className="text-red-400 hover:text-red-300 font-bold text-lg"
+                              title="Eliminar componente"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
 
+                {/* Costo Total de la Receta */}
+                {recipeComponents.length > 0 && (
+                  <div className="bg-gradient-to-r from-purple-900/30 to-fuchsia-900/30 border-2 border-purple-500/50 rounded-lg p-4 mb-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-gray-400 text-sm font-semibold">Costo Total de la Receta</p>
+                        <p className="text-xs text-gray-500 mt-1">{recipeComponents.length} componentes</p>
+                      </div>
+                      <p className="text-3xl font-black text-purple-400">
+                        S/ {recipeComponents.reduce((sum, comp) => sum + (comp.cost || 0), 0).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Info Box */}
                 <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 mb-6">
                   <p className="text-cyan-300 text-sm mb-2">
-                    💡 <span className="font-bold">Importante:</span> Solo puedes seleccionar productos que ya hayas registrado en <span className="font-bold">Compras y Gastos</span>.
+                    💡 <span className="font-bold">Sistema 100% Manual:</span> Registra manualmente los ingredientes y empaques que usa este producto.
                   </p>
                   <p className="text-cyan-300 text-sm">
-                    <span className="font-bold">Ejemplo:</span> Si vendes "Dúo Dilema" y usas 1 caja + 2 bolsas + 500g de papas,
-                    selecciónalos del dropdown con sus cantidades exactas. Cuando entregues un pedido,
-                    el sistema descontará automáticamente del stock.
+                    <span className="font-bold">Ejemplo:</span> Si vendes "Dúo Dilema" y usas: 500g de pechuga (S/8), 1 caja (S/0.50), 2 bolsas (S/0.20), el costo total sería S/8.70.
                   </p>
                 </div>
-
-                {inventory.length === 0 && (
-                  <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 mb-6">
-                    <p className="text-amber-300 text-sm">
-                      ⚠️ <span className="font-bold">No tienes productos en el inventario.</span> Primero registra tus compras de empaques/insumos en <span className="font-bold">Compras y Gastos</span> para poder seleccionarlos aquí.
-                    </p>
-                  </div>
-                )}
 
                 {/* Actions */}
                 <div className="flex gap-3">
