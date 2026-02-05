@@ -296,6 +296,48 @@ export const storage = {
     return true;
   },
 
+  // Descontar stock del inventario
+  async deductStock(productName: string, unit: string, quantityToDeduct: number): Promise<boolean> {
+    const inventory = await this.getInventory();
+    let remainingToDeduct = quantityToDeduct;
+
+    // Recorrer las compras de más reciente a más antigua y descontar
+    for (let i = 0; i < inventory.length && remainingToDeduct > 0; i++) {
+      const purchase = inventory[i];
+
+      for (let j = 0; j < purchase.items.length && remainingToDeduct > 0; j++) {
+        const item = purchase.items[j];
+
+        if (item.productName === productName && item.unit === unit) {
+          const currentStock = (item.quantity || 0) * (item.volume || 1);
+
+          if (currentStock > 0) {
+            const deduction = Math.min(remainingToDeduct, currentStock);
+
+            // Calcular nuevo quantity manteniendo el volume
+            const newTotalStock = currentStock - deduction;
+            item.quantity = Math.floor(newTotalStock / (item.volume || 1));
+
+            remainingToDeduct -= deduction;
+          }
+        }
+      }
+    }
+
+    // Guardar inventario actualizado
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('inventory', inventory);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(inventoryFilePath, JSON.stringify(inventory, null, 2));
+    }
+
+    return remainingToDeduct === 0; // true si se pudo descontar todo
+  },
+
   // ========== MÉTODOS DE PRODUCTOS ==========
 
   // Obtener todos los productos

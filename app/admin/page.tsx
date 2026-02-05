@@ -2926,14 +2926,46 @@ export default function AdminPage() {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                       <button
-                                        onClick={() => {
+                                        onClick={async () => {
                                           if (consumption > 0 && confirm(`¿Confirmar consumo de ${consumption} ${item.unit} de ${item.productName}?`)) {
-                                            // Aquí puedes implementar la lógica para guardar el consumo
-                                            alert("Función de guardar consumo en desarrollo");
-                                            // Limpiar consumo después de guardar
-                                            const newConsumptions = new Map(stockConsumptions);
-                                            newConsumptions.delete(key);
-                                            setStockConsumptions(newConsumptions);
+                                            try {
+                                              // Registrar deducción
+                                              const response = await fetch("/api/deductions", {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({
+                                                  orderId: "MANUAL",
+                                                  orderName: "Consumo Manual",
+                                                  items: [{
+                                                    productName: item.productName,
+                                                    quantity: consumption,
+                                                    unit: item.unit
+                                                  }],
+                                                  deductionDate: new Date().toISOString().split('T')[0]
+                                                })
+                                              });
+
+                                              if (!response.ok) {
+                                                throw new Error("Error al guardar el consumo");
+                                              }
+
+                                              // Recargar inventario para actualizar stock
+                                              const inventoryResponse = await fetch("/api/inventory");
+                                              const updatedInventory = await inventoryResponse.json();
+                                              setInventory(updatedInventory);
+
+                                              // Limpiar consumo después de guardar
+                                              const newConsumptions = new Map(stockConsumptions);
+                                              newConsumptions.delete(key);
+                                              setStockConsumptions(newConsumptions);
+
+                                              // Mostrar confirmación
+                                              playNotificationSound();
+                                              alert(`✅ Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
+                                            } catch (error) {
+                                              console.error("Error al guardar consumo:", error);
+                                              alert("❌ Error al guardar el consumo. Intenta nuevamente.");
+                                            }
                                           }
                                         }}
                                         disabled={consumption === 0}
