@@ -4743,13 +4743,6 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              {/* Ejemplo visual */}
-              <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-2 mb-3">
-                <p className="text-cyan-300 text-xs">
-                  <span className="font-bold">💡 Ejemplo:</span> Compras <span className="font-black text-white">5</span> <span className="font-bold text-white">PAQUETES</span> × <span className="font-black text-cyan-400">100</span> unidades c/u = <span className="font-black text-green-400">500</span> unidades en stock
-                </p>
-              </div>
-
               {/* Encabezados de columnas */}
               <div className="bg-gray-800 rounded-lg p-2 mb-2">
                 <div className="grid grid-cols-12 gap-2">
@@ -4818,7 +4811,7 @@ export default function AdminPage() {
                           value={item.quantity === 0 ? '' : item.quantity}
                           onChange={(e) => updateInventoryItem(idx, 'quantity', parseInt(e.target.value) || 0)}
                           placeholder="5"
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white text-center focus:border-fuchsia-400 focus:outline-none font-bold"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white text-center focus:border-fuchsia-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
@@ -4848,7 +4841,7 @@ export default function AdminPage() {
                           onChange={(e) => updateInventoryItem(idx, 'volume', parseInt(e.target.value) || 1)}
                           placeholder="100"
                           title="Contenido por unidad. Ej: Si cada paquete tiene 100 bolsas, escribe 100"
-                          className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
@@ -4867,7 +4860,7 @@ export default function AdminPage() {
                           value={item.unitCost === 0 ? '' : item.unitCost}
                           onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
