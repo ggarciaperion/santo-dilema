@@ -809,15 +809,15 @@ export default function FatPage() {
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-4 lg:py-6 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible">
-          {/* Scrollable Products */}
+          {/* Scrollable Products - Carrusel en móvil, grilla en desktop */}
           <div
             ref={scrollContainerRef}
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex items-center gap-2 md:gap-3 lg:gap-4 scrollbar-hide px-1 md:px-4 py-12 md:py-3 lg:py-4 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowX: 'auto', overflowY: 'visible' }}
+            className={`flex md:flex-wrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-x-visible`}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowY: 'visible' }}
           >
             {products.map((product) => {
               const isExpanded = expandedCard === product.id;
@@ -831,10 +831,10 @@ export default function FatPage() {
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onMouseEnter={() => handleCardHover(product.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 neon-border-fat shadow-xl shadow-red-500/30 snap-center border-2 md:border-0 border-red-400
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fat shadow-xl shadow-red-500/30 snap-center md:snap-none border-2 md:border-0 border-red-400
                     ${isExpanded
-                      ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
-                      : 'w-[240px] md:w-[220px] lg:w-[240px]'
+                      ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
+                      : 'w-[240px] md:w-[280px] lg:w-[300px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
