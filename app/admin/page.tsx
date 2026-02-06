@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -99,6 +100,47 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
 }
 
 export default function AdminPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Verificar autenticación
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("admin_token");
+
+      if (!token) {
+        router.push("/admin/login");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/auth?token=${token}`);
+        const data = await response.json();
+
+        if (data.authenticated) {
+          setIsAuthenticated(true);
+          setCheckingAuth(false);
+        } else {
+          localStorage.removeItem("admin_token");
+          router.push("/admin/login");
+        }
+      } catch (error) {
+        console.error("Error verificando autenticación:", error);
+        localStorage.removeItem("admin_token");
+        router.push("/admin/login");
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    localStorage.removeItem("admin_token");
+    router.push("/admin/login");
+  };
+
   // Helper para obtener fecha/hora en zona horaria de Perú (UTC-5)
   const getPeruDate = (date?: Date | string) => {
     const d = date ? new Date(date) : new Date();
@@ -1376,6 +1418,23 @@ export default function AdminPage() {
 
   const chartData = getChartData();
 
+  // Mostrar pantalla de carga mientras se verifica la autenticación
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-fuchsia-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Verificando acceso...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no está autenticado, no mostrar nada (el useEffect redirigirá)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
@@ -1397,12 +1456,21 @@ export default function AdminPage() {
                 <p className="text-amber-400 mt-1 gold-glow">Santo Dilema - Gestión de Pedidos</p>
               </div>
             </div>
-            <Link
-              href="/"
-              className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-            >
-              ← Volver al Sitio
-            </Link>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105"
+                title="Cerrar Sesión"
+              >
+                🚪 Salir
+              </button>
+              <Link
+                href="/"
+                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
+              >
+                ← Volver al Sitio
+              </Link>
+            </div>
           </div>
         </div>
       </header>
