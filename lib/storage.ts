@@ -274,6 +274,32 @@ export const storage = {
     return purchase;
   },
 
+  // Actualizar una compra de inventario
+  async updateInventoryPurchase(updatedPurchase: InventoryPurchase): Promise<boolean> {
+    const inventory = await this.getInventory();
+    const purchaseIndex = inventory.findIndex((p) => p.id === updatedPurchase.id);
+
+    if (purchaseIndex === -1) {
+      return false; // No se encontró el registro
+    }
+
+    inventory[purchaseIndex] = updatedPurchase;
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('inventory', inventory);
+      console.log('✅ Compra actualizada en Redis');
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(inventoryFilePath, JSON.stringify(inventory, null, 2));
+      console.log('✅ Compra actualizada en archivo local');
+    }
+
+    return true;
+  },
+
   // Eliminar una compra de inventario
   async deleteInventoryPurchase(id: string): Promise<boolean> {
     const inventory = await this.getInventory();

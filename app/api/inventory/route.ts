@@ -42,6 +42,45 @@ export async function POST(request: Request) {
   }
 }
 
+// PUT - Actualizar registro de compra
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    console.log("🔥 Body recibido para actualizar:", body);
+
+    if (!body.id) {
+      return NextResponse.json({ error: "ID es requerido" }, { status: 400 });
+    }
+
+    const updatedPurchase = {
+      id: body.id,
+      supplier: body.supplier,
+      supplierRuc: body.supplierRuc || "",
+      supplierPhone: body.supplierPhone || "",
+      paymentMethod: body.paymentMethod || "plin-yape",
+      items: body.items,
+      totalAmount: body.totalAmount,
+      notes: body.notes || "",
+      purchaseDate: body.purchaseDate,
+      createdAt: body.createdAt,
+      updatedAt: new Date().toISOString(),
+    };
+
+    console.log("🔥 Compra a actualizar:", updatedPurchase);
+    const saved = await storage.updateInventoryPurchase(updatedPurchase);
+
+    if (!saved) {
+      return NextResponse.json({ error: "Compra no encontrada" }, { status: 404 });
+    }
+
+    const inventory = await storage.getInventory();
+    return NextResponse.json(inventory);
+  } catch (error) {
+    console.error("Error al actualizar compra:", error);
+    return NextResponse.json({ error: "Error al actualizar compra", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+  }
+}
+
 // DELETE - Eliminar registro de compra
 export async function DELETE(request: Request) {
   try {

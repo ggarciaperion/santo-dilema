@@ -179,6 +179,8 @@ export default function AdminPage() {
   });
   const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
+  const [showInventoryEditModal, setShowInventoryEditModal] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState<any>(null);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [editingRecipeProduct, setEditingRecipeProduct] = useState<any>(null);
   const [recipeComponents, setRecipeComponents] = useState<Array<{ productName: string; unit: string; quantity: number; cost?: number }>>([]);
@@ -2705,6 +2707,16 @@ export default function AdminPage() {
                                         🔍
                                       </button>
                                       <button
+                                        onClick={() => {
+                                          setEditingPurchase(purchase);
+                                          setShowInventoryEditModal(true);
+                                        }}
+                                        className="text-amber-400 hover:text-amber-300 text-sm"
+                                        title="Editar"
+                                      >
+                                        ✏️
+                                      </button>
+                                      <button
                                         onClick={() => handleDeleteInventory(purchase.id)}
                                         className="text-red-400 hover:text-red-300 text-sm font-bold"
                                         title="Eliminar"
@@ -3600,6 +3612,16 @@ export default function AdminPage() {
                                         title="Ver detalles"
                                       >
                                         🔍
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setEditingPurchase(purchase);
+                                          setShowInventoryEditModal(true);
+                                        }}
+                                        className="text-amber-400 hover:text-amber-300 text-sm"
+                                        title="Editar"
+                                      >
+                                        ✏️
                                       </button>
                                       <button
                                         onClick={() => handleDeleteInventory(purchase.id)}
@@ -5098,6 +5120,290 @@ export default function AdminPage() {
                 className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
               >
                 ✅ Registrar Compra
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edición de Compra */}
+      {showInventoryEditModal && editingPurchase && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+          <div className="bg-gray-900 rounded-xl border-2 border-amber-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto">
+            <h3 className="text-xl font-black text-amber-400 mb-3">✏️ Editar Compra</h3>
+
+            {/* Información Compacta en Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
+                <input
+                  type="text"
+                  defaultValue={editingPurchase.supplierRuc}
+                  onChange={(e) => setEditingPurchase({ ...editingPurchase, supplierRuc: e.target.value })}
+                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
+                  placeholder="20123456789"
+                  maxLength={11}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-amber-400 mb-1">Nombre del proveedor *</label>
+                <input
+                  type="text"
+                  defaultValue={editingPurchase.supplier}
+                  onChange={(e) => setEditingPurchase({ ...editingPurchase, supplier: e.target.value.toUpperCase() })}
+                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                  placeholder="Nombre proveedor"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
+                <input
+                  type="tel"
+                  defaultValue={editingPurchase.supplierPhone}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setEditingPurchase({ ...editingPurchase, supplierPhone: value });
+                  }}
+                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
+                  maxLength={9}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-amber-400 mb-1">Fecha de compra *</label>
+                <input
+                  type="date"
+                  defaultValue={editingPurchase.purchaseDate}
+                  onChange={(e) => setEditingPurchase({ ...editingPurchase, purchaseDate: e.target.value })}
+                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-amber-400 mb-1">Método de pago *</label>
+                <select
+                  defaultValue={editingPurchase.paymentMethod}
+                  onChange={(e) => setEditingPurchase({ ...editingPurchase, paymentMethod: e.target.value })}
+                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                >
+                  <option value="plin-yape">📱 Plin / Yape</option>
+                  <option value="efectivo">💵 Efectivo</option>
+                  <option value="transferencia">🏦 Transferencia</option>
+                  <option value="tarjeta">💳 Tarjeta</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Lista de Artículos */}
+            <div className="mb-3">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
+              </div>
+
+              {/* Encabezados de columnas */}
+              <div className="bg-gray-800 rounded-lg p-2 mb-2">
+                <div className="grid grid-cols-12 gap-2">
+                  <div className="col-span-3">
+                    <p className="text-xs font-bold text-amber-400">Producto</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs font-bold text-amber-400">Categoría</p>
+                  </div>
+                  <div className="col-span-1">
+                    <p className="text-xs font-bold text-amber-400 text-center">Compra</p>
+                  </div>
+                  <div className="col-span-1">
+                    <p className="text-xs font-bold text-amber-400">Und.</p>
+                  </div>
+                  <div className="col-span-1">
+                    <p className="text-xs font-bold text-cyan-400 text-center" title="Contenido por unidad de compra">x</p>
+                  </div>
+                  <div className="col-span-1">
+                    <p className="text-xs font-bold text-green-400 text-center" title="Stock total que ingresa">= Stock</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs font-bold text-amber-400">Costo S/</p>
+                  </div>
+                  <div className="col-span-1">
+                    <p className="text-xs font-bold text-amber-400">Total S/</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 pr-1">
+                {editingPurchase.items.map((item: any, idx: number) => (
+                  <div key={idx} className="bg-black/50 rounded p-2 border border-amber-500/20">
+                    <div className="grid grid-cols-12 gap-2 items-center">
+                      {/* Producto */}
+                      <div className="col-span-12 md:col-span-3">
+                        <input
+                          type="text"
+                          defaultValue={item.productName || ""}
+                          onChange={(e) => {
+                            const newItems = [...editingPurchase.items];
+                            newItems[idx].productName = e.target.value.toUpperCase();
+                            setEditingPurchase({ ...editingPurchase, items: newItems });
+                          }}
+                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* Categoría */}
+                      <div className="col-span-12 md:col-span-2">
+                        <select
+                          defaultValue={item.category || ""}
+                          onChange={(e) => {
+                            const newItems = [...editingPurchase.items];
+                            newItems[idx].category = e.target.value;
+                            setEditingPurchase({ ...editingPurchase, items: newItems });
+                          }}
+                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                        >
+                          <option value="">-- Tipo --</option>
+                          <option value="INSUMO">🥘 INSUMO</option>
+                          <option value="EMPAQUE">📦 EMPAQUE</option>
+                          <option value="SERVICIO">⚡ SERVICIO</option>
+                          <option value="UTENCILIO">🔧 UTENCILIO</option>
+                        </select>
+                      </div>
+
+                      {/* Cantidad Comprada */}
+                      <div className="col-span-3 md:col-span-1">
+                        <input
+                          type="number"
+                          step="1"
+                          defaultValue={item.quantity}
+                          onChange={(e) => {
+                            const newItems = [...editingPurchase.items];
+                            const quantity = parseInt(e.target.value) || 0;
+                            newItems[idx].quantity = quantity;
+                            newItems[idx].total = quantity * newItems[idx].unitCost;
+                            setEditingPurchase({ ...editingPurchase, items: newItems, totalAmount: newItems.reduce((sum, i) => sum + i.total, 0) });
+                          }}
+                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white text-center focus:border-amber-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      </div>
+
+                      {/* Unidad de Compra */}
+                      <div className="col-span-4 md:col-span-1">
+                        <select
+                          defaultValue={item.unit}
+                          onChange={(e) => {
+                            const newItems = [...editingPurchase.items];
+                            newItems[idx].unit = e.target.value;
+                            setEditingPurchase({ ...editingPurchase, items: newItems });
+                          }}
+                          className="w-full px-1 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                        >
+                          <option value="">-</option>
+                          <option value="PAQUETE">PKT</option>
+                          <option value="CAJA">CAJA</option>
+                          <option value="BOLSA">BOLSA</option>
+                          <option value="KG">KG</option>
+                          <option value="UNIDAD">UND</option>
+                          <option value="CIENTO">CIEN</option>
+                        </select>
+                      </div>
+
+                      {/* Multiplicador (Contenido por unidad) */}
+                      <div className="col-span-2 md:col-span-1">
+                        <input
+                          type="number"
+                          step="1"
+                          defaultValue={item.volume || 1}
+                          onChange={(e) => {
+                            const newItems = [...editingPurchase.items];
+                            newItems[idx].volume = parseInt(e.target.value) || 1;
+                            setEditingPurchase({ ...editingPurchase, items: newItems });
+                          }}
+                          title="Contenido por unidad. Ej: Si cada paquete tiene 100 bolsas, escribe 100"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      </div>
+
+                      {/* Stock Total (Auto-calculado) */}
+                      <div className="col-span-3 md:col-span-1">
+                        <div className="w-full px-2 py-1.5 text-xs rounded bg-green-900/30 border border-green-500/50 text-green-400 text-center font-black">
+                          {(item.quantity * (item.volume || 1)).toLocaleString()}
+                        </div>
+                      </div>
+
+                      {/* Costo Unitario */}
+                      <div className="col-span-6 md:col-span-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.unitCost}
+                          onChange={(e) => {
+                            const newItems = [...editingPurchase.items];
+                            const unitCost = parseFloat(e.target.value) || 0;
+                            newItems[idx].unitCost = unitCost;
+                            newItems[idx].total = newItems[idx].quantity * unitCost;
+                            setEditingPurchase({ ...editingPurchase, items: newItems, totalAmount: newItems.reduce((sum, i) => sum + i.total, 0) });
+                          }}
+                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      </div>
+
+                      {/* Total */}
+                      <div className="col-span-6 md:col-span-1">
+                        <div className="w-full px-2 py-1.5 text-xs rounded bg-amber-900/30 border border-amber-500/50 text-amber-400 font-black text-right">
+                          {item.total.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg p-3 border-2 border-amber-500/50 mb-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-gray-400">Total de la Compra</p>
+                  <p className="text-xs text-gray-500">{editingPurchase.items.length} item(s)</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-amber-400">
+                    S/ {editingPurchase.totalAmount.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-gray-400">{editingPurchase.paymentMethod}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botones */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowInventoryEditModal(false);
+                  setEditingPurchase(null);
+                }}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
+              >
+                ❌ Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/inventory', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(editingPurchase)
+                    });
+                    if (response.ok) {
+                      const updatedInventory = await response.json();
+                      setInventory(updatedInventory);
+                      setShowInventoryEditModal(false);
+                      setEditingPurchase(null);
+                    }
+                  } catch (error) {
+                    console.error('Error al actualizar compra:', error);
+                    alert('Error al actualizar la compra');
+                  }
+                }}
+                className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all transform hover:scale-105"
+              >
+                ✅ Guardar Cambios
               </button>
             </div>
           </div>
