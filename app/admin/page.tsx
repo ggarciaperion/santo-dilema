@@ -2410,6 +2410,109 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+
+            {/* Nueva Sección: Productos Vendidos del Día */}
+            <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-cyan-400">🛒 Productos Vendidos</h3>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="date"
+                    value={dateFrom || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      setDateFrom(e.target.value);
+                      setDateTo(e.target.value);
+                      setIsDateFiltered(true);
+                    }}
+                    className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-cyan-500/30 text-white focus:border-cyan-400 focus:outline-none cursor-pointer [color-scheme:dark]"
+                    title="Seleccionar fecha"
+                  />
+                  {isDateFiltered && dateFrom !== new Date().toISOString().split('T')[0] && (
+                    <button
+                      onClick={() => {
+                        setIsDateFiltered(false);
+                        setDateFrom(new Date().toISOString().split('T')[0]);
+                        setDateTo(new Date().toISOString().split('T')[0]);
+                      }}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold text-sm transition-all"
+                    >
+                      Ver Hoy
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {(() => {
+                // Calcular productos vendidos según la fecha seleccionada
+                const selectedDate = dateFrom || new Date().toISOString().split('T')[0];
+                const deliveredOrders = orders.filter((order) => {
+                  if (order.status !== 'delivered') return false;
+                  const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
+                  return orderDate === selectedDate;
+                });
+
+                // Agrupar productos por nombre
+                const productSales = new Map<string, { name: string; quantity: number; category: string }>();
+
+                deliveredOrders.forEach((order) => {
+                  if (order.cart && Array.isArray(order.cart)) {
+                    order.cart.forEach((item: any) => {
+                      const key = item.name;
+                      const existing = productSales.get(key);
+                      if (existing) {
+                        existing.quantity += item.quantity || 1;
+                      } else {
+                        productSales.set(key, {
+                          name: item.name,
+                          quantity: item.quantity || 1,
+                          category: item.category || 'Sin categoría'
+                        });
+                      }
+                    });
+                  }
+                });
+
+                const productsArray = Array.from(productSales.values()).sort((a, b) => b.quantity - a.quantity);
+
+                return (
+                  <>
+                    <div className="mb-4">
+                      <p className="text-gray-400 text-sm">
+                        Mostrando ventas del: <span className="text-cyan-400 font-bold">{new Date(selectedDate).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Total de pedidos entregados: <span className="text-green-400 font-bold">{deliveredOrders.length}</span>
+                      </p>
+                    </div>
+
+                    {productsArray.length === 0 ? (
+                      <div className="text-center py-12">
+                        <p className="text-gray-400 text-lg">No hay productos vendidos en esta fecha</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {productsArray.map((product, idx) => (
+                          <div key={idx} className="bg-black/50 rounded-lg p-4 border border-cyan-500/20 hover:border-cyan-500/50 transition-all">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <h4 className="text-white font-bold text-base">{product.name}</h4>
+                                <p className="text-gray-400 text-xs mt-1">{product.category}</p>
+                              </div>
+                              <span className="bg-cyan-900/30 border border-cyan-500/50 rounded-full px-3 py-1 ml-2">
+                                <span className="text-cyan-400 font-black text-xl">{product.quantity}</span>
+                              </span>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-gray-700">
+                              <p className="text-gray-500 text-xs">Unidades vendidas</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
           </section>
         </>
       ) : activeTab === "financial" ? (
