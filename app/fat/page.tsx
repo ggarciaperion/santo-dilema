@@ -848,10 +848,10 @@ export default function FatPage() {
                   }}
                 >
                   {/* Card Header */}
-                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 overflow-visible ${
+                  <div className={`relative flex items-center justify-center overflow-visible ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-56'
-                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl'
+                      ? 'bg-black h-40 md:h-56 border-0'
+                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
@@ -865,7 +865,7 @@ export default function FatPage() {
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
-                          zIndex: 100
+                          zIndex: 150
                         }}
                       />
                     ) : (
