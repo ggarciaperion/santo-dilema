@@ -792,7 +792,6 @@ export default function FatPage() {
             className="w-full h-auto object-cover block"
             style={{
               maxHeight: '400px',
-              minHeight: '250px',
               objectPosition: 'center',
               display: 'block',
               opacity: 1,
