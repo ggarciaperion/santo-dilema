@@ -788,7 +788,7 @@ export default function FatPage() {
         <div className="relative w-full bg-black">
           {/* Banner para móvil */}
           <img
-            src="/bannermovil.png?v=3"
+            src="/bannermovil.png?v=2"
             alt="Banner promocional"
             className="block md:hidden w-full h-auto object-cover"
           />
