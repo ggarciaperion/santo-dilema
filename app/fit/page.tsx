@@ -196,16 +196,25 @@ export default function FitPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-cyan-900/40 via-teal-900/40 to-cyan-900/40 border-b-2 border-cyan-500/30 py-5 md:py-8">
-        <div className="container mx-auto px-3 md:px-4 text-center">
-          <div className="text-4xl md:text-6xl mb-1.5 md:mb-3 filter drop-shadow-lg">🥗</div>
-          <h2 className="text-3xl md:text-5xl font-black mb-2.5 md:mb-3 text-cyan-400 neon-glow-fit">
-            Ensaladas Saludables
-          </h2>
-          <p className="text-sm md:text-xl font-light text-cyan-200">
-            El balance perfecto para tu día
-          </p>
+      {/* Hero Section - Banner */}
+      <section className="relative w-full overflow-hidden bg-black pt-6 md:pt-0">
+        <div className="relative w-full bg-black">
+          {/* Banner para móvil */}
+          <img
+            src="/bannermovilfi.png?v=1"
+            alt="Banner promocional FIT"
+            className="block md:hidden w-full h-auto object-cover"
+          />
+          {/* Banner para PC/Tablet */}
+          <img
+            src="/bannerpcfit.png?v=1"
+            alt="Banner promocional FIT"
+            className="hidden md:block w-full h-auto object-cover"
+            style={{
+              maxHeight: '250px',
+              objectPosition: 'center',
+            }}
+          />
         </div>
       </section>
 
