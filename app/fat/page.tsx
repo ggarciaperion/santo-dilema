@@ -1197,6 +1197,42 @@ export default function FatPage() {
           </div>
         </div>
 
+        {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
+        {expandedCard === null && completedOrders.length === 0 && (
+          <div className="relative w-full flex justify-center items-center py-4 md:py-6 lg:py-8">
+            <div className="text-center animated-text-reveal">
+              <h2
+                className="text-sm md:text-lg lg:text-xl font-light tracking-wide"
+                style={{
+                  fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
+                  fontWeight: 300,
+                  fontStyle: 'italic',
+                  color: 'transparent',
+                  WebkitTextStroke: '0.6px #ef4444',
+                  letterSpacing: '0.05em',
+                  filter: 'drop-shadow(0 0 3px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 6px rgba(239, 68, 68, 0.3))'
+                }}
+              >
+                ¡Promo del día 30% dscto órdenes
+              </h2>
+              <h3
+                className="text-base md:text-xl lg:text-2xl font-bold tracking-wider mt-0.5"
+                style={{
+                  fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
+                  fontWeight: 600,
+                  fontStyle: 'italic',
+                  color: 'transparent',
+                  WebkitTextStroke: '0.8px #ef4444',
+                  letterSpacing: '0.1em',
+                  filter: 'drop-shadow(0 0 3px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 6px rgba(239, 68, 68, 0.3))'
+                }}
+              >
+                HONEY MUSTANG!
+              </h3>
+            </div>
+          </div>
+        )}
+
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
           <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0 lg:mt-2">
@@ -1399,42 +1435,6 @@ export default function FatPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
-      {expandedCard === null && completedOrders.length === 0 && (
-        <footer className="fixed bottom-2 md:bottom-4 lg:bottom-6 left-0 right-0 pointer-events-none z-[1] md:z-[5] flex justify-center items-center px-4">
-          <div className="text-center animated-text-reveal">
-            <h2
-              className="text-sm md:text-lg lg:text-xl font-light tracking-wide"
-              style={{
-                fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
-                fontWeight: 300,
-                fontStyle: 'italic',
-                color: 'transparent',
-                WebkitTextStroke: '0.6px #ef4444',
-                letterSpacing: '0.05em',
-                filter: 'drop-shadow(0 0 3px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 6px rgba(239, 68, 68, 0.3))'
-              }}
-            >
-              ¡Promo del día 30% dscto órdenes
-            </h2>
-            <h3
-              className="text-base md:text-xl lg:text-2xl font-bold tracking-wider mt-0.5"
-              style={{
-                fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
-                fontWeight: 600,
-                fontStyle: 'italic',
-                color: 'transparent',
-                WebkitTextStroke: '0.8px #ef4444',
-                letterSpacing: '0.1em',
-                filter: 'drop-shadow(0 0 3px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 6px rgba(239, 68, 68, 0.3))'
-              }}
-            >
-              HONEY MUSTANG!
-            </h3>
-          </div>
-        </footer>
       )}
 
       {/* Modal de confirmación de eliminación */}
