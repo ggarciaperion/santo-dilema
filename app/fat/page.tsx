@@ -784,20 +784,20 @@ export default function FatPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-8 md:py-14">
+      <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-4 md:py-6 lg:py-8">
         <div className="container mx-auto px-2 md:px-4 text-center">
-          <div className="text-3xl md:text-6xl mb-1 md:mb-3 filter drop-shadow-lg">🍗</div>
-          <h2 className="text-2xl md:text-5xl font-black mb-2 md:mb-3 text-red-400 neon-glow-fat">
+          <div className="text-3xl md:text-4xl lg:text-5xl mb-1 md:mb-2 filter drop-shadow-lg">🍗</div>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black mb-1 md:mb-2 text-red-400 neon-glow-fat">
             Alitas Irresistibles
           </h2>
-          <p className="text-xs md:text-xl font-light text-orange-200">
+          <p className="text-xs md:text-base lg:text-lg font-light text-orange-200">
             Rendirte al placer nunca fue tan bueno
           </p>
         </div>
       </section>
 
       {/* Products Carousel */}
-      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-6 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-4 lg:py-6 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible">
           {/* Scrollable Products */}
@@ -807,7 +807,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex items-center gap-2 md:gap-4 scrollbar-hide px-1 md:px-4 py-16 md:py-4 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
+            className={`flex items-center gap-2 md:gap-3 lg:gap-4 scrollbar-hide px-1 md:px-4 py-12 md:py-3 lg:py-4 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowX: 'auto', overflowY: 'visible' }}
           >
             {products.map((product) => {
@@ -824,8 +824,8 @@ export default function FatPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 rounded-lg md:rounded-xl border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center overflow-visible
                     ${isExpanded
-                      ? 'w-[260px] md:w-[380px] z-20'
-                      : 'w-[240px] md:w-[260px]'
+                      ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
+                      : 'w-[240px] md:w-[220px] lg:w-[240px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
@@ -1199,11 +1199,11 @@ export default function FatPage() {
 
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
-          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0">
-            <h3 className="text-lg md:text-xl font-black text-amber-400 mb-3 gold-glow">
+          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0 lg:mt-2">
+            <h3 className="text-base md:text-lg lg:text-xl font-black text-amber-400 mb-2 md:mb-3 gold-glow">
               Tu orden
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {completedOrders.map((order, index) => {
                 const product = products.find((p) => p.id === order.productId);
                 if (!product) return null;
@@ -1211,11 +1211,11 @@ export default function FatPage() {
                 return (
                   <div
                     key={`${order.productId}-${index}`}
-                    className="bg-gray-900 rounded-lg border-2 border-red-400/30 p-3 relative"
+                    className="bg-gray-900 rounded-lg border-2 border-red-400/30 p-2 md:p-3 relative"
                   >
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-start justify-between mb-1 md:mb-2">
                       <div className="flex items-start gap-2 flex-1">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-red-400/30 flex items-center justify-center">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-red-400/30 flex items-center justify-center">
                           {product.image.startsWith('/') ? (
                             <img
                               src={product.image}
@@ -1297,7 +1297,7 @@ export default function FatPage() {
       {/* Cart Summary Bar */}
       {completedOrders.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-red-500/50 shadow-2xl shadow-red-500/30 z-50">
-          <div className="container mx-auto px-4 md:px-6 py-4 md:py-5">
+          <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 lg:py-5">
             <div className="flex justify-between items-center gap-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-sm md:text-lg">Total</span>
@@ -1403,32 +1403,32 @@ export default function FatPage() {
 
       {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
       {expandedCard === null && completedOrders.length === 0 && (
-        <footer className="absolute bottom-4 md:bottom-6 lg:bottom-8 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
+        <footer className="fixed bottom-2 md:bottom-4 lg:bottom-6 left-0 right-0 pointer-events-none z-0 flex justify-center items-center px-4">
           <div className="text-center animated-text-reveal">
             <h2
-              className="text-base md:text-2xl lg:text-3xl font-light tracking-wide"
+              className="text-sm md:text-lg lg:text-xl font-light tracking-wide"
               style={{
                 fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
                 fontWeight: 300,
                 fontStyle: 'italic',
                 color: 'transparent',
-                WebkitTextStroke: '0.8px #ef4444',
+                WebkitTextStroke: '0.6px #ef4444',
                 letterSpacing: '0.05em',
-                filter: 'drop-shadow(0 0 4px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 8px rgba(239, 68, 68, 0.3)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.2))'
+                filter: 'drop-shadow(0 0 3px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 6px rgba(239, 68, 68, 0.3))'
               }}
             >
               ¡Promo del día 30% dscto órdenes
             </h2>
             <h3
-              className="text-lg md:text-3xl lg:text-4xl font-bold tracking-wider mt-1"
+              className="text-base md:text-xl lg:text-2xl font-bold tracking-wider mt-0.5"
               style={{
                 fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
                 fontWeight: 600,
                 fontStyle: 'italic',
                 color: 'transparent',
-                WebkitTextStroke: '1px #ef4444',
+                WebkitTextStroke: '0.8px #ef4444',
                 letterSpacing: '0.1em',
-                filter: 'drop-shadow(0 0 4px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 8px rgba(239, 68, 68, 0.3)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.2))'
+                filter: 'drop-shadow(0 0 3px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 6px rgba(239, 68, 68, 0.3))'
               }}
             >
               HONEY MUSTANG!
