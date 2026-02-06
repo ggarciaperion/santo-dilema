@@ -2953,6 +2953,9 @@ export default function AdminPage() {
 
                               inventory.forEach((purchase: any) => {
                                 purchase.items.forEach((item: any) => {
+                                  // Excluir categoría SERVICIO
+                                  if (item.category === "SERVICIO") return;
+
                                   const key = `${item.productName}-${item.unit}`;
                                   const existing = stockMap.get(key);
                                   const itemStock = (item.quantity || 0) * (item.volume || 1);
@@ -3863,6 +3866,9 @@ export default function AdminPage() {
 
                   inventory.forEach((purchase) => {
                     purchase.items.forEach((item: any) => {
+                      // Excluir categoría SERVICIO
+                      if (item.category === "SERVICIO") return;
+
                       const key = `${item.productName}-${item.unit}`;
                       // Calcular stock: cantidad × volumen
                       const stockQuantity = item.quantity * (item.volume || 1);
