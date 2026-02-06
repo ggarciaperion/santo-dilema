@@ -220,10 +220,6 @@ export default function FitPage() {
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-3 md:px-4 py-4 md:py-6 transition-all duration-300 ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-4 md:pb-6'}`}>
-        <h3 className="text-xl md:text-2xl font-black text-white mb-3 md:mb-4 flex items-center gap-2">
-          <span className="text-cyan-400 neon-glow-fit">Nuestras Ensaladas</span>
-          <span className="text-amber-400 gold-glow text-base md:text-lg">★</span>
-        </h3>
 
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center">
@@ -545,28 +541,6 @@ export default function FitPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Footer decorativo con iconos animados - solo visible cuando no hay items en carrito */}
-      {totalItems === 0 && (
-        <footer className="fixed bottom-0 left-0 right-0 pointer-events-none z-0">
-          <div className="container mx-auto px-4 flex flex-col items-center justify-center gap-2">
-            <div className="flex items-center gap-8 md:gap-12 opacity-20">
-              <span className="text-2xl md:text-3xl text-cyan-400 neon-glow-fit float-slow">🥗</span>
-              <span className="text-xl md:text-2xl text-green-400 neon-glow-fit float-medium">🥬</span>
-              <span className="text-2xl md:text-3xl text-cyan-400 neon-glow-fit float-slower">🥑</span>
-              <span className="text-xl md:text-2xl text-green-400 neon-glow-fit bounce-subtle">🍃</span>
-              <span className="text-2xl md:text-3xl text-cyan-400 neon-glow-fit float-slow" style={{animationDelay: '2s'}}>🥒</span>
-            </div>
-            <div className="flex items-center gap-1.5 md:gap-2 mb-1">
-              <div className="w-3 md:w-6 h-px bg-gradient-to-r from-transparent to-cyan-400 opacity-30"></div>
-              <p className="text-[8px] md:text-xs font-bold tracking-widest text-cyan-400 neon-glow-fit opacity-30 whitespace-nowrap">
-                PREMIUM DARK KITCHEN · DELIVERY ONLY
-              </p>
-              <div className="w-3 md:w-6 h-px bg-gradient-to-l from-transparent to-cyan-400 opacity-30"></div>
-            </div>
-          </div>
-        </footer>
       )}
     </div>
   );
