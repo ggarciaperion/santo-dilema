@@ -785,12 +785,25 @@ export default function FatPage() {
 
       {/* Hero Section - Banner */}
       <section className="relative w-full overflow-hidden bg-black">
-        <div className="relative w-full bg-black h-auto md:h-[200px] lg:h-[250px]">
+        <div className="relative w-full bg-black">
+          {/* Banner para móvil */}
           <img
-            src="/banner1.png?v=5"
+            src="/bannermovil.png?v=1"
             alt="Banner promocional"
-            className="w-full h-full object-cover block"
+            className="w-full h-auto object-cover block md:hidden"
             style={{
+              objectPosition: 'center',
+              display: 'block',
+              opacity: 1,
+            }}
+          />
+          {/* Banner para PC/Tablet */}
+          <img
+            src="/bannerpc.png?v=1"
+            alt="Banner promocional"
+            className="hidden md:block w-full h-auto object-cover"
+            style={{
+              maxHeight: '250px',
               objectPosition: 'center',
               display: 'block',
               opacity: 1,
