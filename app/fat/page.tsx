@@ -783,16 +783,18 @@ export default function FatPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-900/40 via-orange-900/40 to-red-900/40 border-b-2 border-red-500/30 py-4 md:py-6 lg:py-8">
-        <div className="container mx-auto px-2 md:px-4 text-center">
-          <div className="text-3xl md:text-4xl lg:text-5xl mb-1 md:mb-2 filter drop-shadow-lg">🍗</div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black mb-1 md:mb-2 text-red-400 neon-glow-fat">
-            Alitas Irresistibles
-          </h2>
-          <p className="text-xs md:text-base lg:text-lg font-light text-orange-200">
-            Rendirte al placer nunca fue tan bueno
-          </p>
+      {/* Hero Section - Banner */}
+      <section className="relative w-full border-b-2 border-red-500/30 overflow-hidden">
+        <div className="relative w-full">
+          <img
+            src="/banner1.png"
+            alt="Banner promocional"
+            className="w-full h-auto object-cover"
+            style={{
+              maxHeight: '400px',
+              objectPosition: 'center',
+            }}
+          />
         </div>
       </section>
 
