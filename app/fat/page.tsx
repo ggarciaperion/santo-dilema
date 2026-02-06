@@ -822,7 +822,7 @@ export default function FatPage() {
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onMouseEnter={() => handleCardHover(product.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 rounded-lg md:rounded-xl border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center overflow-visible
+                  className={`bg-gray-900 border-2 flex-shrink-0 border-red-400 neon-border-fat shadow-xl shadow-red-500/30 snap-center overflow-visible
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
                       : 'w-[240px] md:w-[220px] lg:w-[240px]'
@@ -835,12 +835,13 @@ export default function FatPage() {
                   style={{
                     transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
                     transformOrigin: 'center center',
+                    borderRadius: 0,
                   }}
                 >
                   {/* Card Header */}
-                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 ${
+                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 overflow-visible ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-56 overflow-visible'
+                      ? 'bg-black h-40 md:h-56'
                       : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl'
                   }`}>
                     {product.image.startsWith('/') ? (
@@ -849,9 +850,9 @@ export default function FatPage() {
                         alt={product.name}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: '180%',
-                          height: '200%',
-                          top: '-50%',
+                          width: '150%',
+                          height: '160%',
+                          top: '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
