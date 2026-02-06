@@ -787,7 +787,7 @@ export default function FatPage() {
       <section className="relative w-full border-b-2 border-red-500/30 overflow-hidden">
         <div className="relative w-full">
           <img
-            src="/banner1.png"
+            src="/banner1.png?v=2"
             alt="Banner promocional"
             className="w-full h-auto object-cover"
             style={{
