@@ -838,18 +838,20 @@ export default function FatPage() {
                   }}
                 >
                   {/* Card Header */}
-                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 rounded-t-lg md:rounded-t-xl ${
+                  <div className={`relative flex items-center justify-center border-b-2 border-red-500/30 ${
                     product.image.startsWith('/')
                       ? 'bg-black h-40 md:h-56 overflow-visible'
-                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden'
+                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute object-cover drop-shadow-2xl w-[150%] h-[160%]"
+                        className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          top: '-30%',
+                          width: '180%',
+                          height: '200%',
+                          top: '-50%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
