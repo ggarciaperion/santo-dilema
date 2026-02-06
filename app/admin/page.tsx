@@ -317,12 +317,18 @@ export default function AdminPage() {
       const response = await fetch("/api/orders");
       const data = await response.json();
 
+      // Obtener el último conteo guardado en localStorage
+      const savedCount = parseInt(localStorage.getItem('admin_order_count') || '0');
+
       // Detectar nuevo pedido y reproducir sonido
-      if (previousOrderCount > 0 && data.length > previousOrderCount) {
+      if (savedCount > 0 && data.length > savedCount) {
         // Nuevo pedido detectado - reproducir sonido
+        console.log(`🔔 Nuevo pedido detectado! Anterior: ${savedCount}, Actual: ${data.length}`);
         playNotificationSound();
       }
 
+      // Guardar el nuevo conteo en localStorage y estado
+      localStorage.setItem('admin_order_count', data.length.toString());
       setPreviousOrderCount(data.length);
       setOrders(data);
     } catch (error) {
