@@ -785,13 +785,12 @@ export default function FatPage() {
 
       {/* Hero Section - Banner */}
       <section className="relative w-full overflow-hidden bg-black">
-        <div className="relative w-full bg-black">
+        <div className="relative w-full bg-black h-auto md:h-[200px] lg:h-[250px]">
           <img
             src="/banner1.png?v=5"
             alt="Banner promocional"
-            className="w-full h-auto object-cover block"
+            className="w-full h-full object-cover block"
             style={{
-              maxHeight: '400px',
               objectPosition: 'center',
               display: 'block',
               opacity: 1,
