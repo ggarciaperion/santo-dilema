@@ -2698,16 +2698,6 @@ export default function AdminPage() {
                                     <div className="flex items-center justify-center gap-2">
                                       <button
                                         onClick={() => {
-                                          setSelectedPurchaseDetail(purchase);
-                                          setShowInventoryDetailModal(true);
-                                        }}
-                                        className="text-cyan-400 hover:text-cyan-300 text-sm"
-                                        title="Ver detalles"
-                                      >
-                                        🔍
-                                      </button>
-                                      <button
-                                        onClick={() => {
                                           setEditingPurchase(purchase);
                                           setShowInventoryEditModal(true);
                                         }}
@@ -3603,16 +3593,6 @@ export default function AdminPage() {
                                 <td className="border border-gray-700 px-3 py-2 text-center">
                                   {itemIdx === 0 && (
                                     <div className="flex items-center justify-center gap-2">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedPurchaseDetail(purchase);
-                                          setShowInventoryDetailModal(true);
-                                        }}
-                                        className="text-cyan-400 hover:text-cyan-300 text-sm"
-                                        title="Ver detalles"
-                                      >
-                                        🔍
-                                      </button>
                                       <button
                                         onClick={() => {
                                           setEditingPurchase(purchase);
