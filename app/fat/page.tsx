@@ -790,12 +790,7 @@ export default function FatPage() {
           <img
             src="/bannermovil.png?v=1"
             alt="Banner promocional"
-            className="w-full h-auto object-cover block md:hidden"
-            style={{
-              objectPosition: 'center',
-              display: 'block',
-              opacity: 1,
-            }}
+            className="block md:hidden w-full h-auto object-cover"
           />
           {/* Banner para PC/Tablet */}
           <img
@@ -805,8 +800,6 @@ export default function FatPage() {
             style={{
               maxHeight: '250px',
               objectPosition: 'center',
-              display: 'block',
-              opacity: 1,
             }}
           />
         </div>
