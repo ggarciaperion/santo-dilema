@@ -1219,11 +1219,10 @@ export default function FatPage() {
                   fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
                   fontWeight: 900,
                   fontStretch: 'expanded',
-                  color: 'transparent',
-                  WebkitTextStroke: '1px #ef4444',
+                  color: '#ef4444',
                   letterSpacing: '0.15em',
                   textTransform: 'uppercase',
-                  filter: 'drop-shadow(0 0 4px rgba(239, 68, 68, 0.6)) drop-shadow(0 0 8px rgba(239, 68, 68, 0.4))'
+                  textShadow: '0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2)'
                 }}
               >
                 ¡Promo del día 30% de descuento en órdenes Duo Dilema!
