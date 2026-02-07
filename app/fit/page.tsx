@@ -366,6 +366,15 @@ export default function FitPage() {
     const order = completedOrders[orderIndex];
     if (!order) return;
 
+    // Verificar si la orden pertenece al menú fat
+    const isFatOrder = fatProducts.some(p => p.id === order.productId);
+
+    // Si es una orden fat, redirigir a la página fat
+    if (isFatOrder) {
+      router.push('/fat');
+      return;
+    }
+
     setEditingOrderIndex(orderIndex);
     setOrderQuantity((prev) => ({ ...prev, [order.productId]: order.quantity }));
     setComplementsInCart((prev) => ({ ...prev, [order.productId]: order.complementIds }));

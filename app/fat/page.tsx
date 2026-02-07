@@ -589,6 +589,15 @@ export default function FatPage() {
     const order = completedOrders[orderIndex];
     if (!order) return;
 
+    // Verificar si la orden pertenece al menú fit
+    const isFitOrder = fitProducts.some(p => p.id === order.productId);
+
+    // Si es una orden fit, redirigir a la página fit
+    if (isFitOrder) {
+      router.push('/fit');
+      return;
+    }
+
     // Guardar el índice para reemplazar en completedOrders al confirmar
     setEditingOrderIndex(orderIndex);
 
