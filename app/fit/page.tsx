@@ -273,10 +273,10 @@ export default function FitPage() {
                   )}
                 </div>
                 <div className="p-3 md:p-4">
-                  <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
+                  <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5">
                     {product.name}
                   </h4>
-                  <p className="text-cyan-200/70 text-[11px] md:text-xs mb-2 md:mb-3 line-clamp-2 h-7 md:h-8">
+                  <p className="text-cyan-200/70 text-[11px] md:text-xs mb-2 md:mb-3">
                     {product.description}
                   </p>
                   <div className="flex items-center justify-between mb-2 md:mb-3">
