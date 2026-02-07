@@ -1064,13 +1064,6 @@ export default function FitPage() {
               const product = products.find((p) => p.id === order.productId);
               if (!product) return null;
 
-              const complementsText = order.complementIds.length > 0
-                ? order.complementIds
-                    .map((compId) => availableComplements[compId]?.name)
-                    .filter((name) => name)
-                    .join(", ")
-                : "";
-
               const productTotal = product.price * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -1083,19 +1076,38 @@ export default function FitPage() {
                     ¿Está seguro que desea quitar su orden de su pedido?
                   </p>
                   <div className="bg-gray-800/50 border border-cyan-400/30 rounded-lg p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-cyan-400 font-bold">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-cyan-400 font-bold text-base">
                         {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
                       </p>
-                      <p className="text-amber-400 font-bold gold-glow">
+                      <p className="text-amber-400 font-bold gold-glow text-base">
                         S/ {orderTotal}
                       </p>
                     </div>
-                    {complementsText && (
-                      <p className="text-cyan-300 text-xs">
-                        🍟 Complementos: {complementsText}
-                      </p>
-                    )}
+
+                    {/* Desglose de precios */}
+                    <div className="space-y-1 pt-2 border-t border-cyan-400/20">
+                      <div className="flex justify-between text-cyan-300/80 text-xs">
+                        <span>• {product.name} x{order.quantity}</span>
+                        <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                      </div>
+
+                      {/* Desglose de complementos */}
+                      {order.complementIds.length > 0 && (
+                        <>
+                          {order.complementIds.map((compId, idx) => {
+                            const complement = availableComplements[compId];
+                            if (!complement) return null;
+                            return (
+                              <div key={`${compId}-${idx}`} className="flex justify-between text-cyan-300/80 text-xs">
+                                <span>• {complement.name}</span>
+                                <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
