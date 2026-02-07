@@ -1269,20 +1269,36 @@ export default function FatPage() {
                           <h4 className="text-sm font-bold text-white mb-1">
                             {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
                           </h4>
-                          <div className="text-[11px] space-y-1">
-                            <div className="text-amber-300">
+
+                          <div className="text-[11px] space-y-0.5">
+                            {/* Precio del menú */}
+                            <div className="text-red-300/80 flex justify-between">
+                              <span>• {product.name} x{order.quantity}</span>
+                              <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                            </div>
+
+                            {/* Salsas seleccionadas */}
+                            <div className="text-amber-300/80">
                               🌶️ Salsas: {order.salsas
                                 .map((sId) => salsas.find((s) => s.id === sId)?.name)
                                 .filter((name) => name)
                                 .join(", ")}
                             </div>
+
+                            {/* Desglose de complementos */}
                             {order.complementIds.length > 0 && (
-                              <div className="text-red-300">
-                                🍟 Complementos: {order.complementIds
-                                  .map((compId) => availableComplements[compId]?.name)
-                                  .filter((name) => name)
-                                  .join(", ")}
-                              </div>
+                              <>
+                                {order.complementIds.map((compId, idx) => {
+                                  const complement = availableComplements[compId];
+                                  if (!complement) return null;
+                                  return (
+                                    <div key={`${compId}-${idx}`} className="text-red-300/80 flex justify-between">
+                                      <span>• {complement.name}</span>
+                                      <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
+                                    </div>
+                                  );
+                                })}
+                              </>
                             )}
                           </div>
                         </div>
