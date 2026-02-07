@@ -46,14 +46,14 @@ const fatProducts = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    price: 45.90,
+    price: 39.90,
     image: "/duo-dilema.png?v=3",
   },
   {
-    id: "gran-dilema",
-    name: "Gran Dilema",
-    price: 55.90,
-    image: "/gran-dilema.png?v=3",
+    id: "santo-pecado",
+    name: "Santo Pecado",
+    price: 49.90,
+    image: "/todos-pecan.png?v=3",
   },
 ];
 
@@ -66,21 +66,21 @@ const fitProducts = [
     image: "/clasica-fresh-bowl.png",
   },
   {
-    id: "ensalada-cesar",
+    id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    price: 22.90,
+    price: 24.90,
     image: "/cesar-power-bowl.png",
   },
   {
-    id: "ensalada-protein",
+    id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
-    price: 24.90,
+    price: 22.90,
     image: "/protein-fit-bowl.png",
   },
   {
-    id: "ensalada-tuna",
+    id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
-    price: 26.90,
+    price: 21.90,
     image: "/tuna-fresh-bowl.png",
   },
 ];
