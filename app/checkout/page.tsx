@@ -87,7 +87,7 @@ const fitProducts = [
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, clearCart, totalItems, totalPrice } = useCart();
+  const { cart, clearCart, totalItems } = useCart();
   const [formData, setFormData] = useState({
     name: "",
     dni: "",
@@ -244,7 +244,7 @@ export default function CheckoutPage() {
         formData,
         cart,
         totalItems,
-        totalPrice,
+        totalPrice: realTotal,
         paymentMethod
       });
 
@@ -260,7 +260,7 @@ export default function CheckoutPage() {
       formDataToSend.append('cart', JSON.stringify(cart));
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
       formDataToSend.append('totalItems', totalItems.toString());
-      formDataToSend.append('totalPrice', totalPrice.toString());
+      formDataToSend.append('totalPrice', realTotal.toString());
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
       if (cantoCancelo) {
         formDataToSend.append('cantoCancelo', cantoCancelo);
@@ -763,7 +763,7 @@ export default function CheckoutPage() {
 
             <h3 className="text-base font-bold text-white text-center mb-0.5">Método de pago</h3>
             <p className="text-gray-500 text-xs text-center mb-5">
-              Total: <span className="text-amber-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+              Total: <span className="text-amber-400 font-bold">S/ {realTotal.toFixed(2)}</span>
             </p>
 
             <div className="space-y-2">
@@ -848,7 +848,7 @@ export default function CheckoutPage() {
               <>
                 <h3 className="text-base font-bold text-white text-center mb-0.5">Contra entrega</h3>
                 <p className="text-gray-500 text-xs text-center mb-5">
-                  Total: <span className="text-amber-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                  Total: <span className="text-amber-400 font-bold">S/ {realTotal.toFixed(2)}</span>
                 </p>
 
                 <div className="space-y-2">
@@ -907,7 +907,7 @@ export default function CheckoutPage() {
 
                 <h3 className="text-base font-bold text-white text-center mb-0.5">Efectivo</h3>
                 <p className="text-gray-500 text-xs text-center mb-5">
-                  Total: <span className="text-amber-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                  Total: <span className="text-amber-400 font-bold">S/ {realTotal.toFixed(2)}</span>
                 </p>
 
                 <div className="space-y-2 mb-4">
@@ -931,7 +931,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="text-left flex-1">
                       <p className="text-white font-semibold text-sm">Monto exacto</p>
-                      <p className="text-gray-500 text-[11px] mt-0.5">Tengo S/ {totalPrice.toFixed(2)} exacto</p>
+                      <p className="text-gray-500 text-[11px] mt-0.5">Tengo S/ {realTotal.toFixed(2)} exacto</p>
                     </div>
                     <span className="text-gray-600 text-sm">✓</span>
                   </button>
@@ -972,13 +972,13 @@ export default function CheckoutPage() {
                             const solo = e.target.value.replace(/\D/g, '');
                             setCantoCancelo(solo);
                           }}
-                          placeholder={Math.ceil(totalPrice).toString()}
+                          placeholder={Math.ceil(realTotal).toString()}
                           className="w-full pl-8 pr-3 py-2 rounded-lg bg-gray-800 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-500 focus:outline-none transition-colors"
                           style={{ fontSize: '16px' }}
                         />
                       </div>
-                      {cantoCancelo && parseFloat(cantoCancelo) < totalPrice && (
-                        <p className="text-red-400 text-[10px] mt-1">El monto debe ser mayor o igual a S/ {totalPrice.toFixed(2)}</p>
+                      {cantoCancelo && parseFloat(cantoCancelo) < realTotal && (
+                        <p className="text-red-400 text-[10px] mt-1">El monto debe ser mayor o igual a S/ {realTotal.toFixed(2)}</p>
                       )}
                     </div>
                   )}
@@ -988,13 +988,13 @@ export default function CheckoutPage() {
                   onClick={() => {
                     if (selectedEfectivo === 'exacto') {
                       confirmOrder('contraentrega-efectivo-exacto');
-                    } else if (selectedEfectivo === 'cambio' && cantoCancelo && parseFloat(cantoCancelo) >= totalPrice) {
+                    } else if (selectedEfectivo === 'cambio' && cantoCancelo && parseFloat(cantoCancelo) >= realTotal) {
                       confirmOrder('contraentrega-efectivo-cambio');
                     }
                   }}
                   disabled={
                     !selectedEfectivo ||
-                    (selectedEfectivo === 'cambio' && (!cantoCancelo || parseFloat(cantoCancelo) < totalPrice))
+                    (selectedEfectivo === 'cambio' && (!cantoCancelo || parseFloat(cantoCancelo) < realTotal))
                   }
                   className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-bold py-2.5 rounded-lg text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
@@ -1036,7 +1036,7 @@ export default function CheckoutPage() {
             <div className="text-center mb-3">
               <h3 className="text-base font-bold text-green-400">Escanea y Paga</h3>
               <p className="text-gray-500 text-xs mt-0.5">
-                S/ <span className="text-amber-400 font-bold">{totalPrice.toFixed(2)}</span>
+                S/ <span className="text-amber-400 font-bold">{realTotal.toFixed(2)}</span>
               </p>
             </div>
 
@@ -1089,7 +1089,7 @@ export default function CheckoutPage() {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-green-400 font-bold flex-shrink-0">2.</span>
-                  <span>Realiza el pago de S/ {totalPrice.toFixed(2)}</span>
+                  <span>Realiza el pago de S/ {realTotal.toFixed(2)}</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-green-400 font-bold flex-shrink-0">3.</span>
