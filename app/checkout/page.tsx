@@ -123,6 +123,30 @@ export default function CheckoutPage() {
     }
   }, []);
 
+  // Calcular el total real basado en completedOrders
+  const calculateRealTotal = () => {
+    return completedOrders.reduce((total, order) => {
+      // Buscar el producto en los arrays
+      const fatProduct = fatProducts.find((p) => p.id === order.productId);
+      const fitProduct = fitProducts.find((p) => p.id === order.productId);
+      const product = fatProduct || fitProduct;
+
+      if (!product) return total;
+
+      // Calcular total del producto
+      const productTotal = product.price * order.quantity;
+
+      // Calcular total de complementos
+      const complementsTotal = order.complementIds.reduce((sum, compId) => {
+        return sum + (availableComplements[compId]?.price || 0);
+      }, 0);
+
+      return total + productTotal + complementsTotal;
+    }, 0);
+  };
+
+  const realTotal = calculateRealTotal();
+
   // Validar si el formulario está completo
   const isFormValid = () => {
     return (
@@ -675,7 +699,7 @@ export default function CheckoutPage() {
             <div className="flex justify-between items-center mb-2 md:mb-3">
               <span className="text-white font-bold text-sm md:text-base">Total:</span>
               <span className="text-amber-400 font-black text-lg md:text-xl gold-glow">
-                S/ {totalPrice.toFixed(2)}
+                S/ {realTotal.toFixed(2)}
               </span>
             </div>
 
