@@ -124,28 +124,24 @@ export default function CheckoutPage() {
   }, []);
 
   // Calcular el total real basado en completedOrders
-  const calculateRealTotal = () => {
-    return completedOrders.reduce((total, order) => {
-      // Buscar el producto en los arrays
-      const fatProduct = fatProducts.find((p) => p.id === order.productId);
-      const fitProduct = fitProducts.find((p) => p.id === order.productId);
-      const product = fatProduct || fitProduct;
+  const realTotal = completedOrders.reduce((total, order) => {
+    // Buscar el producto en los arrays
+    const fatProduct = fatProducts.find((p) => p.id === order.productId);
+    const fitProduct = fitProducts.find((p) => p.id === order.productId);
+    const product = fatProduct || fitProduct;
 
-      if (!product) return total;
+    if (!product) return total;
 
-      // Calcular total del producto
-      const productTotal = product.price * order.quantity;
+    // Calcular total del producto
+    const productTotal = product.price * order.quantity;
 
-      // Calcular total de complementos
-      const complementsTotal = order.complementIds.reduce((sum, compId) => {
-        return sum + (availableComplements[compId]?.price || 0);
-      }, 0);
-
-      return total + productTotal + complementsTotal;
+    // Calcular total de complementos
+    const complementsTotal = order.complementIds.reduce((sum, compId) => {
+      return sum + (availableComplements[compId]?.price || 0);
     }, 0);
-  };
 
-  const realTotal = calculateRealTotal();
+    return total + productTotal + complementsTotal;
+  }, 0);
 
   // Validar si el formulario está completo
   const isFormValid = () => {
