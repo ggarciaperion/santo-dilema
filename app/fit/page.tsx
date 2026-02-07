@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 
 interface Product {
@@ -11,6 +12,18 @@ interface Product {
   price: number;
   image: string;
   category: "fit" | "fat" | "bebida";
+}
+
+interface Aderezo {
+  id: string;
+  name: string;
+}
+
+interface CompletedOrder {
+  productId: string;
+  quantity: number;
+  aderezos: string[];
+  complementIds: string[];
 }
 
 const products: Product[] = [
@@ -48,32 +61,524 @@ const products: Product[] = [
   },
 ];
 
+const aderezos: Aderezo[] = [
+  { id: "vinagreta-clasica", name: "Vinagreta clásica" },
+  { id: "cesar", name: "César" },
+  { id: "yogurt-griego", name: "Yogurt griego" },
+  { id: "miel-mostaza", name: "Miel y mostaza" },
+  { id: "balsámico", name: "Balsámico" },
+  { id: "limon-aceite", name: "Limón y aceite de oliva" },
+];
+
+const availableComplements: Record<string, { name: string; price: number }> = {
+  "agua-mineral": { name: "Agua mineral", price: 4.00 },
+  "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
+  "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
+  "sprite": { name: "Sprite 500ml", price: 4.00 },
+  "fanta": { name: "Fanta 500ml", price: 4.00 },
+  "extra-papas": { name: "Extra papas", price: 4.00 },
+  "extra-salsa": { name: "Extra salsa", price: 3.00 }
+};
+
+let fitPageInitialized = false;
+
 export default function FitPage() {
-  const { cart, addToCart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
-  const [showCartDetails, setShowCartDetails] = useState(false);
-  const [showCartModal, setShowCartModal] = useState(false);
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const { cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [selectedAderezos, setSelectedAderezos] = useState<Record<string, string[]>>({});
+  const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isDragging, setIsDragging] = useState(false);
-  const [showBebidas, setShowBebidas] = useState(false);
-  const [showExtras, setShowExtras] = useState(false);
+  const [showAderezos, setShowAderezos] = useState<Record<string, boolean>>({});
+  const [showBebidas, setShowBebidas] = useState<Record<string, boolean>>({});
+  const [showExtras, setShowExtras] = useState<Record<string, boolean>>({});
+  const [showCartModal, setShowCartModal] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
+  const [mainProductsInCart, setMainProductsInCart] = useState<Record<string, string>>({});
+  const [recentlyAddedAderezos, setRecentlyAddedAderezos] = useState<Set<string>>(new Set());
+  const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
+  const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
+  const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
+  const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
+  const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
+  const router = useRouter();
 
-  const handleAddToCart = (product: Product, quantity: number) => {
-    addToCart(product, quantity);
-    // Reset quantity after adding
-    setQuantities((prev) => ({ ...prev, [product.id]: 1 }));
+  const completedTotal = completedOrders.reduce((total, order) => {
+    const product = products.find(p => p.id === order.productId);
+    if (!product) return total;
+    let orderTotal = product.price * order.quantity;
+    order.complementIds.forEach(compId => {
+      const complement = availableComplements[compId];
+      if (complement) orderTotal += complement.price;
+    });
+    return total + orderTotal;
+  }, 0);
+
+  const navigateToCheckout = () => {
+    clearCart();
+    completedOrders.forEach(order => {
+      const product = products.find(p => p.id === order.productId);
+      if (product) {
+        addToCart(product, order.quantity);
+        order.complementIds.forEach(compId => {
+          const complement = availableComplements[compId];
+          if (complement) {
+            addToCart({
+              id: compId,
+              name: complement.name,
+              description: "",
+              price: complement.price,
+              image: "🥤",
+              category: "bebida"
+            }, 1);
+          }
+        });
+      }
+    });
+    router.push('/checkout');
   };
 
-  const getQuantity = (productId: string) => quantities[productId] || 1;
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromCheckout = urlParams.get('from') === 'checkout';
 
-  const updateProductQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity >= 1 && newQuantity <= 99) {
-      setQuantities((prev) => ({ ...prev, [productId]: newQuantity }));
+    if (fromCheckout) {
+      fitPageInitialized = true;
+      const savedOrders = localStorage.getItem("santo-dilema-fit-orders");
+      if (savedOrders) {
+        try {
+          const orders = JSON.parse(savedOrders);
+          setCompletedOrders(orders);
+
+          clearCart();
+          orders.forEach((order: CompletedOrder) => {
+            const product = products.find(p => p.id === order.productId);
+            if (product) {
+              addToCart(product, order.quantity);
+              order.complementIds.forEach((complementId) => {
+                const complement = availableComplements[complementId];
+                if (complement) {
+                  addToCart({
+                    id: complementId,
+                    name: complement.name,
+                    description: "",
+                    price: complement.price,
+                    image: "🥤",
+                    category: "bebida"
+                  }, 1);
+                }
+              });
+            }
+          });
+
+          window.history.replaceState({}, '', '/fit');
+          setExpandedCard(null);
+
+          setTimeout(() => {
+            const orderSection = document.getElementById('tu-orden-section');
+            if (orderSection) {
+              orderSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 500);
+        } catch (error) {
+          console.error("Error loading orders:", error);
+          localStorage.removeItem("santo-dilema-fit-orders");
+          localStorage.removeItem("santo-dilema-cart");
+          clearCart();
+        }
+      }
+      return;
     }
+
+    if (!fitPageInitialized) {
+      fitPageInitialized = true;
+      localStorage.removeItem("santo-dilema-fit-orders");
+      localStorage.removeItem("santo-dilema-cart");
+      clearCart();
+      return;
+    }
+
+    const savedOrders = localStorage.getItem("santo-dilema-fit-orders");
+    if (savedOrders) {
+      try {
+        const orders = JSON.parse(savedOrders);
+        setCompletedOrders(orders);
+      } catch (error) {
+        console.error("Error loading orders:", error);
+        localStorage.removeItem("santo-dilema-fit-orders");
+        localStorage.removeItem("santo-dilema-cart");
+        clearCart();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (completedOrders.length > 0) {
+      localStorage.setItem("santo-dilema-fit-orders", JSON.stringify(completedOrders));
+    } else {
+      localStorage.removeItem("santo-dilema-fit-orders");
+    }
+  }, [completedOrders]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!expandedCard) return;
+
+      const target = event.target as HTMLElement;
+      const expandedCardElement = cardRefs.current[expandedCard];
+
+      if (expandedCardElement && !expandedCardElement.contains(target)) {
+        handleCloseCard();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [expandedCard]);
+
+  const getRequiredAderezosCount = (productId: string): number => {
+    const quantity = orderQuantity[productId] || 0;
+    if (quantity === 0) return 0;
+    return 1 * quantity;
+  };
+
+  const handleExpandCard = (productId: string) => {
+    if (isDragging) return;
+    setExpandedCard(productId);
+    setShowAderezos((prev) => ({ ...prev, [productId]: true }));
+    setIsEditingOrder(false);
+    if (!selectedAderezos[productId]) {
+      setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
+    }
+    if (!selectedComplements[productId]) {
+      setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
+    }
+
+    setTimeout(() => {
+      const card = cardRefs.current[productId];
+      if (card) {
+        const aderezosButton = card.querySelector('[data-aderezos-button]');
+        if (aderezosButton) {
+          const currentScroll = window.scrollY || document.documentElement.scrollTop;
+          const rect = aderezosButton.getBoundingClientRect();
+          const elementTop = currentScroll + rect.top;
+          const offset = window.innerHeight / 2 - rect.height / 2;
+          const scrollTarget = elementTop - offset + 100;
+
+          window.scrollTo({
+            top: scrollTarget,
+            behavior: 'smooth'
+          });
+        }
+      }
+    }, 500);
+  };
+
+  const handleCloseCard = () => {
+    setExpandedCard(null);
+    setIsEditingOrder(false);
+    setEditingOrderIndex(null);
+    if (expandedCard) {
+      setShowAderezos((prev) => ({ ...prev, [expandedCard]: false }));
+      setShowBebidas((prev) => ({ ...prev, [expandedCard]: false }));
+      setShowExtras((prev) => ({ ...prev, [expandedCard]: false }));
+    }
+  };
+
+  const handleIncreaseQuantity = (productId: string) => {
+    const currentQty = orderQuantity[productId] || 0;
+    setOrderQuantity((prev) => ({
+      ...prev,
+      [productId]: currentQty + 1
+    }));
+    if (currentQty === 0) {
+      setExpandedCard(productId);
+      setShowAderezos((prev) => ({ ...prev, [productId]: true }));
+      if (!selectedAderezos[productId]) {
+        setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
+      }
+      if (!selectedComplements[productId]) {
+        setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
+      }
+
+      setTimeout(() => {
+        const card = cardRefs.current[productId];
+        if (card) {
+          const aderezosButton = card.querySelector('[data-aderezos-button]');
+          if (aderezosButton) {
+            aderezosButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 600);
+    } else {
+      setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
+    }
+  };
+
+  const handleDecreaseQuantity = (productId: string) => {
+    const currentQty = orderQuantity[productId] || 0;
+    if (currentQty > 0) {
+      setOrderQuantity((prev) => ({
+        ...prev,
+        [productId]: currentQty - 1
+      }));
+      if (currentQty === 1) {
+        setExpandedCard(null);
+        setIsEditingOrder(false);
+        setEditingOrderIndex(null);
+        setShowAderezos((prev) => ({ ...prev, [productId]: false }));
+        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
+        setShowExtras((prev) => ({ ...prev, [productId]: false }));
+        if (mainProductsInCart[productId]) {
+          removeFromCart(mainProductsInCart[productId]);
+          setMainProductsInCart((prev) => {
+            const newState = { ...prev };
+            delete newState[productId];
+            return newState;
+          });
+        }
+      }
+      setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
+    }
+  };
+
+  const handleAderezoToggle = (productId: string, aderezoId: string, action: 'add' | 'remove' = 'add') => {
+    const requiredCount = getRequiredAderezosCount(productId);
+    const currentAderezos = selectedAderezos[productId] || [];
+
+    if (action === 'remove') {
+      const index = currentAderezos.indexOf(aderezoId);
+      if (index !== -1) {
+        const newAderezos = [...currentAderezos];
+        newAderezos.splice(index, 1);
+        setSelectedAderezos((prev) => ({ ...prev, [productId]: newAderezos }));
+
+        if (newAderezos.length < requiredCount && mainProductsInCart[productId]) {
+          removeFromCart(mainProductsInCart[productId]);
+          setMainProductsInCart((prev) => {
+            const newState = { ...prev };
+            delete newState[productId];
+            return newState;
+          });
+        } else if (newAderezos.length === requiredCount) {
+          const product = products.find((p) => p.id === productId);
+          if (product) {
+            const aderezosText = newAderezos
+              .map((aId) => aderezos.find((a) => a.id === aId)?.name)
+              .filter((name) => name)
+              .join(", ");
+
+            const cartItemId = `${productId}-main`;
+            const productWithAderezos: Product = {
+              ...product,
+              id: cartItemId,
+              description: `${product.description} - Aderezos: ${aderezosText}`,
+            };
+
+            if (mainProductsInCart[productId]) {
+              removeFromCart(mainProductsInCart[productId]);
+            }
+            addToCart(productWithAderezos, 1);
+            setMainProductsInCart((prev) => ({ ...prev, [productId]: cartItemId }));
+          }
+        }
+      }
+    } else {
+      if (currentAderezos.length < requiredCount) {
+        const newAderezos = [...currentAderezos, aderezoId];
+        setSelectedAderezos((prev) => ({ ...prev, [productId]: newAderezos }));
+
+        const key = `${productId}-${aderezoId}`;
+        setRecentlyAddedAderezos((prev) => new Set(prev).add(key));
+
+        setTimeout(() => {
+          setRecentlyAddedAderezos((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(key);
+            return newSet;
+          });
+        }, 800);
+
+        if (newAderezos.length === requiredCount) {
+          const product = products.find((p) => p.id === productId);
+          if (product) {
+            const aderezosText = newAderezos
+              .map((aId) => aderezos.find((a) => a.id === aId)?.name)
+              .filter((name) => name)
+              .join(", ");
+
+            const cartItemId = `${productId}-main`;
+            const productWithAderezos: Product = {
+              ...product,
+              id: cartItemId,
+              description: `${product.description} - Aderezos: ${aderezosText}`,
+            };
+
+            if (mainProductsInCart[productId]) {
+              removeFromCart(mainProductsInCart[productId]);
+            }
+
+            addToCart(productWithAderezos, 1);
+            setMainProductsInCart((prev) => ({ ...prev, [productId]: cartItemId }));
+          }
+
+          setTimeout(() => {
+            setShowAderezos((prev) => ({ ...prev, [productId]: false }));
+          }, 1200);
+        }
+      }
+    }
+  };
+
+  const getAderezoCount = (productId: string, aderezoId: string): number => {
+    const currentAderezos = selectedAderezos[productId] || [];
+    return currentAderezos.filter((a) => a === aderezoId).length;
+  };
+
+  const canAddProduct = (productId: string): boolean => {
+    const requiredCount = getRequiredAderezosCount(productId);
+    const currentAderezos = selectedAderezos[productId] || [];
+    return currentAderezos.length === requiredCount;
+  };
+
+  const handleCompleteOrder = (product: Product) => {
+    const completedOrder: CompletedOrder = {
+      productId: product.id,
+      quantity: orderQuantity[product.id] || 1,
+      aderezos: selectedAderezos[product.id] || [],
+      complementIds: complementsInCart[product.id] || []
+    };
+    if (isEditingOrder && editingOrderIndex !== null) {
+      setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
+      setEditingOrderIndex(null);
+    } else {
+      setCompletedOrders((prev) => [...prev, completedOrder]);
+    }
+
+    setSelectedAderezos((prev) => ({ ...prev, [product.id]: [] }));
+    setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
+    setShowAderezos((prev) => ({ ...prev, [product.id]: false }));
+    setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
+    setShowExtras((prev) => ({ ...prev, [product.id]: false }));
+    setMainProductsInCart((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
+    setComplementsInCart((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
+    setOrderQuantity((prev) => {
+      const newState = { ...prev };
+      delete newState[product.id];
+      return newState;
+    });
+    setExpandedCard(null);
+  };
+
+  const handleEditOrder = (orderIndex: number) => {
+    const order = completedOrders[orderIndex];
+    if (!order) return;
+
+    setEditingOrderIndex(orderIndex);
+    setOrderQuantity((prev) => ({ ...prev, [order.productId]: order.quantity }));
+    setSelectedAderezos((prev) => ({ ...prev, [order.productId]: order.aderezos }));
+    setComplementsInCart((prev) => ({ ...prev, [order.productId]: order.complementIds }));
+    setIsEditingOrder(true);
+    setExpandedCard(order.productId);
+    setShowAderezos((prev) => ({ ...prev, [order.productId]: true }));
+
+    setTimeout(() => {
+      const card = cardRefs.current[order.productId];
+      if (card && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const cardLeft = card.offsetLeft;
+        const cardWidth = card.offsetWidth;
+        const containerWidth = container.offsetWidth;
+        const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+
+        container.scrollTo({ left: scrollPosition, behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const handleDeleteOrder = (orderIndex: number) => {
+    setDeleteOrderIndex(orderIndex);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteOrder = () => {
+    if (deleteOrderIndex === null) return;
+
+    const order = completedOrders[deleteOrderIndex];
+    if (!order) return;
+
+    setCompletedOrders((prev) => prev.filter((_, idx) => idx !== deleteOrderIndex));
+
+    const cartItemId = `${order.productId}-main`;
+    removeFromCart(cartItemId);
+
+    order.complementIds.forEach((complementId) => {
+      removeFromCart(complementId);
+    });
+
+    setShowDeleteModal(false);
+    setDeleteOrderIndex(null);
+  };
+
+  const cancelDeleteOrder = () => {
+    setShowDeleteModal(false);
+    setDeleteOrderIndex(null);
+  };
+
+  const handleAddComplement = (productId: string, complement: Product) => {
+    addToCart(complement, 1);
+
+    setComplementsInCart((prev) => ({
+      ...prev,
+      [productId]: [...(prev[productId] || []), complement.id]
+    }));
+
+    const key = `${productId}-${complement.id}`;
+    setRecentlyAdded((prev) => new Set(prev).add(key));
+
+    setTimeout(() => {
+      setRecentlyAdded((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(key);
+        return newSet;
+      });
+    }, 800);
+  };
+
+  const handleRemoveComplement = (productId: string, complementId: string) => {
+    const complementsForProduct = complementsInCart[productId] || [];
+    const indexToRemove = complementsForProduct.lastIndexOf(complementId);
+
+    if (indexToRemove !== -1) {
+      removeFromCart(complementId);
+
+      const newComplements = [...complementsForProduct];
+      newComplements.splice(indexToRemove, 1);
+
+      setComplementsInCart((prev) => ({
+        ...prev,
+        [productId]: newComplements
+      }));
+    }
+  };
+
+  const getComplementCount = (productId: string, complementId: string): number => {
+    const complementsForProduct = complementsInCart[productId] || [];
+    return complementsForProduct.filter(id => id === complementId).length;
   };
 
   const scroll = (direction: 'left' | 'right') => {
@@ -91,6 +596,7 @@ export default function FitPage() {
   };
 
   const handleCardHover = (productId: string) => {
+    if (expandedCard) return;
     setHoveredCard(productId);
     const cardElement = cardRefs.current[productId];
     const container = scrollContainerRef.current;
@@ -99,16 +605,13 @@ export default function FitPage() {
       const cardRect = cardElement.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
 
-      // Check if card is partially visible on the right
       if (cardRect.right > containerRect.right) {
         const scrollAmount = cardRect.right - containerRect.right + 20;
         container.scrollBy({
           left: scrollAmount,
           behavior: 'smooth'
         });
-      }
-      // Check if card is partially visible on the left
-      else if (cardRect.left < containerRect.left) {
+      } else if (cardRect.left < containerRect.left) {
         const scrollAmount = cardRect.left - containerRect.left - 20;
         container.scrollBy({
           left: scrollAmount,
@@ -137,28 +640,21 @@ export default function FitPage() {
     if (!isDragging || !scrollContainerRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // Multiplicador para velocidad de scroll
+    const walk = (x - startX) * 2;
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-cyan-500 neon-border-fit sticky top-0 z-10">
+      <header className="bg-gray-900 border-b-2 border-cyan-500 neon-border-fit sticky top-0 z-30">
         <div className="container mx-auto px-3 md:px-4 py-4 md:py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
             <h1 className="flex items-center gap-2 md:gap-3 text-lg md:text-2xl font-black tracking-tight">
               <span className="text-amber-400 gold-glow inline-flex items-center">
                 S
-                <span className="relative inline-block">
-                  A
-                </span>
-                <span className="relative inline-block">
-                  N
-                </span>
-                <span className="relative inline-block">
-                  T
-                </span>
+                <span className="relative inline-block">A</span>
+                <span className="relative inline-block">N</span>
+                <span className="relative inline-block">T</span>
                 <span className="relative inline-block">
                   O
                   <svg
@@ -196,16 +692,13 @@ export default function FitPage() {
         </div>
       </header>
 
-      {/* Hero Section - Banner */}
       <section className="relative w-full overflow-hidden bg-black pt-6 md:pt-0">
         <div className="relative w-full bg-black">
-          {/* Banner para móvil */}
           <img
             src="/bannermovilfi.png?v=1"
             alt="Banner promocional FIT"
             className="block md:hidden w-full h-auto object-cover"
           />
-          {/* Banner para PC/Tablet */}
           <img
             src="/bannerpcfit.png?v=1"
             alt="Banner promocional FIT"
@@ -218,348 +711,604 @@ export default function FitPage() {
         </div>
       </section>
 
-      {/* Products Carousel */}
-      <section className={`container mx-auto px-3 md:px-4 py-4 md:py-6 transition-all duration-300 ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-4 md:pb-6'}`}>
-
-        {/* Carousel Container */}
-        <div className="relative flex items-center justify-center">
-          {/* Scrollable Products */}
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-4 lg:py-6 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
+        <div className="relative flex items-center justify-center overflow-visible">
           <div
             ref={scrollContainerRef}
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex gap-3 md:gap-4 overflow-x-auto overflow-y-visible scrollbar-hide px-2 md:px-4 py-4 md:py-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} snap-x snap-mandatory md:snap-none`}
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
+            className={`flex md:flex-wrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-x-visible`}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowY: 'visible' }}
           >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                ref={(el) => (cardRefs.current[product.id] = el)}
-                onMouseEnter={() => handleCardHover(product.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className={`bg-gray-900 rounded-xl border-2 overflow-visible flex-shrink-0 w-[280px] md:w-[260px] snap-center transition-all duration-300 ease-out
-                  border-cyan-400 neon-border-fit shadow-xl shadow-cyan-500/30
-                  ${hoveredCard === product.id
-                    ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
-                    : 'md:border-cyan-500/30 md:shadow-none scale-100 translate-y-0'
-                }`}
-                style={{
-                  transformOrigin: 'center center',
-                }}
-              >
-                <div className={`relative flex items-center justify-center overflow-visible ${
-                  product.image.startsWith('/')
-                    ? 'bg-black h-40 md:h-56 border-0'
-                    : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-24 md:h-28 overflow-hidden rounded-t-xl border-b-2 border-cyan-500/30'
-                }`}>
-                  {product.image.startsWith('/') ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="absolute object-cover drop-shadow-2xl"
-                      style={{
-                        width: '150%',
-                        height: '160%',
-                        top: '-30%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        objectPosition: 'center 55%',
-                      }}
-                    />
-                  ) : (
-                    <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
-                  )}
-                </div>
-                <div className="p-3 md:p-4">
-                  <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5">
-                    {product.name}
-                  </h4>
-                  <p className="text-cyan-200/70 text-[11px] md:text-xs mb-2 md:mb-3">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between mb-2 md:mb-3">
-                    <span className="text-base md:text-lg font-black text-amber-400 gold-glow">
-                      S/ {product.price.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-black/40 rounded border border-cyan-500/30">
-                      <button
-                        onClick={() => updateProductQuantity(product.id, getQuantity(product.id) - 1)}
-                        className="px-2 md:px-2 py-1.5 md:py-1.5 text-cyan-400 hover:text-cyan-300 font-bold transition-colors text-sm active:scale-95"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        max="99"
-                        value={getQuantity(product.id)}
-                        onChange={(e) => updateProductQuantity(product.id, parseInt(e.target.value) || 1)}
-                        className="w-9 md:w-10 text-center bg-transparent text-white font-bold text-xs outline-none"
+            {products.map((product) => {
+              const isExpanded = expandedCard === product.id;
+              const requiredAderezos = getRequiredAderezosCount(product.id);
+              const currentAderezos = selectedAderezos[product.id] || [];
+              const canAdd = canAddProduct(product.id);
+
+              return (
+                <div
+                  key={product.id}
+                  ref={(el) => { cardRefs.current[product.id] = el; }}
+                  onMouseEnter={() => handleCardHover(product.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fit shadow-xl shadow-cyan-500/30 snap-center md:snap-none border-2 md:border-0 border-cyan-400
+                    ${isExpanded
+                      ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
+                      : 'w-[240px] md:w-[280px] lg:w-[300px]'
+                    }
+                    ${!isExpanded && hoveredCard === product.id && !expandedCard
+                      ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
+                      : !isExpanded && !expandedCard ? 'md:shadow-none scale-100 translate-y-0' : ''
+                    }
+                  `}
+                  style={{
+                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
+                    transformOrigin: 'center center',
+                    borderRadius: 0,
+                    overflow: 'visible',
+                  }}
+                >
+                  <div className={`relative flex items-center justify-center overflow-visible ${
+                    product.image.startsWith('/')
+                      ? 'bg-black h-40 md:h-56 border-0'
+                      : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
+                  }`}>
+                    {product.image.startsWith('/') ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="absolute object-cover drop-shadow-2xl"
+                        style={{
+                          width: '150%',
+                          height: '160%',
+                          top: '-30%',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          objectPosition: 'center 55%',
+                          zIndex: 150
+                        }}
                       />
+                    ) : (
+                      <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                    )}
+                  </div>
+                  <div className="p-3 md:p-4">
+                    <h4 className="text-xs md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
+                      {product.name}
+                    </h4>
+                    <p className="text-cyan-200/70 text-[10px] md:text-xs mb-1.5 md:mb-3 line-clamp-3 h-10 md:h-12">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center justify-between mb-1.5 md:mb-3">
+                      <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
+                        S/ {product.price.toFixed(2)}
+                      </span>
+                      <div className="flex items-center gap-0.5 md:gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDecreaseQuantity(product.id);
+                          }}
+                          className="w-5 h-5 md:w-6 md:h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                        >
+                          −
+                        </button>
+                        <span className="text-white font-bold w-6 md:w-8 text-center text-xs md:text-sm">
+                          {orderQuantity[product.id] || 0}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleIncreaseQuantity(product.id);
+                          }}
+                          className="w-5 h-5 md:w-6 md:h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`overflow-hidden transition-all origin-top ${
+                      isExpanded
+                        ? 'max-h-[2500px] scale-y-100 opacity-100 duration-600 ease-out'
+                        : 'max-h-0 scale-y-95 opacity-0 duration-400 ease-in-out'
+                    }`}
+                    style={{
+                      transition: isExpanded
+                        ? 'max-height 0.6s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out'
+                        : 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, transform 0.4s ease-in-out'
+                    }}
+                  >
+                    <div className="px-2.5 md:px-4 pb-2.5 md:pb-4 border-t-2 border-cyan-500/30 pt-2.5 md:pt-3">
+                      <div className="flex justify-end mb-1.5 md:mb-2">
+                        <button
+                          onClick={handleCloseCard}
+                          className="text-cyan-400 hover:text-cyan-300 text-[10px] md:text-xs font-bold flex items-center gap-0.5 md:gap-1 transition-colors"
+                        >
+                          <span>Mostrar menos</span>
+                          <span className="text-sm md:text-lg">×</span>
+                        </button>
+                      </div>
+
+                      <div className="mb-2 md:mb-3">
+                        <button
+                          data-aderezos-button
+                          onClick={() => setShowAderezos((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
+                          className={`w-full flex items-center justify-between rounded-md md:rounded-lg p-1.5 md:p-2 transition-all shadow-sm border
+                            ${canAdd
+                              ? 'bg-green-600/20 hover:bg-green-600/30 border-green-500/40 shadow-green-500/20'
+                              : 'bg-cyan-600/20 hover:bg-cyan-600/30 border-cyan-500/40 shadow-cyan-500/20'
+                            }
+                          `}
+                          style={{
+                            boxShadow: showAderezos[product.id]
+                              ? canAdd
+                                ? '0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.15)'
+                                : '0 0 10px rgba(6, 182, 212, 0.3), 0 0 20px rgba(6, 182, 212, 0.15)'
+                              : undefined
+                          }}
+                        >
+                          <div className="flex items-center gap-1.5 md:gap-2">
+                            <span className="text-xs md:text-sm">{canAdd ? '✓' : '🥗'}</span>
+                            <span className={`text-[10px] md:text-xs font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
+                              {canAdd
+                                ? `Aderezo${requiredAderezos > 1 ? 's' : ''} seleccionado${requiredAderezos > 1 ? 's' : ''} (${requiredAderezos})`
+                                : `Elige tu${requiredAderezos > 1 ? 's' : ''} aderezo${requiredAderezos > 1 ? 's' : ''}`
+                              }
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-bold ${canAdd ? 'text-green-400' : 'text-cyan-400'}`}>
+                              {currentAderezos.length}/{requiredAderezos}
+                            </span>
+                            <span className={`text-xs ${canAdd ? 'text-green-400' : 'text-cyan-400'}`}>
+                              {showAderezos[product.id] ? '▼' : '▶'}
+                            </span>
+                          </div>
+                        </button>
+
+                        <div
+                          data-aderezos-section
+                          className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                            showAderezos[product.id]
+                              ? 'max-h-[600px] opacity-100 mt-2'
+                              : 'max-h-0 opacity-0 mt-0'
+                          }`}
+                        >
+                          <div className="space-y-1">
+                            {aderezos.map((aderezo) => {
+                              const count = getAderezoCount(product.id, aderezo.id);
+                              const isSelected = count > 0;
+                              const canSelect = currentAderezos.length < requiredAderezos || isSelected;
+                              const wasRecentlyAdded = recentlyAddedAderezos.has(`${product.id}-${aderezo.id}`);
+                              const maxAderezoCount = requiredAderezos;
+                              const canAddMore = count < maxAderezoCount && canSelect;
+                              const showAddButton = canAddMore;
+
+                              return (
+                                <div
+                                  key={aderezo.id}
+                                  className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
+                                >
+                                  <div className="flex items-center gap-1.5 flex-1">
+                                    <span className={`text-[10px] ${count > 0 ? 'text-cyan-400 font-bold' : 'text-white'}`}>
+                                      {aderezo.name}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    {count > 0 && (
+                                      <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                        x{count}
+                                      </span>
+                                    )}
+                                    {count > 0 && (
+                                      <button
+                                        onClick={() => handleAderezoToggle(product.id, aderezo.id, 'remove')}
+                                        className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
+                                      >
+                                        −
+                                      </button>
+                                    )}
+                                    {showAddButton && (
+                                      <button
+                                        onClick={() => handleAderezoToggle(product.id, aderezo.id, 'add')}
+                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          wasRecentlyAdded
+                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                            : 'bg-cyan-600 hover:bg-cyan-500'
+                                        } text-white`}
+                                      >
+                                        {wasRecentlyAdded ? '✓' : '+'}
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <h5 className="text-xs font-bold text-white mb-2">Complementos</h5>
+
+                        <div className="mb-2">
+                          <button
+                            onClick={() => setShowBebidas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
+                            className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">🥤</span>
+                              <span className="text-white text-xs font-bold">Bebidas</span>
+                            </div>
+                            <span className="text-cyan-400 text-xs">{showBebidas[product.id] ? '▼' : '▶'}</span>
+                          </button>
+
+                          {showBebidas[product.id] && (
+                            <div className="mt-2 space-y-1">
+                              {[
+                                { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
+                                { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
+                                { id: "inka-cola", name: "Inka Cola 500ml", emoji: "🥤", price: 4.00 },
+                                { id: "sprite", name: "Sprite 500ml", emoji: "🥤", price: 4.00 },
+                                { id: "fanta", name: "Fanta 500ml", emoji: "🥤", price: 4.00 },
+                              ].map((bebida) => {
+                                const bebidaProduct: Product = {
+                                  id: bebida.id,
+                                  name: bebida.name,
+                                  description: bebida.name,
+                                  price: bebida.price,
+                                  image: bebida.emoji,
+                                  category: "bebida"
+                                };
+                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${bebida.id}`);
+                                const count = getComplementCount(product.id, bebida.id);
+                                return (
+                                  <div
+                                    key={bebida.id}
+                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-sm">{bebida.emoji}</span>
+                                      <span className="text-white text-[10px]">{bebida.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
+                                      {count > 0 && (
+                                        <>
+                                          <button
+                                            onClick={() => handleRemoveComplement(product.id, bebida.id)}
+                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
+                                          >
+                                            −
+                                          </button>
+                                          <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                            {count}
+                                          </span>
+                                        </>
+                                      )}
+                                      <button
+                                        onClick={() => handleAddComplement(product.id, bebidaProduct)}
+                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          wasRecentlyAdded
+                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                            : 'bg-cyan-600 hover:bg-cyan-500'
+                                        } text-white`}
+                                      >
+                                        {wasRecentlyAdded ? '✓' : '+'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <button
+                            onClick={() => setShowExtras((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
+                            className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">🍟</span>
+                              <span className="text-white text-xs font-bold">Extras</span>
+                            </div>
+                            <span className="text-cyan-400 text-xs">{showExtras[product.id] ? '▼' : '▶'}</span>
+                          </button>
+
+                          {showExtras[product.id] && (
+                            <div className="mt-2 space-y-1">
+                              {[
+                                { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 },
+                                { id: "extra-salsa", name: "Extra salsa", emoji: "🥫", price: 3.00 },
+                              ].map((extra) => {
+                                const extraProduct: Product = {
+                                  id: extra.id,
+                                  name: extra.name,
+                                  description: extra.name,
+                                  price: extra.price,
+                                  image: extra.emoji,
+                                  category: "bebida"
+                                };
+                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extra.id}`);
+                                const count = getComplementCount(product.id, extra.id);
+                                return (
+                                  <div
+                                    key={extra.id}
+                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-sm">{extra.emoji}</span>
+                                      <span className="text-white text-[10px]">{extra.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
+                                      {count > 0 && (
+                                        <>
+                                          <button
+                                            onClick={() => handleRemoveComplement(product.id, extra.id)}
+                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
+                                          >
+                                            −
+                                          </button>
+                                          <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                            {count}
+                                          </span>
+                                        </>
+                                      )}
+                                      <button
+                                        onClick={() => handleAddComplement(product.id, extraProduct)}
+                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          wasRecentlyAdded
+                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                            : 'bg-cyan-600 hover:bg-cyan-500'
+                                        } text-white`}
+                                      >
+                                        {wasRecentlyAdded ? '✓' : '+'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       <button
-                        onClick={() => updateProductQuantity(product.id, getQuantity(product.id) + 1)}
-                        className="px-2 md:px-2 py-1.5 md:py-1.5 text-cyan-400 hover:text-cyan-300 font-bold transition-colors text-sm active:scale-95"
+                        onClick={() => {
+                          handleCompleteOrder(product);
+                          setIsEditingOrder(false);
+                        }}
+                        disabled={!canAdd}
+                        className={`w-full py-2.5 rounded font-bold text-sm transition-all
+                          ${canAdd
+                            ? 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95'
+                            : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
+                          }
+                        `}
                       >
-                        +
+                        {canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredAderezos} aderezo${requiredAderezos > 1 ? 's' : ''}`}
                       </button>
                     </div>
-                    <button
-                      onClick={() => handleAddToCart(product, getQuantity(product.id))}
-                      className="flex-1 bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-black px-3 py-2 md:py-1.5 rounded font-bold text-xs transition-all neon-border-fit"
-                    >
-                      Agregar
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
+
+        {expandedCard === null && completedOrders.length === 0 && (
+          <div className="relative w-full flex justify-center items-center py-4 md:py-6 lg:py-8 px-4">
+            <div className="text-center animated-text-reveal">
+              <h2
+                className="text-base md:text-2xl lg:text-3xl font-black tracking-widest uppercase"
+                style={{
+                  fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
+                  fontWeight: 900,
+                  fontStretch: 'expanded',
+                  color: '#06b6d4',
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  textShadow: '0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4), 0 0 40px rgba(6, 182, 212, 0.2)'
+                }}
+              >
+                ¡Promo del día 30% descuento en órdenes César Power Bowl!
+              </h2>
+            </div>
+          </div>
+        )}
+
+        {completedOrders.length > 0 && (
+          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0 lg:mt-2">
+            <h3 className="text-base md:text-lg lg:text-xl font-black text-cyan-400 mb-2 md:mb-3 neon-glow-fit">
+              Tu orden
+            </h3>
+            <div className="space-y-2 md:space-y-3">
+              {completedOrders.map((order, index) => {
+                const product = products.find((p) => p.id === order.productId);
+                if (!product) return null;
+
+                return (
+                  <div
+                    key={`${order.productId}-${index}`}
+                    className="bg-gray-900 rounded-lg border-2 border-cyan-400/30 p-2 md:p-3 relative"
+                  >
+                    <div className="flex items-start justify-between mb-1 md:mb-2">
+                      <div className="flex items-start gap-2 flex-1">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-cyan-400/30 flex items-center justify-center">
+                          {product.image.startsWith('/') ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.parentElement!.innerHTML = '<span class="text-2xl">🥗</span>';
+                              }}
+                            />
+                          ) : (
+                            <span className="text-2xl">{product.image}</span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-bold text-white mb-1">
+                            {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                          </h4>
+                          <div className="text-[11px] space-y-1">
+                            <div className="text-cyan-300">
+                              🥗 Aderezos: {order.aderezos
+                                .map((aId) => aderezos.find((a) => a.id === aId)?.name)
+                                .filter((name) => name)
+                                .join(", ")}
+                            </div>
+                            {order.complementIds.length > 0 && (
+                              <div className="text-cyan-300">
+                                🍟 Complementos: {order.complementIds
+                                  .map((compId) => availableComplements[compId]?.name)
+                                  .filter((name) => name)
+                                  .join(", ")}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-center gap-2 ml-2">
+                        <button
+                          onClick={() => handleEditOrder(index)}
+                          className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold px-2 py-1 border border-cyan-400/30 rounded"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOrder(index)}
+                          className="text-cyan-500 hover:text-cyan-400 text-xl font-bold transition-all opacity-70 hover:opacity-100"
+                          title="Eliminar orden"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-amber-400 font-bold text-sm gold-glow">
+                      S/ {(() => {
+                        const productTotal = product.price * order.quantity;
+                        const complementsTotal = order.complementIds.reduce((sum, compId) => {
+                          return sum + (availableComplements[compId]?.price || 0);
+                        }, 0);
+                        return (productTotal + complementsTotal).toFixed(2);
+                      })()}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {completedOrders.length > 0 && (
+          <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
+            <p className="text-center text-xs text-cyan-200/70 italic">
+              💡 Puedes agregar más órdenes a tu pedido antes de continuar
+            </p>
+          </div>
+        )}
       </section>
 
-      {/* Promo Text */}
-      <div className="relative w-full flex justify-center items-center py-4 md:py-6 lg:py-8 px-4">
-        <div className="text-center animated-text-reveal">
-          <h2
-            className="text-base md:text-2xl lg:text-3xl font-black tracking-widest uppercase"
-            style={{
-              fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
-              fontWeight: 900,
-              fontStretch: 'expanded',
-              color: '#06b6d4',
-              letterSpacing: '0.15em',
-              textTransform: 'uppercase',
-              textShadow: '0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4), 0 0 40px rgba(6, 182, 212, 0.2)'
-            }}
-          >
-            ¡Promo del día 30% descuento en órdenes César Power Bowl!
-          </h2>
-        </div>
-      </div>
-
-      {/* Cart Summary Bar */}
-      {totalItems > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-2 border-cyan-500/50 shadow-lg z-50">
-          <div className="container mx-auto px-3 md:px-4 py-2 md:py-2">
-            <div className="flex justify-between items-center gap-2">
-              <button
-                onClick={() => setShowCartModal(true)}
-                className="bg-cyan-500/20 hover:bg-cyan-500/30 active:scale-95 border border-cyan-500/50 text-cyan-400 px-2 md:px-3 py-1.5 md:py-1.5 rounded-lg font-bold text-xs md:text-sm transition-all"
-              >
-                Ver Pedido
-              </button>
-              <div className="flex items-center gap-2 md:gap-4">
-                <p className="text-amber-400 font-bold text-sm md:text-lg gold-glow">
-                  <span className="hidden sm:inline">Total: </span>S/ {totalPrice.toFixed(2)}
-                </p>
-                <Link
-                  href="/checkout"
-                  className="bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-black px-3 md:px-4 py-1.5 md:py-1.5 rounded-lg font-bold text-xs md:text-sm transition-all neon-border-fit"
-                >
-                  Continuar<span className="hidden sm:inline"> Pedido</span> →
-                </Link>
+      {completedOrders.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-cyan-500/50 shadow-2xl shadow-cyan-500/30 z-50">
+          <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 lg:py-5">
+            <div className="flex justify-between items-center gap-3 md:gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-white font-bold text-sm md:text-lg">Total</span>
+                <span className="text-amber-400 font-black text-xl md:text-3xl gold-glow">
+                  S/ {completedTotal.toFixed(2)}
+                </span>
               </div>
+              <button
+                onClick={navigateToCheckout}
+                className="bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-black px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-fit"
+              >
+                Continuar<span className="hidden sm:inline"> Pedido</span> →
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Cart Modal */}
-      {showCartModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-cyan-500 neon-border-fit max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col">
-            {/* Modal Header */}
-            <div className="p-3 border-b-2 border-cyan-500/30 flex justify-between items-center">
-              <h3 className="text-lg font-black text-cyan-400 neon-glow-fit">
-                Tu Pedido
-              </h3>
-              <button
-                onClick={() => setShowCartModal(false)}
-                className="text-cyan-400 hover:text-cyan-300 text-2xl font-bold transition-all"
-              >
-                ×
-              </button>
-            </div>
+      {showDeleteModal && deleteOrderIndex !== null && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 border-2 border-cyan-500 neon-border-fit rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-black text-cyan-400 mb-4 neon-glow-fit text-center">
+              ¡Qué dilema!
+            </h3>
+            {(() => {
+              const order = completedOrders[deleteOrderIndex];
+              const product = products.find((p) => p.id === order.productId);
+              if (!product) return null;
 
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-3">
-              <div className="space-y-2">
-                {cart.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex items-center gap-2 bg-gray-800/50 rounded-lg p-2 border border-cyan-500/20"
-                  >
-                    <div className="text-2xl">{item.product.image}</div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-bold text-xs">
-                        {item.product.name}
-                      </h4>
-                      <p className="text-cyan-400 text-xs">
-                        S/ {item.product.price.toFixed(2)} c/u
+              const aderezosText = order.aderezos
+                .map((aId) => aderezos.find((a) => a.id === aId)?.name)
+                .filter((name) => name)
+                .join(", ");
+
+              const complementsText = order.complementIds.length > 0
+                ? order.complementIds
+                    .map((compId) => availableComplements[compId]?.name)
+                    .filter((name) => name)
+                    .join(", ")
+                : "";
+
+              const productTotal = product.price * order.quantity;
+              const complementsTotal = order.complementIds.reduce((sum, compId) => {
+                return sum + (availableComplements[compId]?.price || 0);
+              }, 0);
+              const orderTotal = (productTotal + complementsTotal).toFixed(2);
+
+              return (
+                <div className="mb-6 text-sm">
+                  <p className="text-white mb-3 text-center">
+                    ¿Está seguro que desea quitar su orden de su pedido?
+                  </p>
+                  <div className="bg-gray-800/50 border border-cyan-400/30 rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-cyan-400 font-bold">
+                        {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                      </p>
+                      <p className="text-amber-400 font-bold gold-glow">
+                        S/ {orderTotal}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        className="w-6 h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
-                      >
-                        −
-                      </button>
-                      <span className="text-white font-bold w-7 text-center text-xs">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        className="w-6 h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="text-amber-400 font-bold text-sm gold-glow min-w-[60px] text-right">
-                      S/ {(item.product.price * item.quantity).toFixed(2)}
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="text-2xl hover:scale-110 transition-all flex items-center justify-center flex-shrink-0"
-                      title="Eliminar"
-                    >
-                      ❌
-                    </button>
+                    <p className="text-cyan-300 text-xs">
+                      🥗 Aderezos: {aderezosText}
+                    </p>
+                    {complementsText && (
+                      <p className="text-cyan-300 text-xs">
+                        🍟 Complementos: {complementsText}
+                      </p>
+                    )}
                   </div>
-                ))}
-              </div>
-
-              {/* Complementos */}
-              <div className="mt-3 pt-2 border-t border-cyan-500/30">
-                <h4 className="text-xs font-bold text-white mb-2">Complementos</h4>
-
-                {/* Bebidas - Acordeón */}
-                <div className="mb-2">
-                  <button
-                    onClick={() => setShowBebidas(!showBebidas)}
-                    className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🥤</span>
-                      <span className="text-white text-xs font-bold">Bebidas</span>
-                    </div>
-                    <span className="text-cyan-400 text-sm">{showBebidas ? '▼' : '▶'}</span>
-                  </button>
-
-                  {showBebidas && (
-                    <div className="mt-2 space-y-1">
-                      {[
-                        { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
-                        { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
-                        { id: "inka-cola", name: "Inka Cola 500ml", emoji: "🥤", price: 4.00 },
-                        { id: "sprite", name: "Sprite 500ml", emoji: "🥤", price: 4.00 },
-                        { id: "fanta", name: "Fanta 500ml", emoji: "🥤", price: 4.00 },
-                      ].map((bebida) => {
-                        const bebidaProduct: Product = {
-                          id: bebida.id,
-                          name: bebida.name,
-                          description: bebida.name,
-                          price: bebida.price,
-                          image: bebida.emoji,
-                          category: "bebida"
-                        };
-                        return (
-                          <div
-                            key={bebida.id}
-                            className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm">{bebida.emoji}</span>
-                              <span className="text-white text-[10px]">{bebida.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
-                              <button
-                                onClick={() => addToCart(bebidaProduct, 1)}
-                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
-
-                {/* Extras - Acordeón */}
-                <div className="mb-2">
-                  <button
-                    onClick={() => setShowExtras(!showExtras)}
-                    className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🍟</span>
-                      <span className="text-white text-xs font-bold">Extras</span>
-                    </div>
-                    <span className="text-cyan-400 text-sm">{showExtras ? '▼' : '▶'}</span>
-                  </button>
-
-                  {showExtras && (
-                    <div className="mt-2 space-y-1">
-                      {[
-                        { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 },
-                        { id: "extra-salsa", name: "Extra salsa", emoji: "🥫", price: 3.00 },
-                      ].map((extra) => {
-                        const extraProduct: Product = {
-                          id: extra.id,
-                          name: extra.name,
-                          description: extra.name,
-                          price: extra.price,
-                          image: extra.emoji,
-                          category: "bebida"
-                        };
-                        return (
-                          <div
-                            key={extra.id}
-                            className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm">{extra.emoji}</span>
-                              <span className="text-white text-[10px]">{extra.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
-                              <button
-                                onClick={() => addToCart(extraProduct, 1)}
-                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-0.5 rounded text-[10px] font-bold transition-all"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-3 border-t-2 border-cyan-500/30 bg-gray-800/50">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-white font-bold text-sm">Total:</span>
-                <span className="text-amber-400 font-black text-xl gold-glow">
-                  S/ {totalPrice.toFixed(2)}
-                </span>
-              </div>
-              <Link
-                href="/checkout"
-                className="w-full bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2 rounded-lg font-black text-sm transition-all neon-border-fit block text-center"
+              );
+            })()}
+            <div className="flex gap-3">
+              <button
+                onClick={cancelDeleteOrder}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all border border-gray-500"
               >
-                Continuar Pedido →
-              </Link>
+                Volver
+              </button>
+              <button
+                onClick={confirmDeleteOrder}
+                className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-3 rounded-lg font-bold transition-all neon-border-fit"
+              >
+                Quitar
+              </button>
             </div>
           </div>
         </div>
