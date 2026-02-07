@@ -17,7 +17,7 @@ const products: Product[] = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    description: "Lechuga, tomate, pepino, zanahoria y aderezo light",
+    description: "Una combinación fresca y armoniosa de lechuga americana crujiente, tomate maduro, pepino fresco, zanahoria rallada y choclo dulce, finalizada con huevo duro. Acompañada de vinagreta clásica de la casa, equilibrada y ligera.",
     price: 18.90,
     image: "/clasica-fresh-bowl.png",
     category: "fit",
@@ -25,7 +25,7 @@ const products: Product[] = [
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    description: "Pollo grillado, quinoa, espinaca, palta y vinagreta",
+    description: "Nuestra interpretación gourmet de la ensalada César. Lechuga romana seleccionada, pechuga de pollo grillada y jugosa, crutones artesanales y queso parmesano finamente rallado. Bañada con salsa César cremosa de la casa, de sabor intenso y textura suave.",
     price: 24.90,
     image: "/cesar-power-bowl.png",
     category: "fit",
@@ -33,7 +33,7 @@ const products: Product[] = [
   {
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
-    description: "Lechuga romana, parmesano, crutones integrales y pollo",
+    description: "Un bowl pensado para quienes buscan nutrición y sabor en equilibrio. Mix de hojas verdes con quinua cocida, palta fresca, tomate cherry y semillas seleccionadas, acompañado de pollo grillado alto en proteína. Aderezo de yogurt griego, suave y refrescante.",
     price: 22.90,
     image: "/protein-fit-bowl.png",
     category: "fit",
@@ -41,7 +41,7 @@ const products: Product[] = [
   {
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
-    description: "Mix de verdes, queso feta, aceitunas, tomate cherry",
+    description: "Frescura marina en cada bocado. Lechuga romana crocante con atún en trozos, tomate cherry, pepino fresco, choclo dulce y palta cremosa, acompañada de huevo duro. Aderezo a elección: mayonesa ligera o vinagreta de limón.",
     price: 21.90,
     image: "/tuna-fresh-bowl.png",
     category: "fit",
