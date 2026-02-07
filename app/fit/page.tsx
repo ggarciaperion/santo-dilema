@@ -1061,7 +1061,14 @@ export default function FitPage() {
             </h3>
             {(() => {
               const order = completedOrders[deleteOrderIndex];
-              const product = products.find((p) => p.id === order.productId);
+
+              // Buscar producto en fit primero, luego en fat
+              let product = products.find((p) => p.id === order.productId);
+              let isFatOrder = false;
+              if (!product) {
+                product = fatProducts.find((p) => p.id === order.productId);
+                isFatOrder = true;
+              }
               if (!product) return null;
 
               const productTotal = product.price * order.quantity;
@@ -1075,22 +1082,49 @@ export default function FitPage() {
                   <p className="text-white mb-3 text-center">
                     ¿Está seguro que desea quitar su orden de su pedido?
                   </p>
-                  <div className="bg-gray-800/50 border border-cyan-400/30 rounded-lg p-4 space-y-2">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-cyan-400 font-bold text-base">
-                        {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
-                      </p>
-                      <p className="text-amber-400 font-bold gold-glow text-base">
-                        S/ {orderTotal}
-                      </p>
+                  <div className="bg-gray-800/50 border border-cyan-400/30 rounded-lg p-4">
+                    {/* Header con imagen y título */}
+                    <div className="flex items-start gap-3 mb-3 pb-3 border-b border-cyan-400/20">
+                      {/* Imagen del producto */}
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-cyan-400/30 flex items-center justify-center">
+                        {product.image.startsWith('/') ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-2xl">{product.image}</span>
+                        )}
+                      </div>
+
+                      {/* Nombre y precio total */}
+                      <div className="flex-1">
+                        <p className="text-cyan-400 font-bold text-base mb-1">
+                          {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
+                        </p>
+                        <p className="text-amber-400 font-bold gold-glow text-lg">
+                          S/ {orderTotal}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Desglose de precios */}
-                    <div className="space-y-1 pt-2 border-t border-cyan-400/20">
+                    <div className="space-y-1">
                       <div className="flex justify-between text-cyan-300/80 text-xs">
                         <span>• {product.name} x{order.quantity}</span>
                         <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                       </div>
+
+                      {/* Salsas (solo para órdenes fat) */}
+                      {isFatOrder && order.salsas && order.salsas.length > 0 && (
+                        <div className="text-amber-300/80 text-xs mt-2">
+                          🌶️ Salsas: {order.salsas
+                            .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                            .filter((name) => name)
+                            .join(", ")}
+                        </div>
+                      )}
 
                       {/* Desglose de complementos */}
                       {order.complementIds.length > 0 && (
