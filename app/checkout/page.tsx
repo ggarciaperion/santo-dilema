@@ -63,28 +63,14 @@ export default function CheckoutPage() {
 
   // Cargar órdenes completadas desde localStorage
   useEffect(() => {
-    const fatOrders = localStorage.getItem("santo-dilema-fat-orders");
-    const fitOrders = localStorage.getItem("santo-dilema-fit-orders");
-
-    let orders: CompletedOrder[] = [];
-
-    if (fatOrders) {
+    const savedOrders = localStorage.getItem("santo-dilema-orders");
+    if (savedOrders) {
       try {
-        orders = [...orders, ...JSON.parse(fatOrders)];
+        setCompletedOrders(JSON.parse(savedOrders));
       } catch (error) {
-        console.error("Error loading fat orders:", error);
+        console.error("Error loading orders:", error);
       }
     }
-
-    if (fitOrders) {
-      try {
-        orders = [...orders, ...JSON.parse(fitOrders)];
-      } catch (error) {
-        console.error("Error loading fit orders:", error);
-      }
-    }
-
-    setCompletedOrders(orders);
   }, []);
 
   // Validar si el formulario está completo
@@ -218,8 +204,7 @@ export default function CheckoutPage() {
 
         // Limpiar estados
         clearCart();
-        localStorage.removeItem("santo-dilema-fat-orders");
-        localStorage.removeItem("santo-dilema-fit-orders");
+        localStorage.removeItem("santo-dilema-orders");
         setOrderPlaced(true);
 
         setTimeout(() => {

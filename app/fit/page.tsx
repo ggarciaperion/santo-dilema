@@ -17,6 +17,7 @@ interface Product {
 interface CompletedOrder {
   productId: string;
   quantity: number;
+  salsas?: string[];
   complementIds: string[];
 }
 
@@ -131,7 +132,7 @@ export default function FitPage() {
 
     if (fromCheckout) {
       fitPageInitialized = true;
-      const savedOrders = localStorage.getItem("santo-dilema-fit-orders");
+      const savedOrders = localStorage.getItem("santo-dilema-orders");
       if (savedOrders) {
         try {
           const orders = JSON.parse(savedOrders);
@@ -169,7 +170,7 @@ export default function FitPage() {
           }, 500);
         } catch (error) {
           console.error("Error loading orders:", error);
-          localStorage.removeItem("santo-dilema-fit-orders");
+          localStorage.removeItem("santo-dilema-orders");
           localStorage.removeItem("santo-dilema-cart");
           clearCart();
         }
@@ -179,20 +180,20 @@ export default function FitPage() {
 
     if (!fitPageInitialized) {
       fitPageInitialized = true;
-      localStorage.removeItem("santo-dilema-fit-orders");
+      localStorage.removeItem("santo-dilema-orders");
       localStorage.removeItem("santo-dilema-cart");
       clearCart();
       return;
     }
 
-    const savedOrders = localStorage.getItem("santo-dilema-fit-orders");
+    const savedOrders = localStorage.getItem("santo-dilema-orders");
     if (savedOrders) {
       try {
         const orders = JSON.parse(savedOrders);
         setCompletedOrders(orders);
       } catch (error) {
         console.error("Error loading orders:", error);
-        localStorage.removeItem("santo-dilema-fit-orders");
+        localStorage.removeItem("santo-dilema-orders");
         localStorage.removeItem("santo-dilema-cart");
         clearCart();
       }
@@ -201,9 +202,9 @@ export default function FitPage() {
 
   useEffect(() => {
     if (completedOrders.length > 0) {
-      localStorage.setItem("santo-dilema-fit-orders", JSON.stringify(completedOrders));
+      localStorage.setItem("santo-dilema-orders", JSON.stringify(completedOrders));
     } else {
-      localStorage.removeItem("santo-dilema-fit-orders");
+      localStorage.removeItem("santo-dilema-orders");
     }
   }, [completedOrders]);
 

@@ -147,7 +147,7 @@ export default function FatPage() {
     // Botón "Volver" desde checkout: siempre restaurar
     if (fromCheckout) {
       fatPageInitialized = true;
-      const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
+      const savedOrders = localStorage.getItem("santo-dilema-orders");
       if (savedOrders) {
         try {
           const orders = JSON.parse(savedOrders);
@@ -185,7 +185,7 @@ export default function FatPage() {
           }, 500);
         } catch (error) {
           console.error("Error loading orders:", error);
-          localStorage.removeItem("santo-dilema-fat-orders");
+          localStorage.removeItem("santo-dilema-orders");
           localStorage.removeItem("santo-dilema-cart");
           clearCart();
         }
@@ -196,21 +196,21 @@ export default function FatPage() {
     // Primera carga del módulo en esta sesión (reload/refresh resets fatPageInitialized)
     if (!fatPageInitialized) {
       fatPageInitialized = true;
-      localStorage.removeItem("santo-dilema-fat-orders");
+      localStorage.removeItem("santo-dilema-orders");
       localStorage.removeItem("santo-dilema-cart");
       clearCart();
       return;
     }
 
     // Remontaje por navegación client-side (botón atrás del navegador)
-    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
+    const savedOrders = localStorage.getItem("santo-dilema-orders");
     if (savedOrders) {
       try {
         const orders = JSON.parse(savedOrders);
         setCompletedOrders(orders);
       } catch (error) {
         console.error("Error loading orders:", error);
-        localStorage.removeItem("santo-dilema-fat-orders");
+        localStorage.removeItem("santo-dilema-orders");
         localStorage.removeItem("santo-dilema-cart");
         clearCart();
       }
@@ -220,9 +220,9 @@ export default function FatPage() {
   // Guardar órdenes completadas en localStorage cuando cambien
   useEffect(() => {
     if (completedOrders.length > 0) {
-      localStorage.setItem("santo-dilema-fat-orders", JSON.stringify(completedOrders));
+      localStorage.setItem("santo-dilema-orders", JSON.stringify(completedOrders));
     } else {
-      localStorage.removeItem("santo-dilema-fat-orders");
+      localStorage.removeItem("santo-dilema-orders");
     }
   }, [completedOrders]);
 
