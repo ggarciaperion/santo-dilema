@@ -16,7 +16,7 @@ interface Product {
 const products: Product[] = [
   {
     id: "ensalada-clasica",
-    name: "Ensalada Clásica",
+    name: "CLÁSICA FRESH BOWL",
     description: "Lechuga, tomate, pepino, zanahoria y aderezo light",
     price: 18.90,
     image: "🥗",
@@ -24,7 +24,7 @@ const products: Product[] = [
   },
   {
     id: "ensalada-proteica",
-    name: "Ensalada Proteica",
+    name: "CÉSAR POWER BOWL",
     description: "Pollo grillado, quinoa, espinaca, palta y vinagreta",
     price: 24.90,
     image: "🥙",
@@ -32,7 +32,7 @@ const products: Product[] = [
   },
   {
     id: "ensalada-caesar",
-    name: "Caesar Fit",
+    name: "PROTEIN FIT BOWL",
     description: "Lechuga romana, parmesano, crutones integrales y pollo",
     price: 22.90,
     image: "🥗",
@@ -40,7 +40,7 @@ const products: Product[] = [
   },
   {
     id: "ensalada-mediterranea",
-    name: "Mediterránea",
+    name: "TUNA FRESH BOWL",
     description: "Mix de verdes, queso feta, aceitunas, tomate cherry",
     price: 21.90,
     image: "🥙",
