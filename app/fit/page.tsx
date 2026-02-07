@@ -219,14 +219,12 @@ export default function FitPage() {
       return;
     }
 
+    // Primera carga del módulo en esta sesión o navegación client-side
     if (!fitPageInitialized) {
       fitPageInitialized = true;
-      localStorage.removeItem("santo-dilema-orders");
-      localStorage.removeItem("santo-dilema-cart");
-      clearCart();
-      return;
     }
 
+    // Cargar órdenes existentes del localStorage
     const savedOrders = localStorage.getItem("santo-dilema-orders");
     if (savedOrders) {
       try {
@@ -235,7 +233,6 @@ export default function FitPage() {
       } catch (error) {
         console.error("Error loading orders:", error);
         localStorage.removeItem("santo-dilema-orders");
-        localStorage.removeItem("santo-dilema-cart");
         clearCart();
       }
     }
