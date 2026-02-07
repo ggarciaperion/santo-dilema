@@ -130,18 +130,28 @@ export default function CheckoutPage() {
     const fitProduct = fitProducts.find((p) => p.id === order.productId);
     const product = fatProduct || fitProduct;
 
-    if (!product) return total;
+    if (!product) {
+      console.log("Producto no encontrado para orden:", order);
+      return total;
+    }
 
     // Calcular total del producto
     const productTotal = product.price * order.quantity;
 
     // Calcular total de complementos
     const complementsTotal = order.complementIds.reduce((sum, compId) => {
-      return sum + (availableComplements[compId]?.price || 0);
+      const compPrice = availableComplements[compId]?.price || 0;
+      return sum + compPrice;
     }, 0);
 
-    return total + productTotal + complementsTotal;
+    const orderTotal = productTotal + complementsTotal;
+
+    console.log("Orden:", product.name, "x" + order.quantity, "| Producto:", productTotal, "| Complementos:", complementsTotal, "| Total orden:", orderTotal);
+
+    return total + orderTotal;
   }, 0);
+
+  console.log("=== TOTAL FINAL ===", realTotal);
 
   // Validar si el formulario está completo
   const isFormValid = () => {
