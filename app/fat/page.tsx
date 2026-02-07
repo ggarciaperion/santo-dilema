@@ -732,9 +732,9 @@ export default function FatPage() {
     <div className="min-h-screen bg-black">
       {/* Header */}
       <header className="bg-gray-900 border-b-2 border-red-500 neon-border-fat sticky top-0 z-30">
-        <div className="container mx-auto px-2 md:px-4 py-3 md:py-4 flex justify-between items-center">
+        <div className="container mx-auto px-3 md:px-4 py-4 md:py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
-            <h1 className="flex items-center gap-1.5 md:gap-3 text-base md:text-2xl font-black tracking-tight">
+            <h1 className="flex items-center gap-2 md:gap-3 text-lg md:text-2xl font-black tracking-tight">
               <span className="text-amber-400 gold-glow inline-flex items-center">
                 S
                 <span className="relative inline-block">
