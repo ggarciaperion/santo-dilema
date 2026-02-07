@@ -53,6 +53,42 @@ const products: Product[] = [
   },
 ];
 
+// Productos de FIT para visualización de órdenes cruzadas
+const fitProducts: Product[] = [
+  {
+    id: "ensalada-clasica",
+    name: "CLÁSICA FRESH BOWL",
+    description: "Lechuga americana, tomate, pepino, zanahoria, choclo y huevo. Con vinagreta clásica de la casa.",
+    price: 18.90,
+    image: "/clasica-fresh-bowl.png",
+    category: "fit",
+  },
+  {
+    id: "ensalada-proteica",
+    name: "CÉSAR POWER BOWL",
+    description: "Lechuga romana, pollo grillado, crutones y parmesano. Con salsa César cremosa de la casa.",
+    price: 24.90,
+    image: "/cesar-power-bowl.png",
+    category: "fit",
+  },
+  {
+    id: "ensalada-caesar",
+    name: "PROTEIN FIT BOWL",
+    description: "Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Con aderezo de yogurt griego.",
+    price: 22.90,
+    image: "/protein-fit-bowl.png",
+    category: "fit",
+  },
+  {
+    id: "ensalada-mediterranea",
+    name: "TUNA FRESH BOWL",
+    description: "Lechuga romana, atún en trozos, tomate cherry, pepino, choclo, palta y huevo. Aderezo a elección.",
+    price: 21.90,
+    image: "/tuna-fresh-bowl.png",
+    category: "fit",
+  },
+];
+
 const salsas: Salsa[] = [
   { id: "barbecue", name: "Barbecue" },
   { id: "anticuchos", name: "Anticuchos" },
@@ -1240,7 +1276,16 @@ export default function FatPage() {
             </h3>
             <div className="space-y-2 md:space-y-3">
               {completedOrders.map((order, index) => {
-                const product = products.find((p) => p.id === order.productId);
+                // Buscar producto en fat products
+                let product = products.find((p) => p.id === order.productId);
+                let isFitOrder = false;
+
+                // Si no se encuentra, buscar en fit products
+                if (!product) {
+                  product = fitProducts.find((p) => p.id === order.productId);
+                  isFitOrder = true;
+                }
+
                 if (!product) return null;
 
                 return (
@@ -1270,6 +1315,13 @@ export default function FatPage() {
                             {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
                           </h4>
 
+                          {/* Etiqueta de menú si es de fit */}
+                          {isFitOrder && (
+                            <div className="text-cyan-400 font-bold text-[10px] mb-1">
+                              💚 Menú Balance
+                            </div>
+                          )}
+
                           <div className="text-[11px] space-y-0.5">
                             {/* Precio del menú */}
                             <div className="text-red-300/80 flex justify-between">
@@ -1277,13 +1329,15 @@ export default function FatPage() {
                               <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                             </div>
 
-                            {/* Salsas seleccionadas */}
-                            <div className="text-amber-300/80">
-                              🌶️ Salsas: {order.salsas
-                                .map((sId) => salsas.find((s) => s.id === sId)?.name)
-                                .filter((name) => name)
-                                .join(", ")}
-                            </div>
+                            {/* Salsas seleccionadas - solo para ordenes de fat */}
+                            {!isFitOrder && order.salsas && order.salsas.length > 0 && (
+                              <div className="text-amber-300/80">
+                                🌶️ Salsas: {order.salsas
+                                  .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                                  .filter((name) => name)
+                                  .join(", ")}
+                              </div>
+                            )}
 
                             {/* Desglose de complementos */}
                             {order.complementIds.length > 0 && (

@@ -56,6 +56,45 @@ const products: Product[] = [
   },
 ];
 
+// Productos de FAT para visualización de órdenes cruzadas
+const fatProducts: Product[] = [
+  {
+    id: "pequeno-dilema",
+    name: "Pequeño Dilema",
+    description: "6 alitas acompañadas de papas y 01 salsa favorita.",
+    price: 28.90,
+    image: "/pequeno-dilema.png?v=3",
+    category: "fat",
+  },
+  {
+    id: "duo-dilema",
+    name: "Dúo Dilema",
+    description: "12 alitas acompañadas de papas francesas y 02 de tus salsas favoritas.",
+    price: 39.90,
+    image: "/duo-dilema.png?v=3",
+    category: "fat",
+  },
+  {
+    id: "santo-pecado",
+    name: "Santo Pecado",
+    description: "18 alitas acompañadas de papas francesas y 03 de tus salsas favoritas.",
+    price: 49.90,
+    image: "/todos-pecan.png?v=3",
+    category: "fat",
+  },
+];
+
+const salsas: { id: string; name: string }[] = [
+  { id: "barbecue", name: "Barbecue" },
+  { id: "anticuchos", name: "Anticuchos" },
+  { id: "ahumada", name: "Ahumada" },
+  { id: "buffalo-picante", name: "Buffalo picante" },
+  { id: "honey-mustard", name: "Honey mustard" },
+  { id: "macerichada", name: "Macerichada" },
+  { id: "teriyaki", name: "Teriyaki" },
+  { id: "parmesano-ajo", name: "Parmesano & Ajo" },
+];
+
 const availableComplements: Record<string, { name: string; price: number }> = {
   "agua-mineral": { name: "Agua mineral", price: 4.00 },
   "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
@@ -846,7 +885,16 @@ export default function FitPage() {
             </h3>
             <div className="space-y-2 md:space-y-3">
               {completedOrders.map((order, index) => {
-                const product = products.find((p) => p.id === order.productId);
+                // Buscar producto en fit products
+                let product = products.find((p) => p.id === order.productId);
+                let isFatOrder = false;
+
+                // Si no se encuentra, buscar en fat products
+                if (!product) {
+                  product = fatProducts.find((p) => p.id === order.productId);
+                  isFatOrder = true;
+                }
+
                 if (!product) return null;
 
                 return (
@@ -877,11 +925,28 @@ export default function FitPage() {
                           </h4>
 
                           <div className="text-[11px] space-y-0.5">
+                            {/* Etiqueta de menú si es de fat */}
+                            {isFatOrder && (
+                              <div className="text-red-400 font-bold text-[10px]">
+                                🔥 Menú Placer
+                              </div>
+                            )}
+
                             {/* Precio del menú */}
                             <div className="text-cyan-300/80 flex justify-between">
                               <span>• {product.name} x{order.quantity}</span>
                               <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                             </div>
+
+                            {/* Salsas (solo para órdenes de fat) */}
+                            {isFatOrder && order.salsas && order.salsas.length > 0 && (
+                              <div className="text-amber-300/80">
+                                🌶️ Salsas: {order.salsas
+                                  .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                                  .filter((name) => name)
+                                  .join(", ")}
+                              </div>
+                            )}
 
                             {/* Desglose de complementos */}
                             {order.complementIds.length > 0 && (
