@@ -14,15 +14,9 @@ interface Product {
   category: "fit" | "fat" | "bebida";
 }
 
-interface Aderezo {
-  id: string;
-  name: string;
-}
-
 interface CompletedOrder {
   productId: string;
   quantity: number;
-  aderezos: string[];
   complementIds: string[];
 }
 
@@ -61,23 +55,13 @@ const products: Product[] = [
   },
 ];
 
-const aderezos: Aderezo[] = [
-  { id: "vinagreta-clasica", name: "Vinagreta clásica" },
-  { id: "cesar", name: "César" },
-  { id: "yogurt-griego", name: "Yogurt griego" },
-  { id: "miel-mostaza", name: "Miel y mostaza" },
-  { id: "balsámico", name: "Balsámico" },
-  { id: "limon-aceite", name: "Limón y aceite de oliva" },
-];
-
 const availableComplements: Record<string, { name: string; price: number }> = {
   "agua-mineral": { name: "Agua mineral", price: 4.00 },
   "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
   "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
   "sprite": { name: "Sprite 500ml", price: 4.00 },
   "fanta": { name: "Fanta 500ml", price: 4.00 },
-  "extra-papas": { name: "Extra papas", price: 4.00 },
-  "extra-salsa": { name: "Extra salsa", price: 3.00 }
+  "extra-aderezo": { name: "Extra aderezo", price: 3.00 }
 };
 
 let fitPageInitialized = false;
@@ -85,13 +69,11 @@ let fitPageInitialized = false;
 export default function FitPage() {
   const { cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const [selectedAderezos, setSelectedAderezos] = useState<Record<string, string[]>>({});
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isDragging, setIsDragging] = useState(false);
-  const [showAderezos, setShowAderezos] = useState<Record<string, boolean>>({});
   const [showBebidas, setShowBebidas] = useState<Record<string, boolean>>({});
   const [showExtras, setShowExtras] = useState<Record<string, boolean>>({});
   const [showCartModal, setShowCartModal] = useState(false);
@@ -99,7 +81,6 @@ export default function FitPage() {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
   const [mainProductsInCart, setMainProductsInCart] = useState<Record<string, string>>({});
-  const [recentlyAddedAderezos, setRecentlyAddedAderezos] = useState<Set<string>>(new Set());
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
   const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
@@ -242,42 +223,13 @@ export default function FitPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [expandedCard]);
 
-  const getRequiredAderezosCount = (productId: string): number => {
-    const quantity = orderQuantity[productId] || 0;
-    if (quantity === 0) return 0;
-    return 1 * quantity;
-  };
-
   const handleExpandCard = (productId: string) => {
     if (isDragging) return;
     setExpandedCard(productId);
-    setShowAderezos((prev) => ({ ...prev, [productId]: true }));
     setIsEditingOrder(false);
-    if (!selectedAderezos[productId]) {
-      setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
-    }
     if (!selectedComplements[productId]) {
       setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
     }
-
-    setTimeout(() => {
-      const card = cardRefs.current[productId];
-      if (card) {
-        const aderezosButton = card.querySelector('[data-aderezos-button]');
-        if (aderezosButton) {
-          const currentScroll = window.scrollY || document.documentElement.scrollTop;
-          const rect = aderezosButton.getBoundingClientRect();
-          const elementTop = currentScroll + rect.top;
-          const offset = window.innerHeight / 2 - rect.height / 2;
-          const scrollTarget = elementTop - offset + 100;
-
-          window.scrollTo({
-            top: scrollTarget,
-            behavior: 'smooth'
-          });
-        }
-      }
-    }, 500);
   };
 
   const handleCloseCard = () => {
@@ -285,7 +237,6 @@ export default function FitPage() {
     setIsEditingOrder(false);
     setEditingOrderIndex(null);
     if (expandedCard) {
-      setShowAderezos((prev) => ({ ...prev, [expandedCard]: false }));
       setShowBebidas((prev) => ({ ...prev, [expandedCard]: false }));
       setShowExtras((prev) => ({ ...prev, [expandedCard]: false }));
     }
@@ -299,25 +250,9 @@ export default function FitPage() {
     }));
     if (currentQty === 0) {
       setExpandedCard(productId);
-      setShowAderezos((prev) => ({ ...prev, [productId]: true }));
-      if (!selectedAderezos[productId]) {
-        setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
-      }
       if (!selectedComplements[productId]) {
         setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
       }
-
-      setTimeout(() => {
-        const card = cardRefs.current[productId];
-        if (card) {
-          const aderezosButton = card.querySelector('[data-aderezos-button]');
-          if (aderezosButton) {
-            aderezosButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }
-      }, 600);
-    } else {
-      setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
     }
   };
 
@@ -332,7 +267,6 @@ export default function FitPage() {
         setExpandedCard(null);
         setIsEditingOrder(false);
         setEditingOrderIndex(null);
-        setShowAderezos((prev) => ({ ...prev, [productId]: false }));
         setShowBebidas((prev) => ({ ...prev, [productId]: false }));
         setShowExtras((prev) => ({ ...prev, [productId]: false }));
         if (mainProductsInCart[productId]) {
@@ -344,114 +278,17 @@ export default function FitPage() {
           });
         }
       }
-      setSelectedAderezos((prev) => ({ ...prev, [productId]: [] }));
     }
-  };
-
-  const handleAderezoToggle = (productId: string, aderezoId: string, action: 'add' | 'remove' = 'add') => {
-    const requiredCount = getRequiredAderezosCount(productId);
-    const currentAderezos = selectedAderezos[productId] || [];
-
-    if (action === 'remove') {
-      const index = currentAderezos.indexOf(aderezoId);
-      if (index !== -1) {
-        const newAderezos = [...currentAderezos];
-        newAderezos.splice(index, 1);
-        setSelectedAderezos((prev) => ({ ...prev, [productId]: newAderezos }));
-
-        if (newAderezos.length < requiredCount && mainProductsInCart[productId]) {
-          removeFromCart(mainProductsInCart[productId]);
-          setMainProductsInCart((prev) => {
-            const newState = { ...prev };
-            delete newState[productId];
-            return newState;
-          });
-        } else if (newAderezos.length === requiredCount) {
-          const product = products.find((p) => p.id === productId);
-          if (product) {
-            const aderezosText = newAderezos
-              .map((aId) => aderezos.find((a) => a.id === aId)?.name)
-              .filter((name) => name)
-              .join(", ");
-
-            const cartItemId = `${productId}-main`;
-            const productWithAderezos: Product = {
-              ...product,
-              id: cartItemId,
-              description: `${product.description} - Aderezos: ${aderezosText}`,
-            };
-
-            if (mainProductsInCart[productId]) {
-              removeFromCart(mainProductsInCart[productId]);
-            }
-            addToCart(productWithAderezos, 1);
-            setMainProductsInCart((prev) => ({ ...prev, [productId]: cartItemId }));
-          }
-        }
-      }
-    } else {
-      if (currentAderezos.length < requiredCount) {
-        const newAderezos = [...currentAderezos, aderezoId];
-        setSelectedAderezos((prev) => ({ ...prev, [productId]: newAderezos }));
-
-        const key = `${productId}-${aderezoId}`;
-        setRecentlyAddedAderezos((prev) => new Set(prev).add(key));
-
-        setTimeout(() => {
-          setRecentlyAddedAderezos((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(key);
-            return newSet;
-          });
-        }, 800);
-
-        if (newAderezos.length === requiredCount) {
-          const product = products.find((p) => p.id === productId);
-          if (product) {
-            const aderezosText = newAderezos
-              .map((aId) => aderezos.find((a) => a.id === aId)?.name)
-              .filter((name) => name)
-              .join(", ");
-
-            const cartItemId = `${productId}-main`;
-            const productWithAderezos: Product = {
-              ...product,
-              id: cartItemId,
-              description: `${product.description} - Aderezos: ${aderezosText}`,
-            };
-
-            if (mainProductsInCart[productId]) {
-              removeFromCart(mainProductsInCart[productId]);
-            }
-
-            addToCart(productWithAderezos, 1);
-            setMainProductsInCart((prev) => ({ ...prev, [productId]: cartItemId }));
-          }
-
-          setTimeout(() => {
-            setShowAderezos((prev) => ({ ...prev, [productId]: false }));
-          }, 1200);
-        }
-      }
-    }
-  };
-
-  const getAderezoCount = (productId: string, aderezoId: string): number => {
-    const currentAderezos = selectedAderezos[productId] || [];
-    return currentAderezos.filter((a) => a === aderezoId).length;
   };
 
   const canAddProduct = (productId: string): boolean => {
-    const requiredCount = getRequiredAderezosCount(productId);
-    const currentAderezos = selectedAderezos[productId] || [];
-    return currentAderezos.length === requiredCount;
+    return true; // Ya no necesita validar aderezos
   };
 
   const handleCompleteOrder = (product: Product) => {
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: orderQuantity[product.id] || 1,
-      aderezos: selectedAderezos[product.id] || [],
       complementIds: complementsInCart[product.id] || []
     };
     if (isEditingOrder && editingOrderIndex !== null) {
@@ -461,9 +298,7 @@ export default function FitPage() {
       setCompletedOrders((prev) => [...prev, completedOrder]);
     }
 
-    setSelectedAderezos((prev) => ({ ...prev, [product.id]: [] }));
     setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
-    setShowAderezos((prev) => ({ ...prev, [product.id]: false }));
     setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
     setShowExtras((prev) => ({ ...prev, [product.id]: false }));
     setMainProductsInCart((prev) => {
@@ -490,11 +325,9 @@ export default function FitPage() {
 
     setEditingOrderIndex(orderIndex);
     setOrderQuantity((prev) => ({ ...prev, [order.productId]: order.quantity }));
-    setSelectedAderezos((prev) => ({ ...prev, [order.productId]: order.aderezos }));
     setComplementsInCart((prev) => ({ ...prev, [order.productId]: order.complementIds }));
     setIsEditingOrder(true);
     setExpandedCard(order.productId);
-    setShowAderezos((prev) => ({ ...prev, [order.productId]: true }));
 
     setTimeout(() => {
       const card = cardRefs.current[order.productId];
@@ -724,9 +557,6 @@ export default function FitPage() {
           >
             {products.map((product) => {
               const isExpanded = expandedCard === product.id;
-              const requiredAderezos = getRequiredAderezosCount(product.id);
-              const currentAderezos = selectedAderezos[product.id] || [];
-              const canAdd = canAddProduct(product.id);
 
               return (
                 <div
@@ -835,105 +665,6 @@ export default function FitPage() {
                         </button>
                       </div>
 
-                      <div className="mb-2 md:mb-3">
-                        <button
-                          data-aderezos-button
-                          onClick={() => setShowAderezos((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                          className={`w-full flex items-center justify-between rounded-md md:rounded-lg p-1.5 md:p-2 transition-all shadow-sm border
-                            ${canAdd
-                              ? 'bg-green-600/20 hover:bg-green-600/30 border-green-500/40 shadow-green-500/20'
-                              : 'bg-cyan-600/20 hover:bg-cyan-600/30 border-cyan-500/40 shadow-cyan-500/20'
-                            }
-                          `}
-                          style={{
-                            boxShadow: showAderezos[product.id]
-                              ? canAdd
-                                ? '0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.15)'
-                                : '0 0 10px rgba(6, 182, 212, 0.3), 0 0 20px rgba(6, 182, 212, 0.15)'
-                              : undefined
-                          }}
-                        >
-                          <div className="flex items-center gap-1.5 md:gap-2">
-                            <span className="text-xs md:text-sm">{canAdd ? '✓' : '🥗'}</span>
-                            <span className={`text-[10px] md:text-xs font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
-                              {canAdd
-                                ? `Aderezo${requiredAderezos > 1 ? 's' : ''} seleccionado${requiredAderezos > 1 ? 's' : ''} (${requiredAderezos})`
-                                : `Elige tu${requiredAderezos > 1 ? 's' : ''} aderezo${requiredAderezos > 1 ? 's' : ''}`
-                              }
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold ${canAdd ? 'text-green-400' : 'text-cyan-400'}`}>
-                              {currentAderezos.length}/{requiredAderezos}
-                            </span>
-                            <span className={`text-xs ${canAdd ? 'text-green-400' : 'text-cyan-400'}`}>
-                              {showAderezos[product.id] ? '▼' : '▶'}
-                            </span>
-                          </div>
-                        </button>
-
-                        <div
-                          data-aderezos-section
-                          className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                            showAderezos[product.id]
-                              ? 'max-h-[600px] opacity-100 mt-2'
-                              : 'max-h-0 opacity-0 mt-0'
-                          }`}
-                        >
-                          <div className="space-y-1">
-                            {aderezos.map((aderezo) => {
-                              const count = getAderezoCount(product.id, aderezo.id);
-                              const isSelected = count > 0;
-                              const canSelect = currentAderezos.length < requiredAderezos || isSelected;
-                              const wasRecentlyAdded = recentlyAddedAderezos.has(`${product.id}-${aderezo.id}`);
-                              const maxAderezoCount = requiredAderezos;
-                              const canAddMore = count < maxAderezoCount && canSelect;
-                              const showAddButton = canAddMore;
-
-                              return (
-                                <div
-                                  key={aderezo.id}
-                                  className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
-                                >
-                                  <div className="flex items-center gap-1.5 flex-1">
-                                    <span className={`text-[10px] ${count > 0 ? 'text-cyan-400 font-bold' : 'text-white'}`}>
-                                      {aderezo.name}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    {count > 0 && (
-                                      <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                        x{count}
-                                      </span>
-                                    )}
-                                    {count > 0 && (
-                                      <button
-                                        onClick={() => handleAderezoToggle(product.id, aderezo.id, 'remove')}
-                                        className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
-                                      >
-                                        −
-                                      </button>
-                                    )}
-                                    {showAddButton && (
-                                      <button
-                                        onClick={() => handleAderezoToggle(product.id, aderezo.id, 'add')}
-                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                                          wasRecentlyAdded
-                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                            : 'bg-cyan-600 hover:bg-cyan-500'
-                                        } text-white`}
-                                      >
-                                        {wasRecentlyAdded ? '✓' : '+'}
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
                       <div className="mb-3">
                         <h5 className="text-xs font-bold text-white mb-2">Complementos</h5>
 
@@ -1010,74 +741,62 @@ export default function FitPage() {
                           )}
                         </div>
 
-                        <div>
-                          <button
-                            onClick={() => setShowExtras((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                            className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">🍟</span>
-                              <span className="text-white text-xs font-bold">Extras</span>
-                            </div>
-                            <span className="text-cyan-400 text-xs">{showExtras[product.id] ? '▼' : '▶'}</span>
-                          </button>
-
-                          {showExtras[product.id] && (
-                            <div className="mt-2 space-y-1">
-                              {[
-                                { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 },
-                                { id: "extra-salsa", name: "Extra salsa", emoji: "🥫", price: 3.00 },
-                              ].map((extra) => {
-                                const extraProduct: Product = {
-                                  id: extra.id,
-                                  name: extra.name,
-                                  description: extra.name,
-                                  price: extra.price,
-                                  image: extra.emoji,
-                                  category: "bebida"
-                                };
-                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extra.id}`);
-                                const count = getComplementCount(product.id, extra.id);
-                                return (
-                                  <div
-                                    key={extra.id}
-                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
-                                  >
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-sm">{extra.emoji}</span>
-                                      <span className="text-white text-[10px]">{extra.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
-                                      {count > 0 && (
-                                        <>
-                                          <button
-                                            onClick={() => handleRemoveComplement(product.id, extra.id)}
-                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
-                                          >
-                                            −
-                                          </button>
-                                          <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                            {count}
-                                          </span>
-                                        </>
-                                      )}
-                                      <button
-                                        onClick={() => handleAddComplement(product.id, extraProduct)}
-                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                                          wasRecentlyAdded
-                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                            : 'bg-cyan-600 hover:bg-cyan-500'
-                                        } text-white`}
-                                      >
-                                        {wasRecentlyAdded ? '✓' : '+'}
-                                      </button>
-                                    </div>
+                        <div className="mb-2">
+                          <h5 className="text-xs font-bold text-white mb-2">Extras</h5>
+                          <div className="space-y-1">
+                            {(() => {
+                              const extraAderezo = {
+                                id: "extra-aderezo",
+                                name: "Extra aderezo",
+                                emoji: "🥗",
+                                price: 3.00
+                              };
+                              const extraProduct: Product = {
+                                id: extraAderezo.id,
+                                name: extraAderezo.name,
+                                description: extraAderezo.name,
+                                price: extraAderezo.price,
+                                image: extraAderezo.emoji,
+                                category: "bebida"
+                              };
+                              const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extraAderezo.id}`);
+                              const count = getComplementCount(product.id, extraAderezo.id);
+                              return (
+                                <div className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-sm">{extraAderezo.emoji}</span>
+                                    <span className="text-white text-[10px]">{extraAderezo.name}</span>
                                   </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-amber-400 text-[10px] font-bold">S/ {extraAderezo.price.toFixed(2)}</span>
+                                    {count > 0 && (
+                                      <>
+                                        <button
+                                          onClick={() => handleRemoveComplement(product.id, extraAderezo.id)}
+                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
+                                        >
+                                          −
+                                        </button>
+                                        <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                          {count}
+                                        </span>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => handleAddComplement(product.id, extraProduct)}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                        wasRecentlyAdded
+                                          ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                          : 'bg-cyan-600 hover:bg-cyan-500'
+                                      } text-white`}
+                                    >
+                                      {wasRecentlyAdded ? '✓' : '+'}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
                       </div>
 
@@ -1086,15 +805,10 @@ export default function FitPage() {
                           handleCompleteOrder(product);
                           setIsEditingOrder(false);
                         }}
-                        disabled={!canAdd}
-                        className={`w-full py-2.5 rounded font-bold text-sm transition-all
-                          ${canAdd
-                            ? 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95'
-                            : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
-                          }
-                        `}
+                        disabled={false}
+                        className="w-full py-2.5 rounded font-bold text-sm transition-all bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95"
                       >
-                        {canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredAderezos} aderezo${requiredAderezos > 1 ? 's' : ''}`}
+                        {isEditingOrder ? 'Confirmar orden' : 'Agregar a la orden'}
                       </button>
                     </div>
                   </div>
@@ -1161,22 +875,16 @@ export default function FitPage() {
                           <h4 className="text-sm font-bold text-white mb-1">
                             {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
                           </h4>
-                          <div className="text-[11px] space-y-1">
-                            <div className="text-cyan-300">
-                              🥗 Aderezos: {order.aderezos
-                                .map((aId) => aderezos.find((a) => a.id === aId)?.name)
-                                .filter((name) => name)
-                                .join(", ")}
-                            </div>
-                            {order.complementIds.length > 0 && (
+                          {order.complementIds.length > 0 && (
+                            <div className="text-[11px] space-y-1">
                               <div className="text-cyan-300">
                                 🍟 Complementos: {order.complementIds
                                   .map((compId) => availableComplements[compId]?.name)
                                   .filter((name) => name)
                                   .join(", ")}
                               </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex flex-col items-center gap-2 ml-2">
@@ -1252,11 +960,6 @@ export default function FitPage() {
               const product = products.find((p) => p.id === order.productId);
               if (!product) return null;
 
-              const aderezosText = order.aderezos
-                .map((aId) => aderezos.find((a) => a.id === aId)?.name)
-                .filter((name) => name)
-                .join(", ");
-
               const complementsText = order.complementIds.length > 0
                 ? order.complementIds
                     .map((compId) => availableComplements[compId]?.name)
@@ -1284,9 +987,6 @@ export default function FitPage() {
                         S/ {orderTotal}
                       </p>
                     </div>
-                    <p className="text-cyan-300 text-xs">
-                      🥗 Aderezos: {aderezosText}
-                    </p>
                     {complementsText && (
                       <p className="text-cyan-300 text-xs">
                         🍟 Complementos: {complementsText}
