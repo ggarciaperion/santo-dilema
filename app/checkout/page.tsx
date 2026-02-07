@@ -475,7 +475,6 @@ export default function CheckoutPage() {
                         maxLength={8}
                         className="flex-1 px-3 py-1.5 md:py-2 rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                         style={{ fontSize: '16px' }}
-                        placeholder="12345678"
                       />
                       <button
                         type="submit"
@@ -529,7 +528,6 @@ export default function CheckoutPage() {
                     value={formData.name}
                     onChange={(e) => handleNameInput(e.target.value)}
                     className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                    placeholder="JUAN PÉREZ"
                   />
                 </div>
 
@@ -547,7 +545,6 @@ export default function CheckoutPage() {
                         maxLength={8}
                         disabled={customerFound}
                         className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed pr-8"
-                        placeholder="12345678"
                       />
                       {!customerFound && (
                         <button
@@ -577,7 +574,6 @@ export default function CheckoutPage() {
                       onChange={(e) => handleNumberInput('phone', e.target.value)}
                       maxLength={9}
                       className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                      placeholder="999888777"
                     />
                   </div>
                 </div>
@@ -594,13 +590,12 @@ export default function CheckoutPage() {
                     }
                     className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
                     rows={1}
-                    placeholder="Av. Ejemplo 123, Dpto 456"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
-                    Email (opcional)
+                    Correo (opcional)
                   </label>
                   <input
                     type="email"
@@ -609,7 +604,6 @@ export default function CheckoutPage() {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                    placeholder="tucorreo@ejemplo.com"
                   />
                   <p className="text-[9px] text-fuchsia-300/60 mt-0.5">
                     Recibe ofertas y promociones limitadas
