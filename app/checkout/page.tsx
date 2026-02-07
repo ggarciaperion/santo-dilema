@@ -125,34 +125,54 @@ export default function CheckoutPage() {
   }, []);
 
   // Calcular el total real basado en completedOrders
-  const realTotal = completedOrders.reduce((total, order) => {
+  console.log("======================================");
+  console.log("INICIANDO CÁLCULO DE TOTAL");
+  console.log("Número de órdenes completadas:", completedOrders.length);
+  console.log("Órdenes completas:", JSON.stringify(completedOrders, null, 2));
+
+  const realTotal = completedOrders.reduce((total, order, index) => {
+    console.log(`\n--- ORDEN ${index + 1} ---`);
+    console.log("Order completa:", order);
+    console.log("ProductId:", order.productId);
+    console.log("Quantity:", order.quantity);
+    console.log("ComplementIds:", order.complementIds);
+
     // Buscar el producto en los arrays
     const fatProduct = fatProducts.find((p) => p.id === order.productId);
     const fitProduct = fitProducts.find((p) => p.id === order.productId);
     const product = fatProduct || fitProduct;
 
     if (!product) {
-      console.log("Producto no encontrado para orden:", order);
+      console.log("❌ Producto no encontrado para orden:", order);
       return total;
     }
 
+    console.log("✓ Producto encontrado:", product.name, "- Precio unitario:", product.price);
+
     // Calcular total del producto
     const productTotal = product.price * order.quantity;
+    console.log(`Cálculo producto: ${product.price} × ${order.quantity} = ${productTotal}`);
 
     // Calcular total de complementos
+    console.log("Calculando complementos...");
     const complementsTotal = order.complementIds.reduce((sum, compId) => {
-      const compPrice = availableComplements[compId]?.price || 0;
+      const complement = availableComplements[compId];
+      const compPrice = complement?.price || 0;
+      console.log(`  - Complemento: ${compId} = ${complement?.name || 'NO ENCONTRADO'} - Precio: ${compPrice}`);
       return sum + compPrice;
     }, 0);
+    console.log(`Total complementos: ${complementsTotal}`);
 
     const orderTotal = productTotal + complementsTotal;
-
-    console.log("Orden:", product.name, "x" + order.quantity, "| Producto:", productTotal, "| Complementos:", complementsTotal, "| Total orden:", orderTotal);
+    console.log(`TOTAL ORDEN ${index + 1}: ${productTotal} + ${complementsTotal} = ${orderTotal}`);
+    console.log(`Acumulado hasta ahora: ${total} + ${orderTotal} = ${total + orderTotal}`);
 
     return total + orderTotal;
   }, 0);
 
+  console.log("\n======================================");
   console.log("=== TOTAL FINAL ===", realTotal);
+  console.log("======================================\n");
 
   // Validar si el formulario está completo
   const isFormValid = () => {
