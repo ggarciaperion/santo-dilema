@@ -87,7 +87,7 @@ const fitProducts = [
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, clearCart, totalItems } = useCart();
+  const { clearCart } = useCart();
   const [formData, setFormData] = useState({
     name: "",
     dni: "",
@@ -184,12 +184,12 @@ export default function CheckoutPage() {
     );
   };
 
-  // Redirect if cart is empty
+  // Redirect if no completed orders
   useEffect(() => {
-    if (totalItems === 0 && !orderPlaced) {
+    if (completedOrders.length === 0 && !orderPlaced) {
       router.push("/");
     }
-  }, [totalItems, orderPlaced, router]);
+  }, [completedOrders.length, orderPlaced, router]);
 
   const handleNumberInput = (field: 'dni' | 'phone', value: string) => {
     // Solo permite números, sin espacios
@@ -262,8 +262,7 @@ export default function CheckoutPage() {
     try {
       console.log("Enviando pedido...", {
         formData,
-        cart,
-        totalItems,
+        completedOrders,
         totalPrice: realTotal,
         paymentMethod
       });
@@ -277,9 +276,8 @@ export default function CheckoutPage() {
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('address', formData.address);
       formDataToSend.append('email', formData.email);
-      formDataToSend.append('cart', JSON.stringify(cart));
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
-      formDataToSend.append('totalItems', totalItems.toString());
+      formDataToSend.append('totalItems', completedOrders.length.toString());
       formDataToSend.append('totalPrice', realTotal.toString());
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
       if (cantoCancelo) {
@@ -642,15 +640,10 @@ export default function CheckoutPage() {
           </h3>
           <div className="flex-1 overflow-y-auto space-y-1.5 mb-2 md:mb-3">
             {completedOrders.map((order, index) => {
-              // Buscar primero en el cart
-              let product = cart.find((item) => item.product.id.includes(order.productId))?.product;
-
-              // Si no está en el cart, buscar en los arrays estáticos
-              if (!product) {
-                const fatProduct = fatProducts.find((p) => p.id === order.productId);
-                const fitProduct = fitProducts.find((p) => p.id === order.productId);
-                product = fatProduct || fitProduct;
-              }
+              // Buscar el producto en los arrays estáticos
+              const fatProduct = fatProducts.find((p) => p.id === order.productId);
+              const fitProduct = fitProducts.find((p) => p.id === order.productId);
+              const product = fatProduct || fitProduct;
 
               if (!product) return null;
 
