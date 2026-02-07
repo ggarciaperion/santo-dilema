@@ -19,7 +19,7 @@ const products: Product[] = [
     name: "CLÁSICA FRESH BOWL",
     description: "Lechuga, tomate, pepino, zanahoria y aderezo light",
     price: 18.90,
-    image: "🥗",
+    image: "/CLÁSICA FRESH BOWL.png",
     category: "fit",
   },
   {
@@ -27,7 +27,7 @@ const products: Product[] = [
     name: "CÉSAR POWER BOWL",
     description: "Pollo grillado, quinoa, espinaca, palta y vinagreta",
     price: 24.90,
-    image: "🥙",
+    image: "/CÉSAR POWER BOWL.png",
     category: "fit",
   },
   {
@@ -35,7 +35,7 @@ const products: Product[] = [
     name: "PROTEIN FIT BOWL",
     description: "Lechuga romana, parmesano, crutones integrales y pollo",
     price: 22.90,
-    image: "🥗",
+    image: "/PROTEIN FIT BOWL.png",
     category: "fit",
   },
   {
@@ -43,7 +43,7 @@ const products: Product[] = [
     name: "TUNA FRESH BOWL",
     description: "Mix de verdes, queso feta, aceitunas, tomate cherry",
     price: 21.90,
-    image: "🥙",
+    image: "/TUNA FRESH BOWL.png",
     category: "fit",
   },
 ];
@@ -249,8 +249,28 @@ export default function FitPage() {
                   transformOrigin: 'center center',
                 }}
               >
-                <div className="bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-24 md:h-28 flex items-center justify-center border-b-2 border-cyan-500/30 rounded-t-xl overflow-hidden">
-                  <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                <div className={`relative flex items-center justify-center overflow-visible ${
+                  product.image.startsWith('/')
+                    ? 'bg-black h-40 md:h-56 border-0'
+                    : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-24 md:h-28 overflow-hidden rounded-t-xl border-b-2 border-cyan-500/30'
+                }`}>
+                  {product.image.startsWith('/') ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="absolute object-cover drop-shadow-2xl"
+                      style={{
+                        width: '150%',
+                        height: '160%',
+                        top: '-30%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        objectPosition: 'center 55%',
+                      }}
+                    />
+                  ) : (
+                    <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                  )}
                 </div>
                 <div className="p-3 md:p-4">
                   <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5 truncate">
