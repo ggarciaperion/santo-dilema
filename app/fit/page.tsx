@@ -1053,23 +1053,24 @@ export default function FitPage() {
         </div>
       )}
 
-      {showDeleteModal && deleteOrderIndex !== null && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 border-2 border-cyan-500 neon-border-fit rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-black text-cyan-400 mb-4 neon-glow-fit text-center">
-              ¡Qué dilema!
-            </h3>
-            {(() => {
-              const order = completedOrders[deleteOrderIndex];
+      {showDeleteModal && deleteOrderIndex !== null && (() => {
+        const order = completedOrders[deleteOrderIndex];
+        // Buscar producto para determinar el tipo de orden
+        let product = products.find((p) => p.id === order.productId);
+        let isFatOrder = false;
+        if (!product) {
+          product = fatProducts.find((p) => p.id === order.productId);
+          isFatOrder = true;
+        }
 
-              // Buscar producto en fit primero, luego en fat
-              let product = products.find((p) => p.id === order.productId);
-              let isFatOrder = false;
-              if (!product) {
-                product = fatProducts.find((p) => p.id === order.productId);
-                isFatOrder = true;
-              }
-              if (!product) return null;
+        return (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+            <div className={`bg-gray-900 border-2 ${isFatOrder ? 'border-red-500 neon-border-fat' : 'border-cyan-500 neon-border-fit'} rounded-lg p-6 max-w-md w-full`}>
+              <h3 className={`text-xl font-black ${isFatOrder ? 'text-red-400 gold-glow' : 'text-cyan-400 neon-glow-fit'} mb-4 text-center`}>
+                ¡Qué dilema!
+              </h3>
+              {(() => {
+                if (!product) return null;
 
               const productTotal = product.price * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
@@ -1082,11 +1083,11 @@ export default function FitPage() {
                   <p className="text-white mb-3 text-center">
                     ¿Está seguro que desea quitar su orden de su pedido?
                   </p>
-                  <div className="bg-gray-800/50 border border-cyan-400/30 rounded-lg p-4">
+                  <div className={`bg-gray-800/50 border ${isFatOrder ? 'border-red-400/30' : 'border-cyan-400/30'} rounded-lg p-4`}>
                     {/* Header con imagen y título */}
-                    <div className="flex items-start gap-3 mb-3 pb-3 border-b border-cyan-400/20">
+                    <div className={`flex items-start gap-3 mb-3 pb-3 border-b ${isFatOrder ? 'border-red-400/20' : 'border-cyan-400/20'}`}>
                       {/* Imagen del producto */}
-                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-cyan-400/30 flex items-center justify-center">
+                      <div className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black border ${isFatOrder ? 'border-red-400/30' : 'border-cyan-400/30'} flex items-center justify-center`}>
                         {product.image.startsWith('/') ? (
                           <img
                             src={product.image}
@@ -1100,7 +1101,7 @@ export default function FitPage() {
 
                       {/* Nombre y precio total */}
                       <div className="flex-1">
-                        <p className="text-cyan-400 font-bold text-base mb-1">
+                        <p className={`${isFatOrder ? 'text-amber-400' : 'text-cyan-400'} font-bold text-base mb-1`}>
                           {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
                         </p>
                         <p className="text-amber-400 font-bold gold-glow text-lg">
@@ -1111,7 +1112,7 @@ export default function FitPage() {
 
                     {/* Desglose de precios */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-cyan-300/80 text-xs">
+                      <div className={`flex justify-between ${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} text-xs`}>
                         <span>• {product.name} x{order.quantity}</span>
                         <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                       </div>
@@ -1133,7 +1134,7 @@ export default function FitPage() {
                             const complement = availableComplements[compId];
                             if (!complement) return null;
                             return (
-                              <div key={`${compId}-${idx}`} className="flex justify-between text-cyan-300/80 text-xs">
+                              <div key={`${compId}-${idx}`} className={`flex justify-between ${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} text-xs`}>
                                 <span>• {complement.name}</span>
                                 <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
                               </div>
@@ -1145,24 +1146,25 @@ export default function FitPage() {
                   </div>
                 </div>
               );
-            })()}
-            <div className="flex gap-3">
-              <button
-                onClick={cancelDeleteOrder}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all border border-gray-500"
-              >
-                Volver
-              </button>
-              <button
-                onClick={confirmDeleteOrder}
-                className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-3 rounded-lg font-bold transition-all neon-border-fit"
-              >
-                Quitar
-              </button>
+              })()}
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelDeleteOrder}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all border border-gray-500"
+                >
+                  Volver
+                </button>
+                <button
+                  onClick={confirmDeleteOrder}
+                  className={`flex-1 ${isFatOrder ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat' : 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit'} px-4 py-3 rounded-lg font-bold transition-all`}
+                >
+                  Quitar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
