@@ -900,7 +900,7 @@ export default function FitPage() {
                 return (
                   <div
                     key={`${order.productId}-${index}`}
-                    className="bg-gray-900 rounded-lg border-2 border-cyan-400/30 p-2 md:p-3 relative"
+                    className={`bg-gray-900 rounded-lg border-2 ${isFatOrder ? 'border-red-400/30' : 'border-cyan-400/30'} p-2 md:p-3 relative`}
                   >
                     <div className="flex items-start justify-between mb-1 md:mb-2">
                       <div className="flex items-start gap-2 flex-1">
@@ -925,15 +925,8 @@ export default function FitPage() {
                           </h4>
 
                           <div className="text-[11px] space-y-0.5">
-                            {/* Etiqueta de menú si es de fat */}
-                            {isFatOrder && (
-                              <div className="text-red-400 font-bold text-[10px]">
-                                🔥 Menú Placer
-                              </div>
-                            )}
-
                             {/* Precio del menú */}
-                            <div className="text-cyan-300/80 flex justify-between">
+                            <div className={`${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between`}>
                               <span>• {product.name} x{order.quantity}</span>
                               <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                             </div>
@@ -955,7 +948,7 @@ export default function FitPage() {
                                   const complement = availableComplements[compId];
                                   if (!complement) return null;
                                   return (
-                                    <div key={`${compId}-${idx}`} className="text-cyan-300/80 flex justify-between">
+                                    <div key={`${compId}-${idx}`} className={`${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between`}>
                                       <span>• {complement.name}</span>
                                       <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
                                     </div>
