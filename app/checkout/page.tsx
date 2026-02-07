@@ -9,7 +9,7 @@ import { useCart } from "../context/CartContext";
 interface CompletedOrder {
   productId: string;
   quantity: number;
-  salsas: string[];
+  salsas?: string[]; // Opcional, solo para fat
   complementIds: string[];
 }
 
@@ -31,7 +31,8 @@ const availableComplements: Record<string, { name: string; price: number }> = {
   "sprite": { name: "Sprite 500ml", price: 4.00 },
   "fanta": { name: "Fanta 500ml", price: 4.00 },
   "extra-papas": { name: "Extra papas", price: 4.00 },
-  "extra-salsa": { name: "Extra salsa", price: 3.00 }
+  "extra-salsa": { name: "Extra salsa", price: 3.00 },
+  "extra-aderezo": { name: "Extra aderezo", price: 3.00 }
 };
 
 export default function CheckoutPage() {
@@ -62,14 +63,28 @@ export default function CheckoutPage() {
 
   // Cargar órdenes completadas desde localStorage
   useEffect(() => {
-    const savedOrders = localStorage.getItem("santo-dilema-fat-orders");
-    if (savedOrders) {
+    const fatOrders = localStorage.getItem("santo-dilema-fat-orders");
+    const fitOrders = localStorage.getItem("santo-dilema-fit-orders");
+
+    let orders: CompletedOrder[] = [];
+
+    if (fatOrders) {
       try {
-        setCompletedOrders(JSON.parse(savedOrders));
+        orders = [...orders, ...JSON.parse(fatOrders)];
       } catch (error) {
-        console.error("Error loading orders:", error);
+        console.error("Error loading fat orders:", error);
       }
     }
+
+    if (fitOrders) {
+      try {
+        orders = [...orders, ...JSON.parse(fitOrders)];
+      } catch (error) {
+        console.error("Error loading fit orders:", error);
+      }
+    }
+
+    setCompletedOrders(orders);
   }, []);
 
   // Validar si el formulario está completo
@@ -204,6 +219,7 @@ export default function CheckoutPage() {
         // Limpiar estados
         clearCart();
         localStorage.removeItem("santo-dilema-fat-orders");
+        localStorage.removeItem("santo-dilema-fit-orders");
         setOrderPlaced(true);
 
         setTimeout(() => {
@@ -578,12 +594,14 @@ export default function CheckoutPage() {
                         {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
                       </p>
                       <div className="text-[9px] md:text-[10px] space-y-0.5 mt-1">
-                        <div className="text-amber-300">
-                          🌶️ {order.salsas
-                            .map((sId) => salsas.find((s) => s.id === sId)?.name)
-                            .filter((name) => name)
-                            .join(", ")}
-                        </div>
+                        {order.salsas && order.salsas.length > 0 && (
+                          <div className="text-amber-300">
+                            🌶️ {order.salsas
+                              .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                              .filter((name) => name)
+                              .join(", ")}
+                          </div>
+                        )}
                         {order.complementIds.length > 0 && (
                           <div className="text-fuchsia-300 space-y-0.5">
                             {order.complementIds.map((compId, i) => {
@@ -620,7 +638,7 @@ export default function CheckoutPage() {
             {/* Botones */}
             <div className="flex gap-2 mb-2">
               <Link
-                href="/fat?from=checkout"
+                href={completedOrders.some(o => o.salsas && o.salsas.length > 0) ? "/fat?from=checkout" : "/fit?from=checkout"}
                 className="flex-1 bg-gray-700 hover:bg-gray-600 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all flex items-center justify-center gap-1 border-2 border-gray-600"
               >
                 <span>←</span>
