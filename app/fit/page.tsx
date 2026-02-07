@@ -808,7 +808,7 @@ export default function FitPage() {
                         disabled={false}
                         className="w-full py-2.5 rounded font-bold text-sm transition-all bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95"
                       >
-                        {isEditingOrder ? 'Confirmar orden' : 'Agregar a la orden'}
+                        {isEditingOrder ? 'Confirmar orden' : 'Agregar orden'}
                       </button>
                     </div>
                   </div>
