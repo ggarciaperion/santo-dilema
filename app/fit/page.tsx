@@ -133,7 +133,11 @@ export default function FitPage() {
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
-    const product = products.find(p => p.id === order.productId);
+    // Buscar en productos fit primero, luego en productos fat
+    let product = products.find(p => p.id === order.productId);
+    if (!product) {
+      product = fatProducts.find(p => p.id === order.productId);
+    }
     if (!product) return total;
     let orderTotal = product.price * order.quantity;
     order.complementIds.forEach(compId => {
