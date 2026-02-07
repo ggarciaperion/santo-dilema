@@ -1050,6 +1050,27 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Número para copiar */}
+            <div className="text-center mb-3">
+              <p className="text-gray-400 text-[10px] mb-1.5">También puedes pagar al siguiente número</p>
+              <div className="flex items-center justify-center gap-2 bg-gray-800/50 border border-green-500/20 rounded-lg py-2 px-3">
+                <span className="text-green-400 font-bold text-sm tracking-wider">906237356</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText('906237356');
+                    // Optional: show a toast or feedback
+                  }}
+                  className="text-green-400 hover:text-green-300 transition-colors active:scale-95"
+                  title="Copiar número"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
             {/* 3 pasos */}
             <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5 mb-3">
               <ol className="text-white text-xs space-y-1.5">
