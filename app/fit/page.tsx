@@ -666,9 +666,66 @@ export default function FitPage() {
                       </div>
 
                       <div className="mb-3">
-                        <h5 className="text-xs font-bold text-white mb-2">Complementos</h5>
+                        <h5 className="text-xs font-bold text-white mb-2">Extras</h5>
+                        <div className="mb-2">
+                          <div className="space-y-1">
+                            {(() => {
+                              const extraAderezo = {
+                                id: "extra-aderezo",
+                                name: "Extra aderezo",
+                                emoji: "🥗",
+                                price: 3.00
+                              };
+                              const extraProduct: Product = {
+                                id: extraAderezo.id,
+                                name: extraAderezo.name,
+                                description: extraAderezo.name,
+                                price: extraAderezo.price,
+                                image: extraAderezo.emoji,
+                                category: "bebida"
+                              };
+                              const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extraAderezo.id}`);
+                              const count = getComplementCount(product.id, extraAderezo.id);
+                              return (
+                                <div className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-sm">{extraAderezo.emoji}</span>
+                                    <span className="text-white text-[10px]">{extraAderezo.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-amber-400 text-[10px] font-bold">S/ {extraAderezo.price.toFixed(2)}</span>
+                                    {count > 0 && (
+                                      <>
+                                        <button
+                                          onClick={() => handleRemoveComplement(product.id, extraAderezo.id)}
+                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
+                                        >
+                                          −
+                                        </button>
+                                        <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                          {count}
+                                        </span>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => handleAddComplement(product.id, extraProduct)}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                        wasRecentlyAdded
+                                          ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                          : 'bg-cyan-600 hover:bg-cyan-500'
+                                      } text-white`}
+                                    >
+                                      {wasRecentlyAdded ? '✓' : '+'}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </div>
 
                         <div className="mb-2">
+                          <h5 className="text-xs font-bold text-white mb-2">Complementos</h5>
                           <button
                             onClick={() => setShowBebidas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
                             className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
@@ -739,64 +796,6 @@ export default function FitPage() {
                               })}
                             </div>
                           )}
-                        </div>
-
-                        <div className="mb-2">
-                          <h5 className="text-xs font-bold text-white mb-2">Extras</h5>
-                          <div className="space-y-1">
-                            {(() => {
-                              const extraAderezo = {
-                                id: "extra-aderezo",
-                                name: "Extra aderezo",
-                                emoji: "🥗",
-                                price: 3.00
-                              };
-                              const extraProduct: Product = {
-                                id: extraAderezo.id,
-                                name: extraAderezo.name,
-                                description: extraAderezo.name,
-                                price: extraAderezo.price,
-                                image: extraAderezo.emoji,
-                                category: "bebida"
-                              };
-                              const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extraAderezo.id}`);
-                              const count = getComplementCount(product.id, extraAderezo.id);
-                              return (
-                                <div className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-sm">{extraAderezo.emoji}</span>
-                                    <span className="text-white text-[10px]">{extraAderezo.name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-amber-400 text-[10px] font-bold">S/ {extraAderezo.price.toFixed(2)}</span>
-                                    {count > 0 && (
-                                      <>
-                                        <button
-                                          onClick={() => handleRemoveComplement(product.id, extraAderezo.id)}
-                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
-                                        >
-                                          −
-                                        </button>
-                                        <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                          {count}
-                                        </span>
-                                      </>
-                                    )}
-                                    <button
-                                      onClick={() => handleAddComplement(product.id, extraProduct)}
-                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                                        wasRecentlyAdded
-                                          ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                          : 'bg-cyan-600 hover:bg-cyan-500'
-                                      } text-white`}
-                                    >
-                                      {wasRecentlyAdded ? '✓' : '+'}
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          </div>
                         </div>
                       </div>
 
