@@ -19,7 +19,7 @@ const products: Product[] = [
     name: "CLÁSICA FRESH BOWL",
     description: "Lechuga, tomate, pepino, zanahoria y aderezo light",
     price: 18.90,
-    image: "/CLÁSICA FRESH BOWL.png",
+    image: "/clasica-fresh-bowl.png",
     category: "fit",
   },
   {
@@ -27,7 +27,7 @@ const products: Product[] = [
     name: "CÉSAR POWER BOWL",
     description: "Pollo grillado, quinoa, espinaca, palta y vinagreta",
     price: 24.90,
-    image: "/CÉSAR POWER BOWL.png",
+    image: "/cesar-power-bowl.png",
     category: "fit",
   },
   {
@@ -35,7 +35,7 @@ const products: Product[] = [
     name: "PROTEIN FIT BOWL",
     description: "Lechuga romana, parmesano, crutones integrales y pollo",
     price: 22.90,
-    image: "/PROTEIN FIT BOWL.png",
+    image: "/protein-fit-bowl.png",
     category: "fit",
   },
   {
@@ -43,7 +43,7 @@ const products: Product[] = [
     name: "TUNA FRESH BOWL",
     description: "Mix de verdes, queso feta, aceitunas, tomate cherry",
     price: 21.90,
-    image: "/TUNA FRESH BOWL.png",
+    image: "/tuna-fresh-bowl.png",
     category: "fit",
   },
 ];
