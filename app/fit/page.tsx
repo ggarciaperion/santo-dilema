@@ -101,7 +101,9 @@ const availableComplements: Record<string, { name: string; price: number }> = {
   "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
   "sprite": { name: "Sprite 500ml", price: 4.00 },
   "fanta": { name: "Fanta 500ml", price: 4.00 },
-  "extra-aderezo": { name: "Extra aderezo", price: 3.00 }
+  "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
+  "extra-papas": { name: "Extra papas", price: 4.00 },
+  "extra-salsa": { name: "Extra salsa", price: 3.00 }
 };
 
 let fitPageInitialized = false;
