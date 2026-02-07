@@ -687,7 +687,7 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <div className="text-amber-400 font-bold text-xs md:text-sm gold-glow flex-shrink-0">
-                      S/ {orderTotal.toFixed(2)}
+                      S/ {productTotal.toFixed(2)}
                     </div>
                   </div>
                 </div>
