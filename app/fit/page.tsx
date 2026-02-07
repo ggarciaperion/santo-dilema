@@ -349,11 +349,19 @@ export default function FitPage() {
   };
 
   const handleCompleteOrder = (product: Product) => {
+    // DEBUG: Ver qué hay en complementsInCart
+    console.log("=== COMPLETANDO ORDEN (FIT) ===");
+    console.log("Product ID:", product.id);
+    console.log("ComplementsInCart completo:", complementsInCart);
+    console.log("ComplementsInCart para este producto:", complementsInCart[product.id]);
+
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: orderQuantity[product.id] || 1,
       complementIds: complementsInCart[product.id] || []
     };
+
+    console.log("Orden completada:", completedOrder);
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
       setEditingOrderIndex(null);
@@ -445,12 +453,20 @@ export default function FitPage() {
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
+    console.log("=== AGREGANDO COMPLEMENTO (FIT) ===");
+    console.log("ProductId:", productId);
+    console.log("Complement:", complement.name, "ID:", complement.id);
+
     addToCart(complement, 1);
 
-    setComplementsInCart((prev) => ({
-      ...prev,
-      [productId]: [...(prev[productId] || []), complement.id]
-    }));
+    setComplementsInCart((prev) => {
+      const newState = {
+        ...prev,
+        [productId]: [...(prev[productId] || []), complement.id]
+      };
+      console.log("Nuevo complementsInCart:", newState);
+      return newState;
+    });
 
     const key = `${productId}-${complement.id}`;
     setRecentlyAdded((prev) => new Set(prev).add(key));

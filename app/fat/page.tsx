@@ -567,6 +567,12 @@ export default function FatPage() {
   };
 
   const handleCompleteOrder = (product: Product) => {
+    // DEBUG: Ver qué hay en complementsInCart
+    console.log("=== COMPLETANDO ORDEN ===");
+    console.log("Product ID:", product.id);
+    console.log("ComplementsInCart completo:", complementsInCart);
+    console.log("ComplementsInCart para este producto:", complementsInCart[product.id]);
+
     // Guardar la orden completada
     const completedOrder: CompletedOrder = {
       productId: product.id,
@@ -574,6 +580,8 @@ export default function FatPage() {
       salsas: selectedSalsas[product.id] || [],
       complementIds: complementsInCart[product.id] || []
     };
+
+    console.log("Orden completada:", completedOrder);
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
       setEditingOrderIndex(null);
@@ -682,14 +690,22 @@ export default function FatPage() {
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
+    console.log("=== AGREGANDO COMPLEMENTO ===");
+    console.log("ProductId:", productId);
+    console.log("Complement:", complement.name, "ID:", complement.id);
+
     // Agregar directamente al carrito para que el total se actualice
     addToCart(complement, 1);
 
     // Trackear el complemento agregado para poder eliminarlo después
-    setComplementsInCart((prev) => ({
-      ...prev,
-      [productId]: [...(prev[productId] || []), complement.id]
-    }));
+    setComplementsInCart((prev) => {
+      const newState = {
+        ...prev,
+        [productId]: [...(prev[productId] || []), complement.id]
+      };
+      console.log("Nuevo complementsInCart:", newState);
+      return newState;
+    });
 
     // Mostrar feedback visual
     const key = `${productId}-${complement.id}`;
