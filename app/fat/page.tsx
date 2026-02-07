@@ -902,7 +902,7 @@ export default function FatPage() {
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
-                          zIndex: 150
+                          zIndex: 10
                         }}
                       />
                     ) : (
