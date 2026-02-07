@@ -250,6 +250,26 @@ export default function FitPage() {
     }
   }, [completedOrders]);
 
+  // Detectar si se debe auto-editar una orden al cargar la página
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editOrderParam = urlParams.get('editOrder');
+
+    if (editOrderParam !== null && completedOrders.length > 0) {
+      const orderIndex = parseInt(editOrderParam, 10);
+
+      if (!isNaN(orderIndex) && orderIndex >= 0 && orderIndex < completedOrders.length) {
+        // Limpiar el parámetro de la URL
+        window.history.replaceState({}, '', '/fit');
+
+        // Ejecutar la edición después de un pequeño delay para asegurar que todo esté cargado
+        setTimeout(() => {
+          handleEditOrder(orderIndex);
+        }, 300);
+      }
+    }
+  }, [completedOrders]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!expandedCard) return;
@@ -369,9 +389,9 @@ export default function FitPage() {
     // Verificar si la orden pertenece al menú fat
     const isFatOrder = fatProducts.some(p => p.id === order.productId);
 
-    // Si es una orden fat, redirigir a la página fat
+    // Si es una orden fat, redirigir a la página fat con el índice de orden
     if (isFatOrder) {
-      router.push('/fat');
+      router.push(`/fat?editOrder=${orderIndex}`);
       return;
     }
 
