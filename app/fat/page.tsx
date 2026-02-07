@@ -177,13 +177,18 @@ export default function FatPage() {
     router.push('/checkout');
   };
 
-  // Limpiar órdenes al cargar la página (siempre empieza fresco)
+  // Limpiar localStorage cuando se cierra o recarga la página
   useEffect(() => {
-    // Limpiar localStorage y estado
-    localStorage.removeItem("santo-dilema-orders");
-    localStorage.removeItem("santo-dilema-cart");
-    setCompletedOrders([]);
-    clearCart();
+    const handleBeforeUnload = () => {
+      localStorage.removeItem("santo-dilema-orders");
+      localStorage.removeItem("santo-dilema-cart");
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
 
   // Guardar órdenes completadas en localStorage cuando cambien

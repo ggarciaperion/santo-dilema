@@ -112,13 +112,16 @@ export default function CheckoutPage() {
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Limpiar órdenes al cargar la página (siempre empieza fresco)
+  // Cargar órdenes completadas desde localStorage
   useEffect(() => {
-    // Limpiar localStorage y estado
-    localStorage.removeItem("santo-dilema-orders");
-    localStorage.removeItem("santo-dilema-cart");
-    setCompletedOrders([]);
-    clearCart();
+    const savedOrders = localStorage.getItem("santo-dilema-orders");
+    if (savedOrders) {
+      try {
+        setCompletedOrders(JSON.parse(savedOrders));
+      } catch (error) {
+        console.error("Error loading orders:", error);
+      }
+    }
   }, []);
 
   // Calcular el total real basado en completedOrders
