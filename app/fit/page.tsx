@@ -218,6 +218,26 @@ export default function FitPage() {
         </div>
       </section>
 
+      {/* Promo Text */}
+      <div className="relative w-full flex justify-center items-center py-4 md:py-6 lg:py-8 px-4">
+        <div className="text-center animated-text-reveal">
+          <h2
+            className="text-base md:text-2xl lg:text-3xl font-black tracking-widest uppercase"
+            style={{
+              fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
+              fontWeight: 900,
+              fontStretch: 'expanded',
+              color: '#06b6d4',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              textShadow: '0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4), 0 0 40px rgba(6, 182, 212, 0.2)'
+            }}
+          >
+            ¡Promo del día 30% descuento en órdenes César Power Bowl!
+          </h2>
+        </div>
+      </div>
+
       {/* Products Carousel */}
       <section className={`container mx-auto px-3 md:px-4 py-4 md:py-6 transition-all duration-300 ${totalItems > 0 ? 'pb-20 md:pb-16' : 'pb-4 md:pb-6'}`}>
 
