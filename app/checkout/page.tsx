@@ -35,6 +35,56 @@ const availableComplements: Record<string, { name: string; price: number }> = {
   "extra-aderezo": { name: "Extra aderezo", price: 3.00 }
 };
 
+// Productos fat para referencia
+const fatProducts = [
+  {
+    id: "pequeno-dilema",
+    name: "Pequeño Dilema",
+    price: 28.90,
+    image: "/pequeno-dilema.png?v=3",
+  },
+  {
+    id: "duo-dilema",
+    name: "Dúo Dilema",
+    price: 45.90,
+    image: "/duo-dilema.png?v=3",
+  },
+  {
+    id: "gran-dilema",
+    name: "Gran Dilema",
+    price: 55.90,
+    image: "/gran-dilema.png?v=3",
+  },
+];
+
+// Productos fit para referencia
+const fitProducts = [
+  {
+    id: "ensalada-clasica",
+    name: "CLÁSICA FRESH BOWL",
+    price: 18.90,
+    image: "/clasica-fresh-bowl.png",
+  },
+  {
+    id: "ensalada-cesar",
+    name: "CÉSAR POWER BOWL",
+    price: 22.90,
+    image: "/cesar-power-bowl.png",
+  },
+  {
+    id: "ensalada-protein",
+    name: "PROTEIN FIT BOWL",
+    price: 24.90,
+    image: "/protein-fit-bowl.png",
+  },
+  {
+    id: "ensalada-tuna",
+    name: "TUNA FRESH BOWL",
+    price: 26.90,
+    image: "/tuna-fresh-bowl.png",
+  },
+];
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart, totalItems, totalPrice } = useCart();
@@ -547,7 +597,16 @@ export default function CheckoutPage() {
           </h3>
           <div className="flex-1 overflow-y-auto space-y-1.5 mb-2 md:mb-3">
             {completedOrders.map((order, index) => {
-              const product = cart.find((item) => item.product.id.includes(order.productId))?.product;
+              // Buscar primero en el cart
+              let product = cart.find((item) => item.product.id.includes(order.productId))?.product;
+
+              // Si no está en el cart, buscar en los arrays estáticos
+              if (!product) {
+                const fatProduct = fatProducts.find((p) => p.id === order.productId);
+                const fitProduct = fitProducts.find((p) => p.id === order.productId);
+                product = fatProduct || fitProduct;
+              }
+
               if (!product) return null;
 
               // Calcular el total de esta orden
