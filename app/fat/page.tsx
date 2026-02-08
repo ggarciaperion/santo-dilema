@@ -98,9 +98,9 @@ const salsas: Salsa[] = [
     description: "Dulce y ahumada, perfecta para quien busca un sabor clásico y reconfortante"
   },
   {
-    id: "anticuchos",
-    name: "Parrillera",
-    description: "Inspirada en el clásico peruano, con especias que dan un toque aromático y anticuchero"
+    id: "buffalo-picante",
+    name: "Santo Picante",
+    description: "Buffalo clásico con picante equilibrado. Intensidad justa y carácter gourmet"
   },
   {
     id: "ahumada",
@@ -108,9 +108,14 @@ const salsas: Salsa[] = [
     description: "Inspirado en el ceviche peruano: fresco, cítrico y con un suave picor, dándole un carácter auténtico"
   },
   {
-    id: "buffalo-picante",
-    name: "Santo Picante",
-    description: "Buffalo clásico con picante equilibrado. Intensidad justa y carácter gourmet"
+    id: "parmesano-ajo",
+    name: "Crispy Celestial",
+    description: "Doradas y ultra crujientes por fuera y jugosas por dentro. Textura perfecta en cada bocado"
+  },
+  {
+    id: "anticuchos",
+    name: "Parrillera",
+    description: "Inspirada en el clásico peruano, con especias que dan un toque aromático y anticuchero"
   },
   {
     id: "honey-mustard",
@@ -118,19 +123,14 @@ const salsas: Salsa[] = [
     description: "Equilibrio perfecto entre dulce miel y mostaza suave, sabor agridulce irresistible"
   },
   {
-    id: "macerichada",
-    name: "Sweet & Sour",
-    description: "Contraste vibrante entre lo dulce y ácido. Fresca, intensa y memorable en cada mordida"
-  },
-  {
     id: "teriyaki",
     name: "Teriyaki",
     description: "Salsa asiática, dulce y salado en equilibrio. Con notas ahumadas que evocan los sabores orientales"
   },
   {
-    id: "parmesano-ajo",
-    name: "Crispy Celestial",
-    description: "Doradas y ultra crujientes por fuera y jugosas por dentro. Textura perfecta en cada bocado"
+    id: "macerichada",
+    name: "Sweet & Sour",
+    description: "Contraste vibrante entre lo dulce y ácido. Fresca, intensa y memorable en cada mordida"
   },
 ];
 
