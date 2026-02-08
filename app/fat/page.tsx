@@ -986,17 +986,6 @@ export default function FatPage() {
                     }}
                   >
                     <div className="px-2.5 md:px-4 pb-2.5 md:pb-4 border-t-2 border-red-500/30 pt-2.5 md:pt-3">
-                      {/* Botón de Cerrar */}
-                      <div className="flex justify-end mb-1.5 md:mb-2">
-                        <button
-                          onClick={handleCloseCard}
-                          className="text-red-400 hover:text-red-300 text-[10px] md:text-xs font-bold flex items-center gap-0.5 md:gap-1 transition-colors"
-                        >
-                          <span>Mostrar menos</span>
-                          <span className="text-sm md:text-lg">×</span>
-                        </button>
-                      </div>
-
                       {/* Selector de Salsas - Acordeón */}
                       <div className="mb-2 md:mb-3">
                         <button
