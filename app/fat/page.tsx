@@ -762,7 +762,7 @@ export default function FatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black relative">
+    <div className="min-h-screen bg-black relative overflow-visible">
       {/* Iconos decorativos de fondo */}
       <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
         {/* Alitas */}
@@ -878,8 +878,8 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex md:flex-wrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-x-visible`}
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowY: 'visible' }}
+            className={`flex md:flex-wrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-visible`}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
             {products.map((product) => {
               const isExpanded = expandedCard === product.id;
