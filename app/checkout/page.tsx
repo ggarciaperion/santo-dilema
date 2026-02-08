@@ -6,6 +6,48 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 
+// Función para reproducir sonido de éxito similar a Apple Pay/VISA
+const playSuccessSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+    // Primera nota (más alta)
+    const oscillator1 = audioContext.createOscillator();
+    const gainNode1 = audioContext.createGain();
+
+    oscillator1.connect(gainNode1);
+    gainNode1.connect(audioContext.destination);
+
+    oscillator1.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator1.type = 'sine';
+
+    gainNode1.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+    oscillator1.start(audioContext.currentTime);
+    oscillator1.stop(audioContext.currentTime + 0.2);
+
+    // Segunda nota (ligeramente más baja, después de un pequeño delay)
+    const oscillator2 = audioContext.createOscillator();
+    const gainNode2 = audioContext.createGain();
+
+    oscillator2.connect(gainNode2);
+    gainNode2.connect(audioContext.destination);
+
+    oscillator2.frequency.setValueAtTime(650, audioContext.currentTime + 0.15);
+    oscillator2.type = 'sine';
+
+    gainNode2.gain.setValueAtTime(0, audioContext.currentTime + 0.15);
+    gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime + 0.15);
+    gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+
+    oscillator2.start(audioContext.currentTime + 0.15);
+    oscillator2.stop(audioContext.currentTime + 0.4);
+  } catch (error) {
+    console.log('No se pudo reproducir el sonido:', error);
+  }
+};
+
 interface CompletedOrder {
   productId: string;
   quantity: number;
@@ -112,6 +154,13 @@ export default function CheckoutPage() {
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reproducir sonido cuando el pedido se confirma
+  useEffect(() => {
+    if (orderPlaced) {
+      playSuccessSound();
+    }
+  }, [orderPlaced]);
 
   // Cargar órdenes desde sessionStorage (vienen de /fat o /fit)
   useEffect(() => {
