@@ -112,25 +112,14 @@ export default function CheckoutPage() {
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Cargar órdenes o limpiar según tipo de navegación
+  // Cargar órdenes completadas desde localStorage
   useEffect(() => {
-    const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-
-    // Si es una recarga (F5), limpiar todo
-    if (navigationEntry && navigationEntry.type === 'reload') {
-      localStorage.removeItem("santo-dilema-orders");
-      localStorage.removeItem("santo-dilema-cart");
-      setCompletedOrders([]);
-      clearCart();
-    } else {
-      // Navegación normal, cargar órdenes
-      const savedOrders = localStorage.getItem("santo-dilema-orders");
-      if (savedOrders) {
-        try {
-          setCompletedOrders(JSON.parse(savedOrders));
-        } catch (error) {
-          console.error("Error loading orders:", error);
-        }
+    const savedOrders = localStorage.getItem("santo-dilema-orders");
+    if (savedOrders) {
+      try {
+        setCompletedOrders(JSON.parse(savedOrders));
+      } catch (error) {
+        console.error("Error loading orders:", error);
       }
     }
   }, []);
