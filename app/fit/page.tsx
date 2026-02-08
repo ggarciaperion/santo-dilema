@@ -502,15 +502,15 @@ export default function FitPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <header className="bg-gray-900 border-b-2 border-cyan-500 neon-border-fit sticky top-0 z-30">
-        <div className="container mx-auto px-3 md:px-4 py-4 md:py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
+      <header className="bg-gray-900 border-b-2 border-cyan-500 neon-border-fit sticky top-0 z-30 overflow-visible">
+        <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center overflow-visible">
+          <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">
             <Image
               src="/logoprincipal.png"
               alt="Santo Dilema"
-              width={300}
-              height={80}
-              className="h-full max-h-12 md:max-h-14 w-auto"
+              width={400}
+              height={100}
+              className="h-16 md:h-20 w-auto"
               priority
             />
           </Link>

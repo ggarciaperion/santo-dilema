@@ -370,15 +370,15 @@ export default function CheckoutPage() {
   return (
     <div className="h-[100dvh] bg-black flex flex-col">
       {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple">
-        <div className="container mx-auto px-3 md:px-4 py-2 md:py-2 flex items-center justify-center">
-          <Link href="/" className="hover:opacity-80 transition-opacity">
+      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple overflow-visible">
+        <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-center overflow-visible">
+          <Link href="/" className="hover:opacity-80 transition-opacity relative z-10">
             <Image
               src="/logoprincipal.png"
               alt="Santo Dilema"
-              width={280}
-              height={75}
-              className="h-full max-h-10 md:max-h-12 w-auto"
+              width={380}
+              height={95}
+              className="h-14 md:h-16 w-auto"
               priority
             />
           </Link>
