@@ -387,9 +387,6 @@ export default function FatPage() {
           }
         }
       }, 600);
-    } else if (currentQty > 0) {
-      // Limpiar salsas cuando cambia la cantidad (solo si ya estaba expandido)
-      setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
     }
   };
 
@@ -408,6 +405,9 @@ export default function FatPage() {
         setShowSalsas((prev) => ({ ...prev, [productId]: false }));
         setShowBebidas((prev) => ({ ...prev, [productId]: false }));
         setShowExtras((prev) => ({ ...prev, [productId]: false }));
+        // Limpiar salsas y complementos solo cuando llega a 0
+        setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
+        setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
         // Eliminar del carrito si existe
         if (mainProductsInCart[productId]) {
           removeFromCart(mainProductsInCart[productId]);
@@ -418,8 +418,6 @@ export default function FatPage() {
           });
         }
       }
-      // Limpiar salsas cuando cambia la cantidad
-      setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
     }
   };
 
