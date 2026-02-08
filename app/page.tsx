@@ -194,9 +194,9 @@ export default function Home() {
               <Image
                 src="/balance.png?v=1"
                 alt="Ensalada Premium"
-                width={70}
-                height={70}
-                className="mx-auto md:w-40 md:h-40 lg:w-48 lg:h-48"
+                width={80}
+                height={80}
+                className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
               />
             </div>
           </div>
@@ -351,11 +351,11 @@ export default function Home() {
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
-                src="/placer.png?v=3"
+                src="/placer.png?v=4"
                 alt="Alitas Premium"
-                width={70}
-                height={70}
-                className="mx-auto md:w-40 md:h-40 lg:w-48 lg:h-48"
+                width={80}
+                height={80}
+                className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
               />
             </div>
           </div>
