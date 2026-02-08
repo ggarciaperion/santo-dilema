@@ -170,7 +170,6 @@ export default function FatPage() {
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
-  const [expandedSalsaDescriptions, setExpandedSalsaDescriptions] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -1053,36 +1052,21 @@ export default function FatPage() {
                               const canAddMore = count < maxSalsaCount && canSelect;
                               const showAddButton = canAddMore;
 
-                              const isDescriptionExpanded = expandedSalsaDescriptions.has(`${product.id}-${salsa.id}`);
-
                               return (
-                                <div key={salsa.id} className="bg-gray-800/30 rounded border border-amber-500/10">
-                                  <div className="flex items-center justify-between p-1.5">
-                                    <div className="flex items-center gap-1.5 flex-1">
-                                      <button
-                                        onClick={() => {
-                                          const key = `${product.id}-${salsa.id}`;
-                                          setExpandedSalsaDescriptions(prev => {
-                                            const newSet = new Set(prev);
-                                            if (newSet.has(key)) {
-                                              newSet.delete(key);
-                                            } else {
-                                              newSet.add(key);
-                                            }
-                                            return newSet;
-                                          });
-                                        }}
-                                        className="text-amber-400/60 hover:text-amber-400 transition-colors"
-                                      >
-                                        <span className={`text-[10px] transform transition-transform ${isDescriptionExpanded ? 'rotate-180' : ''}`}>
-                                          ▼
-                                        </span>
-                                      </button>
-                                      <span className={`text-[10px] ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
+                                <div
+                                  key={salsa.id}
+                                  className="bg-gray-800/30 rounded p-1.5 border border-amber-500/10"
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex-1">
+                                      <div className={`text-[10px] ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
                                         {salsa.name}
-                                      </span>
+                                      </div>
+                                      <p className="text-[9px] text-gray-400 italic mt-0.5">
+                                        {salsa.description}
+                                      </p>
                                     </div>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 ml-2">
                                       {count > 0 && (
                                         <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
                                           x{count}
@@ -1109,16 +1093,6 @@ export default function FatPage() {
                                         </button>
                                       )}
                                     </div>
-                                  </div>
-                                  {/* Descripción desplegable */}
-                                  <div
-                                    className={`overflow-hidden transition-all duration-300 ${
-                                      isDescriptionExpanded ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
-                                    }`}
-                                  >
-                                    <p className="px-1.5 pb-1.5 text-[9px] text-gray-400 italic">
-                                      {salsa.description}
-                                    </p>
                                   </div>
                                 </div>
                               );
