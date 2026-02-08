@@ -24,7 +24,7 @@ export default function Home() {
                 className="absolute -top-2 md:-top-4 lg:-top-6 left-1/2 transform -translate-x-1/2 w-5 h-5 md:w-9 md:h-9 lg:w-12 lg:h-12 halo-glow"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#f59e0b"
+                stroke="currentColor"
                 strokeWidth="2.5"
               >
                 <ellipse cx="12" cy="12" rx="10" ry="3" />
