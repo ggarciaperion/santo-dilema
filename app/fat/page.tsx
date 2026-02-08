@@ -1352,6 +1352,11 @@ export default function FatPage() {
             </p>
           </div>
         )}
+
+        {/* Espaciador para que la barra fija no tape el contenido */}
+        {completedOrders.length > 0 && (
+          <div className="h-24 md:h-28"></div>
+        )}
       </section>
 
       {/* Cart Summary Bar */}
