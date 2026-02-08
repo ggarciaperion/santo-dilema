@@ -192,7 +192,7 @@ export default function Home() {
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
-                src="/balance.png"
+                src="/balance.png?v=1"
                 alt="Ensalada Premium"
                 width={50}
                 height={50}
@@ -351,7 +351,7 @@ export default function Home() {
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
-                src="/placer.png"
+                src="/placer.png?v=1"
                 alt="Alitas Premium"
                 width={50}
                 height={50}
