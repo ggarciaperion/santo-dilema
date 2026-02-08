@@ -100,17 +100,17 @@ const salsas: Salsa[] = [
   {
     id: "anticuchos",
     name: "Parrillera",
-    description: "Inspirada en el clásico peruano, con ají panca y especias que dan un toque picante y aromático"
+    description: "Inspirada en el clásico peruano, con especias que dan un toque aromático y anticuchero"
   },
   {
     id: "ahumada",
     name: "Acevichada Imperial",
-    description: "Explosión cítrica con lima fresca y ají. Vibrante, refrescante y con carácter peruano auténtico"
+    description: "Inspirado en el ceviche peruano: fresco, cítrico y con un suave picor, dándole un carácter auténtico"
   },
   {
     id: "buffalo-picante",
     name: "Santo Picante",
-    description: "Picante clásica americana con mantequilla y salsa picante, perfecta para valientes"
+    description: "Buffalo clásico con picante equilibrado. Intensidad justa y carácter gourmet"
   },
   {
     id: "honey-mustard",
@@ -125,12 +125,12 @@ const salsas: Salsa[] = [
   {
     id: "teriyaki",
     name: "Teriyaki",
-    description: "Salsa asiática con soya, jengibre y ajo, dulce y salada con toques orientales"
+    description: "Salsa asiática, dulce y salado en equilibrio. Con notas ahumadas que evocan los sabores orientales"
   },
   {
     id: "parmesano-ajo",
     name: "Crispy Celestial",
-    description: "Sublime mezcla de quesos premium con hierbas aromáticas. Cremosa, sofisticada y adictiva"
+    description: "Doradas y ultra crujientes por fuera y jugosas por dentro. Textura perfecta en cada bocado"
   },
 ];
 
