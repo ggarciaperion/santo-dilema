@@ -177,12 +177,26 @@ export default function FatPage() {
     router.push('/checkout');
   };
 
-  // Limpiar localStorage SIEMPRE al cargar esta página
+  // Cargar órdenes al inicio, filtrando solo las de otras categorías
   useEffect(() => {
-    // Limpiar órdenes anteriores
-    localStorage.removeItem("santo-dilema-orders");
+    const savedOrders = localStorage.getItem("santo-dilema-orders");
+    if (savedOrders) {
+      try {
+        const allOrders = JSON.parse(savedOrders);
+        // Mantener solo las órdenes que NO son "fat"
+        const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "fat");
+        setCompletedOrders(otherOrders);
+
+        // Si había órdenes fat, las limpiamos del localStorage
+        if (otherOrders.length !== allOrders.length) {
+          localStorage.setItem("santo-dilema-orders", JSON.stringify(otherOrders));
+        }
+      } catch (error) {
+        console.error("Error loading orders:", error);
+      }
+    }
+    // Limpiar el carrito siempre
     localStorage.removeItem("santo-dilema-cart");
-    setCompletedOrders([]);
     clearCart();
   }, []);
 
