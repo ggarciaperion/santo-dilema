@@ -124,6 +124,10 @@ body {
   .bounce-subtle {
     animation: bounce-soft 5s ease-in-out infinite;
   }
+
+  .moto-drive {
+    animation: motoDrive 8s ease-in-out infinite;
+  }
 }
 
 /* Definición de keyframes */
@@ -188,6 +192,18 @@ body {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes motoDrive {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(30px);
+  }
+  100% {
+    transform: translateX(0);
   }
 }
 

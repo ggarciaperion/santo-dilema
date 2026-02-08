@@ -852,13 +852,13 @@ export default function FatPage() {
           <img
             src="/bannermovil.png?v=4"
             alt="Banner promocional"
-            className="block md:hidden w-full h-auto object-cover animate-subtle-sway"
+            className="block md:hidden w-full h-auto object-cover moto-drive"
           />
           {/* Banner para PC/Tablet */}
           <img
             src="/bannerpc.png?v=2"
             alt="Banner promocional"
-            className="hidden md:block w-full h-auto object-cover animate-subtle-sway"
+            className="hidden md:block w-full h-auto object-cover moto-drive"
             style={{
               maxHeight: '250px',
               objectPosition: 'center',
