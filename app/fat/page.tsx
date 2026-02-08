@@ -387,6 +387,10 @@ export default function FatPage() {
           }
         }
       }, 600);
+    } else if (expandedCard === productId) {
+      // Si el cartel ya está expandido, expandir la sección de salsas
+      // porque ahora se necesitan más salsas (1/2, 2/4, 3/6, etc.)
+      setShowSalsas((prev) => ({ ...prev, [productId]: true }));
     }
   };
 
