@@ -32,9 +32,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Cargar carrito desde localStorage al iniciar
+  // Cargar carrito desde sessionStorage al iniciar
   useEffect(() => {
-    const savedCart = localStorage.getItem("santo-dilema-cart");
+    const savedCart = sessionStorage.getItem("santo-dilema-cart");
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
@@ -45,10 +45,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsLoaded(true);
   }, []);
 
-  // Guardar carrito en localStorage cuando cambie
+  // Guardar carrito en sessionStorage cuando cambie
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem("santo-dilema-cart", JSON.stringify(cart));
+      sessionStorage.setItem("santo-dilema-cart", JSON.stringify(cart));
     }
   }, [cart, isLoaded]);
 

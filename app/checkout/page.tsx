@@ -113,9 +113,9 @@ export default function CheckoutPage() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Cargar órdenes desde localStorage (vienen de /fat o /fit)
+  // Cargar órdenes desde sessionStorage (vienen de /fat o /fit)
   useEffect(() => {
-    const savedOrders = localStorage.getItem("santo-dilema-orders");
+    const savedOrders = sessionStorage.getItem("santo-dilema-orders");
     if (savedOrders) {
       try {
         setCompletedOrders(JSON.parse(savedOrders));

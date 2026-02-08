@@ -179,46 +179,33 @@ export default function FatPage() {
 
   // Cargar órdenes al inicio, filtrando solo las de otras categorías
   useEffect(() => {
-    // Detectar si es una recarga (F5) o navegación
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    const isReload = navigation && navigation.type === 'reload';
+    const savedOrders = sessionStorage.getItem("santo-dilema-orders");
+    if (savedOrders) {
+      try {
+        const allOrders = JSON.parse(savedOrders);
+        // Mantener solo las órdenes que NO son "fat"
+        const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "fat");
+        setCompletedOrders(otherOrders);
 
-    if (isReload) {
-      // Si es recarga, limpiar TODO
-      localStorage.removeItem("santo-dilema-orders");
-      localStorage.removeItem("santo-dilema-cart");
-      setCompletedOrders([]);
-      clearCart();
-    } else {
-      // Si es navegación normal, cargar órdenes de otras categorías
-      const savedOrders = localStorage.getItem("santo-dilema-orders");
-      if (savedOrders) {
-        try {
-          const allOrders = JSON.parse(savedOrders);
-          // Mantener solo las órdenes que NO son "fat"
-          const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "fat");
-          setCompletedOrders(otherOrders);
-
-          // Si había órdenes fat, las limpiamos del localStorage
-          if (otherOrders.length !== allOrders.length) {
-            localStorage.setItem("santo-dilema-orders", JSON.stringify(otherOrders));
-          }
-        } catch (error) {
-          console.error("Error loading orders:", error);
+        // Si había órdenes fat, las limpiamos del sessionStorage
+        if (otherOrders.length !== allOrders.length) {
+          sessionStorage.setItem("santo-dilema-orders", JSON.stringify(otherOrders));
         }
+      } catch (error) {
+        console.error("Error loading orders:", error);
       }
-      // Limpiar el carrito siempre
-      localStorage.removeItem("santo-dilema-cart");
-      clearCart();
     }
+    // Limpiar el carrito siempre
+    sessionStorage.removeItem("santo-dilema-cart");
+    clearCart();
   }, []);
 
-  // Guardar órdenes completadas en localStorage cuando cambien
+  // Guardar órdenes completadas en sessionStorage cuando cambien
   useEffect(() => {
     if (completedOrders.length > 0) {
-      localStorage.setItem("santo-dilema-orders", JSON.stringify(completedOrders));
+      sessionStorage.setItem("santo-dilema-orders", JSON.stringify(completedOrders));
     } else {
-      localStorage.removeItem("santo-dilema-orders");
+      sessionStorage.removeItem("santo-dilema-orders");
     }
   }, [completedOrders]);
 
