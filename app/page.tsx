@@ -194,8 +194,8 @@ export default function Home() {
               <Image
                 src="/balance.png?v=1"
                 alt="Ensalada Premium"
-                width={80}
-                height={80}
+                width={100}
+                height={100}
                 className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
               />
             </div>
@@ -353,8 +353,8 @@ export default function Home() {
               <Image
                 src="/placer.png?v=4"
                 alt="Alitas Premium"
-                width={80}
-                height={80}
+                width={100}
+                height={100}
                 className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
               />
             </div>
