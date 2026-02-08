@@ -12,6 +12,15 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      keyframes: {
+        'subtle-sway': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '50%': { transform: 'translateX(3px)' },
+        },
+      },
+      animation: {
+        'subtle-sway': 'subtle-sway 3s ease-in-out infinite',
+      },
     },
   },
   plugins: [],
