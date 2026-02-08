@@ -592,7 +592,7 @@ export default function FitPage() {
           <img
             src="/bannerpcfit.png?v=1"
             alt="Banner promocional FIT"
-            className="hidden md:block w-full h-auto object-cover moto-drive"
+            className="hidden md:block w-full h-auto object-contain moto-drive"
             style={{
               maxHeight: '140px',
               objectPosition: 'center',
@@ -601,7 +601,7 @@ export default function FitPage() {
         </div>
       </section>
 
-      <section className={`container mx-auto px-2 md:px-4 py-2 md:py-2 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-2 md:pb-3'}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-2 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-2 md:pb-3'}`}>
         <div className="relative flex items-center justify-center overflow-visible">
           <div
             ref={scrollContainerRef}
