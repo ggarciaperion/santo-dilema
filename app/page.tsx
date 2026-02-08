@@ -194,8 +194,8 @@ export default function Home() {
               <Image
                 src="/balance.png?v=1"
                 alt="Ensalada Premium"
-                width={100}
-                height={100}
+                width={120}
+                height={120}
                 className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
               />
             </div>
