@@ -846,7 +846,7 @@ export default function FatPage() {
       </header>
 
       {/* Hero Section - Banner */}
-      <section className="relative w-full overflow-visible bg-black pt-6 md:mt-12">
+      <section className="relative w-full overflow-visible bg-black pt-6 md:mt-8">
         <div className="relative w-full bg-black overflow-visible">
           {/* Banner para móvil */}
           <img
