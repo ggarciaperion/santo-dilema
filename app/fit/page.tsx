@@ -554,14 +554,14 @@ export default function FitPage() {
       </div>
 
       <header className="bg-gray-900 border-b-2 border-cyan-500 neon-border-fit sticky top-0 z-30 overflow-visible">
-        <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center overflow-visible">
+        <div className="container mx-auto px-3 md:px-4 py-1 md:py-1.5 flex justify-between items-center overflow-visible">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">
             <Image
               src="/logoprincipal.png"
               alt="Santo Dilema"
               width={300}
               height={75}
-              className="h-10 md:h-12 w-auto"
+              className="h-8 md:h-9 w-auto"
               priority
             />
           </Link>
@@ -594,14 +594,14 @@ export default function FitPage() {
             alt="Banner promocional FIT"
             className="hidden md:block w-full h-auto object-cover moto-drive"
             style={{
-              maxHeight: '250px',
+              maxHeight: '140px',
               objectPosition: 'center',
             }}
           />
         </div>
       </section>
 
-      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-4 lg:py-6 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-6'}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-2 md:py-2 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-2 md:pb-3'}`}>
         <div className="relative flex items-center justify-center overflow-visible">
           <div
             ref={scrollContainerRef}
@@ -623,8 +623,8 @@ export default function FitPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fit shadow-xl shadow-cyan-500/30 snap-center md:snap-none border-2 md:border-0 border-cyan-400
                     ${isExpanded
-                      ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
-                      : 'w-[240px] md:w-[280px] lg:w-[300px]'
+                      ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
+                      : 'w-[240px] md:w-[240px] lg:w-[260px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
@@ -640,8 +640,8 @@ export default function FitPage() {
                 >
                   <div className={`relative flex items-center justify-center overflow-visible ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-56 border-0'
-                      : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
+                      ? 'bg-black h-32 md:h-40 border-0'
+                      : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
@@ -662,15 +662,15 @@ export default function FitPage() {
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
                   </div>
-                  <div className="p-3 md:p-4">
-                    <h4 className="text-xs md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
+                  <div className="p-2 md:p-2.5">
+                    <h4 className="text-xs md:text-sm font-bold text-white mb-1 md:mb-1 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-cyan-200/70 text-[10px] md:text-xs mb-1.5 md:mb-3 line-clamp-3 h-10 md:h-12">
+                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1 md:mb-2 line-clamp-2 h-8 md:h-9">
                       {product.description}
                     </p>
-                    <div className="flex items-center justify-between mb-1.5 md:mb-3">
-                      <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
+                    <div className="flex items-center justify-between mb-1 md:mb-2">
+                      <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
                         S/ {product.price.toFixed(2)}
                       </span>
                       <div className="flex items-center gap-0.5 md:gap-1">
@@ -875,10 +875,10 @@ export default function FitPage() {
         </div>
 
         {expandedCard === null && completedOrders.length === 0 && (
-          <div className="relative w-full flex justify-center items-center py-4 md:py-6 lg:py-8 px-4">
+          <div className="relative w-full flex justify-center items-center py-2 md:py-3 px-4">
             <div className="text-center animated-text-reveal">
               <h2
-                className="text-base md:text-2xl lg:text-3xl font-black tracking-widest uppercase"
+                className="text-sm md:text-lg font-black tracking-widest uppercase"
                 style={{
                   fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
                   fontWeight: 900,
