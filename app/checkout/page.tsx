@@ -21,11 +21,11 @@ const playSuccessSound = () => {
     oscillator1.frequency.setValueAtTime(800, audioContext.currentTime);
     oscillator1.type = 'sine';
 
-    gainNode1.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    gainNode1.gain.setValueAtTime(0.6, audioContext.currentTime);
+    gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
 
     oscillator1.start(audioContext.currentTime);
-    oscillator1.stop(audioContext.currentTime + 0.2);
+    oscillator1.stop(audioContext.currentTime + 0.8);
 
     // Segunda nota (ligeramente más baja, después de un pequeño delay)
     const oscillator2 = audioContext.createOscillator();
@@ -34,15 +34,32 @@ const playSuccessSound = () => {
     oscillator2.connect(gainNode2);
     gainNode2.connect(audioContext.destination);
 
-    oscillator2.frequency.setValueAtTime(650, audioContext.currentTime + 0.15);
+    oscillator2.frequency.setValueAtTime(650, audioContext.currentTime + 0.3);
     oscillator2.type = 'sine';
 
-    gainNode2.gain.setValueAtTime(0, audioContext.currentTime + 0.15);
-    gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime + 0.15);
-    gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+    gainNode2.gain.setValueAtTime(0, audioContext.currentTime + 0.3);
+    gainNode2.gain.setValueAtTime(0.6, audioContext.currentTime + 0.3);
+    gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
 
-    oscillator2.start(audioContext.currentTime + 0.15);
-    oscillator2.stop(audioContext.currentTime + 0.4);
+    oscillator2.start(audioContext.currentTime + 0.3);
+    oscillator2.stop(audioContext.currentTime + 1.5);
+
+    // Tercera nota (aún más baja para completar el acorde)
+    const oscillator3 = audioContext.createOscillator();
+    const gainNode3 = audioContext.createGain();
+
+    oscillator3.connect(gainNode3);
+    gainNode3.connect(audioContext.destination);
+
+    oscillator3.frequency.setValueAtTime(520, audioContext.currentTime + 0.5);
+    oscillator3.type = 'sine';
+
+    gainNode3.gain.setValueAtTime(0, audioContext.currentTime + 0.5);
+    gainNode3.gain.setValueAtTime(0.6, audioContext.currentTime + 0.5);
+    gainNode3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2.0);
+
+    oscillator3.start(audioContext.currentTime + 0.5);
+    oscillator3.stop(audioContext.currentTime + 2.0);
   } catch (error) {
     console.log('No se pudo reproducir el sonido:', error);
   }
