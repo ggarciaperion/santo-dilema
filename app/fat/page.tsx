@@ -253,23 +253,7 @@ export default function FatPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Cerrar cartel al hacer clic fuera de él
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!expandedCard) return;
-
-      const target = event.target as HTMLElement;
-      const expandedCardElement = cardRefs.current[expandedCard];
-
-      // Si el clic fue fuera del cartel expandido, cerrarlo
-      if (expandedCardElement && !expandedCardElement.contains(target)) {
-        handleCloseCard();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [expandedCard]);
+  // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
 
   const getRequiredSalsasCount = (productId: string): number => {
     const quantity = orderQuantity[productId] || 0;

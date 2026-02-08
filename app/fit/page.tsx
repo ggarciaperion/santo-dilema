@@ -221,21 +221,7 @@ export default function FitPage() {
     }
   }, [completedOrders]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!expandedCard) return;
-
-      const target = event.target as HTMLElement;
-      const expandedCardElement = cardRefs.current[expandedCard];
-
-      if (expandedCardElement && !expandedCardElement.contains(target)) {
-        handleCloseCard();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [expandedCard]);
+  // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
 
   const handleExpandCard = (productId: string) => {
     if (isDragging) return;
