@@ -552,12 +552,12 @@ export default function FitPage() {
           <img
             src="/bannermovilfi.png?v=1"
             alt="Banner promocional FIT"
-            className="block md:hidden w-full h-auto object-cover"
+            className="block md:hidden w-full h-auto object-cover animate-subtle-sway"
           />
           <img
             src="/bannerpcfit.png?v=1"
             alt="Banner promocional FIT"
-            className="hidden md:block w-full h-auto object-cover"
+            className="hidden md:block w-full h-auto object-cover animate-subtle-sway"
             style={{
               maxHeight: '250px',
               objectPosition: 'center',
