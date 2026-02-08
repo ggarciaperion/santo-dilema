@@ -582,7 +582,7 @@ export default function FitPage() {
         </div>
       </header>
 
-      <section className="relative w-full overflow-hidden bg-black pt-6 md:pt-0">
+      <section className="relative w-full overflow-hidden bg-black pt-6 md:mt-12">
         <div className="relative w-full bg-black">
           <img
             src="/bannermovilfi.png?v=1"
