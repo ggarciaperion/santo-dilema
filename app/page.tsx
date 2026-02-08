@@ -356,7 +356,7 @@ export default function Home() {
               />
             </div>
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-0 md:mb-1 tracking-tight text-red-400 neon-glow-fat">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-0 md:mb-1 -mt-2 md:mt-0 tracking-tight text-red-400 neon-glow-fat">
             PLACER
           </h2>
           <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
