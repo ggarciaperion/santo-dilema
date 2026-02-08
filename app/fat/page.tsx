@@ -348,8 +348,9 @@ export default function FatPage() {
       ...prev,
       [productId]: currentQty + 1
     }));
-    // Expandir el card automáticamente
-    if (currentQty === 0) {
+
+    // Si el cartel no está expandido y hay cantidad, expandirlo
+    if (expandedCard !== productId && currentQty >= 0) {
       setExpandedCard(productId);
       setShowSalsas((prev) => ({ ...prev, [productId]: true }));
       if (!selectedSalsas[productId]) {
@@ -369,8 +370,8 @@ export default function FatPage() {
           }
         }
       }, 600);
-    } else {
-      // Limpiar salsas cuando cambia la cantidad
+    } else if (currentQty > 0) {
+      // Limpiar salsas cuando cambia la cantidad (solo si ya estaba expandido)
       setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
     }
   };

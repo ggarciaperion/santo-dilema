@@ -262,7 +262,8 @@ export default function FitPage() {
       ...prev,
       [productId]: currentQty + 1
     }));
-    if (currentQty === 0) {
+    // Si el cartel no está expandido y hay cantidad, expandirlo
+    if (expandedCard !== productId && currentQty >= 0) {
       setExpandedCard(productId);
       if (!selectedComplements[productId]) {
         setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
