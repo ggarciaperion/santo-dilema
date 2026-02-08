@@ -348,8 +348,8 @@ export default function Home() {
         )}
 
         <div className="relative z-10 text-center text-white px-3 md:px-6 pt-6 pb-4 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
-          <div className="mb-1 md:mb-2">
-            <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
+          <div className="mb-0.5 md:mb-1">
+            <div className="mb-0.5 md:mb-1 filter drop-shadow-lg">
               <Image
                 src="/placer.png?v=4"
                 alt="Alitas Premium"
@@ -359,7 +359,7 @@ export default function Home() {
               />
             </div>
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1 md:mb-2 tracking-tight text-red-400 neon-glow-fat">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-0.5 md:mb-1 tracking-tight text-red-400 neon-glow-fat">
             PLACER
           </h2>
           <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
