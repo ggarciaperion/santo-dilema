@@ -574,7 +574,7 @@ export default function FitPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex md:flex-wrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-x-visible`}
+            className={`flex md:flex-nowrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-x-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowY: 'visible' }}
           >
             {products.map((product) => {
