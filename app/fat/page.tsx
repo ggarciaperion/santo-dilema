@@ -1261,7 +1261,7 @@ export default function FatPage() {
 
                                   const extraSalsa = {
                                     id: `extra-salsa-${salsaId}`,
-                                    name: salsaData.name,
+                                    name: `Extra salsa - ${salsaData.name}`,
                                     emoji: "🥫",
                                     price: 3.00
                                   };
