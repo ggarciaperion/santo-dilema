@@ -113,26 +113,14 @@ export default function CheckoutPage() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Limpiar en recargas o cargar órdenes en navegaciones
+  // Cargar órdenes desde localStorage (vienen de /fat o /fit)
   useEffect(() => {
-    const isFirstLoad = !sessionStorage.getItem('app-initialized');
-
-    if (isFirstLoad) {
-      // Primera carga (recarga o nueva pestaña): limpiar
-      localStorage.removeItem("santo-dilema-orders");
-      localStorage.removeItem("santo-dilema-cart");
-      sessionStorage.setItem('app-initialized', 'true');
-      setCompletedOrders([]);
-      clearCart();
-    } else {
-      // Navegación normal: cargar órdenes
-      const savedOrders = localStorage.getItem("santo-dilema-orders");
-      if (savedOrders) {
-        try {
-          setCompletedOrders(JSON.parse(savedOrders));
-        } catch (error) {
-          console.error("Error loading orders:", error);
-        }
+    const savedOrders = localStorage.getItem("santo-dilema-orders");
+    if (savedOrders) {
+      try {
+        setCompletedOrders(JSON.parse(savedOrders));
+      } catch (error) {
+        console.error("Error loading orders:", error);
       }
     }
     setIsLoadingOrders(false);

@@ -169,29 +169,13 @@ export default function FitPage() {
     router.push('/checkout');
   };
 
-  // Limpiar localStorage en recargas, cargar en navegaciones normales
+  // Limpiar localStorage SIEMPRE al cargar esta página
   useEffect(() => {
-    // Verificar si es primera carga de la sesión (recarga o nueva pestaña)
-    const isFirstLoad = !sessionStorage.getItem('app-initialized');
-
-    if (isFirstLoad) {
-      // Primera carga: limpiar localStorage
-      localStorage.removeItem("santo-dilema-orders");
-      localStorage.removeItem("santo-dilema-cart");
-      sessionStorage.setItem('app-initialized', 'true');
-      setCompletedOrders([]);
-      clearCart();
-    } else {
-      // Navegación desde otra página: cargar órdenes
-      const savedOrders = localStorage.getItem("santo-dilema-orders");
-      if (savedOrders) {
-        try {
-          setCompletedOrders(JSON.parse(savedOrders));
-        } catch (error) {
-          console.error("Error loading orders:", error);
-        }
-      }
-    }
+    // Limpiar órdenes anteriores
+    localStorage.removeItem("santo-dilema-orders");
+    localStorage.removeItem("santo-dilema-cart");
+    setCompletedOrders([]);
+    clearCart();
   }, []);
 
   useEffect(() => {
