@@ -1,0 +1,4 @@
+# Ignorar comprobantes de pago pero mantener la carpeta
+*
+!.gitignore
+!.gitkeep
