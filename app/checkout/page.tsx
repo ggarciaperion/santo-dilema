@@ -110,6 +110,7 @@ export default function CheckoutPage() {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cargar órdenes completadas desde localStorage
@@ -122,6 +123,7 @@ export default function CheckoutPage() {
         console.error("Error loading orders:", error);
       }
     }
+    setIsLoadingOrders(false);
   }, []);
 
   // Calcular el total real basado en completedOrders
@@ -154,12 +156,12 @@ export default function CheckoutPage() {
     );
   };
 
-  // Redirect if no completed orders
+  // Redirect if no completed orders (solo después de cargar)
   useEffect(() => {
-    if (completedOrders.length === 0 && !orderPlaced) {
+    if (!isLoadingOrders && completedOrders.length === 0 && !orderPlaced) {
       router.push("/");
     }
-  }, [completedOrders.length, orderPlaced, router]);
+  }, [isLoadingOrders, completedOrders.length, orderPlaced, router]);
 
   const handleNumberInput = (field: 'dni' | 'phone', value: string) => {
     // Solo permite números, sin espacios
