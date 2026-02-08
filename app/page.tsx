@@ -350,8 +350,8 @@ export default function Home() {
               <Image
                 src="/placer.png?v=4"
                 alt="Alitas Premium"
-                width={120}
-                height={120}
+                width={140}
+                height={140}
                 className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
               />
             </div>
