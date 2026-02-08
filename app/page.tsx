@@ -159,7 +159,7 @@ export default function Home() {
         />
 
         {/* Iconos decorativos FIT - Vegetales en líneas neón */}
-        <div className="absolute inset-0 overflow-hidden opacity-15 hidden md:block">
+        <div className="absolute inset-0 overflow-hidden opacity-15">
           {/* Aguacates */}
           <svg className="absolute top-16 left-8 w-24 h-24 text-cyan-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
             <ellipse cx="50" cy="55" rx="28" ry="35" />
@@ -311,7 +311,7 @@ export default function Home() {
         />
 
         {/* Iconos decorativos FAT - Comida indulgente en líneas neón */}
-        <div className="absolute inset-0 overflow-hidden opacity-15 hidden md:block">
+        <div className="absolute inset-0 overflow-hidden opacity-15">
           {/* Alitas de pollo detalladas */}
           <svg className="absolute top-20 right-16 w-28 h-28 text-red-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M25 50 Q30 40, 40 38 L50 37 Q60 38, 65 42 L75 45 Q82 48, 82 55 Q82 62, 75 65 L65 68 Q60 70, 50 70 L40 69 Q30 67, 25 60 Q20 55, 25 50Z"/>
