@@ -731,13 +731,13 @@ export default function CheckoutPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-center mb-3">
-              <h1 className="flex items-center gap-1.5 text-xs font-black tracking-tight">
-                <span className="text-amber-400 gold-glow inline-flex items-center">
-                  S<span className="relative inline-block">A</span><span className="relative inline-block">N</span><span className="relative inline-block">T</span><span className="relative inline-block">O<svg className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/><line x1="2" y1="19" x2="22" y2="19"/></svg></span>
-                </span>
-                <div className="w-0.5 h-3 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
-                <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
-              </h1>
+              <Image
+                src="/logoprincipal.png"
+                alt="Santo Dilema"
+                width={150}
+                height={40}
+                className="h-8 w-auto"
+              />
             </div>
 
             <h3 className="text-base font-bold text-white text-center mb-0.5">Método de pago</h3>
@@ -814,13 +814,13 @@ export default function CheckoutPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-center mb-3">
-              <h1 className="flex items-center gap-1.5 text-xs font-black tracking-tight">
-                <span className="text-amber-400 gold-glow inline-flex items-center">
-                  S<span className="relative inline-block">A</span><span className="relative inline-block">N</span><span className="relative inline-block">T</span><span className="relative inline-block">O<svg className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/><line x1="2" y1="19" x2="22" y2="19"/></svg></span>
-                </span>
-                <div className="w-0.5 h-3 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
-                <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
-              </h1>
+              <Image
+                src="/logoprincipal.png"
+                alt="Santo Dilema"
+                width={150}
+                height={40}
+                className="h-8 w-auto"
+              />
             </div>
 
             {!showEfectivoOptions ? (
@@ -1002,13 +1002,13 @@ export default function CheckoutPage() {
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-gray-900 rounded-2xl border border-green-500/40 max-w-xs w-full p-4">
             <div className="flex justify-center mb-3">
-              <h1 className="flex items-center gap-1.5 text-xs font-black tracking-tight">
-                <span className="text-amber-400 gold-glow inline-flex items-center">
-                  S<span className="relative inline-block">A</span><span className="relative inline-block">N</span><span className="relative inline-block">T</span><span className="relative inline-block">O<svg className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/><line x1="2" y1="19" x2="22" y2="19"/></svg></span>
-                </span>
-                <div className="w-0.5 h-3 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
-                <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
-              </h1>
+              <Image
+                src="/logoprincipal.png"
+                alt="Santo Dilema"
+                width={150}
+                height={40}
+                className="h-8 w-auto"
+              />
             </div>
 
             {/* Header */}
