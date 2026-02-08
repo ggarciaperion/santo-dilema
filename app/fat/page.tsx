@@ -94,22 +94,22 @@ const fitProducts: Product[] = [
 const salsas: Salsa[] = [
   {
     id: "barbecue",
-    name: "Barbecue",
+    name: "BBQ ahumada",
     description: "Dulce y ahumada, perfecta para quien busca un sabor clásico y reconfortante"
   },
   {
     id: "anticuchos",
-    name: "Anticuchos",
+    name: "Parrillera",
     description: "Inspirada en el clásico peruano, con ají panca y especias que dan un toque picante y aromático"
   },
   {
     id: "ahumada",
-    name: "Ahumada",
-    description: "Sabor intenso a humo con notas de chipotle, ideal para los amantes de lo ahumado"
+    name: "Acevichada Imperial",
+    description: "Explosión cítrica con lima fresca y ají. Vibrante, refrescante y con carácter peruano auténtico"
   },
   {
     id: "buffalo-picante",
-    name: "Buffalo picante",
+    name: "Santo Picante",
     description: "Picante clásica americana con mantequilla y salsa picante, perfecta para valientes"
   },
   {
@@ -119,8 +119,8 @@ const salsas: Salsa[] = [
   },
   {
     id: "macerichada",
-    name: "Macerichada",
-    description: "Fusión única de mayonesa y ketchup con especias secretas, cremosa y deliciosa"
+    name: "Sweet & Sour",
+    description: "Contraste vibrante entre lo dulce y ácido. Fresca, intensa y memorable en cada mordida"
   },
   {
     id: "teriyaki",
@@ -129,8 +129,8 @@ const salsas: Salsa[] = [
   },
   {
     id: "parmesano-ajo",
-    name: "Parmesano & Ajo",
-    description: "Cremosa con queso parmesano auténtico y ajo rostizado, para los amantes del queso"
+    name: "Crispy Celestial",
+    description: "Sublime mezcla de quesos premium con hierbas aromáticas. Cremosa, sofisticada y adictiva"
   },
 ];
 
