@@ -746,37 +746,13 @@ export default function FatPage() {
       <header className="bg-gray-900 border-b-2 border-red-500 neon-border-fat sticky top-0 z-30">
         <div className="container mx-auto px-3 md:px-4 py-4 md:py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
-            <h1 className="flex items-center gap-2 md:gap-3 text-lg md:text-2xl font-black tracking-tight">
-              <span className="text-amber-400 gold-glow inline-flex items-center">
-                S
-                <span className="relative inline-block">
-                  A
-                </span>
-                <span className="relative inline-block">
-                  N
-                </span>
-                <span className="relative inline-block">
-                  T
-                </span>
-                <span className="relative inline-block">
-                  O
-                  <svg
-                    className="absolute -top-1.5 md:-top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 md:w-4 md:h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/>
-                    <line x1="2" y1="19" x2="22" y2="19"/>
-                  </svg>
-                </span>
-              </span>
-              <div className="w-0.5 h-6 md:h-8 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
-              <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
-            </h1>
+            <Image
+              src="/logoprincipal.png"
+              alt="Santo Dilema"
+              width={150}
+              height={50}
+              className="h-8 md:h-10 w-auto"
+            />
           </Link>
           <div className="flex items-center gap-2 md:gap-3">
             <Link

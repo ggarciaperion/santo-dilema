@@ -354,32 +354,14 @@ export default function CheckoutPage() {
         </p>
 
         {/* Logo Santo Dilema */}
-        <div className="mt-10 success-logo">
-          <h1 className="flex items-center gap-2 text-sm font-black tracking-tight">
-            <span className="text-amber-400 gold-glow inline-flex items-center">
-              S
-              <span className="relative inline-block">A</span>
-              <span className="relative inline-block">N</span>
-              <span className="relative inline-block">T</span>
-              <span className="relative inline-block">
-                O
-                <svg
-                  className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/>
-                  <line x1="2" y1="19" x2="22" y2="19"/>
-                </svg>
-              </span>
-            </span>
-            <div className="w-0.5 h-4 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
-            <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
-          </h1>
+        <div className="mt-10 success-logo flex justify-center">
+          <Image
+            src="/logoprincipal.png"
+            alt="Santo Dilema"
+            width={120}
+            height={40}
+            className="h-6 w-auto"
+          />
         </div>
       </div>
     );
@@ -391,37 +373,13 @@ export default function CheckoutPage() {
       <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-2 flex items-center justify-center">
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            <h1 className="flex items-center gap-2 md:gap-3 text-base md:text-xl font-black tracking-tight">
-              <span className="text-amber-400 gold-glow inline-flex items-center">
-                S
-                <span className="relative inline-block">
-                  A
-                </span>
-                <span className="relative inline-block">
-                  N
-                </span>
-                <span className="relative inline-block">
-                  T
-                </span>
-                <span className="relative inline-block">
-                  O
-                  <svg
-                    className="absolute -top-1.5 md:-top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 md:w-4 md:h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/>
-                    <line x1="2" y1="19" x2="22" y2="19"/>
-                  </svg>
-                </span>
-              </span>
-              <div className="w-0.5 h-5 md:h-7 bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent shadow-lg shadow-fuchsia-500/50"></div>
-              <span className="text-fuchsia-500 neon-glow-purple">DILEMA</span>
-            </h1>
+            <Image
+              src="/logoprincipal.png"
+              alt="Santo Dilema"
+              width={150}
+              height={50}
+              className="h-7 md:h-9 w-auto"
+            />
           </Link>
         </div>
       </header>
