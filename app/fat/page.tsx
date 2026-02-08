@@ -1194,10 +1194,9 @@ export default function FatPage() {
 
                           {showExtras[product.id] && (
                             <div className="mt-2 space-y-1">
-                              {[
-                                { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 },
-                                { id: "extra-salsa", name: "Extra salsa", emoji: "🥫", price: 3.00 },
-                              ].map((extra) => {
+                              {/* Extra papas */}
+                              {(() => {
+                                const extra = { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 };
                                 const extraProduct: Product = {
                                   id: extra.id,
                                   name: extra.name,
@@ -1245,7 +1244,77 @@ export default function FatPage() {
                                     </div>
                                   </div>
                                 );
-                              })}
+                              })()}
+
+                              {/* Extra salsas - mostrar solo las salsas que el cliente ya seleccionó */}
+                              {(() => {
+                                // Obtener las salsas seleccionadas para este producto
+                                const currentSelectedSalsas = selectedSalsas[product.id] || [];
+                                // Obtener IDs únicos de salsas
+                                const uniqueSalsaIds = Array.from(new Set(currentSelectedSalsas));
+
+                                // Mapear cada salsa única a un item de extra salsa
+                                return uniqueSalsaIds.map((salsaId) => {
+                                  // Buscar el nombre de la salsa
+                                  const salsaData = salsas.find(s => s.id === salsaId);
+                                  if (!salsaData) return null;
+
+                                  const extraSalsa = {
+                                    id: `extra-salsa-${salsaId}`,
+                                    name: salsaData.name,
+                                    emoji: "🥫",
+                                    price: 3.00
+                                  };
+                                  const extraProduct: Product = {
+                                    id: extraSalsa.id,
+                                    name: extraSalsa.name,
+                                    description: extraSalsa.name,
+                                    price: extraSalsa.price,
+                                    image: extraSalsa.emoji,
+                                    category: "bebida"
+                                  };
+                                  const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extraSalsa.id}`);
+                                  const count = getComplementCount(product.id, extraSalsa.id);
+
+                                  return (
+                                    <div
+                                      key={extraSalsa.id}
+                                      className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
+                                    >
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-sm">{extraSalsa.emoji}</span>
+                                        <span className="text-white text-[10px]">{extraSalsa.name}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-amber-400 text-[10px] font-bold">S/ {extraSalsa.price.toFixed(2)}</span>
+                                        {count > 0 && (
+                                          <>
+                                            <button
+                                              onClick={() => handleRemoveComplement(product.id, extraSalsa.id)}
+                                              className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                            >
+                                              −
+                                            </button>
+                                            <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                              {count}
+                                            </span>
+                                          </>
+                                        )}
+                                        <button
+                                          onClick={() => handleAddComplement(product.id, extraProduct)}
+                                          className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                            wasRecentlyAdded
+                                              ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                              : 'bg-red-600 hover:bg-red-500'
+                                          } text-white`}
+                                        >
+                                          {wasRecentlyAdded ? '✓' : '+'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                });
+                              })()}
                             </div>
                           )}
                         </div>
