@@ -2,13 +2,87 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  useEffect(() => {
+    // Verificar si ya se mostró el modal en esta sesión
+    const hasSeenWelcome = sessionStorage.getItem("santo-dilema-welcome");
+    if (!hasSeenWelcome) {
+      setShowWelcomeModal(true);
+    }
+  }, []);
+
+  const closeWelcomeModal = () => {
+    setShowWelcomeModal(false);
+    sessionStorage.setItem("santo-dilema-welcome", "true");
+  };
 
   return (
     <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
+      {/* Modal de Bienvenida */}
+      {showWelcomeModal && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border-2 border-fuchsia-500 neon-border-purple rounded-lg max-w-md w-full p-6 md:p-8 relative animate-fade-in">
+            {/* Logo */}
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/logoprincipal.png"
+                alt="Santo Dilema"
+                width={250}
+                height={70}
+                className="h-14 md:h-16 w-auto"
+                priority
+              />
+            </div>
+
+            {/* Título de bienvenida */}
+            <h2 className="text-xl md:text-2xl font-black text-center mb-4 text-fuchsia-400 neon-glow-purple">
+              Bienvenido a la primera Dark Kitchen disruptiva de Chancay
+            </h2>
+
+            {/* Información de horarios */}
+            <div className="space-y-4 mb-6">
+              <div className="bg-black/50 border border-fuchsia-500/30 rounded-lg p-4">
+                <p className="text-center text-white font-bold mb-2">
+                  📅 Horario de Atención
+                </p>
+                <p className="text-center text-fuchsia-300">
+                  Jueves a Domingo
+                </p>
+                <p className="text-center text-fuchsia-300 font-bold text-lg">
+                  6:00 PM - 11:00 PM
+                </p>
+              </div>
+
+              <div className="bg-black/50 border border-fuchsia-500/30 rounded-lg p-4">
+                <p className="text-center text-white font-bold mb-2">
+                  🚚 Zonas de Delivery
+                </p>
+                <p className="text-center text-cyan-300">
+                  ✓ Chancay centro y alrededores
+                </p>
+                <p className="text-center text-amber-300 text-sm mt-1">
+                  Huaral y Aucallama: previa coordinación
+                </p>
+              </div>
+            </div>
+
+            {/* Botón de cerrar */}
+            <button
+              onClick={closeWelcomeModal}
+              className="w-full bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-6 rounded-lg transition-all neon-border-purple"
+            >
+              ¡ENTENDIDO, VAMOS! →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Contenido principal */}
       {/* Fondo con textura oscura */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-black opacity-90 z-0" />
 
