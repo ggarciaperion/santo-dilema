@@ -82,6 +82,12 @@ body {
                  0 0 20px rgba(245, 158, 11, 0.4);
   }
 
+  .halo-glow {
+    filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.8))
+            drop-shadow(0 0 6px rgba(245, 158, 11, 0.6))
+            drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));
+  }
+
   /* Animaciones sutiles para iconos de fondo */
   .float-slow {
     animation: float 8s ease-in-out infinite;
