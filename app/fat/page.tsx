@@ -18,6 +18,7 @@ interface Product {
 interface Salsa {
   id: string;
   name: string;
+  description: string;
 }
 
 interface CompletedOrder {
@@ -91,14 +92,46 @@ const fitProducts: Product[] = [
 ];
 
 const salsas: Salsa[] = [
-  { id: "barbecue", name: "Barbecue" },
-  { id: "anticuchos", name: "Anticuchos" },
-  { id: "ahumada", name: "Ahumada" },
-  { id: "buffalo-picante", name: "Buffalo picante" },
-  { id: "honey-mustard", name: "Honey mustard" },
-  { id: "macerichada", name: "Macerichada" },
-  { id: "teriyaki", name: "Teriyaki" },
-  { id: "parmesano-ajo", name: "Parmesano & Ajo" },
+  {
+    id: "barbecue",
+    name: "Barbecue",
+    description: "Dulce y ahumada, perfecta para quien busca un sabor clásico y reconfortante"
+  },
+  {
+    id: "anticuchos",
+    name: "Anticuchos",
+    description: "Inspirada en el clásico peruano, con ají panca y especias que dan un toque picante y aromático"
+  },
+  {
+    id: "ahumada",
+    name: "Ahumada",
+    description: "Sabor intenso a humo con notas de chipotle, ideal para los amantes de lo ahumado"
+  },
+  {
+    id: "buffalo-picante",
+    name: "Buffalo picante",
+    description: "Picante clásica americana con mantequilla y salsa picante, perfecta para valientes"
+  },
+  {
+    id: "honey-mustard",
+    name: "Honey mustard",
+    description: "Equilibrio perfecto entre dulce miel y mostaza suave, sabor agridulce irresistible"
+  },
+  {
+    id: "macerichada",
+    name: "Macerichada",
+    description: "Fusión única de mayonesa y ketchup con especias secretas, cremosa y deliciosa"
+  },
+  {
+    id: "teriyaki",
+    name: "Teriyaki",
+    description: "Salsa asiática con soya, jengibre y ajo, dulce y salada con toques orientales"
+  },
+  {
+    id: "parmesano-ajo",
+    name: "Parmesano & Ajo",
+    description: "Cremosa con queso parmesano auténtico y ajo rostizado, para los amantes del queso"
+  },
 ];
 
 const availableComplements: Record<string, { name: string; price: number }> = {
@@ -137,6 +170,7 @@ export default function FatPage() {
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
+  const [expandedSalsaDescriptions, setExpandedSalsaDescriptions] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -1019,42 +1053,72 @@ export default function FatPage() {
                               const canAddMore = count < maxSalsaCount && canSelect;
                               const showAddButton = canAddMore;
 
+                              const isDescriptionExpanded = expandedSalsaDescriptions.has(`${product.id}-${salsa.id}`);
+
                               return (
-                                <div
-                                  key={salsa.id}
-                                  className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-amber-500/10"
-                                >
-                                  <div className="flex items-center gap-1.5 flex-1">
-                                    <span className={`text-[10px] ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
-                                      {salsa.name}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    {count > 0 && (
-                                      <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                        x{count}
+                                <div key={salsa.id} className="bg-gray-800/30 rounded border border-amber-500/10">
+                                  <div className="flex items-center justify-between p-1.5">
+                                    <div className="flex items-center gap-1.5 flex-1">
+                                      <button
+                                        onClick={() => {
+                                          const key = `${product.id}-${salsa.id}`;
+                                          setExpandedSalsaDescriptions(prev => {
+                                            const newSet = new Set(prev);
+                                            if (newSet.has(key)) {
+                                              newSet.delete(key);
+                                            } else {
+                                              newSet.add(key);
+                                            }
+                                            return newSet;
+                                          });
+                                        }}
+                                        className="text-amber-400/60 hover:text-amber-400 transition-colors"
+                                      >
+                                        <span className={`text-[10px] transform transition-transform ${isDescriptionExpanded ? 'rotate-180' : ''}`}>
+                                          ▼
+                                        </span>
+                                      </button>
+                                      <span className={`text-[10px] ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
+                                        {salsa.name}
                                       </span>
-                                    )}
-                                    {count > 0 && (
-                                      <button
-                                        onClick={() => handleSalsaToggle(product.id, salsa.id, 'remove')}
-                                        className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
-                                      >
-                                        −
-                                      </button>
-                                    )}
-                                    {showAddButton && (
-                                      <button
-                                        onClick={() => handleSalsaToggle(product.id, salsa.id, 'add')}
-                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                                          wasRecentlyAdded
-                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                            : 'bg-amber-600 hover:bg-amber-500'
-                                        } text-white`}
-                                      >
-                                        {wasRecentlyAdded ? '✓' : '+'}
-                                      </button>
-                                    )}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      {count > 0 && (
+                                        <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                          x{count}
+                                        </span>
+                                      )}
+                                      {count > 0 && (
+                                        <button
+                                          onClick={() => handleSalsaToggle(product.id, salsa.id, 'remove')}
+                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                        >
+                                          −
+                                        </button>
+                                      )}
+                                      {showAddButton && (
+                                        <button
+                                          onClick={() => handleSalsaToggle(product.id, salsa.id, 'add')}
+                                          className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                            wasRecentlyAdded
+                                              ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                              : 'bg-amber-600 hover:bg-amber-500'
+                                          } text-white`}
+                                        >
+                                          {wasRecentlyAdded ? '✓' : '+'}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {/* Descripción desplegable */}
+                                  <div
+                                    className={`overflow-hidden transition-all duration-300 ${
+                                      isDescriptionExpanded ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
+                                    }`}
+                                  >
+                                    <p className="px-1.5 pb-1.5 text-[9px] text-gray-400 italic">
+                                      {salsa.description}
+                                    </p>
                                   </div>
                                 </div>
                               );
