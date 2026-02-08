@@ -351,7 +351,7 @@ export default function Home() {
           <div className="mb-1 md:mb-2">
             <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
               <Image
-                src="/placer.png?v=2"
+                src="/placer.png?v=3"
                 alt="Alitas Premium"
                 width={70}
                 height={70}
