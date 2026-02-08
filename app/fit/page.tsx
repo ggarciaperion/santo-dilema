@@ -508,9 +508,10 @@ export default function FitPage() {
             <Image
               src="/logoprincipal.png"
               alt="Santo Dilema"
-              width={200}
-              height={60}
-              className="h-12 md:h-16 w-auto"
+              width={300}
+              height={80}
+              className="h-full max-h-12 md:max-h-14 w-auto"
+              priority
             />
           </Link>
           <div className="flex items-center gap-2 md:gap-3">

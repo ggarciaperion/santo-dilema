@@ -358,9 +358,9 @@ export default function CheckoutPage() {
           <Image
             src="/logoprincipal.png"
             alt="Santo Dilema"
-            width={150}
-            height={50}
-            className="h-10 w-auto"
+            width={250}
+            height={70}
+            className="h-12 md:h-14 w-auto"
           />
         </div>
       </div>
@@ -376,9 +376,10 @@ export default function CheckoutPage() {
             <Image
               src="/logoprincipal.png"
               alt="Santo Dilema"
-              width={180}
-              height={60}
-              className="h-10 md:h-14 w-auto"
+              width={280}
+              height={75}
+              className="h-full max-h-10 md:max-h-12 w-auto"
+              priority
             />
           </Link>
         </div>
