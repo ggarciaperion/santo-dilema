@@ -171,25 +171,38 @@ export default function FitPage() {
 
   // Cargar órdenes al inicio, filtrando solo las de otras categorías
   useEffect(() => {
-    const savedOrders = localStorage.getItem("santo-dilema-orders");
-    if (savedOrders) {
-      try {
-        const allOrders = JSON.parse(savedOrders);
-        // Mantener solo las órdenes que NO son "fit"
-        const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "fit");
-        setCompletedOrders(otherOrders);
+    // Detectar si es una recarga (F5) o navegación
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const isReload = navigation && navigation.type === 'reload';
 
-        // Si había órdenes fit, las limpiamos del localStorage
-        if (otherOrders.length !== allOrders.length) {
-          localStorage.setItem("santo-dilema-orders", JSON.stringify(otherOrders));
+    if (isReload) {
+      // Si es recarga, limpiar TODO
+      localStorage.removeItem("santo-dilema-orders");
+      localStorage.removeItem("santo-dilema-cart");
+      setCompletedOrders([]);
+      clearCart();
+    } else {
+      // Si es navegación normal, cargar órdenes de otras categorías
+      const savedOrders = localStorage.getItem("santo-dilema-orders");
+      if (savedOrders) {
+        try {
+          const allOrders = JSON.parse(savedOrders);
+          // Mantener solo las órdenes que NO son "fit"
+          const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "fit");
+          setCompletedOrders(otherOrders);
+
+          // Si había órdenes fit, las limpiamos del localStorage
+          if (otherOrders.length !== allOrders.length) {
+            localStorage.setItem("santo-dilema-orders", JSON.stringify(otherOrders));
+          }
+        } catch (error) {
+          console.error("Error loading orders:", error);
         }
-      } catch (error) {
-        console.error("Error loading orders:", error);
       }
+      // Limpiar el carrito siempre
+      localStorage.removeItem("santo-dilema-cart");
+      clearCart();
     }
-    // Limpiar el carrito siempre
-    localStorage.removeItem("santo-dilema-cart");
-    clearCart();
   }, []);
 
   useEffect(() => {
