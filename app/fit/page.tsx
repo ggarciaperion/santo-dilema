@@ -501,7 +501,71 @@ export default function FitPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black relative">
+      {/* Iconos decorativos de fondo */}
+      <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
+        {/* Aguacates */}
+        <svg className="absolute top-16 left-8 w-20 h-20 md:w-24 md:h-24 text-cyan-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="55" rx="28" ry="35" />
+          <ellipse cx="50" cy="55" rx="15" ry="18" />
+          <circle cx="50" cy="50" r="8" fill="currentColor" opacity="0.3"/>
+        </svg>
+
+        <svg className="absolute bottom-32 right-12 w-18 h-18 md:w-20 md:h-20 text-teal-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="55" rx="25" ry="32" />
+          <ellipse cx="50" cy="55" rx="13" ry="16" />
+        </svg>
+
+        {/* Lechugas */}
+        <svg className="absolute top-1/3 right-20 w-24 h-24 md:w-28 md:h-28 text-emerald-400 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M50 20 Q35 25, 30 40 Q28 55, 35 65 Q45 75, 50 80"/>
+          <path d="M50 20 Q65 25, 70 40 Q72 55, 65 65 Q55 75, 50 80"/>
+          <path d="M45 35 Q42 45, 43 55 Q44 65, 48 72"/>
+        </svg>
+
+        <svg className="absolute top-1/2 left-16 w-22 h-22 md:w-26 md:h-26 text-teal-300 opacity-60 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M50 25 Q38 28, 35 42 Q34 56, 40 68"/>
+          <path d="M50 25 Q62 28, 65 42 Q66 56, 60 68"/>
+        </svg>
+
+        {/* Tomates */}
+        <svg className="absolute bottom-24 left-24 w-18 h-18 md:w-22 md:h-22 text-red-300 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="50" cy="55" r="22"/>
+          <path d="M40 33 Q45 28, 50 28 Q55 28, 60 33" strokeWidth="2.5"/>
+        </svg>
+
+        {/* Hojas */}
+        <svg className="absolute top-40 left-28 w-18 h-18 md:w-20 md:h-20 text-green-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M20 80 Q30 40, 50 20 Q70 40, 80 80" />
+          <path d="M50 20 L50 80 M50 35 Q35 45, 30 60"/>
+        </svg>
+
+        <svg className="absolute bottom-40 right-40 w-14 h-14 md:w-16 md:h-16 text-emerald-300 opacity-70 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M25 75 Q35 45, 50 25 Q65 45, 75 75" />
+          <path d="M50 25 L50 75"/>
+        </svg>
+
+        {/* Pepinos */}
+        <svg className="absolute top-2/3 right-16 w-20 h-20 md:w-24 md:h-24 text-cyan-500 float-slower" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="50" rx="12" ry="30" />
+          <line x1="45" y1="30" x2="45" y2="35"/>
+          <line x1="55" y1="33" x2="55" y2="38"/>
+        </svg>
+
+        {/* Zanahorias */}
+        <svg className="absolute bottom-1/3 left-40 w-18 h-18 md:w-20 md:h-20 text-orange-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 25 L45 80 L55 80 Z"/>
+          <path d="M45 23 L40 18 M50 20 L50 14 M55 23 L60 18"/>
+        </svg>
+
+        {/* Brócoli */}
+        <svg className="absolute bottom-1/4 right-1/3 w-22 h-22 md:w-26 md:h-26 text-green-500 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <circle cx="45" cy="40" r="12"/>
+          <circle cx="55" cy="40" r="12"/>
+          <circle cx="50" cy="50" r="13"/>
+        </svg>
+      </div>
+
       <header className="bg-gray-900 border-b-2 border-cyan-500 neon-border-fit sticky top-0 z-30 overflow-visible">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center overflow-visible">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">

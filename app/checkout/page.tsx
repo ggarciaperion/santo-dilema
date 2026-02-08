@@ -368,9 +368,50 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="h-[100dvh] bg-black flex flex-col">
+    <div className="h-[100dvh] bg-black flex flex-col relative">
+      {/* Iconos decorativos de fondo - Mix de FIT y FAT */}
+      <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
+        {/* Del lado FIT */}
+        <svg className="absolute top-20 left-12 w-20 h-20 md:w-24 md:h-24 text-cyan-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="55" rx="28" ry="35" />
+          <ellipse cx="50" cy="55" rx="15" ry="18" />
+        </svg>
+
+        <svg className="absolute top-1/3 left-20 w-22 h-22 md:w-26 md:h-26 text-emerald-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M50 20 Q35 25, 30 40 Q28 55, 35 65 Q45 75, 50 80"/>
+          <path d="M50 20 Q65 25, 70 40 Q72 55, 65 65 Q55 75, 50 80"/>
+        </svg>
+
+        <svg className="absolute bottom-1/3 left-16 w-18 h-18 md:w-20 md:h-20 text-green-400 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M20 80 Q30 40, 50 20 Q70 40, 80 80" />
+          <path d="M50 20 L50 80"/>
+        </svg>
+
+        {/* Del lado FAT */}
+        <svg className="absolute top-24 right-16 w-22 h-22 md:w-26 md:h-26 text-red-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M25 50 Q30 40, 40 38 L50 37 Q60 38, 65 42 L75 45 Q82 48, 82 55 Q82 62, 75 65 L65 68 Q60 70, 50 70 L40 69 Q30 67, 25 60 Q20 55, 25 50Z"/>
+          <circle cx="35" cy="55" r="2.5" fill="currentColor" opacity="0.4"/>
+        </svg>
+
+        <svg className="absolute top-1/2 right-24 w-20 h-20 md:w-24 md:h-24 text-orange-500 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 20 Q45 30, 42 40 Q40 50, 42 60 Q45 68, 50 70 Q55 68, 58 60 Q60 50, 58 40 Q55 30, 50 20Z"/>
+        </svg>
+
+        <svg className="absolute bottom-24 right-20 w-18 h-18 md:w-22 md:h-22 text-orange-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 15 L25 80 L75 80 Z"/>
+          <circle cx="42" cy="50" r="4" fill="currentColor" opacity="0.4"/>
+        </svg>
+
+        {/* Iconos centrales púrpura */}
+        <svg className="absolute bottom-1/2 left-1/2 w-16 h-16 md:w-20 md:h-20 text-fuchsia-400 rotate-slow opacity-70" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="50" cy="50" r="30"/>
+          <circle cx="50" cy="50" r="20"/>
+          <circle cx="50" cy="50" r="10"/>
+        </svg>
+      </div>
+
       {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple overflow-visible">
+      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple overflow-visible relative z-10">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-center overflow-visible">
           <Link href="/" className="hover:opacity-80 transition-opacity relative z-10">
             <Image

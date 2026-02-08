@@ -742,7 +742,59 @@ export default function FatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black relative">
+      {/* Iconos decorativos de fondo */}
+      <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
+        {/* Alitas */}
+        <svg className="absolute top-20 right-16 w-24 h-24 md:w-28 md:h-28 text-red-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M25 50 Q30 40, 40 38 L50 37 Q60 38, 65 42 L75 45 Q82 48, 82 55 Q82 62, 75 65 L65 68 Q60 70, 50 70 L40 69 Q30 67, 25 60 Q20 55, 25 50Z"/>
+          <circle cx="35" cy="55" r="2.5" fill="currentColor" opacity="0.4"/>
+          <circle cx="55" cy="57" r="2.5" fill="currentColor" opacity="0.4"/>
+        </svg>
+
+        <svg className="absolute bottom-28 left-20 w-20 h-20 md:w-24 md:h-24 text-orange-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M28 50 Q32 42, 42 40 L52 39 Q62 40, 67 45 L72 48 Q77 52, 77 57 Q77 63, 72 66 L67 69 Q62 72, 52 72 L42 71 Q32 69, 28 62 Q24 57, 28 50Z"/>
+          <circle cx="38" cy="56" r="2" fill="currentColor" opacity="0.4"/>
+        </svg>
+
+        {/* Fuegos */}
+        <svg className="absolute top-1/3 left-12 w-20 h-20 md:w-26 md:h-26 text-orange-500 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 20 Q45 30, 42 40 Q40 50, 42 60 Q45 68, 50 70 Q55 68, 58 60 Q60 50, 58 40 Q55 30, 50 20Z"/>
+          <path d="M50 35 Q48 42, 47 48 Q46 54, 48 58 Q50 60, 52 58 Q54 54, 53 48 Q52 42, 50 35Z"/>
+        </svg>
+
+        <svg className="absolute bottom-1/3 right-24 w-18 h-18 md:w-22 md:h-22 text-red-500 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 25 Q47 32, 45 40 Q44 48, 46 55 Q49 62, 50 65 Q51 62, 54 55 Q56 48, 55 40 Q53 32, 50 25Z"/>
+        </svg>
+
+        {/* Hamburguesas */}
+        <svg className="absolute top-1/2 right-32 w-24 h-24 md:w-28 md:h-28 text-orange-400 float-slower" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M25 35 Q25 30, 30 28 L70 28 Q75 30, 75 35" strokeWidth="2.5"/>
+          <rect x="22" y="35" width="56" height="8" rx="2"/>
+          <rect x="22" y="43" width="56" height="6" rx="1" fill="currentColor" opacity="0.3"/>
+          <path d="M25 65 Q25 70, 30 72 L70 72 Q75 70, 75 65" strokeWidth="2.5"/>
+        </svg>
+
+        {/* Pizzas */}
+        <svg className="absolute top-40 left-16 w-20 h-20 md:w-24 md:h-24 text-orange-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 15 L25 80 L75 80 Z"/>
+          <circle cx="42" cy="50" r="4" fill="currentColor" opacity="0.4"/>
+          <circle cx="58" cy="55" r="4" fill="currentColor" opacity="0.4"/>
+        </svg>
+
+        {/* Chiles */}
+        <svg className="absolute bottom-20 right-20 w-16 h-16 md:w-20 md:h-20 text-red-500 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M50 25 Q48 32, 46 42 Q44 52, 44 62 Q44 72, 48 78 Q52 78, 56 72 Q56 62, 56 52 Q54 42, 52 32 Q50 25, 50 25Z"/>
+        </svg>
+
+        {/* Papas fritas */}
+        <svg className="absolute bottom-24 left-32 w-22 h-22 md:w-26 md:h-26 text-amber-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M30 30 L28 75 L35 78 L37 33 Z"/>
+          <path d="M40 25 L38 75 L45 78 L47 28 Z"/>
+          <path d="M50 28 L48 75 L55 78 L57 31 Z"/>
+        </svg>
+      </div>
+
       {/* Header */}
       <header className="bg-gray-900 border-b-2 border-red-500 neon-border-fat sticky top-0 z-30 overflow-visible">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center overflow-visible">
