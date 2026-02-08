@@ -209,9 +209,6 @@ export default function Home() {
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fit" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-xs md:text-base text-white/90 mb-1 md:mb-1.5">
-              Elige el camino del equilibrio
-            </p>
             <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-cyan-400 rounded-full neon-border-fit">
               <span className="text-cyan-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
             </div>
@@ -368,9 +365,6 @@ export default function Home() {
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fat" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <p className="text-xs md:text-base text-white/90 mb-1 md:mb-1.5">
-              Elige el camino de la indulgencia
-            </p>
             <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-red-400 rounded-full neon-border-fat">
               <span className="text-red-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
             </div>
