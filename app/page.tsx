@@ -18,7 +18,18 @@ export default function Home() {
       } left-1/2 transform -translate-x-1/2`}>
         <h1 className="flex items-center gap-2 md:gap-4 text-2xl md:text-4xl lg:text-6xl font-black tracking-tight">
           <span className="text-amber-400 gold-glow inline-flex items-center">
-            S
+            <span className="relative inline-block">
+              S
+              <svg
+                className="absolute -top-2 md:-top-4 lg:-top-6 left-1/2 transform -translate-x-1/2 w-5 h-5 md:w-9 md:h-9 lg:w-12 lg:h-12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <ellipse cx="12" cy="12" rx="10" ry="3" />
+              </svg>
+            </span>
             <span className="relative inline-block">
               A
             </span>
@@ -30,18 +41,6 @@ export default function Home() {
             </span>
             <span className="relative inline-block">
               O
-              <svg
-                className="absolute -top-2 md:-top-4 lg:-top-5 left-1/2 transform -translate-x-1/2 w-4 h-4 md:w-8 md:h-8 lg:w-10 lg:h-10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M2 12l3-3 3 3 4-8 4 8 3-3 3 3v7H2z"/>
-                <line x1="2" y1="19" x2="22" y2="19"/>
-              </svg>
             </span>
           </span>
           <div className={`w-0.5 h-6 md:h-12 lg:h-16 bg-gradient-to-b from-transparent to-transparent shadow-lg transition-all duration-700 ${
