@@ -125,18 +125,18 @@ export default function Home() {
           }`}>DILEMA</span>
         </h1>
 
-        {/* Taglines debajo - animados según hover */}
+        {/* Taglines debajo - animados según hover en desktop, siempre visibles en móvil */}
         <div className="flex items-center gap-3 md:gap-8 lg:gap-12 mt-1 md:mt-2 overflow-hidden">
-          <p className={`text-cyan-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fit whitespace-nowrap transition-all duration-500 ${
-            hoveredSide === "fat" ? "opacity-0 -translate-x-8" : "opacity-100 translate-x-0"
+          <p className={`text-cyan-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fit whitespace-nowrap md:transition-all md:duration-500 ${
+            hoveredSide === "fat" ? "md:opacity-0 md:-translate-x-8" : "opacity-100 translate-x-0"
           }`}>
             PREMIUM SALADS
           </p>
-          <div className={`w-0.5 h-2 md:h-3 bg-transparent transition-all duration-500 ${
-            hoveredSide === null ? "opacity-100" : "opacity-0"
+          <div className={`w-0.5 h-2 md:h-3 bg-transparent md:transition-all md:duration-500 ${
+            hoveredSide === null ? "opacity-100" : "md:opacity-0"
           }`}></div>
-          <p className={`text-red-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fat whitespace-nowrap transition-all duration-500 ${
-            hoveredSide === "fit" ? "opacity-0 translate-x-8" : "opacity-100 translate-x-0"
+          <p className={`text-red-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fat whitespace-nowrap md:transition-all md:duration-500 ${
+            hoveredSide === "fit" ? "md:opacity-0 md:translate-x-8" : "opacity-100 translate-x-0"
           }`}>
             PREMIUM WINGS
           </p>
