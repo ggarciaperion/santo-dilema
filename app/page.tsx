@@ -196,7 +196,7 @@ export default function Home() {
                 alt="Ensalada Premium"
                 width={70}
                 height={70}
-                className="mx-auto md:w-28 md:h-28"
+                className="mx-auto md:w-40 md:h-40 lg:w-48 lg:h-48"
               />
             </div>
           </div>
@@ -355,7 +355,7 @@ export default function Home() {
                 alt="Alitas Premium"
                 width={70}
                 height={70}
-                className="mx-auto md:w-28 md:h-28"
+                className="mx-auto md:w-40 md:h-40 lg:w-48 lg:h-48"
               />
             </div>
           </div>
