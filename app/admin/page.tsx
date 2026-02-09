@@ -1,7 +1,7 @@
 "use client";
-// VERSION: 2.5.1 - Deploy forzado 2026-02-09 20:15 - Detección por ID activa
+// VERSION: 2.5.2 - FIX CRÍTICO: useRef para evitar stale closure + logging extenso
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -212,6 +212,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const previousOrderIdsRef = useRef<Set<string>>(new Set());
   const [filter, setFilter] = useState<string>("all");
   const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
   const [chartTimeFilter, setChartTimeFilter] = useState<"days" | "weeks" | "months" | "years">("days");
@@ -358,37 +359,50 @@ export default function AdminPage() {
       const response = await fetch("/api/orders");
       const data = await response.json();
 
-      console.log(`📊 loadOrders - Total pedidos: ${data.length}, Pedidos previos en estado: ${orders.length}`);
+      console.log(`📊 [ADMIN] loadOrders - Total pedidos recibidos: ${data.length}`);
+      console.log(`📊 [ADMIN] IDs previos guardados: ${previousOrderIdsRef.current.size}`);
 
-      // Detectar NUEVOS pedidos por ID (más preciso que contar)
-      if (orders.length > 0) {
-        const previousIds = new Set(orders.map(o => o.id));
-        const newOrders = data.filter((order: Order) => !previousIds.has(order.id));
+      // Detectar NUEVOS pedidos por ID usando useRef (evita stale closure)
+      if (previousOrderIdsRef.current.size > 0) {
+        const currentIds = new Set(data.map((o: Order) => o.id));
+        const newOrders = data.filter((order: Order) => !previousOrderIdsRef.current.has(order.id));
+
+        console.log(`📊 [ADMIN] IDs actuales: ${currentIds.size}`);
+        console.log(`📊 [ADMIN] Nuevos pedidos detectados: ${newOrders.length}`);
 
         if (newOrders.length > 0) {
-          console.log(`🔔 ${newOrders.length} pedido(s) nuevo(s) detectado(s)!`);
+          console.log(`🔔 [ADMIN] ¡${newOrders.length} pedido(s) NUEVO(S) detectado(s)!`);
+          console.log(`🔔 [ADMIN] IDs nuevos:`, newOrders.map(o => o.id));
+          console.log(`🔔 [ADMIN] Llamando a playNotificationSound()...`);
           playNotificationSound();
+        } else {
+          console.log(`✅ [ADMIN] No hay pedidos nuevos (solo actualizaciones)`);
         }
 
         // Detectar pedidos recién entregados (delivery confirmó entrega)
-        const previousOrders = orders;
-        const newlyDelivered = data.filter((order: Order) => {
-          const previousOrder = previousOrders.find(po => po.id === order.id);
-          return previousOrder && previousOrder.status === 'en-camino' && order.status === 'delivered';
-        });
+        if (orders.length > 0) {
+          const newlyDelivered = data.filter((order: Order) => {
+            const previousOrder = orders.find(po => po.id === order.id);
+            return previousOrder && previousOrder.status === 'en-camino' && order.status === 'delivered';
+          });
 
-        if (newlyDelivered.length > 0) {
-          console.log(`✅ ${newlyDelivered.length} pedido(s) marcado(s) como entregado(s)`);
-          playDeliveryConfirmSound();
+          if (newlyDelivered.length > 0) {
+            console.log(`✅ [ADMIN] ${newlyDelivered.length} pedido(s) marcado(s) como entregado(s)`);
+            playDeliveryConfirmSound();
+          }
         }
       } else {
         // Primera carga - solo guardar sin reproducir sonido
-        console.log("📋 Primera carga de pedidos (no reproducir sonido)");
+        console.log("📋 [ADMIN] Primera carga de pedidos (no reproducir sonido)");
       }
+
+      // Actualizar ref con los IDs actuales
+      previousOrderIdsRef.current = new Set(data.map((o: Order) => o.id));
+      console.log(`💾 [ADMIN] Ref actualizado con ${previousOrderIdsRef.current.size} IDs`);
 
       setOrders(data);
     } catch (error) {
-      console.error("Error al cargar pedidos:", error);
+      console.error("❌ [ADMIN] Error al cargar pedidos:", error);
     } finally {
       setLoading(false);
     }
@@ -396,19 +410,27 @@ export default function AdminPage() {
 
   // Función para reproducir sonido de notificación (2+ segundos)
   const playNotificationSound = () => {
+    console.log("🔊 [ADMIN] ═══ playNotificationSound INICIADO ═══");
     try {
       // Usar el audioContext inicializado o crear uno nuevo
       let ctx = audioContext;
       if (!ctx) {
+        console.log("📢 [ADMIN] Creando NUEVO AudioContext...");
         ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         setAudioContext(ctx);
         setAudioContextInitialized(true);
+        console.log("✅ [ADMIN] AudioContext creado exitosamente");
+      } else {
+        console.log("✅ [ADMIN] Usando AudioContext existente");
       }
+
+      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
 
       // Resume el contexto si está suspendido (requerido en Chrome/Edge)
       if (ctx.state === 'suspended') {
+        console.log("⏸️ [ADMIN] AudioContext está SUSPENDIDO, intentando resume...");
         ctx.resume().then(() => {
-          console.log("🎵 AudioContext resumed");
+          console.log("▶️ [ADMIN] AudioContext RESUMIDO exitosamente");
         });
       }
 
@@ -435,6 +457,7 @@ export default function AdminPage() {
 
       // Secuencia de beeps tipo "notificación de pedido" - Duración total: 2.5 segundos
       // Patrón: BEEP-BEEP-BEEEEP (ding-ding-dooong)
+      console.log("🎶 [ADMIN] Reproduciendo secuencia de tonos...");
       playBeep(880, 0, 0.3, 0.5);        // Primer tono (La alto)
       playBeep(880, 0.35, 0.3, 0.5);     // Segundo tono (repetición)
       playBeep(1047, 0.75, 0.8, 0.6);    // Tercer tono largo (Do más alto y sostenido)
@@ -442,9 +465,11 @@ export default function AdminPage() {
       // Tono de confirmación final (más suave)
       playBeep(784, 1.6, 0.4, 0.3);      // Cuarto tono (Sol, confirmación suave)
 
-      console.log("🔔 Sonido de nuevo pedido reproducido - Estado del contexto:", ctx.state);
+      console.log("✅ [ADMIN] ═══ Sonido de NUEVO PEDIDO reproducido exitosamente ═══");
+      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
     } catch (error) {
-      console.error("❌ Error al reproducir sonido:", error);
+      console.error("❌ [ADMIN] ERROR al reproducir sonido:", error);
+      console.error("❌ [ADMIN] Stack trace:", error);
     }
   };
 
