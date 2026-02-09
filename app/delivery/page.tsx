@@ -49,8 +49,46 @@ interface Order {
   completedOrders: any[];
   totalPrice: number;
   createdAt: string;
+  updatedAt?: string;
   notes?: string;
   paymentMethod?: string;
+}
+
+// Componente de contador de tiempo para delivery
+function DeliveryTimer({ startTime }: { startTime: string }) {
+  const [elapsed, setElapsed] = useState({ minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const updateElapsed = () => {
+      const now = new Date().getTime();
+      const start = new Date(startTime).getTime();
+      let diff = Math.floor((now - start) / 1000);
+
+      if (diff < 0) diff = 0;
+
+      const minutes = Math.floor(diff / 60);
+      const seconds = diff % 60;
+
+      setElapsed({ minutes, seconds });
+    };
+
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+
+    return () => clearInterval(interval);
+  }, [startTime]);
+
+  return (
+    <div className="inline-flex items-center gap-2 bg-blue-600/20 border border-blue-500/50 rounded-lg px-3 py-2">
+      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span className="text-blue-300 font-mono font-bold text-sm">
+        {String(elapsed.minutes).padStart(2, '0')}:{String(elapsed.seconds).padStart(2, '0')}
+      </span>
+      <span className="text-blue-400 text-xs">min</span>
+    </div>
+  );
 }
 
 // PIN por defecto: 1234 (puede ser cambiado desde variables de entorno)
@@ -302,6 +340,12 @@ export default function DeliveryPage() {
                       })}
                     </span>
                   </div>
+
+                  {/* Contador de tiempo */}
+                  <div className="mb-3">
+                    <DeliveryTimer startTime={order.updatedAt || order.createdAt} />
+                  </div>
+
                   <div className="space-y-1">
                     <p className="text-white font-bold text-lg">📍 {order.name}</p>
                     <p className="text-gray-300 text-sm">📞 {order.phone}</p>
