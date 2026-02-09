@@ -549,7 +549,8 @@ export default function AdminPage() {
       const orderItems = (order as any).completedOrders || order.cart || [];
       orderItems.forEach((cartItem: any) => {
         // Buscar el producto en la lista de productos para obtener su receta
-        const product = products.find((p: any) => p.name === cartItem.name);
+        const itemName = cartItem.name || cartItem.product?.name;
+        const product = products.find((p: any) => p.name === itemName);
 
         if (product && product.components && product.components.length > 0) {
           // Si el producto tiene componentes/receta, calcular cuánto se usó
@@ -1200,21 +1201,22 @@ export default function AdminPage() {
       const orderItems = order.completedOrders || order.cart || [];
       if (orderItems.length > 0) {
         orderItems.forEach((item: any) => {
-          const productId = item.product?.id || item.productId;
-          const productName = item.product?.name || item.name;
+          const productId = item.productId || item.product?.id;
+          const productName = item.name || item.product?.name;
+          const productPrice = item.price || item.product?.price || 0;
           const quantity = item.quantity;
 
           if (currentMonthProductSales.has(productId)) {
             const existing = currentMonthProductSales.get(productId);
             existing.quantity += quantity;
-            existing.revenue += (item.product?.price || item.price || 0) * quantity;
+            existing.revenue += productPrice * quantity;
           } else {
             currentMonthProductSales.set(productId, {
               id: productId,
               name: productName,
               quantity: quantity,
-              revenue: (item.product?.price || item.price || 0) * quantity,
-              category: item.product?.category || item.category
+              revenue: productPrice * quantity,
+              category: item.category || item.product?.category
             });
           }
         });
@@ -1228,20 +1230,21 @@ export default function AdminPage() {
       const orderItems = order.completedOrders || order.cart || [];
       if (orderItems.length > 0) {
         orderItems.forEach((item: any) => {
-          const productId = item.product?.id || item.productId;
-          const productName = item.product?.name || item.name;
+          const productId = item.productId || item.product?.id;
+          const productName = item.name || item.product?.name;
+          const productPrice = item.price || item.product?.price || 0;
           const quantity = item.quantity;
 
           if (productSales.has(productId)) {
             const existing = productSales.get(productId);
             existing.quantity += quantity;
-            existing.revenue += (item.product?.price || item.price || 0) * quantity;
+            existing.revenue += productPrice * quantity;
           } else {
             productSales.set(productId, {
               name: productName,
               quantity: quantity,
-              revenue: (item.product?.price || item.price || 0) * quantity,
-              category: item.product?.category || item.category
+              revenue: productPrice * quantity,
+              category: item.category || item.product?.category
             });
           }
         });
@@ -1268,21 +1271,22 @@ export default function AdminPage() {
       const orderItems = order.completedOrders || order.cart || [];
       if (orderItems.length > 0) {
         orderItems.forEach((item: any) => {
-          const productId = item.product?.id || item.productId;
-          const productName = item.product?.name || item.name;
+          const productId = item.productId || item.product?.id;
+          const productName = item.name || item.product?.name;
+          const productPrice = item.price || item.product?.price || 0;
           const quantity = item.quantity;
 
           if (lastMonthProductSales.has(productId)) {
             const existing = lastMonthProductSales.get(productId);
             existing.quantity += quantity;
-            existing.revenue += (item.product?.price || item.price || 0) * quantity;
+            existing.revenue += productPrice * quantity;
           } else {
             lastMonthProductSales.set(productId, {
               id: productId,
               name: productName,
               quantity: quantity,
-              revenue: (item.product?.price || item.price || 0) * quantity,
-              category: item.product?.category || item.category
+              revenue: productPrice * quantity,
+              category: item.category || item.product?.category
             });
           }
         });
@@ -1777,8 +1781,8 @@ export default function AdminPage() {
                     <div className="flex flex-wrap gap-2">
                       {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
                         (order as any).completedOrders.map((item: any, idx: number) => {
-                          const productName = item.product?.name || item.name || 'Sin nombre';
-                          const productPrice = item.product?.price || item.price || 0;
+                          const productName = item.name || 'Sin nombre';
+                          const productPrice = item.price || 0;
                           const quantity = item.quantity || 0;
                           const subtotal = productPrice * quantity;
 

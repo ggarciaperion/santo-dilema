@@ -3,6 +3,58 @@ import { storage } from "@/lib/storage";
 import { writeFile } from "fs/promises";
 import path from "path";
 
+// Productos FAT para referencia
+const fatProducts = [
+  {
+    id: "pequeno-dilema",
+    name: "Pequeño Dilema",
+    price: 28.90,
+    category: "fat",
+  },
+  {
+    id: "duo-dilema",
+    name: "Dúo Dilema",
+    price: 39.90,
+    category: "fat",
+  },
+  {
+    id: "santo-pecado",
+    name: "Santo Pecado",
+    price: 49.90,
+    category: "fat",
+  },
+];
+
+// Productos FIT para referencia
+const fitProducts = [
+  {
+    id: "ensalada-clasica",
+    name: "CLÁSICA FRESH BOWL",
+    price: 18.90,
+    category: "fit",
+  },
+  {
+    id: "ensalada-proteica",
+    name: "CÉSAR POWER BOWL",
+    price: 24.90,
+    category: "fit",
+  },
+  {
+    id: "ensalada-caesar",
+    name: "PROTEIN FIT BOWL",
+    price: 22.90,
+    category: "fit",
+  },
+  {
+    id: "ensalada-mediterranea",
+    name: "TUNA FRESH BOWL",
+    price: 21.90,
+    category: "fit",
+  },
+];
+
+const allProducts = [...fatProducts, ...fitProducts];
+
 // GET - Obtener todos los pedidos
 export async function GET() {
   try {
@@ -84,6 +136,18 @@ export async function POST(request: Request) {
     // Formato: SD + correlativo (4 dígitos) + día (2 dígitos) + mes (2 dígitos)
     const orderId = `SD${nextCorrelative}${day}${month}`;
 
+    // Expandir completedOrders con datos completos de productos
+    const expandedOrders = completedOrders.map((order: any) => {
+      const product = allProducts.find(p => p.id === order.productId);
+      return {
+        ...order,
+        name: product?.name || 'Producto desconocido',
+        price: product?.price || 0,
+        category: product?.category || 'unknown',
+        productId: order.productId
+      };
+    });
+
     // Crear nuevo pedido con ID único
     const newOrder = {
       id: orderId,
@@ -93,7 +157,7 @@ export async function POST(request: Request) {
       address,
       email,
       cart,
-      completedOrders,
+      completedOrders: expandedOrders,
       totalItems,
       totalPrice,
       paymentMethod,
