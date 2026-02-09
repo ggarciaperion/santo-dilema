@@ -165,7 +165,7 @@ export async function POST(request: Request) {
       paymentProofPath,
       timestamp,
       status,
-      createdAt: new Date().toISOString(),
+      createdAt: timestamp || new Date().toISOString(),
     };
 
     console.log("✅ Pedido creado con ID:", newOrder.id, "| Método:", paymentMethod);
