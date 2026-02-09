@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Productos FAT para referencia
 const fatProducts = [
@@ -89,21 +95,27 @@ export async function POST(request: Request) {
 
     let paymentProofPath = null;
 
-    // Guardar comprobante de pago si existe
+    // Guardar comprobante de pago en Cloudinary si existe
     if (paymentProof) {
-      const bytes = await paymentProof.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      // Crear nombre único para el archivo
-      const fileName = `voucher-${Date.now()}-${paymentProof.name}`;
-      const filePath = path.join(process.cwd(), 'public', 'vouchers', fileName);
-
       try {
-        await writeFile(filePath, buffer);
-        paymentProofPath = `/vouchers/${fileName}`;
-        console.log("💾 Comprobante guardado:", paymentProofPath);
+        const bytes = await paymentProof.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        // Convertir buffer a base64 para Cloudinary
+        const base64 = buffer.toString('base64');
+        const dataURI = `data:${paymentProof.type};base64,${base64}`;
+
+        // Subir a Cloudinary
+        const uploadResult = await cloudinary.uploader.upload(dataURI, {
+          folder: 'santo-dilema/vouchers',
+          public_id: `voucher-${Date.now()}`,
+          resource_type: 'auto',
+        });
+
+        paymentProofPath = uploadResult.secure_url;
+        console.log("☁️ Comprobante subido a Cloudinary:", paymentProofPath);
       } catch (error) {
-        console.error("Error al guardar comprobante:", error);
+        console.error("❌ Error al subir comprobante a Cloudinary:", error);
       }
     }
 
