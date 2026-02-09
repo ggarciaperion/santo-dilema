@@ -103,6 +103,8 @@ export default function DeliveryPage() {
   const [loading, setLoading] = useState(false);
   const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [audioContextInitialized, setAudioContextInitialized] = useState(false);
 
   // Cargar pedidos en camino
   const loadOrders = async () => {
@@ -155,8 +157,11 @@ export default function DeliveryPage() {
       });
 
       if (response.ok) {
-        // Reproducir sonido de éxito
-        playSuccessSound();
+        // Reproducir sonido de éxito ANTES de actualizar la lista
+        await playSuccessSound();
+
+        // Actualizar lista
+        await loadOrders();
 
         // Mostrar modal de éxito
         setShowSuccessModal(true);
@@ -165,9 +170,6 @@ export default function DeliveryPage() {
         setTimeout(() => {
           setShowSuccessModal(false);
         }, 2500);
-
-        // Actualizar lista
-        await loadOrders();
       } else {
         alert("Error al actualizar el pedido");
       }
@@ -179,26 +181,44 @@ export default function DeliveryPage() {
     }
   };
 
-  const playSuccessSound = () => {
+  const playSuccessSound = async () => {
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      console.log("🔊 Intentando reproducir sonido de confirmación...");
+
+      // Usar el audioContext inicializado o crear uno nuevo
+      let ctx = audioContext;
+      if (!ctx) {
+        console.log("📢 Creando nuevo AudioContext");
+        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioContext(ctx);
+        setAudioContextInitialized(true);
+      }
+
+      console.log(`🎵 Estado del AudioContext: ${ctx.state}`);
+
+      // Resume el contexto si está suspendido
+      if (ctx.state === 'suspended') {
+        console.log("▶️ Resumiendo AudioContext suspendido...");
+        await ctx.resume();
+        console.log("✅ AudioContext resumido exitosamente");
+      }
 
       const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.4) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        const oscillator = ctx!.createOscillator();
+        const gainNode = ctx!.createGain();
 
         oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        gainNode.connect(ctx!.destination);
 
         oscillator.frequency.value = frequency;
         oscillator.type = 'sine';
 
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
-        gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + startTime + 0.05);
-        gainNode.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + startTime + duration);
+        gainNode.gain.setValueAtTime(0, ctx!.currentTime + startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx!.currentTime + startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.001, ctx!.currentTime + startTime + duration);
 
-        oscillator.start(audioContext.currentTime + startTime);
-        oscillator.stop(audioContext.currentTime + startTime + duration);
+        oscillator.start(ctx!.currentTime + startTime);
+        oscillator.stop(ctx!.currentTime + startTime + duration);
       };
 
       // Tonos más agudos ascendentes: Mi → Sol# → Si
@@ -206,9 +226,9 @@ export default function DeliveryPage() {
       playBeep(1600, 0.15, 0.2, 0.6);    // G#6
       playBeep(2000, 0.35, 0.3, 0.7);    // B6
 
-      console.log("✅ Sonido de confirmación reproducido");
+      console.log("✅ Sonido de confirmación reproducido en delivery");
     } catch (error) {
-      console.log('No se pudo reproducir el sonido:', error);
+      console.error('❌ Error al reproducir sonido:', error);
     }
   };
 
@@ -219,6 +239,31 @@ export default function DeliveryPage() {
       setIsAuthenticated(true);
     }
   }, []);
+
+  // Inicializar AudioContext en primera interacción
+  useEffect(() => {
+    const initAudioContext = () => {
+      if (!audioContextInitialized) {
+        try {
+          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          setAudioContext(ctx);
+          setAudioContextInitialized(true);
+          console.log("✅ AudioContext inicializado");
+        } catch (error) {
+          console.error("❌ Error al inicializar AudioContext:", error);
+        }
+      }
+    };
+
+    // Inicializar al hacer clic o tocar la pantalla
+    document.addEventListener('click', initAudioContext);
+    document.addEventListener('touchstart', initAudioContext);
+
+    return () => {
+      document.removeEventListener('click', initAudioContext);
+      document.removeEventListener('touchstart', initAudioContext);
+    };
+  }, [audioContextInitialized]);
 
   // Pantalla de login
   if (!isAuthenticated) {
@@ -460,8 +505,8 @@ export default function DeliveryPage() {
                         )}
                         {order.paymentMethod === 'contraentrega-yape-plin' && (
                           <div className="bg-blue-600/20 border border-blue-500 rounded-lg px-3 py-2">
-                            <p className="text-blue-400 font-black text-sm">💳 CONTRAENTREGA</p>
-                            <p className="text-blue-300 text-xs">Cobrar con Yape/Plin</p>
+                            <p className="text-blue-400 font-black text-sm">💳 CONTRAENTREGA - YAPE/PLIN</p>
+                            <p className="text-blue-300 text-xs">Cobrar con Yape o Plin</p>
                             <p className="text-white font-black text-xl mt-1">S/ {order.totalPrice.toFixed(2)}</p>
                           </div>
                         )}
