@@ -86,6 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setCart([]);
+    sessionStorage.removeItem("santo-dilema-cart");
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);

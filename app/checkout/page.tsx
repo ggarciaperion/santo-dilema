@@ -349,9 +349,11 @@ export default function CheckoutPage() {
         const data = await response.json();
         console.log("Pedido creado exitosamente:", data);
 
-        // Limpiar estados
+        // Limpiar estados y almacenamiento
         clearCart();
-        localStorage.removeItem("santo-dilema-orders");
+        sessionStorage.removeItem("santo-dilema-orders");
+        sessionStorage.removeItem("santo-dilema-cart");
+        setCompletedOrders([]);
         setOrderPlaced(true);
 
         setTimeout(() => {
