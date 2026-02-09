@@ -52,6 +52,7 @@ interface Order {
   updatedAt?: string;
   notes?: string;
   paymentMethod?: string;
+  cantoCancelo?: string;
 }
 
 // Componente de contador de tiempo para delivery
@@ -79,14 +80,14 @@ function DeliveryTimer({ startTime }: { startTime: string }) {
   }, [startTime]);
 
   return (
-    <div className="inline-flex items-center gap-2 bg-blue-600/20 border border-blue-500/50 rounded-lg px-3 py-2">
-      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="inline-flex items-center gap-2 bg-orange-600/30 border-2 border-orange-500/70 rounded-lg px-3 py-2 shadow-lg">
+      <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <span className="text-blue-300 font-mono font-bold text-sm">
+      <span className="text-orange-300 font-mono font-black text-lg">
         {String(elapsed.minutes).padStart(2, '0')}:{String(elapsed.seconds).padStart(2, '0')}
       </span>
-      <span className="text-blue-400 text-xs">min</span>
+      <span className="text-orange-400 text-sm font-bold">min</span>
     </div>
   );
 }
@@ -101,6 +102,7 @@ export default function DeliveryPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Cargar pedidos en camino
   const loadOrders = async () => {
@@ -156,6 +158,14 @@ export default function DeliveryPage() {
         // Reproducir sonido de éxito
         playSuccessSound();
 
+        // Mostrar modal de éxito
+        setShowSuccessModal(true);
+
+        // Auto-cerrar modal después de 2.5 segundos
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 2500);
+
         // Actualizar lista
         await loadOrders();
       } else {
@@ -172,20 +182,31 @@ export default function DeliveryPage() {
   const playSuccessSound = () => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.4) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
 
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.type = 'sine';
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
 
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + startTime + duration);
+
+        oscillator.start(audioContext.currentTime + startTime);
+        oscillator.stop(audioContext.currentTime + startTime + duration);
+      };
+
+      // Tonos más agudos ascendentes: Mi → Sol# → Si
+      playBeep(1300, 0, 0.15, 0.5);      // E6
+      playBeep(1600, 0.15, 0.2, 0.6);    // G#6
+      playBeep(2000, 0.35, 0.3, 0.7);    // B6
+
+      console.log("✅ Sonido de confirmación reproducido");
     } catch (error) {
       console.log('No se pudo reproducir el sonido:', error);
     }
@@ -429,17 +450,48 @@ export default function DeliveryPage() {
                   {/* Total y Botón */}
                   <div className="flex items-center justify-between pt-3 border-t border-gray-700">
                     <div>
-                      <p className="text-gray-400 text-xs">TOTAL A COBRAR</p>
-                      <p className="text-white font-black text-2xl">
-                        S/ {order.totalPrice.toFixed(2)}
-                      </p>
-                      <p className="text-gray-400 text-xs mt-1">
-                        {order.paymentMethod === 'anticipado' ? '✅ Pagado (Yape/Plin)' :
-                         order.paymentMethod === 'contraentrega-yape-plin' ? '💳 Cobrar con Yape/Plin' :
-                         order.paymentMethod === 'contraentrega-efectivo-exacto' ? '💵 Efectivo exacto' :
-                         order.paymentMethod === 'contraentrega-efectivo-cambio' ? '💵 Efectivo con cambio' :
-                         'Contraentrega'}
-                      </p>
+                      <p className="text-gray-400 text-xs uppercase font-bold">Método de Pago</p>
+                      <div className="mt-2 space-y-1">
+                        {order.paymentMethod === 'anticipado' && (
+                          <div className="bg-green-600/20 border border-green-500 rounded-lg px-3 py-2">
+                            <p className="text-green-400 font-black text-sm">✅ PAGADO</p>
+                            <p className="text-green-300 text-xs">Yape/Plin (anticipado)</p>
+                          </div>
+                        )}
+                        {order.paymentMethod === 'contraentrega-yape-plin' && (
+                          <div className="bg-blue-600/20 border border-blue-500 rounded-lg px-3 py-2">
+                            <p className="text-blue-400 font-black text-sm">💳 CONTRAENTREGA</p>
+                            <p className="text-blue-300 text-xs">Cobrar con Yape/Plin</p>
+                            <p className="text-white font-black text-xl mt-1">S/ {order.totalPrice.toFixed(2)}</p>
+                          </div>
+                        )}
+                        {order.paymentMethod === 'contraentrega-efectivo-exacto' && (
+                          <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg px-3 py-2">
+                            <p className="text-yellow-400 font-black text-sm">💵 EFECTIVO EXACTO</p>
+                            <p className="text-yellow-300 text-xs">Cliente tiene monto exacto</p>
+                            <p className="text-white font-black text-xl mt-1">S/ {order.totalPrice.toFixed(2)}</p>
+                          </div>
+                        )}
+                        {order.paymentMethod === 'contraentrega-efectivo-cambio' && order.cantoCancelo && (
+                          <div className="bg-orange-600/20 border border-orange-500 rounded-lg px-3 py-2">
+                            <p className="text-orange-400 font-black text-sm">💵 EFECTIVO CON CAMBIO</p>
+                            <p className="text-orange-300 text-xs">Cliente cancelará con:</p>
+                            <p className="text-white font-black text-2xl mt-1">S/ {parseFloat(order.cantoCancelo).toFixed(2)}</p>
+                            <div className="mt-2 pt-2 border-t border-orange-500/30">
+                              <p className="text-orange-200 text-xs">Vuelto a entregar:</p>
+                              <p className="text-green-400 font-black text-xl">
+                                S/ {(parseFloat(order.cantoCancelo) - order.totalPrice).toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {!order.paymentMethod && (
+                          <div className="bg-gray-600/20 border border-gray-500 rounded-lg px-3 py-2">
+                            <p className="text-gray-400 font-black text-sm">Contraentrega</p>
+                            <p className="text-white font-black text-xl mt-1">S/ {order.totalPrice.toFixed(2)}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <button
                       onClick={() => handleMarkAsDelivered(order.id)}
@@ -469,6 +521,104 @@ export default function DeliveryPage() {
           </p>
         </div>
       </div>
+
+      {/* Modal de éxito */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-gradient-to-br from-green-900 to-emerald-900 border-4 border-green-400 rounded-3xl p-12 max-w-md w-full mx-4 shadow-2xl animate-scaleIn">
+            {/* Check animado */}
+            <div className="relative w-32 h-32 mx-auto mb-6">
+              <svg
+                className="w-full h-full"
+                viewBox="0 0 120 120"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* Círculo */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  fill="none"
+                  stroke="#4ade80"
+                  strokeWidth="6"
+                  className="animate-drawCircle"
+                  style={{
+                    strokeDasharray: 340,
+                    strokeDashoffset: 340,
+                    animation: 'drawCircle 0.6s ease-out forwards',
+                  }}
+                />
+                {/* Check */}
+                <path
+                  d="M 35 60 L 52 77 L 85 44"
+                  fill="none"
+                  stroke="#4ade80"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="animate-drawCheck"
+                  style={{
+                    strokeDasharray: 80,
+                    strokeDashoffset: 80,
+                    animation: 'drawCheck 0.4s ease-out 0.6s forwards',
+                  }}
+                />
+              </svg>
+            </div>
+
+            {/* Texto */}
+            <h2 className="text-3xl font-black text-white text-center mb-3">
+              ¡Entregado!
+            </h2>
+            <p className="text-green-200 text-center text-lg">
+              Pedido confirmado exitosamente
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Estilos para las animaciones */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.8);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes drawCircle {
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+
+        @keyframes drawCheck {
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+      `}</style>
     </div>
   );
 }

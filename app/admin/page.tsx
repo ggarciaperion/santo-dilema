@@ -480,10 +480,10 @@ export default function AdminPage() {
         oscillator.stop(ctx!.currentTime + startTime + duration);
       };
 
-      // Sonido de confirmación tipo "check" - Patrón ascendente
-      playBeep(600, 0, 0.15, 0.4);      // Do
-      playBeep(800, 0.15, 0.2, 0.5);    // Mi
-      playBeep(1000, 0.35, 0.3, 0.6);   // Sol (más largo y fuerte)
+      // Sonido de confirmación tipo "check" - Patrón ascendente más agudo
+      playBeep(1300, 0, 0.15, 0.5);      // Mi6
+      playBeep(1600, 0.15, 0.2, 0.6);    // Sol#6
+      playBeep(2000, 0.35, 0.3, 0.7);    // Si6 (más largo y fuerte)
 
       console.log("✅ Sonido de entrega confirmada reproducido");
     } catch (error) {
@@ -1697,6 +1697,19 @@ export default function AdminPage() {
                 </p>
               </button>
               <button
+                onClick={() => setFilter("en-camino")}
+                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                  filter === "en-camino"
+                    ? "border-blue-500 shadow-xl shadow-blue-500/50"
+                    : "border-blue-500/50 hover:border-blue-500"
+                }`}
+              >
+                <p className="text-blue-400 text-sm font-bold text-left">🚚 En Camino</p>
+                <p className="text-5xl font-black text-blue-400 mt-2 text-left">
+                  {dateFilteredOrders.filter((o) => o.status === "en-camino").length}
+                </p>
+              </button>
+              <button
                 onClick={() => setFilter("delivered")}
                 className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
                   filter === "delivered"
@@ -2101,12 +2114,20 @@ export default function AdminPage() {
                       </>
                     )}
                     {order.status === "en-camino" && (
-                      <button
-                        onClick={() => updateOrderStatus(order.id, "cancelled")}
-                        className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                      >
-                        ✕ Cancelar
-                      </button>
+                      <>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "delivered")}
+                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                        >
+                          ✓ Entregado
+                        </button>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "cancelled")}
+                          className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                        >
+                          ✕ Cancelar
+                        </button>
+                      </>
                     )}
                     {order.status === "delivered" && (
                       <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase">
