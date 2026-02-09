@@ -104,7 +104,8 @@ const availableComplements: Record<string, { name: string; price: number }> = {
   "fanta": { name: "Fanta 500ml", price: 4.00 },
   "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
   "extra-papas": { name: "Extra papas", price: 4.00 },
-  "extra-salsa": { name: "Extra salsa", price: 3.00 }
+  "extra-salsa": { name: "Extra salsa", price: 3.00 },
+  "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
 };
 
 export default function FitPage() {
@@ -766,6 +767,60 @@ export default function FitPage() {
                                     )}
                                     <button
                                       onClick={() => handleAddComplement(product.id, extraProduct)}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                        wasRecentlyAdded
+                                          ? 'bg-green-600 hover:bg-green-500 scale-110'
+                                          : 'bg-cyan-600 hover:bg-cyan-500'
+                                      } text-white`}
+                                    >
+                                      {wasRecentlyAdded ? '✓' : '+'}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {/* Pollo grillado - solo para Clásica Fresh Bowl */}
+                            {product.id === "ensalada-clasica" && (() => {
+                              const polloGrillado = {
+                                id: "pollo-grillado",
+                                name: "Pollo grillado",
+                                emoji: "🍗",
+                                price: 5.00
+                              };
+                              const polloProduct: Product = {
+                                id: polloGrillado.id,
+                                name: polloGrillado.name,
+                                description: polloGrillado.name,
+                                price: polloGrillado.price,
+                                image: polloGrillado.emoji,
+                                category: "bebida"
+                              };
+                              const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${polloGrillado.id}`);
+                              const count = getComplementCount(product.id, polloGrillado.id);
+                              return (
+                                <div className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-sm">{polloGrillado.emoji}</span>
+                                    <span className="text-white text-[10px]">{polloGrillado.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-amber-400 text-[10px] font-bold">S/ {polloGrillado.price.toFixed(2)}</span>
+                                    {count > 0 && (
+                                      <>
+                                        <button
+                                          onClick={() => handleRemoveComplement(product.id, polloGrillado.id)}
+                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
+                                        >
+                                          −
+                                        </button>
+                                        <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                          {count}
+                                        </span>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => handleAddComplement(product.id, polloProduct)}
                                       className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
                                         wasRecentlyAdded
                                           ? 'bg-green-600 hover:bg-green-500 scale-110'

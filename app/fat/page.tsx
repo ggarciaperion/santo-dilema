@@ -144,7 +144,8 @@ const generateAvailableComplements = () => {
     "fanta": { name: "Fanta 500ml", price: 4.00 },
     "extra-papas": { name: "Extra papas", price: 4.00 },
     "extra-salsa": { name: "Extra salsa", price: 3.00 },
-    "extra-aderezo": { name: "Extra aderezo", price: 3.00 }
+    "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
+    "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
   };
 
   // Agregar todas las extra salsas dinámicas
