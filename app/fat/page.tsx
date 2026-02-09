@@ -762,7 +762,7 @@ export default function FatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black relative overflow-visible">
+    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
       {/* Iconos decorativos de fondo */}
       <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
         {/* Alitas */}
@@ -816,7 +816,7 @@ export default function FatPage() {
       </div>
 
       {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-red-500 neon-border-fat sticky top-0 z-30 overflow-visible">
+      <header className="bg-gray-900 md:bg-transparent border-b-2 md:border-b-0 border-red-500 neon-border-fat sticky top-0 z-30 overflow-visible">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-1.5 flex justify-between items-center overflow-visible">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">
             <Image
@@ -846,8 +846,8 @@ export default function FatPage() {
       </header>
 
       {/* Hero Section - Banner */}
-      <section className="relative w-full overflow-visible bg-black pt-6 md:mt-8">
-        <div className="relative w-full bg-black overflow-visible">
+      <section className="relative w-full overflow-visible bg-black md:bg-transparent pt-6 md:mt-8">
+        <div className="relative w-full bg-black md:bg-transparent overflow-visible">
           {/* Banner para móvil */}
           <img
             src="/bannermovil.png?v=4"
