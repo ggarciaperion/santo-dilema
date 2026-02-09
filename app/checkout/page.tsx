@@ -923,6 +923,11 @@ export default function CheckoutPage() {
               </button>
 
               <h3 className="text-base font-bold text-white text-center mb-0.5">Pago contra entrega</h3>
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 mb-3">
+                <p className="text-blue-400 text-xs text-center font-semibold">
+                  💵 Solo pago en efectivo
+                </p>
+              </div>
               <p className="text-gray-500 text-xs text-center mb-5">
                 Total: <span className="text-amber-400 font-bold">S/ {realTotal.toFixed(2)}</span>
               </p>
