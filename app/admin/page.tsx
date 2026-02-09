@@ -21,6 +21,7 @@ interface Order {
   createdAt: string;
   updatedAt?: string;
   paymentMethod?: string;
+  paymentProofPath?: string;
 }
 
 // Componente para el contador de tiempo
@@ -196,6 +197,8 @@ export default function AdminPage() {
   const [newMaterialForm, setNewMaterialForm] = useState({ productName: "", unit: "" });
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] as Array<{ productName: string; unit: string; quantity: number }> });
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [selectedVoucherPath, setSelectedVoucherPath] = useState<string>("");
   const [inventoryForm, setInventoryForm] = useState({
     supplier: "",
     supplierRuc: "",
@@ -1823,6 +1826,17 @@ export default function AdminPage() {
                       <div>
                         <p className="text-sm font-black text-white">✓ PAGADO</p>
                         <p className="text-[10px] text-white/80">Yape/Plin</p>
+                        {order.paymentProofPath && (
+                          <button
+                            onClick={() => {
+                              setSelectedVoucherPath(order.paymentProofPath || "");
+                              setShowVoucherModal(true);
+                            }}
+                            className="mt-1 w-full bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1"
+                          >
+                            📄 Ver comprobante
+                          </button>
+                        )}
                       </div>
                     ) : order.paymentMethod === 'contraentrega-yape-plin' ? (
                       <div>
@@ -5568,6 +5582,40 @@ export default function AdminPage() {
               >
                 ✅ Guardar Cambios
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para ver comprobante de pago */}
+      {showVoucherModal && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowVoucherModal(false)}
+        >
+          <div
+            className="bg-gray-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-gray-900 border-b border-gray-700 p-4 flex items-center justify-between">
+              <h3 className="text-xl font-black text-white">Comprobante de Pago</h3>
+              <button
+                onClick={() => setShowVoucherModal(false)}
+                className="text-gray-400 hover:text-white text-2xl font-bold transition-colors"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-6">
+              {selectedVoucherPath ? (
+                <img
+                  src={selectedVoucherPath}
+                  alt="Comprobante de pago"
+                  className="w-full h-auto rounded-lg border-2 border-green-500/30"
+                />
+              ) : (
+                <p className="text-gray-400 text-center py-8">No hay comprobante disponible</p>
+              )}
             </div>
           </div>
         </div>
