@@ -60,7 +60,7 @@ const fitProducts: Product[] = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    description: "Lechuga americana, tomate, pepino, zanahoria, choclo y huevo. Con vinagreta clásica de la casa.",
+    description: "Lechuga bogi, tomate cherry, pepino, rayadura de zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
     price: 18.90,
     image: "/clasica-fresh-bowl.png",
     category: "fit",
@@ -68,7 +68,7 @@ const fitProducts: Product[] = [
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    description: "Lechuga romana, pollo grillado, crutones y parmesano. Con salsa César cremosa de la casa.",
+    description: "Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. Con salsa César cremosa de la casa.",
     price: 24.90,
     image: "/cesar-power-bowl.png",
     category: "fit",
@@ -910,8 +910,8 @@ export default function FatPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fat shadow-xl shadow-red-500/30 snap-center md:snap-none border-2 md:border-0 border-red-400
                     ${isExpanded
-                      ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
-                      : 'w-[240px] md:w-[240px] lg:w-[260px]'
+                      ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
+                      : 'w-[240px] md:w-[280px] lg:w-[300px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
@@ -928,14 +928,14 @@ export default function FatPage() {
                   {/* Card Header */}
                   <div className={`relative flex items-center justify-center overflow-visible ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-40 border-0'
-                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
+                      ? 'bg-black h-40 md:h-48 border-0'
+                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute object-cover drop-shadow-2xl md:w-[120%] md:h-[130%]"
+                        className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
                           width: '150%',
                           height: '160%',
@@ -950,15 +950,15 @@ export default function FatPage() {
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
                   </div>
-                  <div className="p-3 md:p-2.5">
-                    <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
+                  <div className="p-3 md:p-3.5">
+                    <h4 className="text-xs md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-orange-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2 line-clamp-3 h-10 md:h-9">
+                    <p className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-2 line-clamp-3 h-10 md:h-12">
                       {product.description}
                     </p>
-                    <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                      <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                    <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
+                      <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
                         S/ {product.price.toFixed(2)}
                       </span>
                       <div className="flex items-center gap-0.5 md:gap-1">
@@ -967,11 +967,11 @@ export default function FatPage() {
                             e.stopPropagation();
                             handleDecreaseQuantity(product.id);
                           }}
-                          className="w-5 h-5 md:w-6 md:h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          className="w-5 h-5 md:w-7 md:h-7 bg-red-600 hover:bg-red-500 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center"
                         >
                           −
                         </button>
-                        <span className="text-white font-bold w-6 md:w-8 text-center text-xs md:text-sm">
+                        <span className="text-white font-bold w-6 md:w-9 text-center text-xs md:text-base">
                           {orderQuantity[product.id] || 0}
                         </span>
                         <button
@@ -979,7 +979,7 @@ export default function FatPage() {
                             e.stopPropagation();
                             handleIncreaseQuantity(product.id);
                           }}
-                          className="w-5 h-5 md:w-6 md:h-6 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          className="w-5 h-5 md:w-7 md:h-7 bg-red-600 hover:bg-red-500 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center"
                         >
                           +
                         </button>
@@ -1000,13 +1000,13 @@ export default function FatPage() {
                         : 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, transform 0.4s ease-in-out'
                     }}
                   >
-                    <div className="px-2.5 md:px-4 pb-2.5 md:pb-4 border-t-2 border-red-500/30 pt-2.5 md:pt-3">
+                    <div className="px-2.5 md:px-5 pb-2.5 md:pb-5 border-t-2 border-red-500/30 pt-2.5 md:pt-4">
                       {/* Selector de Salsas - Acordeón */}
-                      <div className="mb-2 md:mb-3">
+                      <div className="mb-2 md:mb-4">
                         <button
                           data-salsas-button
                           onClick={() => setShowSalsas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                          className={`w-full flex items-center justify-between rounded-md md:rounded-lg p-1.5 md:p-2 transition-all shadow-sm border
+                          className={`w-full flex items-center justify-between rounded-md md:rounded-lg p-1.5 md:p-3 transition-all shadow-sm border
                             ${canAdd
                               ? 'bg-green-600/20 hover:bg-green-600/30 border-green-500/40 shadow-green-500/20'
                               : 'bg-amber-600/20 hover:bg-amber-600/30 border-amber-500/40 shadow-amber-500/20'
@@ -1020,20 +1020,20 @@ export default function FatPage() {
                               : undefined
                           }}
                         >
-                          <div className="flex items-center gap-1.5 md:gap-2">
-                            <span className="text-xs md:text-sm">{canAdd ? '✓' : '🌶️'}</span>
-                            <span className={`text-[10px] md:text-xs font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
+                          <div className="flex items-center gap-1.5 md:gap-2.5">
+                            <span className="text-xs md:text-base">{canAdd ? '✓' : '🌶️'}</span>
+                            <span className={`text-[10px] md:text-sm font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
                               {canAdd
                                 ? `Salsas seleccionadas (${requiredSalsas})`
                                 : `Elige tu${requiredSalsas > 1 ? 's' : ''} salsa${requiredSalsas > 1 ? 's' : ''}`
                               }
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <span className={`text-[10px] md:text-xs font-bold ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
                               {currentSalsas.length}/{requiredSalsas}
                             </span>
-                            <span className={`text-xs ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
+                            <span className={`text-xs md:text-sm ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
                               {showSalsas[product.id] ? '▼' : '▶'}
                             </span>
                           </div>
@@ -1043,11 +1043,11 @@ export default function FatPage() {
                           data-salsas-section
                           className={`overflow-hidden transition-all duration-500 ease-in-out ${
                             showSalsas[product.id]
-                              ? 'max-h-[600px] opacity-100 mt-2'
+                              ? 'max-h-[600px] opacity-100 mt-2 md:mt-3'
                               : 'max-h-0 opacity-0 mt-0'
                           }`}
                         >
-                          <div className="space-y-1">
+                          <div className="space-y-1 md:space-y-2">
                             {salsas.map((salsa) => {
                               const count = getSalsaCount(product.id, salsa.id);
                               const isSelected = count > 0;
@@ -1061,27 +1061,27 @@ export default function FatPage() {
                               return (
                                 <div
                                   key={salsa.id}
-                                  className="bg-gray-800/30 rounded p-1.5 border border-amber-500/10"
+                                  className="bg-gray-800/30 rounded p-1.5 md:p-2 border border-amber-500/10"
                                 >
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex-1">
-                                      <div className={`text-[10px] ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
+                                      <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
                                         {salsa.name}
                                       </div>
-                                      <p className="text-[9px] text-gray-400 italic mt-0.5">
+                                      <p className="text-[9px] md:text-[10px] text-gray-400 italic mt-0.5">
                                         {salsa.description}
                                       </p>
                                     </div>
-                                    <div className="flex items-center gap-1 ml-2">
+                                    <div className="flex items-center gap-1 md:gap-1.5 ml-2">
                                       {count > 0 && (
-                                        <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                        <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
                                           x{count}
                                         </span>
                                       )}
                                       {count > 0 && (
                                         <button
                                           onClick={() => handleSalsaToggle(product.id, salsa.id, 'remove')}
-                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                          className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
                                         >
                                           −
                                         </button>
@@ -1089,7 +1089,7 @@ export default function FatPage() {
                                       {showAddButton && (
                                         <button
                                           onClick={() => handleSalsaToggle(product.id, salsa.id, 'add')}
-                                          className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
                                             wasRecentlyAdded
                                               ? 'bg-green-600 hover:bg-green-500 scale-110'
                                               : 'bg-amber-600 hover:bg-amber-500'
@@ -1108,24 +1108,24 @@ export default function FatPage() {
                       </div>
 
                       {/* Complementos */}
-                      <div className="mb-3">
-                        <h5 className="text-xs font-bold text-white mb-2">Complementos</h5>
+                      <div className="mb-3 md:mb-4">
+                        <h5 className="text-xs md:text-sm font-bold text-white mb-2 md:mb-3">Complementos</h5>
 
                         {/* Bebidas */}
-                        <div className="mb-2">
+                        <div className="mb-2 md:mb-3">
                           <button
                             onClick={() => setShowBebidas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 transition-all"
+                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 md:p-3 transition-all"
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">🥤</span>
-                              <span className="text-white text-xs font-bold">Bebidas</span>
+                            <div className="flex items-center gap-2 md:gap-2.5">
+                              <span className="text-sm md:text-base">🥤</span>
+                              <span className="text-white text-xs md:text-sm font-bold">Bebidas</span>
                             </div>
-                            <span className="text-red-400 text-xs">{showBebidas[product.id] ? '▼' : '▶'}</span>
+                            <span className="text-red-400 text-xs md:text-sm">{showBebidas[product.id] ? '▼' : '▶'}</span>
                           </button>
 
                           {showBebidas[product.id] && (
-                            <div className="mt-2 space-y-1">
+                            <div className="mt-2 md:mt-3 space-y-1 md:space-y-2">
                               {[
                                 { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
                                 { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
@@ -1146,30 +1146,30 @@ export default function FatPage() {
                                 return (
                                   <div
                                     key={bebida.id}
-                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
+                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 md:p-2 border border-red-500/10"
                                   >
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-sm">{bebida.emoji}</span>
-                                      <span className="text-white text-[10px]">{bebida.name}</span>
+                                    <div className="flex items-center gap-1.5 md:gap-2">
+                                      <span className="text-sm md:text-base">{bebida.emoji}</span>
+                                      <span className="text-white text-[10px] md:text-xs">{bebida.name}</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
+                                    <div className="flex items-center gap-1 md:gap-1.5">
+                                      <span className="text-amber-400 text-[10px] md:text-xs font-bold">S/ {bebida.price.toFixed(2)}</span>
                                       {count > 0 && (
                                         <>
                                           <button
                                             onClick={() => handleRemoveComplement(product.id, bebida.id)}
-                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                            className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
                                           >
                                             −
                                           </button>
-                                          <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                          <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
                                             {count}
                                           </span>
                                         </>
                                       )}
                                       <button
                                         onClick={() => handleAddComplement(product.id, bebidaProduct)}
-                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                        className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
                                           wasRecentlyAdded
                                             ? 'bg-green-600 hover:bg-green-500 scale-110'
                                             : 'bg-red-600 hover:bg-red-500'
@@ -1189,17 +1189,17 @@ export default function FatPage() {
                         <div>
                           <button
                             onClick={() => setShowExtras((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 transition-all"
+                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 md:p-3 transition-all"
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">🍟</span>
-                              <span className="text-white text-xs font-bold">Extras</span>
+                            <div className="flex items-center gap-2 md:gap-2.5">
+                              <span className="text-sm md:text-base">🍟</span>
+                              <span className="text-white text-xs md:text-sm font-bold">Extras</span>
                             </div>
-                            <span className="text-red-400 text-xs">{showExtras[product.id] ? '▼' : '▶'}</span>
+                            <span className="text-red-400 text-xs md:text-sm">{showExtras[product.id] ? '▼' : '▶'}</span>
                           </button>
 
                           {showExtras[product.id] && (
-                            <div className="mt-2 space-y-1">
+                            <div className="mt-2 md:mt-3 space-y-1 md:space-y-2">
                               {/* Extra papas */}
                               {(() => {
                                 const extra = { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 };
@@ -1216,30 +1216,30 @@ export default function FatPage() {
                                 return (
                                   <div
                                     key={extra.id}
-                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
+                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 md:p-2 border border-red-500/10"
                                   >
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-sm">{extra.emoji}</span>
-                                      <span className="text-white text-[10px]">{extra.name}</span>
+                                    <div className="flex items-center gap-1.5 md:gap-2">
+                                      <span className="text-sm md:text-base">{extra.emoji}</span>
+                                      <span className="text-white text-[10px] md:text-xs">{extra.name}</span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-amber-400 text-[10px] font-bold">S/ {extra.price.toFixed(2)}</span>
+                                    <div className="flex items-center gap-1 md:gap-1.5">
+                                      <span className="text-amber-400 text-[10px] md:text-xs font-bold">S/ {extra.price.toFixed(2)}</span>
                                       {count > 0 && (
                                         <>
                                           <button
                                             onClick={() => handleRemoveComplement(product.id, extra.id)}
-                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                            className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
                                           >
                                             −
                                           </button>
-                                          <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                          <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
                                             {count}
                                           </span>
                                         </>
                                       )}
                                       <button
                                         onClick={() => handleAddComplement(product.id, extraProduct)}
-                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                        className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
                                           wasRecentlyAdded
                                             ? 'bg-green-600 hover:bg-green-500 scale-110'
                                             : 'bg-red-600 hover:bg-red-500'
@@ -1285,30 +1285,30 @@ export default function FatPage() {
                                   return (
                                     <div
                                       key={extraSalsa.id}
-                                      className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-red-500/10"
+                                      className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 md:p-2 border border-red-500/10"
                                     >
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-sm">{extraSalsa.emoji}</span>
-                                        <span className="text-white text-[10px]">{extraSalsa.name}</span>
+                                      <div className="flex items-center gap-1.5 md:gap-2">
+                                        <span className="text-sm md:text-base">{extraSalsa.emoji}</span>
+                                        <span className="text-white text-[10px] md:text-xs">{extraSalsa.name}</span>
                                       </div>
-                                      <div className="flex items-center gap-1">
-                                        <span className="text-amber-400 text-[10px] font-bold">S/ {extraSalsa.price.toFixed(2)}</span>
+                                      <div className="flex items-center gap-1 md:gap-1.5">
+                                        <span className="text-amber-400 text-[10px] md:text-xs font-bold">S/ {extraSalsa.price.toFixed(2)}</span>
                                         {count > 0 && (
                                           <>
                                             <button
                                               onClick={() => handleRemoveComplement(product.id, extraSalsa.id)}
-                                              className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
+                                              className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
                                             >
                                               −
                                             </button>
-                                            <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">
+                                            <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
                                               {count}
                                             </span>
                                           </>
                                         )}
                                         <button
                                           onClick={() => handleAddComplement(product.id, extraProduct)}
-                                          className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                          className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
                                             wasRecentlyAdded
                                               ? 'bg-green-600 hover:bg-green-500 scale-110'
                                               : 'bg-red-600 hover:bg-red-500'
@@ -1333,7 +1333,7 @@ export default function FatPage() {
                           setIsEditingOrder(false);
                         }}
                         disabled={!canAdd}
-                        className={`w-full py-2.5 rounded font-bold text-sm transition-all
+                        className={`w-full py-2.5 md:py-3.5 rounded-lg md:rounded-xl font-bold text-sm md:text-base transition-all
                           ${canAdd
                             ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat cursor-pointer active:scale-95'
                             : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
@@ -1352,10 +1352,10 @@ export default function FatPage() {
 
         {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
         {expandedCard === null && completedOrders.length === 0 && (
-          <div className="relative w-full flex justify-center items-center py-4 md:py-3 px-4">
+          <div className="relative w-full flex justify-center items-center py-4 md:py-4 px-4">
             <div className="text-center animated-text-reveal">
               <h2
-                className="text-base md:text-lg font-black tracking-widest uppercase"
+                className="text-base md:text-xl lg:text-2xl font-black tracking-widest uppercase"
                 style={{
                   fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
                   fontWeight: 900,
@@ -1374,11 +1374,11 @@ export default function FatPage() {
 
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
-          <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0 lg:mt-2">
-            <h3 className="text-base md:text-lg lg:text-xl font-black text-amber-400 mb-2 md:mb-3 gold-glow">
+          <div id="tu-orden-section" className="container mx-auto px-3 md:px-5 -mt-2 md:mt-0 lg:mt-2">
+            <h3 className="text-base md:text-xl lg:text-2xl font-black text-amber-400 mb-2 md:mb-4 gold-glow">
               Tu orden
             </h3>
-            <div className="space-y-2 md:space-y-3">
+            <div className="space-y-2 md:space-y-4">
               {completedOrders.map((order, index) => {
                 // Buscar producto en fat products
                 let product = products.find((p) => p.id === order.productId);
@@ -1395,11 +1395,11 @@ export default function FatPage() {
                 return (
                   <div
                     key={`${order.productId}-${index}`}
-                    className={`bg-gray-900 rounded-lg border-2 ${isFitOrder ? 'border-cyan-400/30' : 'border-red-400/30'} p-2 md:p-3 relative`}
+                    className={`bg-gray-900 rounded-lg border-2 ${isFitOrder ? 'border-cyan-400/30' : 'border-red-400/30'} p-2 md:p-4 relative`}
                   >
                     <div className="flex items-start justify-between mb-1 md:mb-2">
-                      <div className="flex items-start gap-2 flex-1">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-red-400/30 flex items-center justify-center">
+                      <div className="flex items-start gap-2 md:gap-3 flex-1">
+                        <div className="w-10 h-10 md:w-16 md:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-red-400/30 flex items-center justify-center">
                           {product.image.startsWith('/') ? (
                             <img
                               src={product.image}
@@ -1407,19 +1407,19 @@ export default function FatPage() {
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
-                                e.currentTarget.parentElement!.innerHTML = '<span class="text-2xl">🍗</span>';
+                                e.currentTarget.parentElement!.innerHTML = '<span class="text-2xl md:text-3xl">🍗</span>';
                               }}
                             />
                           ) : (
-                            <span className="text-2xl">{product.image}</span>
+                            <span className="text-2xl md:text-3xl">{product.image}</span>
                           )}
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-sm font-bold text-white mb-1">
+                          <h4 className="text-sm md:text-base font-bold text-white mb-1 md:mb-1.5">
                             {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
                           </h4>
 
-                          <div className="text-[11px] space-y-0.5">
+                          <div className="text-[11px] md:text-xs space-y-0.5 md:space-y-1">
                             {/* Precio del menú */}
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between`}>
                               <span>• {product.name} x{order.quantity}</span>
@@ -1454,23 +1454,23 @@ export default function FatPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-col items-center gap-2 ml-2">
+                      <div className="flex flex-col items-center gap-2 md:gap-2.5 ml-2">
                         <button
                           onClick={() => handleEditOrder(index)}
-                          className="text-[10px] text-red-400 hover:text-red-300 font-bold px-2 py-1 border border-red-400/30 rounded"
+                          className="text-[10px] md:text-xs text-red-400 hover:text-red-300 font-bold px-2 md:px-3 py-1 md:py-1.5 border border-red-400/30 rounded"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => handleDeleteOrder(index)}
-                          className="text-red-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100"
+                          className="text-red-500 hover:text-red-400 text-xl md:text-2xl font-bold transition-all opacity-70 hover:opacity-100"
                           title="Eliminar orden"
                         >
                           ✕
                         </button>
                       </div>
                     </div>
-                    <div className="text-amber-400 font-bold text-sm gold-glow">
+                    <div className="text-amber-400 font-bold text-sm md:text-base gold-glow">
                       S/ {(() => {
                         const productTotal = product.price * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
@@ -1488,8 +1488,8 @@ export default function FatPage() {
 
         {/* Texto motivacional */}
         {completedOrders.length > 0 && (
-          <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
-            <p className="text-center text-xs text-orange-200/70 italic">
+          <div className="container mx-auto px-3 md:px-5 mt-4 md:mt-5 mb-2">
+            <p className="text-center text-xs md:text-sm text-orange-200/70 italic">
               💡 Puedes agregar más órdenes a tu pedido antes de continuar
             </p>
           </div>
@@ -1497,24 +1497,24 @@ export default function FatPage() {
 
         {/* Espaciador para que la barra fija no tape el contenido */}
         {completedOrders.length > 0 && (
-          <div className="h-24 md:h-28"></div>
+          <div className="h-24 md:h-32"></div>
         )}
       </section>
 
       {/* Cart Summary Bar */}
       {completedOrders.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-red-500/50 shadow-2xl shadow-red-500/30 z-50">
-          <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 lg:py-5">
-            <div className="flex justify-between items-center gap-3 md:gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-white font-bold text-sm md:text-lg">Total</span>
-                <span className="text-amber-400 font-black text-xl md:text-3xl gold-glow">
+          <div className="container mx-auto px-4 md:px-8 py-3 md:py-5 lg:py-6">
+            <div className="flex justify-between items-center gap-3 md:gap-5">
+              <div className="flex items-center gap-2 md:gap-3">
+                <span className="text-white font-bold text-sm md:text-xl">Total</span>
+                <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
                   S/ {completedTotal.toFixed(2)}
                 </span>
               </div>
               <button
                 onClick={navigateToCheckout}
-                className="bg-red-500 hover:bg-red-400 active:scale-95 text-white px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-fat"
+                className="bg-red-500 hover:bg-red-400 active:scale-95 text-white px-5 md:px-9 py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-xl transition-all neon-border-fat"
               >
                 Continuar<span className="hidden sm:inline"> Pedido</span> →
               </button>

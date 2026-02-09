@@ -26,7 +26,7 @@ const products: Product[] = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    description: "Lechuga americana, tomate, pepino, zanahoria, choclo y huevo. Con vinagreta clásica de la casa.",
+    description: "Lechuga bogi, tomate cherry, pepino, rayadura de zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
     price: 18.90,
     image: "/1.png",
     category: "fit",
@@ -34,7 +34,7 @@ const products: Product[] = [
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    description: "Lechuga romana, pollo grillado, crutones y parmesano. Con salsa César cremosa de la casa.",
+    description: "Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. Con salsa César cremosa de la casa.",
     price: 24.90,
     image: "/2.png",
     category: "fit",
@@ -666,7 +666,7 @@ export default function FitPage() {
                     <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2 line-clamp-3 h-10 md:h-9">
+                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2 line-clamp-3 h-12 md:h-12">
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
