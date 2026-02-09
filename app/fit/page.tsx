@@ -26,7 +26,7 @@ const products: Product[] = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    description: "Lechuga bogi, tomate cherry, pepino, rayadura de zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
+    description: "Lechuga bogi, tomate cherry, pepino, zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
     price: 18.90,
     image: "/1.png",
     category: "fit",
@@ -666,7 +666,7 @@ export default function FitPage() {
                     <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2 line-clamp-4 md:line-clamp-3 overflow-hidden">
+                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2 line-clamp-3 overflow-hidden">
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">

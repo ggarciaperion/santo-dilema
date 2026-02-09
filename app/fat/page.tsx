@@ -60,7 +60,7 @@ const fitProducts: Product[] = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    description: "Lechuga bogi, tomate cherry, pepino, rayadura de zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
+    description: "Lechuga bogi, tomate cherry, pepino, zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
     price: 18.90,
     image: "/clasica-fresh-bowl.png",
     category: "fit",
