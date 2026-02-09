@@ -737,9 +737,10 @@ export default function CheckoutPage() {
                             {order.complementIds.map((compId, i) => {
                               const comp = availableComplements[compId];
                               if (!comp) return null;
+                              const emoji = compId === "pollo-grillado" ? "🍗" : "🍟";
                               return (
                                 <div key={`${compId}-${i}`} className="flex justify-between">
-                                  <span>🍟 {comp.name}</span>
+                                  <span>{emoji} {comp.name}</span>
                                   <span className="text-fuchsia-300/60">+S/ {comp.price.toFixed(2)}</span>
                                 </div>
                               );
