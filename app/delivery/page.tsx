@@ -1,4 +1,5 @@
 "use client";
+// VERSION: 2.5.1 - Deploy forzado 2026-02-09 20:15 - CONTRAENTREGA YAPE/PLIN
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -183,50 +184,47 @@ export default function DeliveryPage() {
 
   const playSuccessSound = async () => {
     try {
-      console.log("🔊 Intentando reproducir sonido de confirmación...");
+      console.log("🔊 [SAFARI] Intentando reproducir sonido de confirmación...");
 
-      // Usar el audioContext inicializado o crear uno nuevo
-      let ctx = audioContext;
-      if (!ctx) {
-        console.log("📢 Creando nuevo AudioContext");
-        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        setAudioContext(ctx);
-        setAudioContextInitialized(true);
-      }
+      // SAFARI: Crear NUEVO AudioContext cada vez para mejor compatibilidad
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-      console.log(`🎵 Estado del AudioContext: ${ctx.state}`);
+      console.log(`🎵 [SAFARI] Estado del AudioContext: ${ctx.state}`);
 
-      // Resume el contexto si está suspendido
+      // SAFARI: Siempre intentar resume primero
       if (ctx.state === 'suspended') {
-        console.log("▶️ Resumiendo AudioContext suspendido...");
+        console.log("▶️ [SAFARI] Resumiendo AudioContext suspendido...");
         await ctx.resume();
-        console.log("✅ AudioContext resumido exitosamente");
+        console.log("✅ [SAFARI] AudioContext resumido exitosamente");
       }
 
-      const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.4) => {
-        const oscillator = ctx!.createOscillator();
-        const gainNode = ctx!.createGain();
+      // SAFARI: Pequeño delay para asegurar que el contexto está listo
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.5) => {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
 
         oscillator.connect(gainNode);
-        gainNode.connect(ctx!.destination);
+        gainNode.connect(ctx.destination);
 
         oscillator.frequency.value = frequency;
         oscillator.type = 'sine';
 
-        gainNode.gain.setValueAtTime(0, ctx!.currentTime + startTime);
-        gainNode.gain.linearRampToValueAtTime(volume, ctx!.currentTime + startTime + 0.05);
-        gainNode.gain.linearRampToValueAtTime(0.001, ctx!.currentTime + startTime + duration);
+        gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
 
-        oscillator.start(ctx!.currentTime + startTime);
-        oscillator.stop(ctx!.currentTime + startTime + duration);
+        oscillator.start(ctx.currentTime + startTime);
+        oscillator.stop(ctx.currentTime + startTime + duration);
       };
 
-      // Tonos más agudos ascendentes: Mi → Sol# → Si
-      playBeep(1300, 0, 0.15, 0.5);      // E6
-      playBeep(1600, 0.15, 0.2, 0.6);    // G#6
-      playBeep(2000, 0.35, 0.3, 0.7);    // B6
+      // SAFARI: Tonos más agudos ascendentes con mayor volumen
+      playBeep(1300, 0, 0.15, 0.6);      // E6
+      playBeep(1600, 0.15, 0.2, 0.7);    // G#6
+      playBeep(2000, 0.35, 0.3, 0.8);    // B6
 
-      console.log("✅ Sonido de confirmación reproducido en delivery");
+      console.log("✅ [SAFARI] Sonido de confirmación reproducido en delivery");
     } catch (error) {
       console.error('❌ Error al reproducir sonido:', error);
     }

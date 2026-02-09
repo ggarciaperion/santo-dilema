@@ -1,4 +1,5 @@
 "use client";
+// VERSION: 2.5.1 - Deploy forzado 2026-02-09 20:15 - Detección por ID activa
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
