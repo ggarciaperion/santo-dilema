@@ -1,0 +1,12 @@
+{
+  "version": "2.5.0",
+  "timestamp": "2026-02-09T20:05:00Z",
+  "commit": "645bef2",
+  "changes": [
+    "Método de pago: CONTRAENTREGA - YAPE/PLIN",
+    "AudioContext persistente en delivery",
+    "Detección de nuevos pedidos por ID en admin",
+    "Sonido de confirmación mejorado"
+  ],
+  "critical": true
+}
