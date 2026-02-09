@@ -1,5 +1,5 @@
 "use client";
-// VERSION: 2.5.2 - FIX CRÍTICO: useRef para evitar stale closure + logging extenso
+// VERSION: 2.5.3 - FIX: Sonido de entrega confirmada con useRef para status
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -213,6 +213,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const previousOrderIdsRef = useRef<Set<string>>(new Set());
+  const previousOrderStatusRef = useRef<Map<string, string>>(new Map());
   const [filter, setFilter] = useState<string>("all");
   const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
   const [chartTimeFilter, setChartTimeFilter] = useState<"days" | "weeks" | "months" | "years">("days");
@@ -379,26 +380,33 @@ export default function AdminPage() {
           console.log(`✅ [ADMIN] No hay pedidos nuevos (solo actualizaciones)`);
         }
 
-        // Detectar pedidos recién entregados (delivery confirmó entrega)
-        if (orders.length > 0) {
-          const newlyDelivered = data.filter((order: Order) => {
-            const previousOrder = orders.find(po => po.id === order.id);
-            return previousOrder && previousOrder.status === 'en-camino' && order.status === 'delivered';
-          });
+        // Detectar pedidos recién entregados (delivery confirmó entrega) usando useRef
+        const newlyDelivered = data.filter((order: Order) => {
+          const previousStatus = previousOrderStatusRef.current.get(order.id);
+          const isNewlyDelivered = previousStatus === 'en-camino' && order.status === 'delivered';
 
-          if (newlyDelivered.length > 0) {
-            console.log(`✅ [ADMIN] ${newlyDelivered.length} pedido(s) marcado(s) como entregado(s)`);
-            playDeliveryConfirmSound();
+          if (isNewlyDelivered) {
+            console.log(`📦 [ADMIN] Pedido ${order.id} cambió: ${previousStatus} → ${order.status}`);
           }
+
+          return isNewlyDelivered;
+        });
+
+        if (newlyDelivered.length > 0) {
+          console.log(`✅ [ADMIN] ¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
+          console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
+          console.log(`🔊 [ADMIN] Llamando a playDeliveryConfirmSound()...`);
+          playDeliveryConfirmSound();
         }
       } else {
         // Primera carga - solo guardar sin reproducir sonido
         console.log("📋 [ADMIN] Primera carga de pedidos (no reproducir sonido)");
       }
 
-      // Actualizar ref con los IDs actuales
+      // Actualizar refs con los datos actuales
       previousOrderIdsRef.current = new Set(data.map((o: Order) => o.id));
-      console.log(`💾 [ADMIN] Ref actualizado con ${previousOrderIdsRef.current.size} IDs`);
+      previousOrderStatusRef.current = new Map(data.map((o: Order) => [o.id, o.status]));
+      console.log(`💾 [ADMIN] Refs actualizados - IDs: ${previousOrderIdsRef.current.size}, Status: ${previousOrderStatusRef.current.size}`);
 
       setOrders(data);
     } catch (error) {
@@ -474,18 +482,28 @@ export default function AdminPage() {
   };
 
   const playDeliveryConfirmSound = () => {
+    console.log("🚚 [ADMIN] ═══ playDeliveryConfirmSound INICIADO ═══");
     try {
       // Usar el audioContext inicializado o crear uno nuevo
       let ctx = audioContext;
       if (!ctx) {
+        console.log("📢 [ADMIN] Creando NUEVO AudioContext para sonido de entrega...");
         ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         setAudioContext(ctx);
         setAudioContextInitialized(true);
+        console.log("✅ [ADMIN] AudioContext creado exitosamente");
+      } else {
+        console.log("✅ [ADMIN] Usando AudioContext existente");
       }
+
+      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
 
       // Resume el contexto si está suspendido
       if (ctx.state === 'suspended') {
-        ctx.resume();
+        console.log("⏸️ [ADMIN] AudioContext está SUSPENDIDO, intentando resume...");
+        ctx.resume().then(() => {
+          console.log("▶️ [ADMIN] AudioContext RESUMIDO exitosamente");
+        });
       }
 
       // Función para crear un beep
@@ -508,13 +526,16 @@ export default function AdminPage() {
       };
 
       // Sonido de confirmación tipo "check" - Patrón ascendente más agudo
+      console.log("🎶 [ADMIN] Reproduciendo sonido de ENTREGA CONFIRMADA...");
       playBeep(1300, 0, 0.15, 0.5);      // Mi6
       playBeep(1600, 0.15, 0.2, 0.6);    // Sol#6
       playBeep(2000, 0.35, 0.3, 0.7);    // Si6 (más largo y fuerte)
 
-      console.log("✅ Sonido de entrega confirmada reproducido");
+      console.log("✅ [ADMIN] ═══ Sonido de ENTREGA CONFIRMADA reproducido exitosamente ═══");
+      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
     } catch (error) {
-      console.error("❌ Error al reproducir sonido de confirmación:", error);
+      console.error("❌ [ADMIN] ERROR al reproducir sonido de confirmación:", error);
+      console.error("❌ [ADMIN] Stack trace:", error);
     }
   };
 
