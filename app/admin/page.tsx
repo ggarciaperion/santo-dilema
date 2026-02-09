@@ -357,18 +357,19 @@ export default function AdminPage() {
       const response = await fetch("/api/orders");
       const data = await response.json();
 
-      // Obtener el último conteo guardado en localStorage
-      const savedCount = parseInt(localStorage.getItem('admin_order_count') || '0');
+      console.log(`📊 loadOrders - Total pedidos: ${data.length}, Pedidos previos en estado: ${orders.length}`);
 
-      // Detectar nuevo pedido y reproducir sonido
-      if (savedCount > 0 && data.length > savedCount) {
-        // Nuevo pedido detectado - reproducir sonido
-        console.log(`🔔 Nuevo pedido detectado! Anterior: ${savedCount}, Actual: ${data.length}`);
-        playNotificationSound();
-      }
-
-      // Detectar pedidos recién entregados (delivery confirmó entrega)
+      // Detectar NUEVOS pedidos por ID (más preciso que contar)
       if (orders.length > 0) {
+        const previousIds = new Set(orders.map(o => o.id));
+        const newOrders = data.filter((order: Order) => !previousIds.has(order.id));
+
+        if (newOrders.length > 0) {
+          console.log(`🔔 ${newOrders.length} pedido(s) nuevo(s) detectado(s)!`);
+          playNotificationSound();
+        }
+
+        // Detectar pedidos recién entregados (delivery confirmó entrega)
         const previousOrders = orders;
         const newlyDelivered = data.filter((order: Order) => {
           const previousOrder = previousOrders.find(po => po.id === order.id);
@@ -379,11 +380,11 @@ export default function AdminPage() {
           console.log(`✅ ${newlyDelivered.length} pedido(s) marcado(s) como entregado(s)`);
           playDeliveryConfirmSound();
         }
+      } else {
+        // Primera carga - solo guardar sin reproducir sonido
+        console.log("📋 Primera carga de pedidos (no reproducir sonido)");
       }
 
-      // Guardar el nuevo conteo en localStorage y estado
-      localStorage.setItem('admin_order_count', data.length.toString());
-      setPreviousOrderCount(data.length);
       setOrders(data);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);

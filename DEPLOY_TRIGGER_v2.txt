@@ -1,0 +1,7 @@
+Deploy trigger - Version 2.0
+Timestamp: 2026-02-09
+Cambios:
+- Corregido método de pago en delivery: "CONTRAENTREGA - YAPE/PLIN"
+- Arreglado sonido en panel de delivery al marcar como entregado
+- Mejorada detección de nuevos pedidos en admin (por ID en lugar de conteo)
+- AudioContext persistente en delivery para mejor soporte móvil
