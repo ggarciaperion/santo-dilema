@@ -17,7 +17,7 @@ interface Order {
   totalItems?: number;
   totalPrice?: number;
   timestamp?: string;
-  status: "pending" | "confirmed" | "delivered" | "cancelled";
+  status: "pending" | "pendiente-verificacion" | "confirmed" | "delivered" | "cancelled";
   createdAt: string;
   updatedAt?: string;
   paymentMethod?: string;
@@ -51,7 +51,7 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
       const seconds = diff % 60;
 
       // Alerta a los 20 minutos SOLO si el pedido está pendiente o confirmado
-      if (minutes >= 20 && !alerted && (status === 'pending' || status === 'confirmed')) {
+      if (minutes >= 20 && !alerted && (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed')) {
         setShowAlert(true);
         setAlerted(true);
       }
@@ -664,6 +664,7 @@ export default function AdminPage() {
 
   const statusColors = {
     pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500",
+    "pendiente-verificacion": "bg-purple-500/20 text-purple-400 border-purple-500",
     confirmed: "bg-cyan-500/20 text-cyan-400 border-cyan-500",
     delivered: "bg-green-500/20 text-green-400 border-green-500",
     cancelled: "bg-red-500/20 text-red-400 border-red-500",
@@ -671,6 +672,7 @@ export default function AdminPage() {
 
   const statusLabels = {
     pending: "Pendiente",
+    "pendiente-verificacion": "Por Verificar",
     confirmed: "Confirmado",
     delivered: "Entregado",
     cancelled: "Cancelado",
@@ -1742,6 +1744,7 @@ export default function AdminPage() {
                 key={order.id}
                 className={`bg-gray-900 rounded-lg overflow-hidden shadow-2xl transition-all ${
                   order.status === 'pending' ? 'ring-2 ring-yellow-500/50' :
+                  order.status === 'pendiente-verificacion' ? 'ring-2 ring-purple-500/50' :
                   order.status === 'confirmed' ? 'ring-2 ring-cyan-500/50' :
                   order.status === 'delivered' ? 'ring-2 ring-green-500/30 opacity-60' :
                   'ring-2 ring-red-500/30 opacity-50'
@@ -1753,6 +1756,7 @@ export default function AdminPage() {
                   {/* HEADER: ESTADO Y NÚMERO */}
                   <div className={`flex-shrink-0 px-3 py-2 rounded ${
                     order.status === 'pending' ? 'bg-yellow-500/20' :
+                    order.status === 'pendiente-verificacion' ? 'bg-purple-500/20' :
                     order.status === 'confirmed' ? 'bg-cyan-500/20' :
                     order.status === 'delivered' ? 'bg-green-500/20' :
                     'bg-red-500/20'
@@ -1908,6 +1912,22 @@ export default function AdminPage() {
 
                   {/* BOTONES DE ACCIÓN */}
                   <div className="flex-shrink-0 flex gap-2">
+                    {order.status === "pendiente-verificacion" && (
+                      <>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "confirmed")}
+                          className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                        >
+                          ✓ Verificar y Confirmar
+                        </button>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "cancelled")}
+                          className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    )}
                     {order.status === "pending" && (
                       <>
                         <button
