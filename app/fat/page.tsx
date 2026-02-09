@@ -913,14 +913,14 @@ export default function FatPage() {
                   {/* Card Header */}
                   <div className={`relative flex items-center justify-center overflow-visible ${
                     product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-32 border-0'
+                      ? 'bg-black h-40 md:h-40 border-0'
                       : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
                   }`}>
                     {product.image.startsWith('/') ? (
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="absolute object-cover drop-shadow-2xl"
+                        className="absolute object-cover drop-shadow-2xl md:w-[120%] md:h-[130%]"
                         style={{
                           width: '150%',
                           height: '160%',
