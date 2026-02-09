@@ -1,5 +1,5 @@
 "use client";
-// VERSION: 2.5.1 - Deploy forzado 2026-02-09 20:15 - CONTRAENTREGA YAPE/PLIN
+// VERSION: 2.5.4 - Método de pago simplificado: contraentrega solo efectivo
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -499,13 +499,6 @@ export default function DeliveryPage() {
                           <div className="bg-green-600/20 border border-green-500 rounded-lg px-3 py-2">
                             <p className="text-green-400 font-black text-sm">✅ PAGADO</p>
                             <p className="text-green-300 text-xs">Yape/Plin (anticipado)</p>
-                          </div>
-                        )}
-                        {order.paymentMethod === 'contraentrega-yape-plin' && (
-                          <div className="bg-blue-600/20 border border-blue-500 rounded-lg px-3 py-2">
-                            <p className="text-blue-400 font-black text-sm">💳 CONTRAENTREGA - YAPE/PLIN</p>
-                            <p className="text-blue-300 text-xs">Cobrar con Yape o Plin</p>
-                            <p className="text-white font-black text-xl mt-1">S/ {order.totalPrice.toFixed(2)}</p>
                           </div>
                         )}
                         {order.paymentMethod === 'contraentrega-efectivo-exacto' && (

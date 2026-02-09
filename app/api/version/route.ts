@@ -2,17 +2,17 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({
-    version: '2.5.3',
+    version: '2.5.4',
     timestamp: new Date().toISOString(),
-    commit: 'useRef-fix-delivered-sound',
+    commit: 'payment-simplification',
     deployed: true,
-    critical_fix: 'useRef para detectar pedidos entregados (evita stale closure)',
+    feature: 'Simplificación de método de pago contraentrega',
     changes: {
-      delivery: '✅ CONTRAENTREGA - YAPE/PLIN visible',
-      delivery_sound: '✅ Sonido funciona en Safari',
-      admin_new_orders: '✅ Sonido de nuevos pedidos funciona',
-      admin_delivered: '✅ Sonido de entrega confirmada con useRef para status',
-      admin_logging: '✅ Logging extenso con prefijo [ADMIN]'
+      payment: '✅ Contraentrega ahora es solo EFECTIVO (exacto o con cambio)',
+      payment_yape: '✅ Yape/Plin solo disponible con pago anticipado (QR)',
+      delivery_view: '✅ Eliminada opción contraentrega-yape-plin de visualización',
+      checkout: '✅ Modal de contraentrega muestra directamente opciones de efectivo',
+      all_sounds: '✅ Todos los sonidos funcionando correctamente'
     }
   });
 }
