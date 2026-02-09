@@ -1030,7 +1030,6 @@ export default function CheckoutPage() {
                   Cancelar
                 </button>
               </>
-            )}
           </div>
         </div>
       )}
