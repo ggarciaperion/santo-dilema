@@ -73,26 +73,41 @@ interface CompletedOrder {
 }
 
 const salsas: { id: string; name: string }[] = [
-  { id: "barbecue", name: "Barbecue" },
-  { id: "anticuchos", name: "Anticuchos" },
-  { id: "ahumada", name: "Ahumada" },
-  { id: "buffalo-picante", name: "Buffalo picante" },
+  { id: "barbecue", name: "BBQ ahumada" },
+  { id: "buffalo-picante", name: "Santo Picante" },
+  { id: "ahumada", name: "Acevichada Imperial" },
+  { id: "parmesano-ajo", name: "Crispy Celestial" },
+  { id: "anticuchos", name: "Parrillera" },
   { id: "honey-mustard", name: "Honey mustard" },
-  { id: "acevichada", name: "Acevichada" },
-  { id: "rocoto", name: "Rocoto" },
-  { id: "aji-amarillo", name: "Ají amarillo" },
+  { id: "teriyaki", name: "Teriyaki" },
+  { id: "macerichada", name: "Sweet & Sour" },
 ];
 
-const availableComplements: Record<string, { name: string; price: number }> = {
-  "agua-mineral": { name: "Agua mineral", price: 4.00 },
-  "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
-  "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
-  "sprite": { name: "Sprite 500ml", price: 4.00 },
-  "fanta": { name: "Fanta 500ml", price: 4.00 },
-  "extra-papas": { name: "Extra papas", price: 4.00 },
-  "extra-salsa": { name: "Extra salsa", price: 3.00 },
-  "extra-aderezo": { name: "Extra aderezo", price: 3.00 }
+// Generar dinámicamente el diccionario de complementos disponibles
+const generateAvailableComplements = () => {
+  const complements: Record<string, { name: string; price: number }> = {
+    "agua-mineral": { name: "Agua mineral", price: 4.00 },
+    "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
+    "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
+    "sprite": { name: "Sprite 500ml", price: 4.00 },
+    "fanta": { name: "Fanta 500ml", price: 4.00 },
+    "extra-papas": { name: "Extra papas", price: 4.00 },
+    "extra-salsa": { name: "Extra salsa", price: 3.00 },
+    "extra-aderezo": { name: "Extra aderezo", price: 3.00 }
+  };
+
+  // Agregar todas las extra salsas dinámicas
+  salsas.forEach(salsa => {
+    complements[`extra-salsa-${salsa.id}`] = {
+      name: `Extra salsa - ${salsa.name}`,
+      price: 3.00
+    };
+  });
+
+  return complements;
 };
+
+const availableComplements = generateAvailableComplements();
 
 // Productos fat para referencia
 const fatProducts = [
