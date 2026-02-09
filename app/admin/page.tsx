@@ -545,8 +545,9 @@ export default function AdminPage() {
       // Calcular los componentes/empaques usados
       const itemsToDeduct: Array<{ productName: string; quantity: number; unit: string }> = [];
 
-      // Recorrer los productos del carrito
-      order.cart?.forEach((cartItem: any) => {
+      // Recorrer los productos del carrito (soportar tanto completedOrders como cart)
+      const orderItems = (order as any).completedOrders || order.cart || [];
+      orderItems.forEach((cartItem: any) => {
         // Buscar el producto en la lista de productos para obtener su receta
         const product = products.find((p: any) => p.name === cartItem.name);
 
@@ -648,6 +649,10 @@ export default function AdminPage() {
       order.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.phone.includes(searchTerm) ||
       order.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ((order as any).completedOrders && (order as any).completedOrders.some((item: any) => {
+        const productName = item.product?.name || item.name || '';
+        return productName.toLowerCase().includes(searchTerm.toLowerCase());
+      })) ||
       (order.cart && order.cart.some((item: any) => {
         const productName = item.product?.name || item.name || '';
         return productName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -1192,23 +1197,24 @@ export default function AdminPage() {
     // NUEVO: Productos vendidos en el MES ACTUAL (ordenados de mayor a menor)
     const currentMonthProductSales = new Map();
     currentMonthOrders.forEach((order: any) => {
-      if (order.cart) {
-        order.cart.forEach((item: any) => {
-          const productId = item.product.id;
-          const productName = item.product.name;
+      const orderItems = order.completedOrders || order.cart || [];
+      if (orderItems.length > 0) {
+        orderItems.forEach((item: any) => {
+          const productId = item.product?.id || item.productId;
+          const productName = item.product?.name || item.name;
           const quantity = item.quantity;
 
           if (currentMonthProductSales.has(productId)) {
             const existing = currentMonthProductSales.get(productId);
             existing.quantity += quantity;
-            existing.revenue += item.product.price * quantity;
+            existing.revenue += (item.product?.price || item.price || 0) * quantity;
           } else {
             currentMonthProductSales.set(productId, {
               id: productId,
               name: productName,
               quantity: quantity,
-              revenue: item.product.price * quantity,
-              category: item.product.category
+              revenue: (item.product?.price || item.price || 0) * quantity,
+              category: item.product?.category || item.category
             });
           }
         });
@@ -1219,22 +1225,23 @@ export default function AdminPage() {
     // Productos vendidos de TODOS LOS TIEMPOS (para mantener compatibilidad con otros componentes)
     const productSales = new Map();
     deliveredOrders.forEach((order: any) => {
-      if (order.cart) {
-        order.cart.forEach((item: any) => {
-          const productId = item.product.id;
-          const productName = item.product.name;
+      const orderItems = order.completedOrders || order.cart || [];
+      if (orderItems.length > 0) {
+        orderItems.forEach((item: any) => {
+          const productId = item.product?.id || item.productId;
+          const productName = item.product?.name || item.name;
           const quantity = item.quantity;
 
           if (productSales.has(productId)) {
             const existing = productSales.get(productId);
             existing.quantity += quantity;
-            existing.revenue += item.product.price * quantity;
+            existing.revenue += (item.product?.price || item.price || 0) * quantity;
           } else {
             productSales.set(productId, {
               name: productName,
               quantity: quantity,
-              revenue: item.product.price * quantity,
-              category: item.product.category
+              revenue: (item.product?.price || item.price || 0) * quantity,
+              category: item.product?.category || item.category
             });
           }
         });
@@ -1258,23 +1265,24 @@ export default function AdminPage() {
     // NUEVO: Productos del mes anterior CON COMPARACIÓN vs mes actual
     const lastMonthProductSales = new Map();
     lastMonthOrders.forEach((order: any) => {
-      if (order.cart) {
-        order.cart.forEach((item: any) => {
-          const productId = item.product.id;
-          const productName = item.product.name;
+      const orderItems = order.completedOrders || order.cart || [];
+      if (orderItems.length > 0) {
+        orderItems.forEach((item: any) => {
+          const productId = item.product?.id || item.productId;
+          const productName = item.product?.name || item.name;
           const quantity = item.quantity;
 
           if (lastMonthProductSales.has(productId)) {
             const existing = lastMonthProductSales.get(productId);
             existing.quantity += quantity;
-            existing.revenue += item.product.price * quantity;
+            existing.revenue += (item.product?.price || item.price || 0) * quantity;
           } else {
             lastMonthProductSales.set(productId, {
               id: productId,
               name: productName,
               quantity: quantity,
-              revenue: item.product.price * quantity,
-              category: item.product.category
+              revenue: (item.product?.price || item.price || 0) * quantity,
+              category: item.product?.category || item.category
             });
           }
         });
@@ -1767,7 +1775,26 @@ export default function AdminPage() {
                   <div className="flex-1 bg-black rounded border border-white/10 px-3 py-2">
                     <h3 className="text-xs font-black text-white uppercase mb-2">🍽️ PEDIDO</h3>
                     <div className="flex flex-wrap gap-2">
-                      {order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
+                      {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
+                        (order as any).completedOrders.map((item: any, idx: number) => {
+                          const productName = item.product?.name || item.name || 'Sin nombre';
+                          const productPrice = item.product?.price || item.price || 0;
+                          const quantity = item.quantity || 0;
+                          const subtotal = productPrice * quantity;
+
+                          return (
+                            <div key={idx} className="flex items-center gap-2 bg-white/5 rounded px-2 py-1">
+                              <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                                <span className="text-white font-black text-sm">{quantity}</span>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-white">{productName}</h4>
+                                <span className="text-sm font-black text-cyan-400">S/ {subtotal.toFixed(2)}</span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
                         order.cart.map((item: any, idx: number) => {
                           const productName = item.product?.name || item.name || 'Sin nombre';
                           const productPrice = item.product?.price || item.price || 0;
@@ -2543,8 +2570,9 @@ export default function AdminPage() {
                 const productSales = new Map<string, { name: string; quantity: number; category: string }>();
 
                 deliveredOrders.forEach((order) => {
-                  if (order.cart && Array.isArray(order.cart)) {
-                    order.cart.forEach((item: any) => {
+                  const orderItems = (order as any).completedOrders || order.cart || [];
+                  if (orderItems.length > 0) {
+                    orderItems.forEach((item: any) => {
                       const key = item.name;
                       const existing = productSales.get(key);
                       if (existing) {
