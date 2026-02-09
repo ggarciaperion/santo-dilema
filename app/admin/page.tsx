@@ -5,6 +5,43 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
+// Definiciones de salsas y complementos (igual que en checkout)
+const salsas: { id: string; name: string }[] = [
+  { id: "barbecue", name: "BBQ ahumada" },
+  { id: "buffalo-picante", name: "Santo Picante" },
+  { id: "ahumada", name: "Acevichada Imperial" },
+  { id: "parmesano-ajo", name: "Crispy Celestial" },
+  { id: "anticuchos", name: "Parrillera" },
+  { id: "honey-mustard", name: "Honey mustard" },
+  { id: "teriyaki", name: "Teriyaki" },
+  { id: "macerichada", name: "Sweet & Sour" },
+];
+
+const generateAvailableComplements = () => {
+  const complements: Record<string, { name: string; price: number }> = {
+    "agua-mineral": { name: "Agua mineral", price: 4.00 },
+    "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
+    "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
+    "sprite": { name: "Sprite 500ml", price: 4.00 },
+    "fanta": { name: "Fanta 500ml", price: 4.00 },
+    "extra-papas": { name: "Extra papas", price: 4.00 },
+    "extra-salsa": { name: "Extra salsa", price: 3.00 },
+    "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
+    "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
+  };
+
+  salsas.forEach(salsa => {
+    complements[`extra-salsa-${salsa.id}`] = {
+      name: `Extra salsa - ${salsa.name}`,
+      price: 3.00
+    };
+  });
+
+  return complements;
+};
+
+const availableComplements = generateAvailableComplements();
+
 interface Order {
   id: string;
   name: string;
@@ -1788,17 +1825,57 @@ export default function AdminPage() {
                           const productName = item.name || 'Sin nombre';
                           const productPrice = item.price || 0;
                           const quantity = item.quantity || 0;
-                          const subtotal = productPrice * quantity;
+                          const itemSalsas = item.salsas || [];
+                          const itemComplementIds = item.complementIds || [];
+
+                          // Calcular precio total del item (producto + complementos)
+                          let itemTotal = productPrice * quantity;
+                          itemComplementIds.forEach((compId: string) => {
+                            const complement = availableComplements[compId];
+                            if (complement) {
+                              itemTotal += complement.price * quantity;
+                            }
+                          });
 
                           return (
-                            <div key={idx} className="flex items-center gap-2 bg-white/5 rounded px-2 py-1">
-                              <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-black text-sm">{quantity}</span>
+                            <div key={idx} className="bg-white/5 rounded px-2 py-1.5">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-white font-black text-sm">{quantity}</span>
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className="text-xs font-bold text-white">{productName}</h4>
+                                  <span className="text-sm font-black text-cyan-400">S/ {itemTotal.toFixed(2)}</span>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                <span className="text-sm font-black text-cyan-400">S/ {subtotal.toFixed(2)}</span>
-                              </div>
+
+                              {/* Mostrar salsas si existen */}
+                              {itemSalsas.length > 0 && (
+                                <div className="mt-1 ml-8 text-[10px] text-yellow-300">
+                                  <span className="font-bold">🌶️ Salsas: </span>
+                                  {itemSalsas.map((salsaId: string) => {
+                                    const salsa = salsas.find(s => s.id === salsaId);
+                                    return salsa?.name || salsaId;
+                                  }).join(', ')}
+                                </div>
+                              )}
+
+                              {/* Mostrar complementos si existen */}
+                              {itemComplementIds.length > 0 && (
+                                <div className="mt-1 ml-8 space-y-0.5">
+                                  {itemComplementIds.map((compId: string, compIdx: number) => {
+                                    const complement = availableComplements[compId];
+                                    if (!complement) return null;
+                                    return (
+                                      <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
+                                        <span className="font-bold">+</span>
+                                        <span>{complement.name}</span>
+                                        <span className="text-green-400 font-bold">S/ {complement.price.toFixed(2)}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </div>
                           );
                         })
