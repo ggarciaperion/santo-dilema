@@ -54,7 +54,7 @@ interface Order {
   totalItems?: number;
   totalPrice?: number;
   timestamp?: string;
-  status: "pending" | "pendiente-verificacion" | "confirmed" | "delivered" | "cancelled";
+  status: "pending" | "pendiente-verificacion" | "confirmed" | "en-camino" | "delivered" | "cancelled";
   createdAt: string;
   updatedAt?: string;
   paymentMethod?: string;
@@ -88,7 +88,7 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
       const seconds = diff % 60;
 
       // Alerta a los 20 minutos SOLO si el pedido está pendiente o confirmado
-      if (minutes >= 20 && !alerted && (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed')) {
+      if (minutes >= 20 && !alerted && (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed' || status === 'en-camino')) {
         setShowAlert(true);
         setAlerted(true);
       }
@@ -367,6 +367,20 @@ export default function AdminPage() {
         playNotificationSound();
       }
 
+      // Detectar pedidos recién entregados (delivery confirmó entrega)
+      if (orders.length > 0) {
+        const previousOrders = orders;
+        const newlyDelivered = data.filter((order: Order) => {
+          const previousOrder = previousOrders.find(po => po.id === order.id);
+          return previousOrder && previousOrder.status === 'en-camino' && order.status === 'delivered';
+        });
+
+        if (newlyDelivered.length > 0) {
+          console.log(`✅ ${newlyDelivered.length} pedido(s) marcado(s) como entregado(s)`);
+          playDeliveryConfirmSound();
+        }
+      }
+
       // Guardar el nuevo conteo en localStorage y estado
       localStorage.setItem('admin_order_count', data.length.toString());
       setPreviousOrderCount(data.length);
@@ -429,6 +443,51 @@ export default function AdminPage() {
       console.log("🔔 Sonido de nuevo pedido reproducido - Estado del contexto:", ctx.state);
     } catch (error) {
       console.error("❌ Error al reproducir sonido:", error);
+    }
+  };
+
+  const playDeliveryConfirmSound = () => {
+    try {
+      // Usar el audioContext inicializado o crear uno nuevo
+      let ctx = audioContext;
+      if (!ctx) {
+        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioContext(ctx);
+        setAudioContextInitialized(true);
+      }
+
+      // Resume el contexto si está suspendido
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      // Función para crear un beep
+      const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.3) => {
+        const oscillator = ctx!.createOscillator();
+        const gainNode = ctx!.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx!.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0, ctx!.currentTime + startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx!.currentTime + startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.001, ctx!.currentTime + startTime + duration);
+
+        oscillator.start(ctx!.currentTime + startTime);
+        oscillator.stop(ctx!.currentTime + startTime + duration);
+      };
+
+      // Sonido de confirmación tipo "check" - Patrón ascendente
+      playBeep(600, 0, 0.15, 0.4);      // Do
+      playBeep(800, 0.15, 0.2, 0.5);    // Mi
+      playBeep(1000, 0.35, 0.3, 0.6);   // Sol (más largo y fuerte)
+
+      console.log("✅ Sonido de entrega confirmada reproducido");
+    } catch (error) {
+      console.error("❌ Error al reproducir sonido de confirmación:", error);
     }
   };
 
@@ -703,6 +762,7 @@ export default function AdminPage() {
     pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500",
     "pendiente-verificacion": "bg-purple-500/20 text-purple-400 border-purple-500",
     confirmed: "bg-cyan-500/20 text-cyan-400 border-cyan-500",
+    "en-camino": "bg-blue-500/20 text-blue-400 border-blue-500",
     delivered: "bg-green-500/20 text-green-400 border-green-500",
     cancelled: "bg-red-500/20 text-red-400 border-red-500",
   };
@@ -711,6 +771,7 @@ export default function AdminPage() {
     pending: "Pendiente",
     "pendiente-verificacion": "Por Verificar",
     confirmed: "Confirmado",
+    "en-camino": "En Camino",
     delivered: "Entregado",
     cancelled: "Cancelado",
   };
@@ -1783,6 +1844,7 @@ export default function AdminPage() {
                   order.status === 'pending' ? 'ring-2 ring-yellow-500/50' :
                   order.status === 'pendiente-verificacion' ? 'ring-2 ring-purple-500/50' :
                   order.status === 'confirmed' ? 'ring-2 ring-cyan-500/50' :
+                  order.status === 'en-camino' ? 'ring-2 ring-blue-500/50' :
                   order.status === 'delivered' ? 'ring-2 ring-green-500/30 opacity-60' :
                   'ring-2 ring-red-500/30 opacity-50'
                 }`}
@@ -1795,6 +1857,7 @@ export default function AdminPage() {
                     order.status === 'pending' ? 'bg-yellow-500/20' :
                     order.status === 'pendiente-verificacion' ? 'bg-purple-500/20' :
                     order.status === 'confirmed' ? 'bg-cyan-500/20' :
+                    order.status === 'en-camino' ? 'bg-blue-500/20' :
                     order.status === 'delivered' ? 'bg-green-500/20' :
                     'bg-red-500/20'
                   }`}>
@@ -2024,10 +2087,10 @@ export default function AdminPage() {
                     {order.status === "confirmed" && (
                       <>
                         <button
-                          onClick={() => updateOrderStatus(order.id, "delivered")}
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                          onClick={() => updateOrderStatus(order.id, "en-camino")}
+                          className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          ✓ Entregado
+                          🚚 En Camino
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
@@ -2036,6 +2099,14 @@ export default function AdminPage() {
                           ✕
                         </button>
                       </>
+                    )}
+                    {order.status === "en-camino" && (
+                      <button
+                        onClick={() => updateOrderStatus(order.id, "cancelled")}
+                        className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                      >
+                        ✕ Cancelar
+                      </button>
                     )}
                     {order.status === "delivered" && (
                       <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase">
