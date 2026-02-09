@@ -29,6 +29,10 @@
   --bg-card: #1a1a1a;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
