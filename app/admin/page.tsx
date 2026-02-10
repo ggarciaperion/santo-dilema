@@ -239,6 +239,10 @@ export default function AdminPage() {
   const [salesDateTo, setSalesDateTo] = useState<string>("");
   const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
   const [salesDateInitialized, setSalesDateInitialized] = useState(false);
+  const [dashboardDateFrom, setDashboardDateFrom] = useState<string>("");
+  const [dashboardDateTo, setDashboardDateTo] = useState<string>("");
+  const [isDashboardDateFiltered, setIsDashboardDateFiltered] = useState(false);
+  const [dashboardDateInitialized, setDashboardDateInitialized] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
   const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -320,6 +324,21 @@ export default function AdminPage() {
       setSalesDateInitialized(true);
     }
   }, [activeTab, financialSection, salesDateInitialized]);
+
+  // Inicializar filtro de fechas en Dashboard (mes actual por defecto)
+  useEffect(() => {
+    if (activeTab === "financial" && financialSection === "dashboard" && !dashboardDateInitialized) {
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const todayStr = today.toISOString().split('T')[0];
+      const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
+
+      setDashboardDateFrom(firstDayStr);
+      setDashboardDateTo(todayStr);
+      setIsDashboardDateFiltered(true);
+      setDashboardDateInitialized(true);
+    }
+  }, [activeTab, financialSection, dashboardDateInitialized]);
 
   // Inicializar AudioContext con interacción del usuario (requerido por navegadores)
   useEffect(() => {
@@ -3141,80 +3160,233 @@ export default function AdminPage() {
             </div>
 
             {/* DASHBOARD FINANCIERO */}
-            {financialSection === "dashboard" && (
-              <div>
-                <h3 className="text-2xl font-black text-cyan-400 mb-6">📊 Resumen Financiero del Mes</h3>
+            {financialSection === "dashboard" && (() => {
+              // Normaliza: quita tildes, mayúsculas, espacios extra
+              const normalize = (s: string) =>
+                s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
 
-                {(() => {
-                  // Calcular métricas financieras del mes actual
-                  const now = new Date();
-                  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+              const saleProducts = products.filter((p: any) => p.type === "sale");
 
-                  // Filtrar pedidos del mes actual entregados
-                  const monthOrders = orders.filter((order: any) => {
-                    const orderDate = new Date(order.createdAt);
-                    const orderMonth = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
-                    return orderMonth === currentMonth && order.status === 'delivered';
+              // Filtrar pedidos entregados por fecha
+              let deliveredOrders = orders.filter((o: any) =>
+                o.status === "delivered" || o.status === "Entregado"
+              );
+
+              if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
+                const fromDate = new Date(dashboardDateFrom + "T00:00:00");
+                const toDate = new Date(dashboardDateTo + "T23:59:59");
+                deliveredOrders = deliveredOrders.filter((o: any) => {
+                  const orderDate = new Date(o.createdAt);
+                  return orderDate >= fromDate && orderDate <= toDate;
+                });
+              }
+
+              // Construir soldMap (igual que en Productos de Venta)
+              const soldMap: Record<string, { qty: number; revenue: number }> = {};
+              const addToSoldMap = (name: string, qty: number, revenue: number) => {
+                const key = normalize(name);
+                if (!key) return;
+                if (!soldMap[key]) soldMap[key] = { qty: 0, revenue: 0 };
+                soldMap[key].qty += qty;
+                soldMap[key].revenue += revenue;
+              };
+
+              deliveredOrders.forEach((order: any) => {
+                const items = order.completedOrders || order.cart || [];
+                items.forEach((item: any) => {
+                  // 1. Menú principal
+                  const menuName = item.name || item.product?.name || "";
+                  const qty = item.quantity || 0;
+                  const price = item.price || item.product?.price || 0;
+                  if (menuName) addToSoldMap(menuName, qty, price * qty);
+
+                  // 2. Salsas
+                  const itemSalsas: string[] = item.salsas || [];
+                  itemSalsas.forEach((salsaId: string) => {
+                    const salsa = salsas.find(s => s.id === salsaId);
+                    if (salsa) addToSoldMap(salsa.name, 1, 0);
                   });
 
-                  // Calcular ingresos
-                  const ingresos = monthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-
-                  // Calcular egresos (compras + gastos del mes)
-                  const monthPurchases = inventory.filter((purchase: any) => {
-                    const purchaseDate = new Date(purchase.purchaseDate);
-                    const purchaseMonth = `${purchaseDate.getFullYear()}-${String(purchaseDate.getMonth() + 1).padStart(2, '0')}`;
-                    return purchaseMonth === currentMonth;
+                  // 3. Complementos pagados
+                  const compIds: string[] = item.complementIds || [];
+                  compIds.forEach((compId: string) => {
+                    const comp = availableComplements[compId];
+                    if (comp) addToSoldMap(comp.name, 1, comp.price);
                   });
+                });
+              });
 
-                  const egresos = monthPurchases.reduce((sum: number, purchase: any) => sum + (purchase.totalAmount || 0), 0);
+              // Calcular VENTAS y COGS
+              let totalRevenue = 0;
+              let totalCOGS = 0;
+              saleProducts.forEach((p: any) => {
+                const key = normalize(p.name || "");
+                const sold = soldMap[key] || { qty: 0, revenue: 0 };
+                const cost = p.cost || 0;
+                totalRevenue += sold.revenue;
+                totalCOGS += cost * sold.qty;
+              });
 
-                  // Calcular utilidad
-                  const utilidad = ingresos - egresos;
+              // Calcular GASTOS OPERATIVOS (compras/gastos del periodo)
+              let filteredPurchases = inventory;
+              if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
+                const fromDate = new Date(dashboardDateFrom + "T00:00:00");
+                const toDate = new Date(dashboardDateTo + "T23:59:59");
+                filteredPurchases = inventory.filter((purchase: any) => {
+                  const purchaseDate = new Date(purchase.purchaseDate);
+                  return purchaseDate >= fromDate && purchaseDate <= toDate;
+                });
+              }
+              const gastosOperativos = filteredPurchases.reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
 
-                  // Calcular margen
-                  const margen = ingresos > 0 ? ((utilidad / ingresos) * 100) : 0;
+              // KPIs
+              const margenBruto = totalCOGS > 0 ? ((totalRevenue - totalCOGS) / totalCOGS) * 100 : 0;
+              const utilidadOperativa = totalRevenue - totalCOGS - gastosOperativos;
+              const margenNeto = totalRevenue > 0 ? (utilidadOperativa / totalRevenue) * 100 : 0;
 
-                  return (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                      {/* Ingresos */}
-                      <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl border-2 border-green-500/50 p-6">
-                        <p className="text-green-400 text-sm font-bold mb-2">💵 INGRESOS DEL MES</p>
-                        <p className="text-5xl font-black text-green-400">S/ {ingresos.toFixed(2)}</p>
-                        <p className="text-xs text-gray-400 mt-2">{monthOrders.length} pedidos entregados</p>
+              return (
+                <div>
+                  {/* Header con filtros */}
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+                    <h3 className="text-2xl font-black text-cyan-400">📊 Dashboard Financiero</h3>
+
+                    {/* Filtros rápidos y manuales */}
+                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            const today = new Date().toISOString().split('T')[0];
+                            setDashboardDateFrom(today);
+                            setDashboardDateTo(today);
+                            setIsDashboardDateFiltered(true);
+                          }}
+                          className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                        >
+                          Hoy
+                        </button>
+                        <button
+                          onClick={() => {
+                            const today = new Date();
+                            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                            setDashboardDateFrom(firstDay.toISOString().split('T')[0]);
+                            setDashboardDateTo(today.toISOString().split('T')[0]);
+                            setIsDashboardDateFiltered(true);
+                          }}
+                          className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                        >
+                          Mes actual
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDashboardDateFrom("");
+                            setDashboardDateTo("");
+                            setIsDashboardDateFiltered(false);
+                          }}
+                          className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                        >
+                          Ver histórico
+                        </button>
                       </div>
 
-                      {/* Egresos */}
-                      <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 rounded-xl border-2 border-red-500/50 p-6">
-                        <p className="text-red-400 text-sm font-bold mb-2">📉 EGRESOS DEL MES</p>
-                        <p className="text-5xl font-black text-red-400">S/ {egresos.toFixed(2)}</p>
-                        <p className="text-xs text-gray-400 mt-2">{monthPurchases.length} compras/gastos</p>
-                      </div>
-
-                      {/* Utilidad */}
-                      <div className={`bg-gradient-to-br ${utilidad >= 0 ? 'from-fuchsia-900/40 to-fuchsia-800/20 border-fuchsia-500/50' : 'from-amber-900/40 to-amber-800/20 border-amber-500/50'} rounded-xl border-2 p-6`}>
-                        <p className={`${utilidad >= 0 ? 'text-fuchsia-400' : 'text-amber-400'} text-sm font-bold mb-2`}>
-                          ✅ UTILIDAD NETA
-                        </p>
-                        <p className={`text-5xl font-black ${utilidad >= 0 ? 'text-fuchsia-400' : 'text-amber-400'}`}>
-                          S/ {utilidad.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2">Ingresos - Egresos</p>
-                      </div>
-
-                      {/* Margen */}
-                      <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl border-2 border-cyan-500/50 p-6">
-                        <p className="text-cyan-400 text-sm font-bold mb-2">📈 MARGEN</p>
-                        <p className="text-5xl font-black text-cyan-400">{margen.toFixed(1)}%</p>
-                        <p className="text-xs text-gray-400 mt-2">
-                          {margen >= 50 ? '¡Excelente!' : margen >= 30 ? 'Bueno' : 'Mejorable'}
-                        </p>
+                      {/* Selectores de fecha */}
+                      <div className="flex gap-2 items-center text-xs">
+                        <input
+                          type="date"
+                          value={dashboardDateFrom}
+                          onChange={(e) => {
+                            setDashboardDateFrom(e.target.value);
+                            if (e.target.value && dashboardDateTo) setIsDashboardDateFiltered(true);
+                          }}
+                          className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-xs"
+                        />
+                        <span className="text-gray-400">→</span>
+                        <input
+                          type="date"
+                          value={dashboardDateTo}
+                          onChange={(e) => {
+                            setDashboardDateTo(e.target.value);
+                            if (dashboardDateFrom && e.target.value) setIsDashboardDateFiltered(true);
+                          }}
+                          className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-xs"
+                        />
                       </div>
                     </div>
-                  );
-                })()}
-              </div>
-            )}
+                  </div>
+
+                  {/* Indicador del periodo */}
+                  {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
+                    <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 mb-6 text-xs text-cyan-300">
+                      📅 Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </div>
+                  )}
+
+                  {/* KPIs Grid - 2 filas x 3 columnas */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Fila 1: Ventas, COGS, Margen Bruto */}
+
+                    {/* Ventas */}
+                    <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl border-2 border-green-500/50 p-5">
+                      <p className="text-green-400 text-xs font-bold mb-1.5 uppercase">💵 Ventas</p>
+                      <p className="text-4xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
+                      <p className="text-xs text-gray-400 mt-1.5">{deliveredOrders.length} pedidos entregados</p>
+                    </div>
+
+                    {/* COGS */}
+                    <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 rounded-xl border-2 border-orange-500/50 p-5">
+                      <p className="text-orange-400 text-xs font-bold mb-1.5 uppercase">🍖 Costo de Ventas (COGS)</p>
+                      <p className="text-4xl font-black text-orange-400">S/ {totalCOGS.toFixed(2)}</p>
+                      <p className="text-xs text-gray-400 mt-1.5">Costo de productos vendidos</p>
+                    </div>
+
+                    {/* Margen Bruto */}
+                    <div className="bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 rounded-xl border-2 border-emerald-500/50 p-5">
+                      <p className="text-emerald-400 text-xs font-bold mb-1.5 uppercase">📊 Margen Bruto</p>
+                      <p className="text-4xl font-black text-emerald-400">{margenBruto.toFixed(1)}%</p>
+                      <p className="text-xs text-gray-400 mt-1.5">
+                        S/ {(totalRevenue - totalCOGS).toFixed(2)}
+                      </p>
+                    </div>
+
+                    {/* Fila 2: Gastos Operativos, Utilidad Operativa, Margen Neto */}
+
+                    {/* Gastos Operativos */}
+                    <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 rounded-xl border-2 border-red-500/50 p-5">
+                      <p className="text-red-400 text-xs font-bold mb-1.5 uppercase">📉 Gastos Operativos</p>
+                      <p className="text-4xl font-black text-red-400">S/ {gastosOperativos.toFixed(2)}</p>
+                      <p className="text-xs text-gray-400 mt-1.5">{filteredPurchases.length} compras/gastos</p>
+                    </div>
+
+                    {/* Utilidad Operativa */}
+                    <div className={`bg-gradient-to-br ${utilidadOperativa >= 0 ? 'from-fuchsia-900/40 to-fuchsia-800/20 border-fuchsia-500/50' : 'from-amber-900/40 to-amber-800/20 border-amber-500/50'} rounded-xl border-2 p-5`}>
+                      <p className={`${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'} text-xs font-bold mb-1.5 uppercase`}>
+                        ✅ Utilidad Operativa
+                      </p>
+                      <p className={`text-4xl font-black ${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'}`}>
+                        S/ {utilidadOperativa.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1.5">Ventas - COGS - Gastos</p>
+                    </div>
+
+                    {/* Margen Neto */}
+                    <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl border-2 border-cyan-500/50 p-5">
+                      <p className="text-cyan-400 text-xs font-bold mb-1.5 uppercase">📈 Margen Neto</p>
+                      <p className="text-4xl font-black text-cyan-400">{margenNeto.toFixed(1)}%</p>
+                      <p className="text-xs text-gray-400 mt-1.5">
+                        {margenNeto >= 30 ? '¡Excelente!' : margenNeto >= 15 ? 'Bueno' : margenNeto >= 0 ? 'Mejorable' : 'Negativo'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Info adicional */}
+                  <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4 mt-6">
+                    <p className="text-cyan-300 text-xs">
+                      <span className="font-bold">💡 Información:</span> Este dashboard integra datos de ventas (Productos de Venta) y gastos operativos (Compras y Gastos) para darte una visión completa de tu negocio.
+                      El <strong>Margen Bruto</strong> muestra rentabilidad de productos, mientras que el <strong>Margen Neto</strong> considera todos los gastos operativos.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* COMPRAS Y GASTOS */}
             {financialSection === "purchases" && (
