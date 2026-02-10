@@ -79,7 +79,7 @@ const fatProducts: Product[] = [
     id: "santo-pecado",
     name: "Santo Pecado",
     description: "18 alitas acompañadas de papas francesas y 03 de tus salsas favoritas.",
-    price: 50.00,
+    price: 45.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",
   },

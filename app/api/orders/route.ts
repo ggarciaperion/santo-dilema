@@ -26,7 +26,7 @@ const fatProducts = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    price: 50.00,
+    price: 45.00,
     category: "fat",
   },
 ];
