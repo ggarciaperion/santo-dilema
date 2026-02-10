@@ -26,7 +26,7 @@ const products: Product[] = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    description: "Lechuga bogi, tomate cherry, pepino, zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
+    description: "Todo en un bowl sin excusas. Lechuga bogi, palta, huevo, tomate cherry, zanahoria, pepino y maíz americano. Vinagreta de la casa que lo amarra todo.",
     price: 18.90,
     image: "/1.png",
     category: "fit",
@@ -34,7 +34,7 @@ const products: Product[] = [
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    description: "Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. Con salsa César cremosa de la casa.",
+    description: "El clásico que no falla — acá lo hacemos mejor. Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. César cremosa de la casa incluida.",
     price: 24.90,
     image: "/2.png",
     category: "fit",
@@ -42,7 +42,7 @@ const products: Product[] = [
   {
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
-    description: "Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Con aderezo de yogurt griego.",
+    description: "Para los que se cuidan sin aburrirse. Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Aderezo de yogurt griego que no te esperas.",
     price: 22.90,
     image: "/3.png",
     category: "fit",
@@ -50,7 +50,7 @@ const products: Product[] = [
   {
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
-    description: "Lechuga romana, atún en trozos, tomate cherry, pepino, maíz americano, palta y huevo. Aderezo cremoso especial de la casa.",
+    description: "El mar en un bowl. Atún en trozos, lechuga romana, tomate cherry, pepino, maíz americano, palta y huevo. Con aderezo cremoso especial de la casa.",
     price: 21.90,
     image: "/4.png",
     category: "fit",
@@ -667,7 +667,7 @@ export default function FitPage() {
                     <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2 line-clamp-3 overflow-hidden">
+                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2">
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
