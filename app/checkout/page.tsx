@@ -116,19 +116,19 @@ const fatProducts = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    price: 28.90,
+    price: 18.50,
     image: "/pequeno-dilema.png?v=3",
   },
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    price: 39.90,
+    price: 33.50,
     image: "/duo-dilema.png?v=3",
   },
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    price: 49.90,
+    price: 50.00,
     image: "/todos-pecan.png?v=3",
   },
 ];
