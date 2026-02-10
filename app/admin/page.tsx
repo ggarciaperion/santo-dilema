@@ -1985,22 +1985,32 @@ export default function AdminPage() {
                                 </div>
                               )}
 
-                              {/* Mostrar complementos si existen */}
-                              {itemComplementIds.length > 0 && (
-                                <div className="mt-1 ml-8 space-y-0.5">
-                                  {itemComplementIds.map((compId: string, compIdx: number) => {
-                                    const complement = availableComplements[compId];
-                                    if (!complement) return null;
-                                    return (
-                                      <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
-                                        <span className="font-bold">+</span>
-                                        <span>{complement.name}</span>
-                                        <span className="text-green-400 font-bold">S/ {complement.price.toFixed(2)}</span>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
+                              {/* Mostrar complementos si existen - agrupados por tipo */}
+                              {itemComplementIds.length > 0 && (() => {
+                                // Agrupar complementos duplicados
+                                const complementCounts: { [key: string]: number } = {};
+                                itemComplementIds.forEach((compId: string) => {
+                                  complementCounts[compId] = (complementCounts[compId] || 0) + 1;
+                                });
+
+                                return (
+                                  <div className="mt-1 ml-8 space-y-0.5">
+                                    {Object.entries(complementCounts).map(([compId, count], compIdx) => {
+                                      const complement = availableComplements[compId];
+                                      if (!complement) return null;
+                                      const totalPrice = complement.price * count;
+                                      return (
+                                        <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
+                                          <span className="font-bold">+</span>
+                                          {count > 1 && <span className="text-green-400 font-black">{count}x</span>}
+                                          <span>{complement.name}</span>
+                                          <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           );
                         })

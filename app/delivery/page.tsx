@@ -463,21 +463,32 @@ export default function DeliveryPage() {
                             </div>
                           )}
 
-                          {/* Complementos */}
-                          {itemComplementIds.length > 0 && (
-                            <div className="ml-11 space-y-1">
-                              {itemComplementIds.map((compId: string, compIdx: number) => {
-                                const complement = availableComplements[compId];
-                                if (!complement) return null;
-                                return (
-                                  <div key={compIdx} className="text-xs text-green-300">
-                                    <span className="font-bold">+ </span>
-                                    {complement.name}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                          {/* Complementos - agrupados por tipo */}
+                          {itemComplementIds.length > 0 && (() => {
+                            // Agrupar complementos duplicados
+                            const complementCounts: { [key: string]: number } = {};
+                            itemComplementIds.forEach((compId: string) => {
+                              complementCounts[compId] = (complementCounts[compId] || 0) + 1;
+                            });
+
+                            return (
+                              <div className="ml-11 space-y-1">
+                                {Object.entries(complementCounts).map(([compId, count], compIdx) => {
+                                  const complement = availableComplements[compId];
+                                  if (!complement) return null;
+                                  const totalPrice = complement.price * count;
+                                  return (
+                                    <div key={compIdx} className="text-xs text-green-300">
+                                      <span className="font-bold">+ </span>
+                                      {count > 1 && <span className="text-green-400 font-black">{count}x </span>}
+                                      {complement.name}
+                                      <span className="text-green-400 font-bold ml-1">S/ {totalPrice.toFixed(2)}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })}
