@@ -238,6 +238,7 @@ export default function AdminPage() {
   const [salesDateFrom, setSalesDateFrom] = useState<string>("");
   const [salesDateTo, setSalesDateTo] = useState<string>("");
   const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
+  const [salesDateInitialized, setSalesDateInitialized] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
   const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -304,6 +305,21 @@ export default function AdminPage() {
   useEffect(() => {
     setSelectedCustomer(null);
   }, [customerSegment]);
+
+  // Inicializar filtro de fechas en Productos de Venta (mes actual por defecto)
+  useEffect(() => {
+    if (activeTab === "financial" && financialSection === "products" && !salesDateInitialized) {
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const todayStr = today.toISOString().split('T')[0];
+      const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
+
+      setSalesDateFrom(firstDayStr);
+      setSalesDateTo(todayStr);
+      setIsSalesDateFiltered(true);
+      setSalesDateInitialized(true);
+    }
+  }, [activeTab, financialSection, salesDateInitialized]);
 
   // Inicializar AudioContext con interacción del usuario (requerido por navegadores)
   useEffect(() => {
@@ -3831,51 +3847,89 @@ export default function AdminPage() {
 
                     {/* Filtro de fechas */}
                     <div className="bg-gray-900 rounded-lg border-2 border-amber-500/30 p-4 mb-5">
-                      <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex flex-col gap-3">
+                        {/* Indicador período activo */}
                         <div className="flex items-center gap-2">
-                          <label className="text-xs font-bold text-amber-400 uppercase">Desde:</label>
-                          <input
-                            type="date"
-                            value={salesDateFrom}
-                            onChange={(e) => setSalesDateFrom(e.target.value)}
-                            className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
-                          />
+                          <span className="text-xs text-gray-400">Mostrando:</span>
+                          {isSalesDateFiltered ? (
+                            <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 text-xs font-bold">
+                              📅 {new Date(salesDateFrom).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-full text-gray-300 text-xs font-bold">
+                              📊 Histórico completo
+                            </span>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs font-bold text-amber-400 uppercase">Hasta:</label>
-                          <input
-                            type="date"
-                            value={salesDateTo}
-                            onChange={(e) => setSalesDateTo(e.target.value)}
-                            className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            if (salesDateFrom && salesDateTo) setIsSalesDateFiltered(true);
-                          }}
-                          disabled={!salesDateFrom || !salesDateTo}
-                          className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Aplicar Filtro
-                        </button>
-                        {isSalesDateFiltered && (
+
+                        {/* Controles */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {/* Botones rápidos */}
+                          <button
+                            onClick={() => {
+                              const today = new Date().toISOString().split('T')[0];
+                              setSalesDateFrom(today);
+                              setSalesDateTo(today);
+                              setIsSalesDateFiltered(true);
+                            }}
+                            className="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg font-bold text-xs"
+                          >
+                            Hoy
+                          </button>
+                          <button
+                            onClick={() => {
+                              const today = new Date();
+                              const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                              setSalesDateFrom(firstDay.toISOString().split('T')[0]);
+                              setSalesDateTo(today.toISOString().split('T')[0]);
+                              setIsSalesDateFiltered(true);
+                            }}
+                            className="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white rounded-lg font-bold text-xs"
+                          >
+                            Mes actual
+                          </button>
                           <button
                             onClick={() => {
                               setIsSalesDateFiltered(false);
                               setSalesDateFrom("");
                               setSalesDateTo("");
                             }}
-                            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-sm"
+                            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-xs"
                           >
-                            Limpiar
+                            Ver histórico
                           </button>
-                        )}
-                        {isSalesDateFiltered && (
-                          <span className="text-amber-300 text-xs font-bold">
-                            Filtrado: {new Date(salesDateFrom).toLocaleDateString("es-PE")} - {new Date(salesDateTo).toLocaleDateString("es-PE")}
-                          </span>
-                        )}
+
+                          <div className="w-px h-6 bg-gray-700 mx-1"></div>
+
+                          {/* Date pickers */}
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs text-gray-400">Desde:</label>
+                            <input
+                              type="date"
+                              value={salesDateFrom}
+                              onChange={(e) => setSalesDateFrom(e.target.value)}
+                              className="px-2 py-1 text-xs rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs text-gray-400">Hasta:</label>
+                            <input
+                              type="date"
+                              value={salesDateTo}
+                              onChange={(e) => setSalesDateTo(e.target.value)}
+                              className="px-2 py-1 text-xs rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                            />
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (salesDateFrom && salesDateTo) setIsSalesDateFiltered(true);
+                            }}
+                            disabled={!salesDateFrom || !salesDateTo}
+                            className="px-3 py-1.5 bg-fuchsia-700 hover:bg-fuchsia-600 text-white rounded-lg font-bold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Aplicar
+                          </button>
+                        </div>
                       </div>
                     </div>
 
