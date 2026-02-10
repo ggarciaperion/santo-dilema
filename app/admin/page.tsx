@@ -387,7 +387,7 @@ export default function AdminPage() {
         // Detectar pedidos recién entregados (delivery confirmó entrega) usando useRef
         const newlyDelivered = data.filter((order: Order) => {
           const previousStatus = previousOrderStatusRef.current.get(order.id);
-          const isNewlyDelivered = previousStatus === 'en-camino' && order.status === 'delivered';
+          const isNewlyDelivered = previousStatus !== 'delivered' && previousStatus !== undefined && order.status === 'delivered';
 
           if (isNewlyDelivered) {
             console.log(`📦 [ADMIN] Pedido ${order.id} cambió: ${previousStatus} → ${order.status}`);
@@ -401,6 +401,10 @@ export default function AdminPage() {
           console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
           console.log(`🔊 [ADMIN] Llamando a playDeliveryConfirmSound()...`);
           playDeliveryConfirmSound();
+          // Mostrar toast con el primer pedido entregado detectado
+          const firstDelivered = newlyDelivered[0];
+          setDeliveryToast({ orderId: firstDelivered.id, customerName: firstDelivered.name || 'Cliente' });
+          setTimeout(() => setDeliveryToast(null), 6000);
         }
       } else {
         // Primera carga - solo guardar sin reproducir sonido
@@ -672,8 +676,6 @@ export default function AdminPage() {
       // Si el nuevo estado es "delivered", deducir stock automáticamente
       if (newStatus === "delivered" && order && order.status !== "delivered") {
         await deductStockFromOrder(order);
-        setDeliveryToast({ orderId, customerName: order.name || 'Cliente' });
-        setTimeout(() => setDeliveryToast(null), 6000);
       }
 
       await fetch("/api/orders", {
