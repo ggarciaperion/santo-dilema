@@ -1603,26 +1603,48 @@ export default function AdminPage() {
       'Otros': allComplements.filter(c => c.category === 'Otros')
     };
 
-    // 4. Pedidos del día por menú (para control de stock)
+    // Lista de IDs de bebidas conocidas
+    const beverageIds = ['agua-mineral', 'coca-cola', 'inka-cola', 'sprite', 'fanta'];
+
+    // 4a. Menús del día (excluyendo items sin nombre válido)
     const menuSalesToday = new Map<string, { name: string; quantity: number }>();
     todayOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
       orderItems.forEach((item: any) => {
-        const productName = item.name || item.product?.name || 'Sin nombre';
+        const productName = (item.name || item.product?.name || '').trim();
+        if (!productName) return; // Omitir items sin nombre
         const quantity = item.quantity || 0;
+        if (quantity <= 0) return;
 
         if (menuSalesToday.has(productName)) {
-          const existing = menuSalesToday.get(productName)!;
-          existing.quantity += quantity;
+          menuSalesToday.get(productName)!.quantity += quantity;
         } else {
-          menuSalesToday.set(productName, {
-            name: productName,
-            quantity
-          });
+          menuSalesToday.set(productName, { name: productName, quantity });
         }
       });
     });
     const menusSoldToday = Array.from(menuSalesToday.values()).sort((a, b) => b.quantity - a.quantity);
+
+    // 4b. Bebidas vendidas hoy (de los complementIds)
+    const beverageSalesToday = new Map<string, { name: string; quantity: number }>();
+    todayOrders.forEach((order: any) => {
+      const orderItems = order.completedOrders || order.cart || [];
+      orderItems.forEach((item: any) => {
+        const complementIds: string[] = item.complementIds || [];
+        complementIds.forEach((compId: string) => {
+          if (beverageIds.includes(compId)) {
+            const bev = availableComplements[compId];
+            if (!bev) return;
+            if (beverageSalesToday.has(compId)) {
+              beverageSalesToday.get(compId)!.quantity += 1;
+            } else {
+              beverageSalesToday.set(compId, { name: bev.name, quantity: 1 });
+            }
+          }
+        });
+      });
+    });
+    const beveragesSoldToday = Array.from(beverageSalesToday.values()).sort((a, b) => b.quantity - a.quantity);
 
     // 5. Tasa de conversión (pedidos confirmados vs totales)
     const confirmedOrders = orders.filter((o: any) =>
@@ -1663,7 +1685,8 @@ export default function AdminPage() {
       allComplements,
       complementsByCategory,
       conversionRate,
-      menusSoldToday
+      menusSoldToday,
+      beveragesSoldToday
     };
   };
 
@@ -2782,10 +2805,10 @@ export default function AdminPage() {
               })()}
             </div>
 
-            {/* SECCIÓN: DATOS ADICIONALES ÚTILES */}
+            {/* SECCIÓN: INSIGHTS DEL NEGOCIO */}
             <div className="mb-8">
               <h3 className="text-2xl font-black text-cyan-400 mb-4">📊 Insights del Negocio</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* 1. MÉTODO DE PAGO MÁS USADO */}
                 <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
                   <p className="text-green-400 text-sm font-bold mb-2">💳 Método de Pago Preferido</p>
@@ -2805,14 +2828,7 @@ export default function AdminPage() {
                   <p className="text-gray-400 text-xs mt-2">{analytics.peakHourCount} pedidos en esa hora</p>
                 </div>
 
-                {/* 3. COMPLEMENTO MÁS VENDIDO */}
-                <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                  <p className="text-purple-400 text-sm font-bold mb-2">🌟 Extra Más Vendido</p>
-                  <p className="text-lg font-black text-white mb-1">{analytics.mostSoldComplement.name}</p>
-                  <p className="text-gray-400 text-xs mt-2">{analytics.mostSoldComplement.count} veces • S/ {analytics.mostSoldComplement.revenue.toFixed(2)}</p>
-                </div>
-
-                {/* 4. TASA DE CONVERSIÓN */}
+                {/* 3. TASA DE CONVERSIÓN */}
                 <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
                   <p className="text-cyan-400 text-sm font-bold mb-2">📈 Tasa de Conversión</p>
                   <p className="text-3xl font-black text-white mb-1">{analytics.conversionRate.toFixed(1)}%</p>
@@ -2821,60 +2837,91 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* SECCIÓN: DISTRIBUCIÓN DE MÉTODOS DE PAGO */}
+            {/* SECCIÓN: DISTRIBUCIÓN DE MÉTODOS DE PAGO - formato filas */}
             <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6 mb-8">
               <h3 className="text-xl font-black text-blue-400 mb-4">💳 Distribución de Métodos de Pago</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-3">
                 {analytics.paymentMethodsArray.map((pm: any, idx: number) => (
-                  <div key={idx} className="bg-black/50 rounded-lg p-4 border border-blue-500/20">
-                    <div className="flex justify-between items-center mb-2">
+                  <div key={idx} className="flex items-center gap-4">
+                    <div className="w-44 flex-shrink-0">
                       <p className="text-white font-bold text-sm">
                         {pm.method === 'anticipado' ? '💰 Anticipado' :
                          pm.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
                          pm.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
                          pm.method}
                       </p>
-                      <span className="text-cyan-400 font-black">{pm.count}</span>
                     </div>
-                    <div className="bg-black/50 rounded-full h-2 overflow-hidden">
+                    <div className="flex-1 bg-black/50 rounded-full h-6 overflow-hidden border border-blue-500/20">
                       <div
-                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-600"
+                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-end pr-2 transition-all duration-300"
                         style={{ width: `${(pm.count / analytics.currentMonthOrdersCount) * 100}%` }}
-                      ></div>
+                      >
+                        <span className="text-white font-black text-xs">{pm.count}</span>
+                      </div>
                     </div>
-                    <p className="text-gray-400 text-xs mt-1">{((pm.count / analytics.currentMonthOrdersCount) * 100).toFixed(1)}% del total</p>
+                    <div className="w-14 text-right flex-shrink-0">
+                      <span className="text-cyan-400 font-black text-sm">{((pm.count / analytics.currentMonthOrdersCount) * 100).toFixed(1)}%</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* SECCIÓN: PEDIDOS DEL DÍA POR MENÚ (Control de Stock) */}
-            {analytics.menusSoldToday.length > 0 && (
+            {/* SECCIÓN: CONTROL DE STOCK DEL DÍA */}
+            {(analytics.menusSoldToday.length > 0 || analytics.beveragesSoldToday.length > 0) && (
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-cyan-400 mb-2">📋 Menús Vendidos Hoy</h3>
-                <p className="text-gray-400 text-sm mb-4">Control de stock • Cantidades vendidas por menú</p>
+                <h3 className="text-xl font-black text-cyan-400 mb-2">📋 Control de Stock Hoy</h3>
+                <p className="text-gray-400 text-sm mb-5">Unidades despachadas del día • Para reposición de insumos</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {analytics.menusSoldToday.map((menu: any, idx: number) => (
-                    <div key={idx} className="bg-black/50 rounded-lg p-4 border border-cyan-500/20 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center">
-                          <span className="text-white font-black text-lg">{menu.quantity}</span>
+                {/* Menús */}
+                {analytics.menusSoldToday.length > 0 && (
+                  <div className="mb-5">
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🍽️ Menús</h4>
+                    <div className="space-y-2">
+                      {analytics.menusSoldToday.map((menu: any, idx: number) => (
+                        <div key={idx} className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-full bg-cyan-700 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-black text-sm">{menu.quantity}</span>
+                          </div>
+                          <p className="text-white font-bold text-sm">{menu.name}</p>
                         </div>
-                        <p className="text-white font-bold text-sm">{menu.name}</p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <p className="text-gray-400 text-sm font-bold">Total de menús vendidos hoy:</p>
-                    <p className="text-2xl font-black text-cyan-400">
-                      {analytics.menusSoldToday.reduce((sum: number, m: any) => sum + m.quantity, 0)}
-                    </p>
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-700 pt-3">
+                      <p className="text-gray-400 text-xs font-bold">Total menús</p>
+                      <p className="text-xl font-black text-cyan-400">
+                        {analytics.menusSoldToday.reduce((sum: number, m: any) => sum + m.quantity, 0)}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Bebidas */}
+                {analytics.beveragesSoldToday.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🥤 Bebidas</h4>
+                    <div className="space-y-2">
+                      {analytics.beveragesSoldToday.map((bev: any, idx: number) => (
+                        <div key={idx} className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-black text-sm">{bev.quantity}</span>
+                          </div>
+                          <p className="text-white font-bold text-sm">{bev.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-700 pt-3">
+                      <p className="text-gray-400 text-xs font-bold">Total bebidas</p>
+                      <p className="text-xl font-black text-green-400">
+                        {analytics.beveragesSoldToday.reduce((sum: number, b: any) => sum + b.quantity, 0)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {analytics.beveragesSoldToday.length === 0 && (
+                  <p className="text-gray-500 text-xs italic mt-2">No se vendieron bebidas hoy</p>
+                )}
               </div>
             )}
 

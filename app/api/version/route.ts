@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({
-    version: '2.7.0',
+    version: '2.7.1',
     timestamp: new Date().toISOString(),
     commit: 'analytics-enhancements',
     deployed: true,
