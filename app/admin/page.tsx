@@ -1856,70 +1856,70 @@ export default function AdminPage() {
       {activeTab === "orders" ? (
         <>
           {/* Stats - Solo pedidos de HOY en hora de Perú */}
-          <section className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <section className="container mx-auto px-4 py-4">
+            <div className="grid grid-cols-5 gap-3">
               <button
                 onClick={() => setFilter("all")}
-                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
                   filter === "all"
                     ? "border-fuchsia-500 neon-border-purple shadow-xl"
                     : "border-fuchsia-500/30 hover:border-fuchsia-500/60"
                 }`}
               >
-                <p className="text-gray-400 text-sm font-semibold text-left">
-                  Total Pedidos {isDateFiltered ? "(Filtrado)" : "(Hoy)"}
+                <p className="text-gray-400 text-xs font-semibold text-left leading-tight">
+                  Total {isDateFiltered ? "(Filtrado)" : "(Hoy)"}
                 </p>
-                <p className="text-5xl font-black text-white mt-2 text-left">{dateFilteredOrders.length}</p>
+                <p className="text-3xl font-black text-white mt-1 text-left">{dateFilteredOrders.length}</p>
               </button>
               <button
                 onClick={() => setFilter("pending")}
-                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
                   filter === "pending"
                     ? "border-yellow-500 shadow-xl shadow-yellow-500/50"
                     : "border-yellow-500/50 hover:border-yellow-500"
                 }`}
               >
-                <p className="text-yellow-400 text-sm font-bold text-left">Pendientes</p>
-                <p className="text-5xl font-black text-yellow-400 mt-2 text-left">
+                <p className="text-yellow-400 text-xs font-bold text-left">Pendientes</p>
+                <p className="text-3xl font-black text-yellow-400 mt-1 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "pending").length}
                 </p>
               </button>
               <button
                 onClick={() => setFilter("confirmed")}
-                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
                   filter === "confirmed"
                     ? "border-cyan-500 shadow-xl shadow-cyan-500/50"
                     : "border-cyan-500/50 hover:border-cyan-500"
                 }`}
               >
-                <p className="text-cyan-400 text-sm font-bold text-left">Confirmados</p>
-                <p className="text-5xl font-black text-cyan-400 mt-2 text-left">
+                <p className="text-cyan-400 text-xs font-bold text-left">Confirmados</p>
+                <p className="text-3xl font-black text-cyan-400 mt-1 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "confirmed").length}
                 </p>
               </button>
               <button
                 onClick={() => setFilter("en-camino")}
-                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
                   filter === "en-camino"
                     ? "border-blue-500 shadow-xl shadow-blue-500/50"
                     : "border-blue-500/50 hover:border-blue-500"
                 }`}
               >
-                <p className="text-blue-400 text-sm font-bold text-left">🚚 En Camino</p>
-                <p className="text-5xl font-black text-blue-400 mt-2 text-left">
+                <p className="text-blue-400 text-xs font-bold text-left">🚚 En Camino</p>
+                <p className="text-3xl font-black text-blue-400 mt-1 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "en-camino").length}
                 </p>
               </button>
               <button
                 onClick={() => setFilter("delivered")}
-                className={`bg-gray-900 rounded-xl border-2 p-6 transition-all hover:scale-105 cursor-pointer ${
+                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
                   filter === "delivered"
                     ? "border-green-500 shadow-xl shadow-green-500/50"
                     : "border-green-500/50 hover:border-green-500"
                 }`}
               >
-                <p className="text-green-400 text-sm font-bold text-left">Entregados</p>
-                <p className="text-5xl font-black text-green-400 mt-2 text-left">
+                <p className="text-green-400 text-xs font-bold text-left">Entregados</p>
+                <p className="text-3xl font-black text-green-400 mt-1 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "delivered").length}
                 </p>
               </button>
