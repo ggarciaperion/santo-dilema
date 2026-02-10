@@ -1295,11 +1295,22 @@ export default function AdminPage() {
     const now = getPeruDate();
 
     // Filtrar solo pedidos entregados
-    const deliveredOrders = orders.filter((order: any) =>
+    let deliveredOrders = orders.filter((order: any) =>
       order.status === "delivered" ||
       order.status === "Entregado" ||
       order.status?.toLowerCase() === "entregado"
     );
+
+    // Si hay filtro de fechas aplicado, filtrar por ese rango
+    if (isDateFiltered && dateFrom && dateTo) {
+      const filterStart = new Date(dateFrom + "T00:00:00");
+      const filterEnd = new Date(dateTo + "T23:59:59");
+
+      deliveredOrders = deliveredOrders.filter((order: any) => {
+        const orderDate = getPeruDate(order.createdAt);
+        return orderDate >= filterStart && orderDate <= filterEnd;
+      });
+    }
 
     // Definir rangos de fechas
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -1513,12 +1524,81 @@ export default function AdminPage() {
       getPeruDate(c.lastOrderDate) < fifteenDaysAgo
     );
 
+    // Ticket promedio del día
+    const todayAverageTicket = todayDeliveredOrders.length > 0
+      ? dailySales / todayDeliveredOrders.length
+      : 0;
+
+    // DATOS ADICIONALES ÚTILES
+
+    // 1. Método de pago más usado
+    const paymentMethodCount = new Map<string, number>();
+    currentMonthOrders.forEach((order: any) => {
+      const method = order.paymentMethod || 'No especificado';
+      paymentMethodCount.set(method, (paymentMethodCount.get(method) || 0) + 1);
+    });
+    const paymentMethodsArray = Array.from(paymentMethodCount.entries())
+      .map(([method, count]) => ({ method, count }))
+      .sort((a, b) => b.count - a.count);
+    const mostUsedPaymentMethod = paymentMethodsArray[0] || { method: 'Sin datos', count: 0 };
+
+    // 2. Horarios pico - Análisis por hora del día
+    const hourlyOrders = new Map<number, number>();
+    currentMonthOrders.forEach((order: any) => {
+      const orderDate = getPeruDate(order.createdAt);
+      const hour = orderDate.getHours();
+      hourlyOrders.set(hour, (hourlyOrders.get(hour) || 0) + 1);
+    });
+    const peakHourData = Array.from(hourlyOrders.entries())
+      .map(([hour, count]) => ({ hour, count }))
+      .sort((a, b) => b.count - a.count)[0];
+    const peakHour = peakHourData ? `${peakHourData.hour}:00 - ${peakHourData.hour + 1}:00` : 'Sin datos';
+    const peakHourCount = peakHourData?.count || 0;
+
+    // 3. Complementos/extras más vendidos
+    const complementSales = new Map<string, { name: string; count: number; revenue: number }>();
+    currentMonthOrders.forEach((order: any) => {
+      const orderItems = order.completedOrders || order.cart || [];
+      orderItems.forEach((item: any) => {
+        const complementIds = item.complementIds || [];
+        complementIds.forEach((compId: string) => {
+          const complement = availableComplements[compId];
+          if (complement) {
+            if (complementSales.has(compId)) {
+              const existing = complementSales.get(compId)!;
+              existing.count += 1;
+              existing.revenue += complement.price;
+            } else {
+              complementSales.set(compId, {
+                name: complement.name,
+                count: 1,
+                revenue: complement.price
+              });
+            }
+          }
+        });
+      });
+    });
+    const topComplements = Array.from(complementSales.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+    const mostSoldComplement = topComplements[0] || { name: 'Sin datos', count: 0, revenue: 0 };
+
+    // 4. Tasa de conversión (pedidos confirmados vs totales)
+    const confirmedOrders = orders.filter((o: any) =>
+      o.status === "confirmed" ||
+      o.status === "en-camino" ||
+      o.status === "delivered"
+    );
+    const conversionRate = orders.length > 0 ? (confirmedOrders.length / orders.length) * 100 : 0;
+
     return {
       dailySales,
       monthlySales,
       lastMonthSales,
       progressPercentage,
       lastMonthAverageTicket,
+      todayAverageTicket,
       totalRevenue,
       topProducts: productsArray.slice(0, 5),
       leastSoldProducts: productsArray.slice(-5).reverse(),
@@ -1533,7 +1613,15 @@ export default function AdminPage() {
       currentMonthProductsArray,
       lastMonthProductsWithComparison,
       todayDeliveredOrdersCount: todayDeliveredOrders.length,
-      ordersProgressPercentage
+      ordersProgressPercentage,
+      // Datos adicionales
+      mostUsedPaymentMethod,
+      paymentMethodsArray,
+      peakHour,
+      peakHourCount,
+      mostSoldComplement,
+      topComplements,
+      conversionRate
     };
   };
 
@@ -2542,169 +2630,191 @@ export default function AdminPage() {
           </section>
 
           <section className="container mx-auto px-4 py-8">
-            {/* Main KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+            {/* CARTELES PRINCIPALES */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               {/* 1. VENTAS DEL DÍA */}
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
                 <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
                 <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
-                <p className="text-gray-400 text-xs mt-2">{new Date().toLocaleDateString("es-PE")}</p>
+                <p className="text-gray-400 text-xs mt-2">
+                  {isDateFiltered ? `${new Date(dateFrom).toLocaleDateString("es-PE")} - ${new Date(dateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
+                </p>
               </div>
 
-              {/* 2. VENTAS DEL MES */}
+              {/* 2. PEDIDOS ENTREGADOS DEL DÍA */}
               <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold mb-2">📊 Ventas del Mes</p>
-                <p className="text-4xl font-black text-green-400">S/ {analytics.monthlySales.toFixed(2)}</p>
-                <p className="text-gray-400 text-xs mt-2">{analytics.currentMonthOrdersCount} pedidos</p>
+                <p className="text-green-400 text-sm font-bold mb-2">📦 Pedidos Entregados</p>
+                <p className="text-4xl font-black text-green-400">{analytics.todayDeliveredOrdersCount}</p>
+                <p className="text-gray-400 text-xs mt-2">
+                  {isDateFiltered ? "Del período filtrado" : "Hoy"}
+                </p>
               </div>
 
-              {/* 3. BARRA DE PORCENTAJE DE AVANCE */}
+              {/* 3. ACUMULADO DEL MES */}
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                <p className="text-purple-400 text-sm font-bold mb-2">📈 Avance vs Mes Anterior</p>
-                <p className="text-4xl font-black text-purple-400">{analytics.progressPercentage.toFixed(1)}%</p>
-                <div className="mt-3 bg-black/50 rounded-full h-3 overflow-hidden border border-purple-500/30">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-600 transition-all duration-500"
-                    style={{ width: `${Math.min(analytics.progressPercentage, 100)}%` }}
-                  ></div>
-                </div>
-                <p className="text-gray-400 text-xs mt-2">Mes anterior: S/ {analytics.lastMonthSales.toFixed(2)}</p>
+                <p className="text-purple-400 text-sm font-bold mb-2">📊 Acumulado del Mes</p>
+                <p className="text-4xl font-black text-purple-400">S/ {analytics.monthlySales.toFixed(2)}</p>
+                <p className="text-gray-400 text-xs mt-2">
+                  {analytics.currentMonthOrdersCount} pedidos
+                </p>
               </div>
 
-              {/* 4. TICKET PROMEDIO */}
+              {/* 4. TICKET PROMEDIO DEL DÍA */}
               <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
                 <p className="text-amber-400 text-sm font-bold mb-2">🎫 Ticket Promedio</p>
-                <p className="text-4xl font-black text-amber-400">S/ {analytics.lastMonthAverageTicket.toFixed(2)}</p>
-                <p className="text-gray-400 text-xs mt-2">Mes anterior ({analytics.lastMonthOrdersCount} pedidos)</p>
-              </div>
-
-              {/* 5. INGRESOS TOTALES */}
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/50 p-6">
-                <p className="text-fuchsia-400 text-sm font-bold mb-2">💎 Ingresos Totales</p>
-                <p className="text-4xl font-black text-fuchsia-400">S/ {analytics.totalRevenue.toFixed(2)}</p>
-                <p className="text-gray-400 text-xs mt-2">Desde el día 1</p>
+                <p className="text-4xl font-black text-amber-400">S/ {analytics.todayAverageTicket.toFixed(2)}</p>
+                <p className="text-gray-400 text-xs mt-2">
+                  {isDateFiltered ? "Del período filtrado" : "Del día"} ({analytics.todayDeliveredOrdersCount} pedidos)
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* 1. PRODUCTOS DEL MES ACTUAL (ordenados de mayor a menor) */}
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/30 p-6">
-                <h3 className="text-xl font-black text-green-400 mb-4">📊 Productos - Mes Actual</h3>
-                {analytics.currentMonthProductsArray.length === 0 ? (
-                  <p className="text-gray-400 text-center py-8">No hay ventas en el mes actual</p>
-                ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {analytics.currentMonthProductsArray.map((product: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-green-500/20">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl font-black text-green-400">{idx + 1}</span>
+            {/* SECCIÓN: PRODUCTOS ENTREGADOS DEL PERÍODO */}
+            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
+              <h3 className="text-2xl font-black text-fuchsia-400 mb-2">📦 Productos Entregados {isDateFiltered ? "del Período" : "del Mes"}</h3>
+              <p className="text-gray-400 text-sm mb-4">
+                Ranking de productos por cantidad vendida • Identifica los más y menos vendidos
+              </p>
+              {analytics.currentMonthProductsArray.length === 0 ? (
+                <p className="text-gray-400 text-center py-8">No hay productos vendidos en este período</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {analytics.currentMonthProductsArray.map((product: any, idx: number) => {
+                    const isMostSold = idx === 0;
+                    const isLeastSold = idx === analytics.currentMonthProductsArray.length - 1;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`bg-black/50 rounded-lg p-4 border-2 ${
+                          isMostSold ? 'border-green-500/50 bg-green-500/5' :
+                          isLeastSold ? 'border-red-500/50 bg-red-500/5' :
+                          'border-gray-700/50'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <span className={`text-3xl font-black ${
+                            isMostSold ? 'text-green-400' :
+                            isLeastSold ? 'text-red-400' :
+                            'text-gray-400'
+                          }`}>
+                            #{idx + 1}
+                          </span>
+                          {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">🔥 MÁS VENDIDO</span>}
+                          {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">❄️ MENOS VENDIDO</span>}
+                        </div>
+                        <p className="text-white font-bold text-base mb-1">{product.name}</p>
+                        <p className="text-gray-400 text-xs mb-3">{product.category}</p>
+                        <div className="flex justify-between items-center">
                           <div>
-                            <p className="text-white font-bold text-sm">{product.name}</p>
-                            <p className="text-gray-400 text-xs">{product.category}</p>
+                            <p className="text-xs text-gray-500">Cantidad</p>
+                            <p className="text-xl font-black text-cyan-400">{product.quantity}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">Ingresos</p>
+                            <p className="text-xl font-black text-amber-400">S/ {product.revenue.toFixed(2)}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-amber-400 font-black gold-glow">S/ {product.revenue.toFixed(2)}</p>
-                          <p className="text-gray-400 text-xs">{product.quantity} unidades</p>
-                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 2. PRODUCTOS DEL MES ANTERIOR con comparación */}
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6">
-                <h3 className="text-xl font-black text-purple-400 mb-4">📈 Productos - Mes Anterior (vs Actual)</h3>
-                {analytics.lastMonthProductsWithComparison.length === 0 ? (
-                  <p className="text-gray-400 text-center py-8">No hay ventas del mes anterior</p>
-                ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {analytics.lastMonthProductsWithComparison.map((product: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between bg-black/50 rounded-lg p-3 border border-purple-500/20">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl font-black text-purple-400">{idx + 1}</span>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="text-white font-bold text-sm">{product.name}</p>
-                              {product.trend === "up" && (
-                                <span className="text-green-400 text-xs flex items-center gap-1">
-                                  ↑ +{product.positionChange}
-                                </span>
-                              )}
-                              {product.trend === "down" && (
-                                <span className="text-red-400 text-xs flex items-center gap-1">
-                                  ↓ -{product.positionChange}
-                                </span>
-                              )}
-                              {product.trend === "same" && (
-                                <span className="text-gray-400 text-xs">→</span>
-                              )}
-                              {product.trend === "new" && (
-                                <span className="text-cyan-400 text-xs">★ Nuevo</span>
-                              )}
-                            </div>
-                            <p className="text-gray-400 text-xs">{product.category}</p>
-                            <p className="text-gray-500 text-xs">
-                              Vendidas: {product.lastMonthQuantity} → {product.currentMonthQuantity}
-                              {product.salesDifference > 0 && (
-                                <span className="text-green-400"> (+{product.salesDifference})</span>
-                              )}
-                              {product.salesDifference < 0 && (
-                                <span className="text-red-400"> ({product.salesDifference})</span>
-                              )}
-                              {product.salesDifference === 0 && product.trend !== "new" && (
-                                <span className="text-gray-400"> (=)</span>
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-amber-400 font-black gold-glow text-sm">S/ {product.revenue.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Carteles de Órdenes */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              {/* 1. ÓRDENES DEL DÍA */}
-              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                <p className="text-cyan-400 text-sm font-bold mb-2">📦 Órdenes del Día</p>
-                <p className="text-5xl font-black text-cyan-400">{analytics.todayDeliveredOrdersCount}</p>
-                <p className="text-gray-400 text-xs mt-2">Entregadas hoy</p>
-              </div>
-
-              {/* 2. ÓRDENES DEL MES */}
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold mb-2">📊 Órdenes del Mes</p>
-                <p className="text-5xl font-black text-green-400">{analytics.currentMonthOrdersCount}</p>
-                <p className="text-gray-400 text-xs mt-2">Entregadas este mes</p>
-              </div>
-
-              {/* 3. BARRA DE PROGRESO (Mes Actual vs Mes Anterior) */}
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                <p className="text-purple-400 text-sm font-bold mb-2">📈 Progreso vs Mes Anterior</p>
-                <p className="text-5xl font-black text-purple-400">{analytics.ordersProgressPercentage.toFixed(0)}%</p>
-                <div className="mt-3 bg-black/50 rounded-full h-3 overflow-hidden border border-purple-500/30">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-600 transition-all duration-500"
-                    style={{ width: `${Math.min(analytics.ordersProgressPercentage, 100)}%` }}
-                  ></div>
+                    );
+                  })}
                 </div>
-                <p className="text-gray-400 text-xs mt-2">Mes anterior: {analytics.lastMonthOrdersCount} órdenes</p>
-              </div>
+              )}
+            </div>
 
-              {/* 4. ÓRDENES MES ANTERIOR */}
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold mb-2">📅 Órdenes Mes Anterior</p>
-                <p className="text-5xl font-black text-amber-400">{analytics.lastMonthOrdersCount}</p>
-                <p className="text-gray-400 text-xs mt-2">Entregadas mes pasado</p>
+            {/* SECCIÓN: DATOS ADICIONALES ÚTILES */}
+            <div className="mb-8">
+              <h3 className="text-2xl font-black text-cyan-400 mb-4">📊 Insights del Negocio</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. MÉTODO DE PAGO MÁS USADO */}
+                <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
+                  <p className="text-green-400 text-sm font-bold mb-2">💳 Método de Pago Preferido</p>
+                  <p className="text-2xl font-black text-white mb-1">
+                    {analytics.mostUsedPaymentMethod.method === 'anticipado' ? '💰 Anticipado' :
+                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
+                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
+                     analytics.mostUsedPaymentMethod.method}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-2">{analytics.mostUsedPaymentMethod.count} pedidos ({((analytics.mostUsedPaymentMethod.count / analytics.currentMonthOrdersCount) * 100).toFixed(0)}%)</p>
+                </div>
+
+                {/* 2. HORARIO PICO */}
+                <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
+                  <p className="text-amber-400 text-sm font-bold mb-2">⏰ Horario Pico</p>
+                  <p className="text-2xl font-black text-white mb-1">{analytics.peakHour}</p>
+                  <p className="text-gray-400 text-xs mt-2">{analytics.peakHourCount} pedidos en esa hora</p>
+                </div>
+
+                {/* 3. COMPLEMENTO MÁS VENDIDO */}
+                <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
+                  <p className="text-purple-400 text-sm font-bold mb-2">🌟 Extra Más Vendido</p>
+                  <p className="text-lg font-black text-white mb-1">{analytics.mostSoldComplement.name}</p>
+                  <p className="text-gray-400 text-xs mt-2">{analytics.mostSoldComplement.count} veces • S/ {analytics.mostSoldComplement.revenue.toFixed(2)}</p>
+                </div>
+
+                {/* 4. TASA DE CONVERSIÓN */}
+                <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
+                  <p className="text-cyan-400 text-sm font-bold mb-2">📈 Tasa de Conversión</p>
+                  <p className="text-3xl font-black text-white mb-1">{analytics.conversionRate.toFixed(1)}%</p>
+                  <p className="text-gray-400 text-xs mt-2">Pedidos confirmados vs totales</p>
+                </div>
               </div>
             </div>
+
+            {/* SECCIÓN: DISTRIBUCIÓN DE MÉTODOS DE PAGO */}
+            <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6 mb-8">
+              <h3 className="text-xl font-black text-blue-400 mb-4">💳 Distribución de Métodos de Pago</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {analytics.paymentMethodsArray.map((pm: any, idx: number) => (
+                  <div key={idx} className="bg-black/50 rounded-lg p-4 border border-blue-500/20">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-white font-bold text-sm">
+                        {pm.method === 'anticipado' ? '💰 Anticipado' :
+                         pm.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
+                         pm.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
+                         pm.method}
+                      </p>
+                      <span className="text-cyan-400 font-black">{pm.count}</span>
+                    </div>
+                    <div className="bg-black/50 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-600"
+                        style={{ width: `${(pm.count / analytics.currentMonthOrdersCount) * 100}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-gray-400 text-xs mt-1">{((pm.count / analytics.currentMonthOrdersCount) * 100).toFixed(1)}% del total</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECCIÓN: TOP 3 COMPLEMENTOS/EXTRAS */}
+            {analytics.topComplements.length > 0 && (
+              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6 mb-8">
+                <h3 className="text-xl font-black text-purple-400 mb-4">🌟 Top 3 Extras/Complementos Más Vendidos</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {analytics.topComplements.map((comp: any, idx: number) => (
+                    <div key={idx} className="bg-black/50 rounded-lg p-4 border-2 border-purple-500/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-3xl font-black text-purple-400">#{idx + 1}</span>
+                        {idx === 0 && <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-bold">👑 TOP</span>}
+                      </div>
+                      <p className="text-white font-bold text-base mb-2">{comp.name}</p>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-xs text-gray-500">Vendidos</p>
+                          <p className="text-xl font-black text-cyan-400">{comp.count}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500">Ingresos</p>
+                          <p className="text-xl font-black text-amber-400">S/ {comp.revenue.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Gráfica de Órdenes Entregadas en Línea de Tiempo */}
             <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
