@@ -447,7 +447,7 @@ export default function DeliveryPage() {
                             <div className="flex-1">
                               <h4 className="text-white font-bold">{item.name}</h4>
                               <p className="text-blue-400 font-black text-sm">
-                                S/ {itemTotal.toFixed(2)}
+                                S/ {(item.price * item.quantity).toFixed(2)}
                               </p>
                             </div>
                           </div>

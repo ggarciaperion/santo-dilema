@@ -1970,7 +1970,7 @@ export default function AdminPage() {
                                 </div>
                                 <div className="flex-1">
                                   <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                  <span className="text-sm font-black text-cyan-400">S/ {itemTotal.toFixed(2)}</span>
+                                  <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
                                 </div>
                               </div>
 

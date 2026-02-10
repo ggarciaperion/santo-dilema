@@ -2,17 +2,16 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({
-    version: '2.5.4',
+    version: '2.5.5',
     timestamp: new Date().toISOString(),
-    commit: 'payment-simplification',
+    commit: 'fix-item-price-display',
     deployed: true,
-    feature: 'Simplificación de método de pago contraentrega',
+    feature: 'Mostrar solo precio base del menú en items',
     changes: {
-      payment: '✅ Contraentrega ahora es solo EFECTIVO (exacto o con cambio)',
-      payment_yape: '✅ Yape/Plin solo disponible con pago anticipado (QR)',
-      delivery_view: '✅ Eliminada opción contraentrega-yape-plin de visualización',
-      checkout: '✅ Modal de contraentrega muestra directamente opciones de efectivo',
-      all_sounds: '✅ Todos los sonidos funcionando correctamente'
+      admin_fix: '✅ Precio debajo del nombre muestra solo precio del menú',
+      delivery_fix: '✅ Precio debajo del nombre muestra solo precio del menú',
+      complement_display: '✅ Complementos agrupados con precio acumulado',
+      total_display: '✅ Total general mostrado al lado derecho (admin)'
     }
   });
 }
