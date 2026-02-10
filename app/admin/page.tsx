@@ -3683,16 +3683,36 @@ export default function AdminPage() {
               );
               // Mapa nombre normalizado → { qty, revenue }
               const soldMap: Record<string, { qty: number; revenue: number }> = {};
+              const addToSoldMap = (name: string, qty: number, revenue: number) => {
+                const key = normalize(name);
+                if (!key) return;
+                if (!soldMap[key]) soldMap[key] = { qty: 0, revenue: 0 };
+                soldMap[key].qty += qty;
+                soldMap[key].revenue += revenue;
+              };
+
               deliveredOrders.forEach((order: any) => {
                 const items = order.completedOrders || order.cart || [];
                 items.forEach((item: any) => {
-                  const name = normalize(item.name || item.product?.name || "");
-                  if (!name) return;
+                  // 1. Menú principal
+                  const menuName = item.name || item.product?.name || "";
                   const qty = item.quantity || 0;
                   const price = item.price || item.product?.price || 0;
-                  if (!soldMap[name]) soldMap[name] = { qty: 0, revenue: 0 };
-                  soldMap[name].qty += qty;
-                  soldMap[name].revenue += price * qty;
+                  if (menuName) addToSoldMap(menuName, qty, price * qty);
+
+                  // 2. Salsas (array de IDs de salsas base incluidas en el menú)
+                  const itemSalsas: string[] = item.salsas || [];
+                  itemSalsas.forEach((salsaId: string) => {
+                    const salsa = salsas.find(s => s.id === salsaId);
+                    if (salsa) addToSoldMap(salsa.name, 1, 0); // incluidas en precio, costo 0 o lo defines tú
+                  });
+
+                  // 3. Complementos pagados (bebidas, extras, salsas extra)
+                  const compIds: string[] = item.complementIds || [];
+                  compIds.forEach((compId: string) => {
+                    const comp = availableComplements[compId];
+                    if (comp) addToSoldMap(comp.name, 1, comp.price);
+                  });
                 });
               });
 
