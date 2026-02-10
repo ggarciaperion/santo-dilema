@@ -32,7 +32,7 @@ const products: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "6 alitas acompañadas de papas y 01 salsa favorita.",
+    description: "6 alitas crujientes con papas y tu salsa elegida. El primer bocado es una trampa — no vas a querer quedarte en solo 6.",
     price: 28.90,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -40,7 +40,7 @@ const products: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "12 alitas acompañadas de papas francesas y 02 de tus salsas favoritas.",
+    description: "12 alitas con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
     price: 39.90,
     image: "/duo-dilema.png?v=3",
     category: "fat",
@@ -48,7 +48,7 @@ const products: Product[] = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    description: "18 alitas acompañadas de papas francesas y 03 de tus salsas favoritas.",
+    description: "18 alitas, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
     price: 49.90,
     image: "/todos-pecan.png?v=3",
     category: "fat",
