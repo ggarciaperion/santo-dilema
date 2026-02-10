@@ -3671,18 +3671,22 @@ export default function AdminPage() {
 
             {/* PRODUCTOS DE VENTA */}
             {financialSection === "products" && (() => {
+              // Normaliza: quita tildes, mayúsculas, espacios extra → "Dúo Dilema" = "DUO DILEMA" = "duo dilema"
+              const normalize = (s: string) =>
+                s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+
               const saleProducts = products.filter((p: any) => p.type === "sale");
 
               // --- Rendimiento: cruzar catálogo con pedidos entregados ---
               const deliveredOrders = orders.filter((o: any) =>
                 o.status === "delivered" || o.status === "Entregado"
               );
-              // Mapa nombre → { qty, revenue }
+              // Mapa nombre normalizado → { qty, revenue }
               const soldMap: Record<string, { qty: number; revenue: number }> = {};
               deliveredOrders.forEach((order: any) => {
                 const items = order.completedOrders || order.cart || [];
                 items.forEach((item: any) => {
-                  const name = (item.name || item.product?.name || "").trim().toUpperCase();
+                  const name = normalize(item.name || item.product?.name || "");
                   if (!name) return;
                   const qty = item.quantity || 0;
                   const price = item.price || item.product?.price || 0;
@@ -3694,7 +3698,7 @@ export default function AdminPage() {
 
               // Construir filas de rendimiento cruzando catálogo + ventas
               const perfRows = saleProducts.map((p: any) => {
-                const key = (p.name || "").toUpperCase();
+                const key = normalize(p.name || "");
                 const sold = soldMap[key] || { qty: 0, revenue: 0 };
                 const cost = p.cost || 0;
                 const totalCost = cost * sold.qty;
