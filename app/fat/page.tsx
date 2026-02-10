@@ -32,7 +32,7 @@ const products: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "6 alitas crujientes con papas y tu salsa elegida. El primer bocado es una trampa — no vas a querer quedarte en solo 6.",
+    description: "6 alitas crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa — no vas a querer quedarte en solo 6.",
     price: 28.90,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
