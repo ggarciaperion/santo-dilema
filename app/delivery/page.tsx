@@ -431,7 +431,8 @@ export default function DeliveryPage() {
                       itemComplementIds.forEach((compId: string) => {
                         const complement = availableComplements[compId];
                         if (complement) {
-                          itemTotal += complement.price * item.quantity;
+                          // Los complementos se cobran 1 sola vez, no por cantidad
+                          itemTotal += complement.price;
                         }
                       });
 
