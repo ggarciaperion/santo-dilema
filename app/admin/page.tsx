@@ -3670,160 +3670,207 @@ export default function AdminPage() {
             )}
 
             {/* PRODUCTOS DE VENTA */}
-            {financialSection === "products" && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-black text-cyan-400">🍗 Productos de Venta (Tu Carta)</h3>
-              <button
-                onClick={() => {
-                  setEditingProduct(null);
-                  setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
-                  setShowProductModal(true);
-                }}
-                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-              >
-                + Nuevo Producto de Venta
-              </button>
-            </div>
+            {financialSection === "products" && (() => {
+              const saleProducts = products.filter((p: any) => p.type === "sale");
 
-            {(() => {
-              // Filtrar solo productos de tipo "sale" (productos de venta)
-              const saleProducts = products.filter((p) => p.type === "sale");
+              // --- Rendimiento: cruzar catálogo con pedidos entregados ---
+              const deliveredOrders = orders.filter((o: any) =>
+                o.status === "delivered" || o.status === "Entregado"
+              );
+              // Mapa nombre → { qty, revenue }
+              const soldMap: Record<string, { qty: number; revenue: number }> = {};
+              deliveredOrders.forEach((order: any) => {
+                const items = order.completedOrders || order.cart || [];
+                items.forEach((item: any) => {
+                  const name = (item.name || item.product?.name || "").trim().toUpperCase();
+                  if (!name) return;
+                  const qty = item.quantity || 0;
+                  const price = item.price || item.product?.price || 0;
+                  if (!soldMap[name]) soldMap[name] = { qty: 0, revenue: 0 };
+                  soldMap[name].qty += qty;
+                  soldMap[name].revenue += price * qty;
+                });
+              });
+
+              // Construir filas de rendimiento cruzando catálogo + ventas
+              const perfRows = saleProducts.map((p: any) => {
+                const key = (p.name || "").toUpperCase();
+                const sold = soldMap[key] || { qty: 0, revenue: 0 };
+                const cost = p.cost || 0;
+                const totalCost = cost * sold.qty;
+                const netProfit = sold.revenue - totalCost;
+                const margin = sold.revenue > 0 ? (netProfit / sold.revenue) * 100 : (p.price > 0 ? ((p.price - cost) / p.price) * 100 : 0);
+                return { ...p, sold: sold.qty, revenue: sold.revenue, totalCost, netProfit, margin };
+              }).sort((a: any, b: any) => b.sold - a.sold);
+
+              // KPIs globales
+              const totalRevenue = perfRows.reduce((s: number, r: any) => s + r.revenue, 0);
+              const totalCostAll = perfRows.reduce((s: number, r: any) => s + r.totalCost, 0);
+              const totalProfit = totalRevenue - totalCostAll;
+              const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+              const catLabel: Record<string, string> = {
+                fat: "🍗 FAT", fit: "🥗 FIT", bebida: "🥤 Bebida",
+                complemento: "➕ Complemento", extra: "⚡ Extra",
+                "extra-papas": "🍟 Extra Papas", "extra-salsas": "🌶️ Extra Salsas",
+              };
 
               return (
-                <>
-                  {/* Stats */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                      <p className="text-gray-400 text-sm font-semibold">Total Productos</p>
-                      <p className="text-5xl font-black text-white mt-2">{saleProducts.length}</p>
+                <div className="space-y-8">
+                  {/* ── SECCIÓN 1: CATÁLOGO ── */}
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-black text-cyan-400">📋 Catálogo de Productos</h3>
+                      <button
+                        onClick={() => {
+                          setEditingProduct(null);
+                          setProductForm({ name: "", category: "fat", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
+                          setShowProductModal(true);
+                        }}
+                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
+                      >
+                        + Nuevo Producto
+                      </button>
                     </div>
-                    <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                      <p className="text-green-400 text-sm font-bold">Activos</p>
-                      <p className="text-5xl font-black text-green-400 mt-2">
-                        {saleProducts.filter((p) => p.active).length}
-                      </p>
-                    </div>
-                    <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                      <p className="text-amber-400 text-sm font-bold">Precio Promedio</p>
-                      <p className="text-4xl font-black text-amber-400 mt-2">
-                        S/ {saleProducts.length > 0 ? (saleProducts.reduce((sum, p) => sum + p.price, 0) / saleProducts.length).toFixed(2) : '0.00'}
-                      </p>
-                    </div>
-                    <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                      <p className="text-purple-400 text-sm font-bold">Margen Promedio</p>
-                      <p className="text-4xl font-black text-purple-400 mt-2">
-                        {saleProducts.length > 0 ? (saleProducts.reduce((sum, p) => {
-                          if (!p.price || p.price === 0) return sum;
-                          return sum + ((p.price - p.cost) / p.price * 100);
-                        }, 0) / saleProducts.length).toFixed(1) : '0'}%
-                      </p>
+
+                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-black/60 border-b-2 border-fuchsia-500/30">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase">Producto</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase hidden md:table-cell">Categoría</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Precio Venta</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400 uppercase">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {saleProducts.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-6 py-10 text-center text-gray-500 text-sm">
+                                Sin productos registrados. Usa "+ Nuevo Producto" para empezar.
+                              </td>
+                            </tr>
+                          ) : (
+                            saleProducts.map((product: any, idx: number) => {
+                              const margin = product.price > 0
+                                ? ((product.price - (product.cost || 0)) / product.price) * 100 : 0;
+                              return (
+                                <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 transition-all ${idx % 2 === 0 ? 'bg-black/20' : ''}`}>
+                                  <td className="px-4 py-3 text-white font-bold text-sm">{product.name}</td>
+                                  <td className="px-4 py-3 hidden md:table-cell">
+                                    <span className="text-xs text-gray-400">{catLabel[product.category] || product.category}</span>
+                                  </td>
+                                  <td className="px-4 py-3 text-right text-green-400 font-black text-sm">S/ {(product.price || 0).toFixed(2)}</td>
+                                  <td className="px-4 py-3 text-right text-red-400 text-sm">S/ {(product.cost || 0).toFixed(2)}</td>
+                                  <td className="px-4 py-3 text-right">
+                                    <span className={`font-black text-sm ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
+                                      {margin.toFixed(1)}%
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    <div className="flex gap-1 justify-center">
+                                      <button onClick={() => openEditProduct(product)} className="bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-1 rounded text-xs font-bold">Editar</button>
+                                      <button onClick={() => handleDeleteProduct(product.id)} className="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">Eliminar</button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
 
-                  {/* Products Table */}
-                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-black border-b-2 border-fuchsia-500/30">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-sm font-bold text-fuchsia-400">Nombre</th>
-                          <th className="px-6 py-4 text-left text-sm font-bold text-fuchsia-400">Categoría</th>
-                          <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Componentes</th>
-                          <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Precio Venta</th>
-                          <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Costo</th>
-                          <th className="px-6 py-4 text-right text-sm font-bold text-fuchsia-400">Margen</th>
-                          <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Estado</th>
-                          <th className="px-6 py-4 text-center text-sm font-bold text-fuchsia-400">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {saleProducts.length === 0 ? (
+                  {/* ── SECCIÓN 2: RENDIMIENTO DE VENTAS ── */}
+                  <div>
+                    <h3 className="text-xl font-black text-amber-400 mb-4">📊 Rendimiento de Ventas (Pedidos Entregados)</h3>
+
+                    {/* KPIs */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                      <div className="bg-gray-900 rounded-xl border border-green-500/40 p-4 text-center">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Ingresos Totales</p>
+                        <p className="text-xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
+                      </div>
+                      <div className="bg-gray-900 rounded-xl border border-red-500/40 p-4 text-center">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Costo Total</p>
+                        <p className="text-xl font-black text-red-400">S/ {totalCostAll.toFixed(2)}</p>
+                      </div>
+                      <div className="bg-gray-900 rounded-xl border border-amber-500/40 p-4 text-center">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Utilidad Neta</p>
+                        <p className={`text-xl font-black ${totalProfit >= 0 ? 'text-amber-400' : 'text-red-400'}`}>S/ {totalProfit.toFixed(2)}</p>
+                      </div>
+                      <div className="bg-gray-900 rounded-xl border border-purple-500/40 p-4 text-center">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Margen Promedio</p>
+                        <p className={`text-xl font-black ${avgMargin >= 50 ? 'text-green-400' : avgMargin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>{avgMargin.toFixed(1)}%</p>
+                      </div>
+                    </div>
+
+                    {/* Tabla de rendimiento */}
+                    <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-black/60 border-b-2 border-amber-500/30">
                           <tr>
-                            <td colSpan={8} className="px-6 py-12 text-center text-gray-400">
-                              No hay productos de venta registrados. Crea tu primer producto de la carta.
-                            </td>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-amber-400 uppercase">Producto</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-amber-400 uppercase">Uds. Vendidas</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Ingresos</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo Total</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-amber-400 uppercase">Utilidad Neta</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
                           </tr>
-                        ) : (
-                          saleProducts.map((product, idx) => {
-                            const margin = product.price && product.price > 0
-                              ? ((product.price - product.cost) / product.price * 100)
-                              : 0;
-                            return (
-                              <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-black/50 transition-all ${idx % 2 === 0 ? 'bg-gray-900/50' : ''}`}>
-                                <td className="px-6 py-4 text-white font-bold">{product.name}</td>
-                                <td className="px-6 py-4">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    product.category === 'fit' ? 'bg-cyan-500/20 text-cyan-400' :
-                                    product.category === 'fat' ? 'bg-red-500/20 text-red-400' :
-                                    product.category === 'extra-papas' ? 'bg-amber-500/20 text-amber-400' :
-                                    product.category === 'extra-salsas' ? 'bg-orange-500/20 text-orange-400' :
-                                    'bg-purple-500/20 text-purple-400'
-                                  }`}>
-                                    {product.category === 'extra-papas' ? 'EXTRA PAPAS' :
-                                     product.category === 'extra-salsas' ? 'EXTRA SALSAS' :
-                                     product.category.toUpperCase()}
+                        </thead>
+                        <tbody>
+                          {perfRows.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-6 py-10 text-center text-gray-500 text-sm">
+                                Registra productos en el catálogo para ver el rendimiento.
+                              </td>
+                            </tr>
+                          ) : (
+                            perfRows.map((row: any, idx: number) => (
+                              <tr key={row.id} className={`border-b border-amber-500/10 hover:bg-amber-500/5 transition-all ${idx % 2 === 0 ? 'bg-black/20' : ''}`}>
+                                <td className="px-4 py-3 text-white font-bold text-sm">{row.name}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="text-fuchsia-400 font-black text-sm">{row.sold}</span>
+                                </td>
+                                <td className="px-4 py-3 text-right text-green-400 font-bold text-sm">S/ {row.revenue.toFixed(2)}</td>
+                                <td className="px-4 py-3 text-right text-red-400 text-sm">S/ {row.totalCost.toFixed(2)}</td>
+                                <td className="px-4 py-3 text-right">
+                                  <span className={`font-black text-sm ${row.netProfit >= 0 ? 'text-amber-400' : 'text-red-500'}`}>
+                                    S/ {row.netProfit.toFixed(2)}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-center">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                    product.components && product.components.length > 0
-                                      ? 'bg-green-500/20 text-green-400'
-                                      : 'bg-red-500/20 text-red-400'
-                                  }`}>
-                                    {product.components && product.components.length > 0
-                                      ? `${product.components.length} insumos`
-                                      : 'Sin insumos'}
+                                <td className="px-4 py-3 text-right">
+                                  <span className={`font-black text-sm ${row.margin >= 50 ? 'text-green-400' : row.margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
+                                    {row.margin.toFixed(1)}%
                                   </span>
-                                </td>
-                                <td className="px-6 py-4 text-right text-green-400 font-black">S/ {(product.price || 0).toFixed(2)}</td>
-                                <td className="px-6 py-4 text-right text-gray-400">S/ {(product.cost || 0).toFixed(2)}</td>
-                                <td className="px-6 py-4 text-right">
-                                  <span className={`font-black ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
-                                    {margin.toFixed(1)}%
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    product.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                                  }`}>
-                                    {product.active ? 'Activo' : 'Inactivo'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                  <div className="flex gap-2 justify-center">
-                                    <button
-                                      onClick={() => openRecipeModal(product)}
-                                      className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                                      title="Configurar receta/componentes"
-                                    >
-                                      🧾 Receta
-                                    </button>
-                                    <button
-                                      onClick={() => openEditProduct(product)}
-                                      className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                                    >
-                                      Editar
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteProduct(product.id)}
-                                      className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                                    >
-                                      Eliminar
-                                    </button>
-                                  </div>
                                 </td>
                               </tr>
-                            );
-                          })
+                            ))
+                          )}
+                        </tbody>
+                        {perfRows.length > 0 && (
+                          <tfoot className="border-t-2 border-amber-500/30 bg-black/40">
+                            <tr>
+                              <td className="px-4 py-3 text-white font-black text-sm">TOTAL</td>
+                              <td className="px-4 py-3 text-center text-fuchsia-400 font-black text-sm">
+                                {perfRows.reduce((s: number, r: any) => s + r.sold, 0)}
+                              </td>
+                              <td className="px-4 py-3 text-right text-green-400 font-black text-sm">S/ {totalRevenue.toFixed(2)}</td>
+                              <td className="px-4 py-3 text-right text-red-400 font-black text-sm">S/ {totalCostAll.toFixed(2)}</td>
+                              <td className="px-4 py-3 text-right text-amber-400 font-black text-sm">S/ {totalProfit.toFixed(2)}</td>
+                              <td className="px-4 py-3 text-right text-purple-400 font-black text-sm">{avgMargin.toFixed(1)}%</td>
+                            </tr>
+                          </tfoot>
                         )}
-                      </tbody>
-                    </table>
+                      </table>
+                    </div>
                   </div>
-                </>
+                </div>
               );
             })()}
-              </div>
-            )}
 
             {/* STOCK DE EMPAQUES - ELIMINADO (Sistema ahora es 100% manual) */}
           </section>
@@ -3994,102 +4041,100 @@ export default function AdminPage() {
           )}
 
           {/* Product Modal - SIMPLE Y MANUAL */}
-          {showProductModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-xl w-full my-8">
-                <h3 className="text-2xl font-black text-fuchsia-400 mb-4">
-                  {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto de Venta'}
-                </h3>
-
-                <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-3 mb-4">
-                  <p className="text-cyan-300 text-xs">
-                    💡 Registra solo los datos básicos aquí. Luego usa el botón <span className="font-bold">"🧾 Receta"</span> para agregar ingredientes y empaques con sus costos.
-                  </p>
+          {showProductModal && (() => {
+            const price = productForm.price || 0;
+            const cost = productForm.cost || 0;
+            const margin = price > 0 ? ((price - cost) / price) * 100 : 0;
+            return (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => { setShowProductModal(false); setEditingProduct(null); }}>
+              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-xl font-black text-fuchsia-400">
+                    {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}
+                  </h3>
+                  <button onClick={() => { setShowProductModal(false); setEditingProduct(null); }} className="text-gray-400 hover:text-white text-xl">✕</button>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-2">Nombre del Producto *</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">Nombre *</label>
                     <input
                       type="text"
                       value={productForm.name}
                       onChange={(e) => setProductForm({ ...productForm, name: e.target.value.toUpperCase() })}
-                      className="w-full px-4 py-3 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      placeholder="Ej: PEQUEÑO DILEMA, DÚO DILEMA, ENSALADA CLÁSICA"
+                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
+                      placeholder="Ej: PEQUEÑO DILEMA, COCA-COLA, EXTRA PAPAS"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-2">Categoría *</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">Categoría *</label>
                     <select
                       value={productForm.category}
                       onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                      className="w-full px-4 py-3 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
                     >
+                      <option value="fat">🍗 FAT (Alitas)</option>
                       <option value="fit">🥗 FIT (Ensaladas)</option>
-                      <option value="fat">🍗 FAT (Alitas/Frituras)</option>
-                      <option value="bebida">🥤 Bebidas</option>
-                      <option value="extra-papas">🍟 EXTRA PAPAS</option>
-                      <option value="extra-salsas">🌶️ EXTRA SALSAS</option>
+                      <option value="bebida">🥤 Bebida</option>
+                      <option value="complemento">➕ Complemento</option>
+                      <option value="extra">⚡ Extra</option>
+                      <option value="extra-papas">🍟 Extra Papas</option>
+                      <option value="extra-salsas">🌶️ Extra Salsas</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-2">Precio de Venta (S/) *</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={productForm.price}
-                      onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-4 py-3 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-lg font-bold"
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-                    <div className="flex items-center gap-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-green-400 uppercase mb-1">Precio de Venta (S/) *</label>
                       <input
-                        type="checkbox"
-                        id="product-active"
-                        checked={productForm.active}
-                        onChange={(e) => setProductForm({ ...productForm, active: e.target.checked })}
-                        className="w-5 h-5 rounded border-gray-600 text-fuchsia-600 focus:ring-fuchsia-500"
+                        type="number" step="0.01" min="0"
+                        value={productForm.price}
+                        onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-green-500/30 text-green-400 focus:border-green-400 focus:outline-none text-sm font-bold"
+                        placeholder="0.00"
                       />
-                      <label htmlFor="product-active" className="text-sm text-white font-semibold cursor-pointer">
-                        Producto activo en la carta
-                      </label>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-red-400 uppercase mb-1">Costo (S/) *</label>
+                      <input
+                        type="number" step="0.01" min="0"
+                        value={productForm.cost}
+                        onChange={(e) => setProductForm({ ...productForm, cost: parseFloat(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-red-500/30 text-red-400 focus:border-red-400 focus:outline-none text-sm font-bold"
+                        placeholder="0.00"
+                      />
                     </div>
                   </div>
 
-                  <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-3">
-                    <p className="text-amber-300 text-xs">
-                      ⚠️ <span className="font-bold">Importante:</span> El costo y la receta se configuran después usando el botón "🧾 Receta" en la tabla de productos.
-                    </p>
-                  </div>
+                  {/* Preview margen */}
+                  {price > 0 && (
+                    <div className={`rounded-lg px-4 py-2 text-center border ${margin >= 50 ? 'bg-green-900/20 border-green-500/30' : margin >= 30 ? 'bg-amber-900/20 border-amber-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
+                      <p className="text-xs text-gray-400">Margen calculado</p>
+                      <p className={`text-2xl font-black ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>{margin.toFixed(1)}%</p>
+                      <p className="text-xs text-gray-500">Utilidad por unidad: S/ {(price - cost).toFixed(2)}</p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-3 mt-5">
                   <button
-                    onClick={() => {
-                      setShowProductModal(false);
-                      setEditingProduct(null);
-                      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
-                    }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all"
+                    onClick={() => { setShowProductModal(false); setEditingProduct(null); setProductForm({ name: "", category: "fat", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] }); }}
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
-                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-3 rounded-lg font-bold transition-all neon-border-purple"
+                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold text-sm"
                   >
-                    {editingProduct ? '💾 Guardar Cambios' : '✅ Crear Producto'}
+                    {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
                   </button>
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
         </>
       ) : activeTab === "marketing" ? (
         /* Marketing Tab */
