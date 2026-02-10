@@ -3731,7 +3731,7 @@ export default function AdminPage() {
               const totalRevenue = perfRows.reduce((s: number, r: any) => s + r.revenue, 0);
               const totalCostAll = perfRows.reduce((s: number, r: any) => s + r.totalCost, 0);
               const totalProfit = totalRevenue - totalCostAll;
-              const avgMargin = totalCostAll > 0 ? (totalProfit / totalCostAll) * 100 : 0;
+              const avgMargin = perfRows.length > 0 ? perfRows.reduce((s: number, r: any) => s + r.margin, 0) / perfRows.length : 0;
 
               const catLabel: Record<string, string> = {
                 fat: "🍗 FAT", fit: "🥗 FIT", bebida: "🥤 Bebida",
