@@ -1555,8 +1555,8 @@ export default function AdminPage() {
     const peakHour = peakHourData ? `${peakHourData.hour}:00 - ${peakHourData.hour + 1}:00` : 'Sin datos';
     const peakHourCount = peakHourData?.count || 0;
 
-    // 3. Complementos/extras más vendidos
-    const complementSales = new Map<string, { name: string; count: number; revenue: number }>();
+    // 3. Complementos/extras más vendidos - TODOS, agrupados por categoría
+    const complementSales = new Map<string, { id: string; name: string; count: number; revenue: number; category: string }>();
     currentMonthOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
       orderItems.forEach((item: any) => {
@@ -1564,27 +1564,67 @@ export default function AdminPage() {
         complementIds.forEach((compId: string) => {
           const complement = availableComplements[compId];
           if (complement) {
+            // Determinar categoría
+            let category = 'Otros';
+            if (compId.startsWith('extra-salsa-')) {
+              category = 'Salsas';
+            } else if (['agua-mineral', 'coca-cola', 'inka-cola', 'sprite', 'fanta'].includes(compId)) {
+              category = 'Bebidas';
+            } else if (['extra-papas', 'extra-salsa', 'extra-aderezo', 'pollo-grillado'].includes(compId)) {
+              category = 'Extras';
+            }
+
             if (complementSales.has(compId)) {
               const existing = complementSales.get(compId)!;
               existing.count += 1;
               existing.revenue += complement.price;
             } else {
               complementSales.set(compId, {
+                id: compId,
                 name: complement.name,
                 count: 1,
-                revenue: complement.price
+                revenue: complement.price,
+                category
               });
             }
           }
         });
       });
     });
-    const topComplements = Array.from(complementSales.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 3);
-    const mostSoldComplement = topComplements[0] || { name: 'Sin datos', count: 0, revenue: 0 };
 
-    // 4. Tasa de conversión (pedidos confirmados vs totales)
+    const allComplements = Array.from(complementSales.values()).sort((a, b) => b.count - a.count);
+    const mostSoldComplement = allComplements[0] || { name: 'Sin datos', count: 0, revenue: 0 };
+
+    // Agrupar por categoría
+    const complementsByCategory = {
+      'Bebidas': allComplements.filter(c => c.category === 'Bebidas'),
+      'Extras': allComplements.filter(c => c.category === 'Extras'),
+      'Salsas': allComplements.filter(c => c.category === 'Salsas'),
+      'Otros': allComplements.filter(c => c.category === 'Otros')
+    };
+
+    // 4. Pedidos del día por menú (para control de stock)
+    const menuSalesToday = new Map<string, { name: string; quantity: number }>();
+    todayOrders.forEach((order: any) => {
+      const orderItems = order.completedOrders || order.cart || [];
+      orderItems.forEach((item: any) => {
+        const productName = item.name || item.product?.name || 'Sin nombre';
+        const quantity = item.quantity || 0;
+
+        if (menuSalesToday.has(productName)) {
+          const existing = menuSalesToday.get(productName)!;
+          existing.quantity += quantity;
+        } else {
+          menuSalesToday.set(productName, {
+            name: productName,
+            quantity
+          });
+        }
+      });
+    });
+    const menusSoldToday = Array.from(menuSalesToday.values()).sort((a, b) => b.quantity - a.quantity);
+
+    // 5. Tasa de conversión (pedidos confirmados vs totales)
     const confirmedOrders = orders.filter((o: any) =>
       o.status === "confirmed" ||
       o.status === "en-camino" ||
@@ -1620,8 +1660,10 @@ export default function AdminPage() {
       peakHour,
       peakHourCount,
       mostSoldComplement,
-      topComplements,
-      conversionRate
+      allComplements,
+      complementsByCategory,
+      conversionRate,
+      menusSoldToday
     };
   };
 
@@ -2677,49 +2719,67 @@ export default function AdminPage() {
               </p>
               {analytics.currentMonthProductsArray.length === 0 ? (
                 <p className="text-gray-400 text-center py-8">No hay productos vendidos en este período</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {analytics.currentMonthProductsArray.map((product: any, idx: number) => {
-                    const isMostSold = idx === 0;
-                    const isLeastSold = idx === analytics.currentMonthProductsArray.length - 1;
+              ) : (() => {
+                // Calcular total de ingresos del período
+                const totalRevenue = analytics.currentMonthProductsArray.reduce((sum: number, p: any) => sum + p.revenue, 0);
 
-                    return (
-                      <div
-                        key={idx}
-                        className={`bg-black/50 rounded-lg p-4 border-2 ${
-                          isMostSold ? 'border-green-500/50 bg-green-500/5' :
-                          isLeastSold ? 'border-red-500/50 bg-red-500/5' :
-                          'border-gray-700/50'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <span className={`text-3xl font-black ${
-                            isMostSold ? 'text-green-400' :
-                            isLeastSold ? 'text-red-400' :
-                            'text-gray-400'
-                          }`}>
-                            #{idx + 1}
-                          </span>
-                          {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">🔥 MÁS VENDIDO</span>}
-                          {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">❄️ MENOS VENDIDO</span>}
-                        </div>
-                        <p className="text-white font-bold text-base mb-1">{product.name}</p>
-                        <p className="text-gray-400 text-xs mb-3">{product.category}</p>
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-xs text-gray-500">Cantidad</p>
-                            <p className="text-xl font-black text-cyan-400">{product.quantity}</p>
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {analytics.currentMonthProductsArray.map((product: any, idx: number) => {
+                      const isMostSold = idx === 0;
+                      const isLeastSold = idx === analytics.currentMonthProductsArray.length - 1;
+                      const revenuePercentage = totalRevenue > 0 ? (product.revenue / totalRevenue) * 100 : 0;
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`bg-black/50 rounded-lg p-4 border-2 ${
+                            isMostSold ? 'border-green-500/50 bg-green-500/5' :
+                            isLeastSold ? 'border-red-500/50 bg-red-500/5' :
+                            'border-gray-700/50'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <span className={`text-3xl font-black ${
+                              isMostSold ? 'text-green-400' :
+                              isLeastSold ? 'text-red-400' :
+                              'text-gray-400'
+                            }`}>
+                              #{idx + 1}
+                            </span>
+                            {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">🔥 MÁS VENDIDO</span>}
+                            {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">❄️ MENOS VENDIDO</span>}
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-gray-500">Ingresos</p>
-                            <p className="text-xl font-black text-amber-400">S/ {product.revenue.toFixed(2)}</p>
+                          <p className="text-white font-bold text-base mb-1">{product.name}</p>
+                          <p className="text-gray-400 text-xs mb-3">{product.category}</p>
+                          <div className="flex justify-between items-center mb-2">
+                            <div>
+                              <p className="text-xs text-gray-500">Cantidad</p>
+                              <p className="text-xl font-black text-cyan-400">{product.quantity}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-gray-500">Ingresos</p>
+                              <p className="text-xl font-black text-amber-400">S/ {product.revenue.toFixed(2)}</p>
+                            </div>
+                          </div>
+                          <div className="mt-2 pt-2 border-t border-gray-700">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs text-gray-500">% del total</p>
+                              <p className="text-sm font-black text-fuchsia-400">{revenuePercentage.toFixed(1)}%</p>
+                            </div>
+                            <div className="bg-black/50 rounded-full h-1.5 overflow-hidden mt-1">
+                              <div
+                                className="h-full bg-gradient-to-r from-fuchsia-600 to-pink-600"
+                                style={{ width: `${revenuePercentage}%` }}
+                              ></div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* SECCIÓN: DATOS ADICIONALES ÚTILES */}
@@ -2788,209 +2848,77 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* SECCIÓN: TOP 3 COMPLEMENTOS/EXTRAS */}
-            {analytics.topComplements.length > 0 && (
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-purple-400 mb-4">🌟 Top 3 Extras/Complementos Más Vendidos</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {analytics.topComplements.map((comp: any, idx: number) => (
-                    <div key={idx} className="bg-black/50 rounded-lg p-4 border-2 border-purple-500/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-3xl font-black text-purple-400">#{idx + 1}</span>
-                        {idx === 0 && <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-bold">👑 TOP</span>}
-                      </div>
-                      <p className="text-white font-bold text-base mb-2">{comp.name}</p>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-xs text-gray-500">Vendidos</p>
-                          <p className="text-xl font-black text-cyan-400">{comp.count}</p>
+            {/* SECCIÓN: PEDIDOS DEL DÍA POR MENÚ (Control de Stock) */}
+            {analytics.menusSoldToday.length > 0 && (
+              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-8">
+                <h3 className="text-xl font-black text-cyan-400 mb-2">📋 Menús Vendidos Hoy</h3>
+                <p className="text-gray-400 text-sm mb-4">Control de stock • Cantidades vendidas por menú</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {analytics.menusSoldToday.map((menu: any, idx: number) => (
+                    <div key={idx} className="bg-black/50 rounded-lg p-4 border border-cyan-500/20 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center">
+                          <span className="text-white font-black text-lg">{menu.quantity}</span>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs text-gray-500">Ingresos</p>
-                          <p className="text-xl font-black text-amber-400">S/ {comp.revenue.toFixed(2)}</p>
-                        </div>
+                        <p className="text-white font-bold text-sm">{menu.name}</p>
                       </div>
                     </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-400 text-sm font-bold">Total de menús vendidos hoy:</p>
+                    <p className="text-2xl font-black text-cyan-400">
+                      {analytics.menusSoldToday.reduce((sum: number, m: any) => sum + m.quantity, 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN: TODOS LOS COMPLEMENTOS/EXTRAS POR CATEGORÍA */}
+            {analytics.allComplements.length > 0 && (
+              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6 mb-8">
+                <h3 className="text-xl font-black text-purple-400 mb-2">🌟 Ranking de Extras, Complementos y Salsas</h3>
+                <p className="text-gray-400 text-sm mb-4">Todos los complementos vendidos • Organizado por categoría y ranking</p>
+
+                <div className="space-y-6">
+                  {Object.entries(analytics.complementsByCategory).map(([category, items]: [string, any[]]) => (
+                    items.length > 0 && (
+                      <div key={category}>
+                        <h4 className="text-lg font-black text-cyan-400 mb-3">{category}</h4>
+                        <div className="space-y-2">
+                          {items.map((comp: any, idx: number) => (
+                            <div key={comp.id} className="bg-black/50 rounded-lg p-3 border border-purple-500/20 flex items-center justify-between hover:border-purple-500/40 transition-all">
+                              <div className="flex items-center gap-3 flex-1">
+                                <span className="text-lg font-black text-purple-400 w-8">#{idx + 1}</span>
+                                {idx === 0 && (
+                                  <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">👑</span>
+                                )}
+                                <p className="text-white font-bold text-sm">{comp.name}</p>
+                              </div>
+                              <div className="flex items-center gap-6">
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-500">Vendidos</p>
+                                  <p className="text-lg font-black text-cyan-400">{comp.count}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-gray-500">Ingresos</p>
+                                  <p className="text-lg font-black text-amber-400">S/ {comp.revenue.toFixed(2)}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Gráfica de Órdenes Entregadas en Línea de Tiempo */}
-            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-fuchsia-400">📈 Progreso de Órdenes Entregadas</h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setChartTimeFilter("days")}
-                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                      chartTimeFilter === "days"
-                        ? "bg-fuchsia-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                    }`}
-                  >
-                    Días
-                  </button>
-                  <button
-                    onClick={() => setChartTimeFilter("weeks")}
-                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                      chartTimeFilter === "weeks"
-                        ? "bg-fuchsia-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                    }`}
-                  >
-                    Semanas
-                  </button>
-                  <button
-                    onClick={() => setChartTimeFilter("months")}
-                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                      chartTimeFilter === "months"
-                        ? "bg-fuchsia-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                    }`}
-                  >
-                    Meses
-                  </button>
-                  <button
-                    onClick={() => setChartTimeFilter("years")}
-                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                      chartTimeFilter === "years"
-                        ? "bg-fuchsia-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                    }`}
-                  >
-                    Años
-                  </button>
-                </div>
-              </div>
-
-              {/* Gráfica de barras simple */}
-              {chartData.length === 0 ? (
-                <p className="text-gray-400 text-center py-12">No hay datos para mostrar</p>
-              ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {chartData.map((data: any, idx: number) => (
-                    <div key={idx} className="flex items-center gap-4">
-                      <div className="w-32 text-right">
-                        <span className="text-gray-400 text-sm font-bold">{data.label}</span>
-                      </div>
-                      <div className="flex-1 bg-black/50 rounded-full h-8 overflow-hidden border border-fuchsia-500/30 relative">
-                        <div
-                          className="h-full bg-gradient-to-r from-fuchsia-600 to-purple-600 flex items-center justify-end pr-3 transition-all duration-300"
-                          style={{ width: `${(data.count / Math.max(...chartData.map((d: any) => d.count))) * 100}%` }}
-                        >
-                          <span className="text-white font-black text-sm">{data.count}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Nueva Sección: Productos Vendidos del Día */}
-            <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-8">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-cyan-400">🛒 Productos Vendidos</h3>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="date"
-                    value={dateFrom || new Date().toISOString().split('T')[0]}
-                    onChange={(e) => {
-                      setDateFrom(e.target.value);
-                      setDateTo(e.target.value);
-                      setIsDateFiltered(true);
-                    }}
-                    className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-cyan-500/30 text-white focus:border-cyan-400 focus:outline-none cursor-pointer [color-scheme:dark]"
-                    title="Seleccionar fecha"
-                  />
-                  {isDateFiltered && dateFrom !== new Date().toISOString().split('T')[0] && (
-                    <button
-                      onClick={() => {
-                        setIsDateFiltered(false);
-                        setDateFrom(new Date().toISOString().split('T')[0]);
-                        setDateTo(new Date().toISOString().split('T')[0]);
-                      }}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold text-sm transition-all"
-                    >
-                      Ver Hoy
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {(() => {
-                // Calcular productos vendidos según la fecha seleccionada
-                const selectedDate = dateFrom || new Date().toISOString().split('T')[0];
-                const deliveredOrders = orders.filter((order) => {
-                  if (order.status !== 'delivered') return false;
-                  const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
-                  return orderDate === selectedDate;
-                });
-
-                // Agrupar productos por nombre
-                const productSales = new Map<string, { name: string; quantity: number; category: string }>();
-
-                deliveredOrders.forEach((order) => {
-                  const orderItems = (order as any).completedOrders || order.cart || [];
-                  if (orderItems.length > 0) {
-                    orderItems.forEach((item: any) => {
-                      const key = item.name;
-                      const existing = productSales.get(key);
-                      if (existing) {
-                        existing.quantity += item.quantity || 1;
-                      } else {
-                        productSales.set(key, {
-                          name: item.name,
-                          quantity: item.quantity || 1,
-                          category: item.category || 'Sin categoría'
-                        });
-                      }
-                    });
-                  }
-                });
-
-                const productsArray = Array.from(productSales.values()).sort((a, b) => b.quantity - a.quantity);
-
-                return (
-                  <>
-                    <div className="mb-4">
-                      <p className="text-gray-400 text-sm">
-                        Mostrando ventas del: <span className="text-cyan-400 font-bold">{new Date(selectedDate).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                      </p>
-                      <p className="text-gray-400 text-sm mt-1">
-                        Total de pedidos entregados: <span className="text-green-400 font-bold">{deliveredOrders.length}</span>
-                      </p>
-                    </div>
-
-                    {productsArray.length === 0 ? (
-                      <div className="text-center py-12">
-                        <p className="text-gray-400 text-lg">No hay productos vendidos en esta fecha</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {productsArray.map((product, idx) => (
-                          <div key={idx} className="bg-black/50 rounded-lg p-4 border border-cyan-500/20 hover:border-cyan-500/50 transition-all">
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="flex-1">
-                                <h4 className="text-white font-bold text-base">{product.name}</h4>
-                                <p className="text-gray-400 text-xs mt-1">{product.category}</p>
-                              </div>
-                              <span className="bg-cyan-900/30 border border-cyan-500/50 rounded-full px-3 py-1 ml-2">
-                                <span className="text-cyan-400 font-black text-xl">{product.quantity}</span>
-                              </span>
-                            </div>
-                            <div className="mt-3 pt-3 border-t border-gray-700">
-                              <p className="text-gray-500 text-xs">Unidades vendidas</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
           </section>
         </>
       ) : activeTab === "financial" ? (
