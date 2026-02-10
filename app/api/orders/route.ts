@@ -204,9 +204,16 @@ export async function PATCH(request: Request) {
   try {
     const { id, status } = await request.json();
 
+    const now = new Date().toISOString();
+    const timestampField: Record<string, string> = {};
+    if (status === 'confirmed') timestampField.confirmedAt = now;
+    else if (status === 'en-camino') timestampField.enCaminoAt = now;
+    else if (status === 'delivered') timestampField.deliveredAt = now;
+
     const updatedOrder = await storage.updateOrder(id, {
       status,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
+      ...timestampField,
     });
 
     if (!updatedOrder) {

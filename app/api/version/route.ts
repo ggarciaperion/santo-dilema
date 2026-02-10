@@ -2,17 +2,15 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({
-    version: '2.7.1',
+    version: '2.8.0',
     timestamp: new Date().toISOString(),
-    commit: 'analytics-enhancements',
+    commit: 'order-delivery-tracking',
     deployed: true,
-    feature: 'Mejoras Analytics: % ingresos, ranking completo extras, control stock',
+    feature: 'Tracking de tiempos por etapa + toast de entrega',
     changes: {
-      product_percentage: '✅ Productos ahora muestran % del total de ingresos del mes',
-      all_complements: '✅ Lista completa de extras/complementos/salsas por categoría (no solo top 3)',
-      menu_stock_control: '✅ Nueva sección: Menús vendidos hoy para control de stock',
-      removed_sections: '✅ Eliminadas secciones: Progreso de órdenes y Productos vendidos duplicados',
-      row_format: '✅ Complementos en formato fila para mejor visualización'
+      status_timestamps: '✅ Se guardan timestamps al confirmar, poner en camino y entregar cada pedido',
+      time_trail: '✅ Rastro de tiempos visible en cada card: hora por etapa + minutos entre etapas',
+      delivery_toast: '✅ Toast no intrusivo en esquina al entregar un pedido (muestra ID + nombre cliente)'
     }
   });
 }

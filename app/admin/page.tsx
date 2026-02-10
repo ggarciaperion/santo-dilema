@@ -58,6 +58,9 @@ interface Order {
   status: "pending" | "pendiente-verificacion" | "confirmed" | "en-camino" | "delivered" | "cancelled";
   createdAt: string;
   updatedAt?: string;
+  confirmedAt?: string;
+  enCaminoAt?: string;
+  deliveredAt?: string;
   paymentMethod?: string;
   paymentProofPath?: string;
 }
@@ -229,6 +232,7 @@ export default function AdminPage() {
   const [showDateModal, setShowDateModal] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [customerSegment, setCustomerSegment] = useState<string>("all");
+  const [deliveryToast, setDeliveryToast] = useState<{ orderId: string; customerName: string } | null>(null);
   const [inventory, setInventory] = useState<any[]>([]);
   const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -668,6 +672,8 @@ export default function AdminPage() {
       // Si el nuevo estado es "delivered", deducir stock automáticamente
       if (newStatus === "delivered" && order && order.status !== "delivered") {
         await deductStockFromOrder(order);
+        setDeliveryToast({ orderId, customerName: order.name || 'Cliente' });
+        setTimeout(() => setDeliveryToast(null), 6000);
       }
 
       await fetch("/api/orders", {
@@ -1759,6 +1765,21 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black">
+      {/* Toast de pedido entregado */}
+      {deliveryToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-green-900 border border-green-500 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">✅</span>
+            <div className="flex-1">
+              <p className="text-green-300 text-xs font-bold uppercase tracking-wider mb-0.5">Pedido entregado</p>
+              <p className="text-white font-black text-base">#{deliveryToast.orderId}</p>
+              <p className="text-green-400 text-sm font-medium">{deliveryToast.customerName}</p>
+            </div>
+            <button onClick={() => setDeliveryToast(null)} className="text-green-500 hover:text-white text-sm leading-none mt-0.5">✕</button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple">
         <div className="container mx-auto px-4 py-6">
@@ -2091,6 +2112,39 @@ export default function AdminPage() {
                     <div className="mt-2">
                       <TimeCounter createdAt={order.createdAt} orderId={order.id} status={order.status} />
                     </div>
+
+                    {/* RASTRO DE TIEMPOS POR ETAPA */}
+                    {(() => {
+                      const steps: { label: string; time: string | undefined; color: string }[] = [
+                        { label: 'Ingresó', time: order.createdAt, color: 'text-gray-400' },
+                        { label: 'Confirmado', time: order.confirmedAt, color: 'text-cyan-400' },
+                        { label: 'En camino', time: order.enCaminoAt, color: 'text-blue-400' },
+                        { label: 'Entregado', time: order.deliveredAt, color: 'text-green-400' },
+                      ];
+                      const filled = steps.filter(s => s.time);
+                      if (filled.length < 2) return null;
+                      return (
+                        <div className="mt-2 border-t border-white/10 pt-2 space-y-0.5">
+                          {filled.map((step, i) => {
+                            const prev = filled[i - 1];
+                            const elapsed = prev
+                              ? Math.round((new Date(step.time!).getTime() - new Date(prev.time!).getTime()) / 60000)
+                              : null;
+                            return (
+                              <div key={i} className="flex items-center gap-1 text-[9px]">
+                                <span className={`font-mono font-bold ${step.color}`}>
+                                  {new Date(step.time!).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                <span className="text-gray-500">{step.label}</span>
+                                {elapsed !== null && (
+                                  <span className="text-yellow-500 font-bold">+{elapsed}m</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* SECCIÓN 1: PRODUCTOS */}
