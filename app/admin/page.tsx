@@ -3699,7 +3699,7 @@ export default function AdminPage() {
                 const cost = p.cost || 0;
                 const totalCost = cost * sold.qty;
                 const netProfit = sold.revenue - totalCost;
-                const margin = sold.revenue > 0 ? (netProfit / sold.revenue) * 100 : (p.price > 0 ? ((p.price - cost) / p.price) * 100 : 0);
+                const margin = cost > 0 ? (sold.qty > 0 ? (netProfit / totalCost) * 100 : ((p.price - cost) / cost) * 100) : 0;
                 return { ...p, sold: sold.qty, revenue: sold.revenue, totalCost, netProfit, margin };
               }).sort((a: any, b: any) => b.sold - a.sold);
 
@@ -3707,7 +3707,7 @@ export default function AdminPage() {
               const totalRevenue = perfRows.reduce((s: number, r: any) => s + r.revenue, 0);
               const totalCostAll = perfRows.reduce((s: number, r: any) => s + r.totalCost, 0);
               const totalProfit = totalRevenue - totalCostAll;
-              const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+              const avgMargin = totalCostAll > 0 ? (totalProfit / totalCostAll) * 100 : 0;
 
               const catLabel: Record<string, string> = {
                 fat: "🍗 FAT", fit: "🥗 FIT", bebida: "🥤 Bebida",
@@ -3754,8 +3754,8 @@ export default function AdminPage() {
                             </tr>
                           ) : (
                             saleProducts.map((product: any, idx: number) => {
-                              const margin = product.price > 0
-                                ? ((product.price - (product.cost || 0)) / product.price) * 100 : 0;
+                              const margin = (product.cost || 0) > 0
+                                ? ((product.price - (product.cost || 0)) / (product.cost || 0)) * 100 : 0;
                               return (
                                 <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 transition-all ${idx % 2 === 0 ? 'bg-black/20' : ''}`}>
                                   <td className="px-4 py-3 text-white font-bold text-sm">{product.name}</td>
@@ -4044,7 +4044,7 @@ export default function AdminPage() {
           {showProductModal && (() => {
             const price = productForm.price || 0;
             const cost = productForm.cost || 0;
-            const margin = price > 0 ? ((price - cost) / price) * 100 : 0;
+            const margin = cost > 0 ? ((price - cost) / cost) * 100 : 0;
             return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => { setShowProductModal(false); setEditingProduct(null); }}>
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
