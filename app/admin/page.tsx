@@ -235,6 +235,9 @@ export default function AdminPage() {
   const [deliveryToast, setDeliveryToast] = useState<{ orderId: string; customerName: string } | null>(null);
   const [customerSortKey, setCustomerSortKey] = useState<string>("totalOrders");
   const [customerSortDir, setCustomerSortDir] = useState<"asc" | "desc">("desc");
+  const [salesDateFrom, setSalesDateFrom] = useState<string>("");
+  const [salesDateTo, setSalesDateTo] = useState<string>("");
+  const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
   const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -3678,9 +3681,19 @@ export default function AdminPage() {
               const saleProducts = products.filter((p: any) => p.type === "sale");
 
               // --- Rendimiento: cruzar catálogo con pedidos entregados ---
-              const deliveredOrders = orders.filter((o: any) =>
+              let deliveredOrders = orders.filter((o: any) =>
                 o.status === "delivered" || o.status === "Entregado"
               );
+
+              // Filtro por fechas
+              if (isSalesDateFiltered && salesDateFrom && salesDateTo) {
+                const fromDate = new Date(salesDateFrom + "T00:00:00");
+                const toDate = new Date(salesDateTo + "T23:59:59");
+                deliveredOrders = deliveredOrders.filter((o: any) => {
+                  const orderDate = new Date(o.createdAt);
+                  return orderDate >= fromDate && orderDate <= toDate;
+                });
+              }
               // Mapa nombre normalizado → { qty, revenue }
               const soldMap: Record<string, { qty: number; revenue: number }> = {};
               const addToSoldMap = (name: string, qty: number, revenue: number) => {
@@ -3731,7 +3744,9 @@ export default function AdminPage() {
               const totalRevenue = perfRows.reduce((s: number, r: any) => s + r.revenue, 0);
               const totalCostAll = perfRows.reduce((s: number, r: any) => s + r.totalCost, 0);
               const totalProfit = totalRevenue - totalCostAll;
-              const avgMargin = perfRows.length > 0 ? perfRows.reduce((s: number, r: any) => s + r.margin, 0) / perfRows.length : 0;
+              // Margen promedio: solo productos con ventas
+              const soldProducts = perfRows.filter((r: any) => r.sold > 0);
+              const avgMargin = soldProducts.length > 0 ? soldProducts.reduce((s: number, r: any) => s + r.margin, 0) / soldProducts.length : 0;
 
               const catLabel: Record<string, string> = {
                 fat: "🍗 FAT", fit: "🥗 FIT", bebida: "🥤 Bebida",
@@ -3810,7 +3825,59 @@ export default function AdminPage() {
 
                   {/* ── SECCIÓN 2: RENDIMIENTO DE VENTAS ── */}
                   <div>
-                    <h3 className="text-xl font-black text-amber-400 mb-4">📊 Rendimiento de Ventas (Pedidos Entregados)</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-black text-amber-400">📊 Rendimiento de Ventas (Pedidos Entregados)</h3>
+                    </div>
+
+                    {/* Filtro de fechas */}
+                    <div className="bg-gray-900 rounded-lg border-2 border-amber-500/30 p-4 mb-5">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs font-bold text-amber-400 uppercase">Desde:</label>
+                          <input
+                            type="date"
+                            value={salesDateFrom}
+                            onChange={(e) => setSalesDateFrom(e.target.value)}
+                            className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs font-bold text-amber-400 uppercase">Hasta:</label>
+                          <input
+                            type="date"
+                            value={salesDateTo}
+                            onChange={(e) => setSalesDateTo(e.target.value)}
+                            className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (salesDateFrom && salesDateTo) setIsSalesDateFiltered(true);
+                          }}
+                          disabled={!salesDateFrom || !salesDateTo}
+                          className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Aplicar Filtro
+                        </button>
+                        {isSalesDateFiltered && (
+                          <button
+                            onClick={() => {
+                              setIsSalesDateFiltered(false);
+                              setSalesDateFrom("");
+                              setSalesDateTo("");
+                            }}
+                            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-sm"
+                          >
+                            Limpiar
+                          </button>
+                        )}
+                        {isSalesDateFiltered && (
+                          <span className="text-amber-300 text-xs font-bold">
+                            Filtrado: {new Date(salesDateFrom).toLocaleDateString("es-PE")} - {new Date(salesDateTo).toLocaleDateString("es-PE")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
                     {/* KPIs */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
@@ -3823,7 +3890,7 @@ export default function AdminPage() {
                         <p className="text-xl font-black text-red-400">S/ {totalCostAll.toFixed(2)}</p>
                       </div>
                       <div className="bg-gray-900 rounded-xl border border-amber-500/40 p-4 text-center">
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Utilidad Neta</p>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Utilidad Operativa</p>
                         <p className={`text-xl font-black ${totalProfit >= 0 ? 'text-amber-400' : 'text-red-400'}`}>S/ {totalProfit.toFixed(2)}</p>
                       </div>
                       <div className="bg-gray-900 rounded-xl border border-purple-500/40 p-4 text-center">
@@ -3841,7 +3908,7 @@ export default function AdminPage() {
                             <th className="px-4 py-3 text-center text-xs font-bold text-amber-400 uppercase">Uds. Vendidas</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Ingresos</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo Total</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-amber-400 uppercase">Utilidad Neta</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-amber-400 uppercase">Utilidad Operativa</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
                           </tr>
                         </thead>
