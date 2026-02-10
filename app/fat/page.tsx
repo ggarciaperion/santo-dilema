@@ -865,15 +865,21 @@ export default function FatPage() {
       <section className="relative w-full overflow-visible bg-black md:bg-transparent pt-6 md:mt-8">
         <div className="relative w-full bg-black md:bg-transparent overflow-visible">
           {/* Banner para móvil */}
-          <img
+          <Image
             src="/bannermovil.png?v=4"
             alt="Banner promocional"
+            width={800}
+            height={400}
+            priority={true}
             className="block md:hidden w-full h-auto object-cover moto-drive"
           />
           {/* Banner para PC/Tablet */}
-          <img
+          <Image
             src="/bannerpc.png?v=2"
             alt="Banner promocional"
+            width={1200}
+            height={140}
+            priority={true}
             className="hidden md:block w-full h-auto object-contain moto-drive"
             style={{
               maxHeight: '140px',
@@ -933,9 +939,11 @@ export default function FatPage() {
                       : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
                   }`}>
                     {product.image.startsWith('/') ? (
-                      <img
+                      <Image
                         src={product.image}
                         alt={product.name}
+                        width={300}
+                        height={300}
                         className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
                           width: '150%',
@@ -1646,9 +1654,11 @@ export default function FatPage() {
                       {/* Imagen del producto */}
                       <div className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black border ${isFitOrder ? 'border-cyan-400/30' : 'border-red-400/30'} flex items-center justify-center`}>
                         {product.image.startsWith('/') ? (
-                          <img
+                          <Image
                             src={product.image}
                             alt={product.name}
+                            width={64}
+                            height={64}
                             className="w-full h-full object-cover"
                           />
                         ) : (

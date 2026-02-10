@@ -585,14 +585,20 @@ export default function FitPage() {
 
       <section className="relative w-full overflow-visible bg-black pt-6 md:mt-8">
         <div className="relative w-full bg-black overflow-visible">
-          <img
+          <Image
             src="/bannermovilfi.png?v=1"
             alt="Banner promocional FIT"
+            width={800}
+            height={400}
+            priority={true}
             className="block md:hidden w-full h-auto object-cover moto-drive"
           />
-          <img
+          <Image
             src="/bannerpcfit.png?v=1"
             alt="Banner promocional FIT"
+            width={1200}
+            height={140}
+            priority={true}
             className="hidden md:block w-full h-auto object-contain moto-drive"
             style={{
               maxHeight: '140px',
@@ -645,9 +651,11 @@ export default function FitPage() {
                       : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
                   }`}>
                     {product.image.startsWith('/') ? (
-                      <img
+                      <Image
                         src={product.image}
                         alt={product.name}
+                        width={300}
+                        height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
                           width: '150%',
@@ -1134,9 +1142,11 @@ export default function FitPage() {
                       {/* Imagen del producto */}
                       <div className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black border ${isFatOrder ? 'border-red-400/30' : 'border-cyan-400/30'} flex items-center justify-center`}>
                         {product.image.startsWith('/') ? (
-                          <img
+                          <Image
                             src={product.image}
                             alt={product.name}
+                            width={64}
+                            height={64}
                             className="w-full h-full object-cover"
                           />
                         ) : (
