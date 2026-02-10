@@ -50,7 +50,7 @@ const products: Product[] = [
   {
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
-    description: "Lechuga romana, atún en trozos, tomate cherry, pepino, choclo, palta y huevo. Aderezo a elección.",
+    description: "Lechuga romana, atún en trozos, tomate cherry, pepino, maíz americano, palta y huevo. Aderezo cremoso especial de la casa.",
     price: 21.90,
     image: "/4.png",
     category: "fit",
