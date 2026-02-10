@@ -233,6 +233,8 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [customerSegment, setCustomerSegment] = useState<string>("all");
   const [deliveryToast, setDeliveryToast] = useState<{ orderId: string; customerName: string } | null>(null);
+  const [customerSortKey, setCustomerSortKey] = useState<string>("totalOrders");
+  const [customerSortDir, setCustomerSortDir] = useState<"asc" | "desc">("desc");
   const [inventory, setInventory] = useState<any[]>([]);
   const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -2502,85 +2504,106 @@ export default function AdminPage() {
 
           {/* Customers Table */}
           <section className="container mx-auto px-4 pb-12">
-            {selectedCustomer ? (
-              /* Customer Detail View */
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6">
-                <button
-                  onClick={() => setSelectedCustomer(null)}
-                  className="mb-4 text-fuchsia-400 hover:text-fuchsia-300 font-bold transition-all"
-                >
-                  ← Volver a la lista
-                </button>
+            {/* Modal de detalle de cliente */}
+            {selectedCustomer && (() => {
+              // Calcular productos más comprados
+              const productCount: Record<string, { name: string; qty: number; revenue: number }> = {};
+              selectedCustomer.orders.forEach((order: any) => {
+                const items = order.completedOrders || order.cart || [];
+                items.forEach((item: any) => {
+                  const name = item.name || item.product?.name || 'Sin nombre';
+                  const qty = item.quantity || 0;
+                  const price = item.price || item.product?.price || 0;
+                  if (!productCount[name]) productCount[name] = { name, qty: 0, revenue: 0 };
+                  productCount[name].qty += qty;
+                  productCount[name].revenue += price * qty;
+                });
+              });
+              const topProducts = Object.values(productCount).sort((a, b) => b.qty - a.qty).slice(0, 5);
+              const daysSince = Math.floor((new Date().getTime() - new Date(selectedCustomer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
 
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-3xl font-black text-white mb-2">{selectedCustomer.name}</h2>
-                    <p className="text-gray-400">DNI: {selectedCustomer.dni}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-4xl font-black text-fuchsia-400 neon-glow-purple">{selectedCustomer.totalOrders}</p>
-                    <p className="text-sm text-gray-400">pedidos realizados</p>
-                  </div>
-                </div>
+              return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setSelectedCustomer(null)}>
+                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    {/* Header del modal */}
+                    <div className="flex items-start justify-between p-4 border-b border-fuchsia-500/30">
+                      <div>
+                        <h2 className="text-xl font-black text-white">{selectedCustomer.name}</h2>
+                        <p className="text-gray-400 text-xs mt-0.5">DNI {selectedCustomer.dni} · {selectedCustomer.phone}{selectedCustomer.email ? ` · ${selectedCustomer.email}` : ''}</p>
+                        <p className="text-gray-500 text-xs mt-0.5">{selectedCustomer.address}</p>
+                      </div>
+                      <button onClick={() => setSelectedCustomer(null)} className="text-gray-400 hover:text-white text-xl leading-none ml-4">✕</button>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/20">
-                    <p className="text-sm font-bold text-fuchsia-400 mb-2">Teléfono</p>
-                    <p className="text-white text-lg">{selectedCustomer.phone}</p>
-                  </div>
-                  <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/20">
-                    <p className="text-sm font-bold text-fuchsia-400 mb-2">Email</p>
-                    <p className="text-white text-lg">{selectedCustomer.email || "No proporcionado"}</p>
-                  </div>
-                  <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/20">
-                    <p className="text-sm font-bold text-fuchsia-400 mb-2">Última Compra</p>
-                    <p className="text-white text-lg">{new Date(selectedCustomer.lastOrderDate).toLocaleDateString("es-PE")}</p>
-                  </div>
-                </div>
+                    {/* KPIs compactos */}
+                    <div className="grid grid-cols-3 gap-3 p-4">
+                      <div className="bg-black/50 rounded-lg p-3 border border-fuchsia-500/20 text-center">
+                        <p className="text-2xl font-black text-fuchsia-400">{selectedCustomer.totalOrders}</p>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Pedidos</p>
+                      </div>
+                      <div className="bg-black/50 rounded-lg p-3 border border-amber-500/30 text-center">
+                        <p className="text-2xl font-black text-amber-400">S/ {selectedCustomer.totalSpent.toFixed(0)}</p>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Total gastado</p>
+                      </div>
+                      <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/20 text-center">
+                        <p className="text-2xl font-black text-cyan-400">{daysSince}d</p>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Última compra</p>
+                      </div>
+                    </div>
 
-                <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/20 mb-6">
-                  <p className="text-sm font-bold text-fuchsia-400 mb-2">Dirección</p>
-                  <p className="text-white text-lg">{selectedCustomer.address}</p>
-                </div>
-
-                <div className="bg-amber-500/10 rounded-lg p-4 border border-amber-500/30 mb-6">
-                  <p className="text-2xl font-black text-amber-400 gold-glow">Total Gastado: S/ {selectedCustomer.totalSpent.toFixed(2)}</p>
-                </div>
-
-                <h3 className="text-xl font-black text-fuchsia-400 mb-4">Historial Completo de Pedidos</h3>
-                <div className="space-y-3">
-                  {selectedCustomer.orders.map((order: any) => (
-                    <div key={order.id} className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/20">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <p className="text-white font-bold">Pedido #{order.id}</p>
-                          <p className="text-gray-400 text-sm">{new Date(order.createdAt).toLocaleString("es-PE")}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-amber-400 font-black text-lg">S/ {order.totalPrice?.toFixed(2) || "0.00"}</p>
-                          <span className={`text-xs px-3 py-1 rounded-full ${statusColors[order.status as keyof typeof statusColors]}`}>
-                            {statusLabels[order.status as keyof typeof statusLabels]}
-                          </span>
+                    {/* Productos más comprados */}
+                    {topProducts.length > 0 && (
+                      <div className="px-4 pb-3">
+                        <p className="text-xs font-black text-fuchsia-400 uppercase tracking-wider mb-2">Productos favoritos</p>
+                        <div className="space-y-1.5">
+                          {topProducts.map((p, i) => (
+                            <div key={i} className="flex items-center gap-2 bg-black/40 rounded px-3 py-1.5">
+                              <span className="text-[10px] font-black text-gray-500 w-4">{i + 1}</span>
+                              <span className="flex-1 text-sm text-white font-medium">{p.name}</span>
+                              <span className="text-xs font-black text-fuchsia-400 bg-fuchsia-500/10 px-2 py-0.5 rounded-full">{p.qty}x</span>
+                              <span className="text-xs text-amber-400 font-bold w-16 text-right">S/ {p.revenue.toFixed(0)}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      {order.cart && (
-                        <div className="border-t border-fuchsia-500/20 pt-3 mt-3">
-                          <p className="text-xs font-bold text-fuchsia-400 mb-2">Productos:</p>
-                          <div className="space-y-1">
-                            {order.cart.map((item: any, idx: number) => (
-                              <div key={idx} className="flex justify-between text-sm">
-                                <span className="text-gray-300">{item.product.name} x{item.quantity}</span>
-                                <span className="text-white">S/ {(item.product.price * item.quantity).toFixed(2)}</span>
+                    )}
+
+                    {/* Historial de pedidos */}
+                    <div className="px-4 pb-4">
+                      <p className="text-xs font-black text-fuchsia-400 uppercase tracking-wider mb-2">Historial ({selectedCustomer.orders.length} pedidos)</p>
+                      <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                        {[...selectedCustomer.orders].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((order: any) => (
+                          <div key={order.id} className="bg-black/50 rounded-lg px-3 py-2 border border-fuchsia-500/10">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-black text-fuchsia-400">#{order.id}</span>
+                                <span className="text-[10px] text-gray-500">{new Date(order.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded ${statusColors[order.status as keyof typeof statusColors]}`}>
+                                  {statusLabels[order.status as keyof typeof statusLabels]}
+                                </span>
                               </div>
-                            ))}
+                              <span className="text-amber-400 font-black text-sm">S/ {order.totalPrice?.toFixed(2) || "0.00"}</span>
+                            </div>
+                            {/* Items compactos */}
+                            {(() => {
+                              const items = order.completedOrders || order.cart || [];
+                              if (!items.length) return null;
+                              return (
+                                <p className="text-[10px] text-gray-500 mt-0.5 ml-1">
+                                  {items.map((it: any) => `${it.name || it.product?.name || '?'} x${it.quantity || 0}`).join(' · ')}
+                                </p>
+                              );
+                            })()}
                           </div>
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            ) : loading ? (
+              );
+            })()}
+
+            {loading ? (
               <div className="text-center py-12">
                 <p className="text-2xl text-fuchsia-400 neon-glow-purple">Cargando clientes...</p>
               </div>
@@ -2626,67 +2649,100 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-fuchsia-500/10 border-b-2 border-fuchsia-500/30">
-                    <tr>
-                      <th className="text-left p-4 text-fuchsia-400 font-bold">DNI</th>
-                      <th className="text-left p-4 text-fuchsia-400 font-bold">Nombre</th>
-                      <th className="text-left p-4 text-fuchsia-400 font-bold">Teléfono</th>
-                      <th className="text-center p-4 text-fuchsia-400 font-bold">Pedidos</th>
-                      <th className="text-right p-4 text-fuchsia-400 font-bold">Total Gastado</th>
-                      <th className="text-center p-4 text-fuchsia-400 font-bold">Última Compra</th>
-                      <th className="text-center p-4 text-fuchsia-400 font-bold">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {customers.map((customer: any, idx: number) => {
-                      const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
-                      return (
-                        <tr
-                          key={customer.dni}
-                          onClick={() => setSelectedCustomer(customer)}
-                          className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 cursor-pointer transition-all ${
-                            idx % 2 === 0 ? "bg-black/20" : ""
-                          }`}
-                        >
-                          <td className="p-4 text-fuchsia-400 font-bold hover:text-fuchsia-300">
-                            {customer.dni}
-                          </td>
-                          <td className="p-4 text-white">{customer.name}</td>
-                          <td className="p-4 text-gray-300">{customer.phone}</td>
-                          <td className="p-4 text-center">
-                            <span className="inline-block px-3 py-1 rounded-full bg-fuchsia-500/20 text-fuchsia-400 font-bold">
-                              {customer.totalOrders}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right text-amber-400 font-black gold-glow">
-                            S/ {customer.totalSpent.toFixed(2)}
-                          </td>
-                          <td className="p-4 text-center text-gray-300 text-sm">
-                            {new Date(customer.lastOrderDate).toLocaleDateString("es-PE")}
-                          </td>
-                          <td className="p-4 text-center">
-                            {customer.totalOrders > 1 ? (
-                              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500">
-                                ⭐ Recurrente
-                              </span>
-                            ) : daysSinceLastOrder > 30 ? (
-                              <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">
-                                ⚠️ Inactivo
-                              </span>
-                            ) : (
-                              <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">
-                                🆕 Nuevo
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                {(() => {
+                  const handleSort = (key: string) => {
+                    if (customerSortKey === key) {
+                      setCustomerSortDir(d => d === "asc" ? "desc" : "asc");
+                    } else {
+                      setCustomerSortKey(key);
+                      setCustomerSortDir(key === "name" || key === "dni" ? "asc" : "desc");
+                    }
+                  };
+                  const SortIcon = ({ col }: { col: string }) => {
+                    if (customerSortKey !== col) return <span className="text-gray-600 ml-1">↕</span>;
+                    return <span className="text-fuchsia-300 ml-1">{customerSortDir === "asc" ? "↑" : "↓"}</span>;
+                  };
+                  const sortedCustomers = [...customers].sort((a: any, b: any) => {
+                    let aVal: any, bVal: any;
+                    if (customerSortKey === "dni") { aVal = a.dni || ""; bVal = b.dni || ""; }
+                    else if (customerSortKey === "name") { aVal = a.name || ""; bVal = b.name || ""; }
+                    else if (customerSortKey === "phone") { aVal = a.phone || ""; bVal = b.phone || ""; }
+                    else if (customerSortKey === "totalOrders") { aVal = a.totalOrders; bVal = b.totalOrders; }
+                    else if (customerSortKey === "totalSpent") { aVal = a.totalSpent; bVal = b.totalSpent; }
+                    else if (customerSortKey === "lastOrderDate") { aVal = new Date(a.lastOrderDate).getTime(); bVal = new Date(b.lastOrderDate).getTime(); }
+                    else { aVal = 0; bVal = 0; }
+                    if (typeof aVal === "string") {
+                      return customerSortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    }
+                    return customerSortDir === "asc" ? aVal - bVal : bVal - aVal;
+                  });
+
+                  return (
+                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-fuchsia-500/10 border-b-2 border-fuchsia-500/30">
+                          <tr>
+                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("dni")}>
+                              DNI <SortIcon col="dni" />
+                            </th>
+                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("name")}>
+                              Nombre <SortIcon col="name" />
+                            </th>
+                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden md:table-cell" onClick={() => handleSort("phone")}>
+                              Teléfono <SortIcon col="phone" />
+                            </th>
+                            <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalOrders")}>
+                              Pedidos <SortIcon col="totalOrders" />
+                            </th>
+                            <th className="text-right p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalSpent")}>
+                              Total Gastado <SortIcon col="totalSpent" />
+                            </th>
+                            <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
+                              Última Compra <SortIcon col="lastOrderDate" />
+                            </th>
+                            <th className="text-center p-3 text-fuchsia-400 font-bold hidden lg:table-cell">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedCustomers.map((customer: any, idx: number) => {
+                            const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
+                            return (
+                              <tr
+                                key={customer.dni}
+                                onClick={() => setSelectedCustomer(customer)}
+                                className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 cursor-pointer transition-all ${idx % 2 === 0 ? "bg-black/20" : ""}`}
+                              >
+                                <td className="p-3 text-fuchsia-400 font-bold text-sm">{customer.dni}</td>
+                                <td className="p-3 text-white text-sm">{customer.name}</td>
+                                <td className="p-3 text-gray-300 text-sm hidden md:table-cell">{customer.phone}</td>
+                                <td className="p-3 text-center">
+                                  <span className="inline-block px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400 font-bold text-sm">
+                                    {customer.totalOrders}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-right text-amber-400 font-black text-sm gold-glow">
+                                  S/ {customer.totalSpent.toFixed(2)}
+                                </td>
+                                <td className="p-3 text-center text-gray-300 text-sm hidden lg:table-cell">
+                                  {new Date(customer.lastOrderDate).toLocaleDateString("es-PE")}
+                                </td>
+                                <td className="p-3 text-center hidden lg:table-cell">
+                                  {customer.totalOrders > 1 ? (
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500">⭐ Recurrente</span>
+                                  ) : daysSinceLastOrder > 30 ? (
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">⚠️ Inactivo</span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">🆕 Nuevo</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
               </>
             )}
           </section>
