@@ -214,15 +214,15 @@ export default function FatPage() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const router = useRouter();
 
-  // Banners para el carrusel
+  // Banners para el carrusel (imágenes y videos)
   const mobileBanners = [
-    { src: "/bannermovil.png?v=4", alt: "Banner promocional 1" },
-    { src: "/bannermovilfat1.png", alt: "Banner promocional 2" }
+    { src: "/bannermovil.png?v=4", alt: "Banner promocional 1", type: "image" as const },
+    { src: "/bannermovilfat1.mp4", alt: "Banner promocional 2", type: "video" as const }
   ];
 
   const pcBanners = [
-    { src: "/bannerpc.png?v=2", alt: "Banner promocional 1" },
-    { src: "/bannerpcfat1.png", alt: "Banner promocional 2" }
+    { src: "/bannerpc.png?v=2", alt: "Banner promocional 1", type: "image" as const },
+    { src: "/bannerwebfat1.mp4", alt: "Banner promocional 2", type: "video" as const }
   ];
 
   // Auto-rotate banners cada 5 segundos
@@ -956,24 +956,42 @@ export default function FatPage() {
                     index === currentBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                   }`}
                 >
-                  <Image
-                    src={banner.src}
-                    alt={banner.alt}
-                    width={800}
-                    height={400}
-                    priority={index === 0}
-                    className="w-full h-auto object-cover moto-drive"
-                  />
+                  {banner.type === 'image' ? (
+                    <Image
+                      src={banner.src}
+                      alt={banner.alt}
+                      width={800}
+                      height={400}
+                      priority={index === 0}
+                      className="w-full h-auto object-cover moto-drive"
+                    />
+                  ) : (
+                    <video
+                      src={banner.src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-auto object-cover moto-drive"
+                    />
+                  )}
                 </div>
               ))}
               {/* Placeholder para mantener altura */}
-              <Image
-                src={mobileBanners[0].src}
-                alt="Banner placeholder"
-                width={800}
-                height={400}
-                className="w-full h-auto object-cover opacity-0"
-              />
+              {mobileBanners[0].type === 'image' ? (
+                <Image
+                  src={mobileBanners[0].src}
+                  alt="Banner placeholder"
+                  width={800}
+                  height={400}
+                  className="w-full h-auto object-cover opacity-0"
+                />
+              ) : (
+                <video
+                  src={mobileBanners[0].src}
+                  className="w-full h-auto object-cover opacity-0"
+                />
+              )}
             </div>
 
             {/* Indicadores (dots) móvil */}
@@ -1003,32 +1021,58 @@ export default function FatPage() {
                     index === currentBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                   }`}
                 >
-                  <Image
-                    src={banner.src}
-                    alt={banner.alt}
-                    width={1200}
-                    height={140}
-                    priority={index === 0}
-                    className="w-full h-auto object-contain moto-drive"
-                    style={{
-                      maxHeight: '140px',
-                      objectPosition: 'center',
-                    }}
-                  />
+                  {banner.type === 'image' ? (
+                    <Image
+                      src={banner.src}
+                      alt={banner.alt}
+                      width={1200}
+                      height={140}
+                      priority={index === 0}
+                      className="w-full h-auto object-contain moto-drive"
+                      style={{
+                        maxHeight: '140px',
+                        objectPosition: 'center',
+                      }}
+                    />
+                  ) : (
+                    <video
+                      src={banner.src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-auto object-contain moto-drive"
+                      style={{
+                        maxHeight: '140px',
+                        objectPosition: 'center',
+                      }}
+                    />
+                  )}
                 </div>
               ))}
               {/* Placeholder para mantener altura */}
-              <Image
-                src={pcBanners[0].src}
-                alt="Banner placeholder"
-                width={1200}
-                height={140}
-                className="w-full h-auto object-contain opacity-0"
-                style={{
-                  maxHeight: '140px',
-                  objectPosition: 'center',
-                }}
-              />
+              {pcBanners[0].type === 'image' ? (
+                <Image
+                  src={pcBanners[0].src}
+                  alt="Banner placeholder"
+                  width={1200}
+                  height={140}
+                  className="w-full h-auto object-contain opacity-0"
+                  style={{
+                    maxHeight: '140px',
+                    objectPosition: 'center',
+                  }}
+                />
+              ) : (
+                <video
+                  src={pcBanners[0].src}
+                  className="w-full h-auto object-contain opacity-0"
+                  style={{
+                    maxHeight: '140px',
+                    objectPosition: 'center',
+                  }}
+                />
+              )}
             </div>
 
             {/* Indicadores (dots) PC */}
