@@ -134,6 +134,31 @@ const salsas: Salsa[] = [
   },
 ];
 
+// 🎁 PROMOCIÓN: Salsas que califican para 40% de descuento
+const PROMO_SAUCE_IDS = [
+  "anticuchos",      // Parrillera
+  "honey-mustard",   // Honey Mustard
+  "teriyaki",        // Teriyaki
+  "macerichada"      // Sweet & Sour
+];
+
+// Función para validar si una orden califica para el descuento del 40%
+const hasPromoDiscount = (order: CompletedOrder, productId: string): boolean => {
+  // Solo aplica a los 3 menús principales
+  if (!["pequeno-dilema", "duo-dilema", "santo-pecado"].includes(productId)) {
+    return false;
+  }
+
+  // Verificar que todas las salsas sean promocionales
+  // Si no tiene salsas seleccionadas, no aplica
+  if (!order.salsas || order.salsas.length === 0) {
+    return false;
+  }
+
+  // TODAS las salsas deben ser promocionales
+  return order.salsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
+};
+
 // Generar dinámicamente el diccionario de complementos disponibles
 const generateAvailableComplements = () => {
   const complements: Record<string, { name: string; price: number }> = {
@@ -195,7 +220,14 @@ export default function FatPage() {
       product = fitProducts.find(p => p.id === order.productId);
     }
     if (!product) return total;
-    let orderTotal = product.price * order.quantity;
+
+    // Calcular precio del producto (con descuento si aplica)
+    let productPrice = product.price;
+    if (hasPromoDiscount(order, order.productId)) {
+      productPrice = product.price * 0.6; // 40% descuento = pagar 60%
+    }
+
+    let orderTotal = productPrice * order.quantity;
     order.complementIds.forEach(compId => {
       const complement = availableComplements[compId];
       if (complement) orderTotal += complement.price;
@@ -208,7 +240,15 @@ export default function FatPage() {
     completedOrders.forEach(order => {
       const product = products.find(p => p.id === order.productId);
       if (product) {
-        addToCart(product, order.quantity);
+        // Aplicar descuento si califica
+        const hasDiscount = hasPromoDiscount(order, order.productId);
+        const finalPrice = hasDiscount ? product.price * 0.6 : product.price;
+
+        addToCart({
+          ...product,
+          price: finalPrice
+        }, order.quantity);
+
         order.complementIds.forEach(compId => {
           const complement = availableComplements[compId];
           if (complement) {
@@ -1430,9 +1470,24 @@ export default function FatPage() {
 
                           <div className="text-[11px] md:text-xs space-y-0.5 md:space-y-1">
                             {/* Precio del menú */}
-                            <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between`}>
+                            <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                              {(() => {
+                                const hasDiscount = hasPromoDiscount(order, order.productId);
+                                const originalTotal = product.price * order.quantity;
+                                const discountedTotal = originalTotal * 0.6;
+
+                                if (hasDiscount) {
+                                  return (
+                                    <span className="flex items-center gap-2">
+                                      <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
+                                      <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
+                                      <span className="bg-green-500/20 text-green-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-bold">-40%</span>
+                                    </span>
+                                  );
+                                }
+                                return <span className="text-amber-400/80">S/ {originalTotal.toFixed(2)}</span>;
+                              })()}
                             </div>
 
                             {/* Salsas seleccionadas - solo para ordenes de fat */}
@@ -1637,7 +1692,10 @@ export default function FatPage() {
               {(() => {
                 if (!product) return null;
 
-              const productTotal = product.price * order.quantity;
+              // Aplicar descuento si califica
+              const hasDiscount = hasPromoDiscount(order, order.productId);
+              const productPrice = hasDiscount ? product.price * 0.6 : product.price;
+              const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
               }, 0);
@@ -1679,9 +1737,23 @@ export default function FatPage() {
 
                     {/* Desglose de precios */}
                     <div className="space-y-1">
-                      <div className={`flex justify-between ${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} text-xs`}>
+                      <div className={`flex justify-between items-center ${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} text-xs`}>
                         <span>• {product.name} x{order.quantity}</span>
-                        <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                        {(() => {
+                          const originalTotal = product.price * order.quantity;
+                          const discountedTotal = originalTotal * 0.6;
+
+                          if (hasDiscount) {
+                            return (
+                              <span className="flex items-center gap-2">
+                                <span className="text-gray-500 line-through text-[10px]">S/ {originalTotal.toFixed(2)}</span>
+                                <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
+                                <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded font-bold">-40%</span>
+                              </span>
+                            );
+                          }
+                          return <span className="text-amber-400/80">S/ {originalTotal.toFixed(2)}</span>;
+                        })()}
                       </div>
 
                       {/* Salsas (solo para órdenes fat) */}
