@@ -932,7 +932,7 @@ export default function FatPage() {
             width={800}
             height={400}
             priority={true}
-            className="block md:hidden w-full h-auto object-cover moto-drive"
+            className="block md:hidden w-full h-auto object-cover"
           />
           {/* Banner para PC/Tablet */}
           <Image
@@ -941,7 +941,7 @@ export default function FatPage() {
             width={1200}
             height={140}
             priority={true}
-            className="hidden md:block w-full h-auto object-contain moto-drive"
+            className="hidden md:block w-full h-auto object-contain"
             style={{
               maxHeight: '140px',
               objectPosition: 'center',
