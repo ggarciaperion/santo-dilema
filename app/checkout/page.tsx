@@ -245,7 +245,7 @@ export default function CheckoutPage() {
     // Calcular precio del producto (con descuento si aplica)
     let productPrice = product.price;
     if (hasPromoDiscount(order, order.productId)) {
-      productPrice = product.price * 0.6; // 40% descuento = pagar 60%
+      productPrice = product.price * 0.7; // 30% descuento = pagar 70%
     }
 
     const productTotal = productPrice * order.quantity;
@@ -729,7 +729,7 @@ export default function CheckoutPage() {
 
               // Aplicar descuento si califica
               const hasDiscount = hasPromoDiscount(order, order.productId);
-              const productPrice = hasDiscount ? product.price * 0.6 : product.price;
+              const productPrice = hasDiscount ? product.price * 0.7 : product.price;
               const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -794,7 +794,7 @@ export default function CheckoutPage() {
                               S/ {productTotal.toFixed(2)}
                             </span>
                             <span className="bg-green-500/20 text-green-400 text-[8px] px-1 py-0.5 rounded font-bold">
-                              -40%
+                              -30%
                             </span>
                           </div>
                         </div>

@@ -245,7 +245,7 @@ export default function FatPage() {
     // Calcular precio del producto (con descuento si aplica)
     let productPrice = product.price;
     if (hasPromoDiscount(order, order.productId)) {
-      productPrice = product.price * 0.6; // 40% descuento = pagar 60%
+      productPrice = product.price * 0.7; // 30% descuento = pagar 70%
     }
 
     let orderTotal = productPrice * order.quantity;
@@ -263,7 +263,7 @@ export default function FatPage() {
       if (product) {
         // Aplicar descuento si califica
         const hasDiscount = hasPromoDiscount(order, order.productId);
-        const finalPrice = hasDiscount ? product.price * 0.6 : product.price;
+        const finalPrice = hasDiscount ? product.price * 0.7 : product.price;
 
         addToCart({
           ...product,
@@ -1179,7 +1179,7 @@ export default function FatPage() {
                         const currentSalsas = selectedSalsas[product.id] || [];
                         const hasDiscount = currentSalsas.length > 0 &&
                           currentSalsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
-                        const discountedPrice = product.price * 0.6;
+                        const discountedPrice = product.price * 0.7;
 
                         if (hasDiscount) {
                           return (
@@ -1192,7 +1192,7 @@ export default function FatPage() {
                                   S/ {discountedPrice.toFixed(2)}
                                 </span>
                                 <span className="bg-green-500/20 text-green-400 text-[8px] md:text-[10px] px-1 py-0.5 rounded font-bold">
-                                  -40%
+                                  -30%
                                 </span>
                               </div>
                             </div>
@@ -1670,14 +1670,14 @@ export default function FatPage() {
                               {(() => {
                                 const hasDiscount = hasPromoDiscount(order, order.productId);
                                 const originalTotal = product.price * order.quantity;
-                                const discountedTotal = originalTotal * 0.6;
+                                const discountedTotal = originalTotal * 0.7;
 
                                 if (hasDiscount) {
                                   return (
                                     <span className="flex items-center gap-2">
                                       <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
                                       <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
-                                      <span className="bg-green-500/20 text-green-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-bold">-40%</span>
+                                      <span className="bg-green-500/20 text-green-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-bold">-30%</span>
                                     </span>
                                   );
                                 }
@@ -1889,7 +1889,7 @@ export default function FatPage() {
 
               // Aplicar descuento si califica
               const hasDiscount = hasPromoDiscount(order, order.productId);
-              const productPrice = hasDiscount ? product.price * 0.6 : product.price;
+              const productPrice = hasDiscount ? product.price * 0.7 : product.price;
               const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -1936,14 +1936,14 @@ export default function FatPage() {
                         <span>• {product.name} x{order.quantity}</span>
                         {(() => {
                           const originalTotal = product.price * order.quantity;
-                          const discountedTotal = originalTotal * 0.6;
+                          const discountedTotal = originalTotal * 0.7;
 
                           if (hasDiscount) {
                             return (
                               <span className="flex items-center gap-2">
                                 <span className="text-gray-500 line-through text-[10px]">S/ {originalTotal.toFixed(2)}</span>
                                 <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
-                                <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded font-bold">-40%</span>
+                                <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded font-bold">-30%</span>
                               </span>
                             );
                           }
