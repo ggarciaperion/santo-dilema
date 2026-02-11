@@ -1007,9 +1007,37 @@ export default function FatPage() {
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
-                      <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
-                        S/ {product.price.toFixed(2)}
-                      </span>
+                      {(() => {
+                        // Verificar si las salsas seleccionadas califican para descuento
+                        const currentSalsas = selectedSalsas[product.id] || [];
+                        const hasDiscount = currentSalsas.length > 0 &&
+                          currentSalsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
+                        const discountedPrice = product.price * 0.6;
+
+                        if (hasDiscount) {
+                          return (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-gray-500 line-through text-[10px] md:text-xs">
+                                S/ {product.price.toFixed(2)}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm md:text-lg font-black text-green-400 gold-glow">
+                                  S/ {discountedPrice.toFixed(2)}
+                                </span>
+                                <span className="bg-green-500/20 text-green-400 text-[8px] md:text-[10px] px-1 py-0.5 rounded font-bold">
+                                  -40%
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
+                            S/ {product.price.toFixed(2)}
+                          </span>
+                        );
+                      })()}
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
                           onClick={(e) => {
