@@ -161,6 +161,30 @@ const fitProducts = [
   },
 ];
 
+// 🎁 PROMOCIÓN: Salsas que califican para 40% de descuento
+const PROMO_SAUCE_IDS = [
+  "anticuchos",      // Parrillera
+  "honey-mustard",   // Honey Mustard
+  "teriyaki",        // Teriyaki
+  "macerichada"      // Sweet & Sour
+];
+
+// Función para validar si una orden califica para el descuento del 40%
+const hasPromoDiscount = (order: CompletedOrder, productId: string): boolean => {
+  // Solo aplica a los 3 menús principales de FAT
+  if (!["pequeno-dilema", "duo-dilema", "santo-pecado"].includes(productId)) {
+    return false;
+  }
+
+  // Verificar que todas las salsas sean promocionales
+  if (!order.salsas || order.salsas.length === 0) {
+    return false;
+  }
+
+  // TODAS las salsas deben ser promocionales
+  return order.salsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { clearCart } = useCart();
@@ -218,8 +242,13 @@ export default function CheckoutPage() {
 
     if (!product) return total;
 
-    // Calcular total del producto
-    const productTotal = product.price * order.quantity;
+    // Calcular precio del producto (con descuento si aplica)
+    let productPrice = product.price;
+    if (hasPromoDiscount(order, order.productId)) {
+      productPrice = product.price * 0.6; // 40% descuento = pagar 60%
+    }
+
+    const productTotal = productPrice * order.quantity;
 
     // Calcular total de complementos
     const complementsTotal = order.complementIds.reduce((sum, compId) => {
@@ -698,8 +727,10 @@ export default function CheckoutPage() {
 
               if (!product) return null;
 
-              // Calcular el total de esta orden
-              const productTotal = product.price * order.quantity;
+              // Aplicar descuento si califica
+              const hasDiscount = hasPromoDiscount(order, order.productId);
+              const productPrice = hasDiscount ? product.price * 0.6 : product.price;
+              const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
               }, 0);
@@ -753,7 +784,23 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <div className="text-amber-400 font-bold text-xs md:text-sm gold-glow flex-shrink-0">
-                      S/ {productTotal.toFixed(2)}
+                      {hasDiscount ? (
+                        <div className="flex flex-col items-end gap-0.5">
+                          <span className="text-gray-500 line-through text-[9px]">
+                            S/ {(product.price * order.quantity).toFixed(2)}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-green-400 font-bold">
+                              S/ {productTotal.toFixed(2)}
+                            </span>
+                            <span className="bg-green-500/20 text-green-400 text-[8px] px-1 py-0.5 rounded font-bold">
+                              -40%
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span>S/ {productTotal.toFixed(2)}</span>
+                      )}
                     </div>
                   </div>
                 </div>
