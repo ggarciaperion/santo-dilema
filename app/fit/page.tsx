@@ -627,8 +627,8 @@ export default function FitPage() {
 
       {/* Banner Carrusel FIT - solo desktop */}
       <BannerCarousel slides={[
-        { web: "/bannerwebfit1.mp4" },
-        { web: "/bannerwebfit2.mp4" },
+        { web: "/prueba1.png" },
+        { web: "/prueba2.png" },
       ]} />
 
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
