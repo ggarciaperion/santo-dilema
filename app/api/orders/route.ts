@@ -196,28 +196,55 @@ export async function POST(request: Request) {
       return orderQualifiesForCoupon(order.salsas);
     });
 
+    console.log("🔍 Verificando elegibilidad para cupón:");
+    console.log("  - hasPromoSauces:", hasPromoSauces);
+    console.log("  - DNI:", dni);
+    console.log("  - Salsas en orden:", completedOrders.map((o: any) => o.salsas));
+
     if (hasPromoSauces) {
       try {
-        // Intentar generar cupón
-        const couponResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/coupons`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'generate',
+        // Generar cupón directamente usando storage (sin fetch interno)
+        const coupons = await storage.getCoupons();
+
+        console.log("📊 Estado de cupones:");
+        console.log("  - Total cupones existentes:", coupons.length);
+        console.log("  - Cupones del DNI:", coupons.filter((c: any) => c.dni === dni).length);
+
+        // Verificar límite de 13 cupones
+        if (coupons.length >= 13) {
+          console.log("⚠️ Límite de 13 cupones alcanzado");
+        }
+        // Verificar un cupón por DNI
+        else if (coupons.some((c: any) => c.dni === dni)) {
+          console.log("⚠️ DNI ya tiene un cupón:", dni);
+        }
+        // Generar cupón
+        else {
+          const couponCode = `SANTO13-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+          const newCoupon = {
+            id: `coupon-${Date.now()}`,
+            code: couponCode,
             dni,
             customerName: name,
+            discount: 13,
+            status: "pending",
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date("2026-02-28T23:59:59").toISOString(),
             orderId: newOrder.id,
-            salsas: completedOrders[0].salsas, // Usar las salsas de la primera orden que califique
-          }),
-        });
+          };
 
-        if (couponResponse.ok) {
-          const couponData = await couponResponse.json();
-          generatedCoupon = couponData.coupon;
-          console.log("🎁 Cupón generado:", generatedCoupon.code);
+          await storage.saveCoupon(newCoupon);
+
+          generatedCoupon = {
+            code: newCoupon.code,
+            discount: newCoupon.discount,
+            expiresAt: newCoupon.expiresAt,
+          };
+
+          console.log("✅ Cupón generado exitosamente:", generatedCoupon.code);
         }
       } catch (error) {
-        console.error("Error al generar cupón:", error);
+        console.error("❌ Error al generar cupón:", error);
         // No fallar el pedido si falla la generación del cupón
       }
     }
