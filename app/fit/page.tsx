@@ -651,8 +651,8 @@ export default function FitPage() {
         {/* Banner Carrusel FIT - solo desktop, alineado con carteles */}
         <div className="mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
           <BannerCarousel slides={[
-            { web: "/prueba1.png", movil: "/prueba1.png" },
-            { web: "/prueba2.png", movil: "/prueba2.png" },
+            { web: "/prueba1.png", movil: "/bmfit1.png" },
+            { web: "/prueba2.png", movil: "/bmfit2.png" },
           ]} />
         </div>
         <div className="h-6 md:h-8" />
