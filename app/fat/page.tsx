@@ -211,28 +211,7 @@ export default function FatPage() {
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const router = useRouter();
-
-  // Banners para el carrusel (imágenes y videos)
-  const mobileBanners = [
-    { src: "/bannermovil.png", alt: "Banner promocional 1", type: "image" as const },
-    { src: "/bannermovilfat1.mp4", alt: "Banner promocional 2", type: "video" as const }
-  ];
-
-  const pcBanners = [
-    { src: "/bannerpc.png", alt: "Banner promocional 1", type: "image" as const },
-    { src: "/bannerwebfat1.mp4", alt: "Banner promocional 2", type: "video" as const }
-  ];
-
-  // Auto-rotate banners cada 8 segundos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBannerIndex((prevIndex) => (prevIndex + 1) % mobileBanners.length);
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, [currentBannerIndex]);
 
   const completedTotal = completedOrders.reduce((total, order) => {
     // Buscar en productos fat primero, luego en productos fit
@@ -943,154 +922,31 @@ export default function FatPage() {
         </div>
       </header>
 
-      {/* Hero Section - Banner Carousel */}
-      <section className="relative w-full overflow-hidden bg-black md:bg-transparent pt-6 md:mt-8">
-        <div className="relative w-full bg-black md:bg-transparent">
-          {/* Carrusel para móvil */}
-          <div className="relative block md:hidden">
-            <div className="relative w-full overflow-hidden">
-              {mobileBanners.map((banner, index) => (
-                <div
-                  key={index}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                    index === currentBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                  }`}
-                >
-                  {banner.type === 'image' ? (
-                    <Image
-                      src={banner.src}
-                      alt={banner.alt}
-                      width={800}
-                      height={400}
-                      priority={index === 0}
-                      className="w-full h-auto object-cover"
-                    />
-                  ) : (
-                    <video
-                      src={banner.src}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="w-full h-auto object-cover"
-                    />
-                  )}
-                </div>
-              ))}
-              {/* Placeholder para mantener altura */}
-              {mobileBanners[0].type === 'image' ? (
-                <Image
-                  src={mobileBanners[0].src}
-                  alt="Banner placeholder"
-                  width={800}
-                  height={400}
-                  className="w-full h-auto object-cover opacity-0"
-                />
-              ) : (
-                <video
-                  src={mobileBanners[0].src}
-                  className="w-full h-auto object-cover opacity-0"
-                />
-              )}
-            </div>
-
-            {/* Indicadores (dots) móvil */}
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2 z-20">
-              {mobileBanners.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentBannerIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === currentBannerIndex
-                      ? 'bg-red-500 w-6'
-                      : 'bg-white/50 hover:bg-white/80'
-                  }`}
-                  aria-label={`Ir a banner ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Carrusel para PC/Tablet */}
-          <div className="relative hidden md:block">
-            <div className="relative w-full overflow-hidden">
-              {pcBanners.map((banner, index) => (
-                <div
-                  key={index}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                    index === currentBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                  }`}
-                >
-                  {banner.type === 'image' ? (
-                    <Image
-                      src={banner.src}
-                      alt={banner.alt}
-                      width={1200}
-                      height={140}
-                      priority={index === 0}
-                      className="w-full h-auto object-contain"
-                      style={{
-                        maxHeight: '140px',
-                        objectPosition: 'center',
-                      }}
-                    />
-                  ) : (
-                    <video
-                      src={banner.src}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="w-full h-auto object-contain"
-                      style={{
-                        maxHeight: '140px',
-                        objectPosition: 'center',
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
-              {/* Placeholder para mantener altura */}
-              {pcBanners[0].type === 'image' ? (
-                <Image
-                  src={pcBanners[0].src}
-                  alt="Banner placeholder"
-                  width={1200}
-                  height={140}
-                  className="w-full h-auto object-contain opacity-0"
-                  style={{
-                    maxHeight: '140px',
-                    objectPosition: 'center',
-                  }}
-                />
-              ) : (
-                <video
-                  src={pcBanners[0].src}
-                  className="w-full h-auto object-contain opacity-0"
-                  style={{
-                    maxHeight: '140px',
-                    objectPosition: 'center',
-                  }}
-                />
-              )}
-            </div>
-
-            {/* Indicadores (dots) PC */}
-            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2 z-20">
-              {pcBanners.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentBannerIndex(index)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                    index === currentBannerIndex
-                      ? 'bg-red-500 w-8'
-                      : 'bg-white/50 hover:bg-white/80'
-                  }`}
-                  aria-label={`Ir a banner ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+      {/* Hero Section - Banner */}
+      <section className="relative w-full overflow-visible bg-black md:bg-transparent pt-6 md:mt-8">
+        <div className="relative w-full bg-black md:bg-transparent overflow-visible">
+          {/* Banner para móvil */}
+          <video
+            src="/bannermovilfat.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="block md:hidden w-full h-auto object-cover"
+          />
+          {/* Banner para PC/Tablet */}
+          <video
+            src="/bannerwebfat.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="hidden md:block w-full h-auto object-contain"
+            style={{
+              maxHeight: '140px',
+              objectPosition: 'center',
+            }}
+          />
         </div>
       </section>
 
