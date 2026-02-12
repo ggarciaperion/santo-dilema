@@ -71,6 +71,9 @@ interface CompletedOrder {
   quantity: number;
   salsas?: string[]; // Opcional, solo para fat
   complementIds: string[];
+  discountApplied?: boolean;
+  originalPrice?: number;
+  finalPrice?: number;
 }
 
 const salsas: { id: string; name: string }[] = [
@@ -255,12 +258,7 @@ export default function CheckoutPage() {
 
     if (!product) return total;
 
-    // Calcular precio del producto (con descuento si aplica)
-    let productPrice = product.price;
-    if (hasPromoDiscount(order, order.productId)) {
-      productPrice = product.price * 0.7; // 30% descuento = pagar 70%
-    }
-
+    const productPrice = order.finalPrice ?? (hasPromoDiscount(order, order.productId) ? product.price * 0.7 : product.price);
     const productTotal = productPrice * order.quantity;
 
     // Calcular total de complementos
@@ -916,10 +914,10 @@ export default function CheckoutPage() {
 
               if (!product) return null;
 
-              // Aplicar descuento si califica
-              const hasDiscount = hasPromoDiscount(order, order.productId);
-              const productPrice = hasDiscount ? product.price * 0.7 : product.price;
+              const hasDiscount = order.discountApplied || hasPromoDiscount(order, order.productId);
+              const productPrice = order.finalPrice ?? (hasDiscount ? product.price * 0.7 : product.price);
               const productTotal = productPrice * order.quantity;
+              const originalTotal = (order.originalPrice ?? product.price) * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
               }, 0);
@@ -976,7 +974,7 @@ export default function CheckoutPage() {
                       {hasDiscount ? (
                         <div className="flex flex-col items-end gap-0.5">
                           <span className="text-gray-500 line-through text-[9px]">
-                            S/ {(product.price * order.quantity).toFixed(2)}
+                            S/ {originalTotal.toFixed(2)}
                           </span>
                           <div className="flex items-center gap-1">
                             <span className="text-green-400 font-bold">
