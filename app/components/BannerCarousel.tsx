@@ -72,14 +72,15 @@ export default function BannerCarousel({
 
   return (
     <section className={`relative w-full bg-black overflow-hidden ${!hasMovil ? "hidden md:block" : ""}`}>
-      {/* Contenedor móvil con altura fija */}
+      {/* Contenedor móvil - altura natural definida por slide 0 */}
       {hasMovil && (
-        <div className="relative block md:hidden w-full" style={{ height: movilHeight }}>
+        <div className="relative block md:hidden w-full overflow-hidden">
           {slides.map((slide, index) => (
             <div
               key={index}
-              className="absolute inset-0"
               style={{
+                position: index === 0 ? "relative" : "absolute",
+                inset: 0,
                 opacity: index === current ? 1 : 0,
                 transition: "opacity 0.5s ease",
                 zIndex: index === current ? 1 : 0,
@@ -92,10 +93,10 @@ export default function BannerCarousel({
                     src={slide.movil}
                     autoPlay={index === 0}
                     loop muted playsInline preload="auto"
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto block"
                   />
                 ) : (
-                  <img src={slide.movil} alt="" className="w-full h-full object-cover" />
+                  <img src={slide.movil} alt="" className="w-full h-auto block" />
                 )
               )}
             </div>
