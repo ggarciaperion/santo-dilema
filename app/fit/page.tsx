@@ -136,6 +136,7 @@ export default function FitPage() {
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
+  const [bannerWidth, setBannerWidth] = useState<number | null>(null);
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -240,6 +241,22 @@ export default function FitPage() {
       }
     }
   }, [completedOrders]);
+
+  // Medir ancho real de la fila de carteles para alinear el banner
+  useEffect(() => {
+    const measure = () => {
+      const ids = products.map(p => p.id);
+      const first = cardRefs.current[ids[0]];
+      const last = cardRefs.current[ids[ids.length - 1]];
+      if (first && last) {
+        const w = last.getBoundingClientRect().right - first.getBoundingClientRect().left;
+        if (w > 0) setBannerWidth(Math.round(w));
+      }
+    };
+    const t = setTimeout(measure, 200);
+    window.addEventListener('resize', measure);
+    return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
+  }, []);
 
   // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
 
@@ -628,10 +645,12 @@ export default function FitPage() {
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
         {/* Banner Carrusel FIT - solo desktop, alineado con carteles */}
-        <BannerCarousel slides={[
-          { web: "/prueba1.png" },
-          { web: "/prueba2.png" },
-        ]} />
+        <div className="mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
+          <BannerCarousel slides={[
+            { web: "/prueba1.png" },
+            { web: "/prueba2.png" },
+          ]} />
+        </div>
         <div className="h-6 md:h-8" />
         <div className="relative flex items-center justify-center overflow-visible">
           <div
