@@ -75,7 +75,7 @@ const fatProducts: Product[] = [
     id: "duo-dilema",
     name: "Dúo Dilema",
     description: "12 alitas acompañadas de papas francesas y 02 de tus salsas favoritas.",
-    price: 33.50,
+    price: 32.50,
     image: "/duo-dilema.png?v=3",
     category: "fat",
   },
