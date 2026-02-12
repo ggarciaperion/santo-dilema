@@ -223,6 +223,7 @@ export default function CheckoutPage() {
   const [generatedCoupon, setGeneratedCoupon] = useState<any>(null);
   const [couponCopied, setCouponCopied] = useState(false);
   const [dniHasCoupon, setDniHasCoupon] = useState(false);
+  const [dniCouponStatus, setDniCouponStatus] = useState<"pending" | "used" | null>(null);
   const [checkingDni, setCheckingDni] = useState(false);
 
   // Reproducir sonido cuando el pedido se confirma
@@ -363,6 +364,7 @@ export default function CheckoutPage() {
       // 2. El DNI tiene 8 dígitos (DNI válido en Perú)
       if (!orderQualifiesForCoupon || formData.dni.length !== 8) {
         setDniHasCoupon(false);
+        setDniCouponStatus(null);
         return;
       }
 
@@ -373,9 +375,11 @@ export default function CheckoutPage() {
 
         // hasPromo = true significa que el DNI YA tiene un cupón
         setDniHasCoupon(data.hasPromo === true);
+        setDniCouponStatus(data.couponStatus); // "pending" | "used" | null
       } catch (error) {
         console.error("Error verificando DNI:", error);
         setDniHasCoupon(false);
+        setDniCouponStatus(null);
       } finally {
         setCheckingDni(false);
       }
@@ -997,7 +1001,9 @@ export default function CheckoutPage() {
           {orderQualifiesForCoupon && (
             <div className={`border rounded-lg p-2 mb-2 ${
               dniHasCoupon
-                ? 'bg-amber-500/10 border-amber-500/30'
+                ? dniCouponStatus === 'used'
+                  ? 'bg-gray-500/10 border-gray-500/30'
+                  : 'bg-amber-500/10 border-amber-500/30'
                 : 'bg-green-500/10 border-green-500/30'
             }`}>
               {checkingDni ? (
@@ -1005,15 +1011,29 @@ export default function CheckoutPage() {
                   Verificando elegibilidad...
                 </p>
               ) : dniHasCoupon ? (
-                <>
-                  <p className="text-amber-400 text-[10px] md:text-xs text-center font-semibold">
-                    ℹ️ Ya tienes un cupón activo del <span className="font-black">13% de descuento</span>
-                  </p>
-                  <p className="text-amber-400/70 text-[9px] md:text-[10px] text-center mt-1">
-                    Solo se genera un cupón por DNI. Puedes usarlo en el campo "¿Tienes un cupón?" debajo.
-                  </p>
-                </>
+                dniCouponStatus === 'used' ? (
+                  // Cupón ya usado
+                  <>
+                    <p className="text-gray-400 text-[10px] md:text-xs text-center font-semibold">
+                      ✓ Tu cupón del 13% ya fue utilizado
+                    </p>
+                    <p className="text-gray-400/70 text-[9px] md:text-[10px] text-center mt-1">
+                      Solo se genera un cupón por DNI. ¡Atento a próximas promociones!
+                    </p>
+                  </>
+                ) : (
+                  // Cupón pendiente (no usado)
+                  <>
+                    <p className="text-amber-400 text-[10px] md:text-xs text-center font-semibold">
+                      ℹ️ Ya tienes un cupón activo del <span className="font-black">13% de descuento</span>
+                    </p>
+                    <p className="text-amber-400/70 text-[9px] md:text-[10px] text-center mt-1">
+                      Solo se genera un cupón por DNI. Puedes usarlo en el campo "¿Tienes un cupón?" debajo.
+                    </p>
+                  </>
+                )
               ) : (
+                // Elegible para nuevo cupón
                 <>
                   <p className="text-green-400 text-[10px] md:text-xs text-center font-semibold">
                     🎁 ¡Tu pedido califica para cupón de <span className="font-black">13% descuento</span> para tu próxima compra!

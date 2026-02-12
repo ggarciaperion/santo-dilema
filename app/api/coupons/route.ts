@@ -46,11 +46,13 @@ export async function GET(request: Request) {
     if (action === "check-eligibility" && dni) {
       const coupons = await storage.getCoupons();
       const totalCoupons = coupons.length;
-      const hasPromo = coupons.some((c: Coupon) => c.dni === dni);
+      const userCoupon = coupons.find((c: Coupon) => c.dni === dni);
+      const hasPromo = !!userCoupon;
 
       return NextResponse.json({
         eligible: totalCoupons < 13 && !hasPromo,
         hasPromo,
+        couponStatus: userCoupon?.status || null, // "pending" | "used" | null
         remainingSlots: Math.max(0, 13 - totalCoupons),
       });
     }
