@@ -948,8 +948,8 @@ export default function FatPage() {
         { movil: "/bannermovilfat.mp4",  web: "/bannerwebfat.mp4"  },
         { movil: "/bannermovilfat1.mp4", web: "/bannerwebfat1.mp4" },
         { movil: "/bannermovilfat2.mp4", web: "/bannerwebfat2.png" },
-        { movil: "/bannermovilfat3.mp4", web: "/bannerwebfat3.png" },
-        { movil: "/bannermovilfat3.mp4", web: "/bannerwebfat4.mp4" },
+        { movil: "/bannermovilfat3.mp4?v=2", web: "/bannerwebfat3.png" },
+        { movil: "/bannermovilfat3.mp4?v=2", web: "/bannerwebfat4.mp4" },
       ]} />
 
       {/* Products Carousel */}
