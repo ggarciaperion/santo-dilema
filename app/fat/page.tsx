@@ -953,6 +953,7 @@ export default function FatPage() {
           { web: "/bwfat3.png" },
           { web: "/bwfat4.png" },
         ]} />
+        <div className="h-6 md:h-8" />
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible">
           {/* Scrollable Products - Carrusel en móvil, grilla en desktop */}

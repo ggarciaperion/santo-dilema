@@ -632,6 +632,7 @@ export default function FitPage() {
           { web: "/prueba1.png" },
           { web: "/prueba2.png" },
         ]} />
+        <div className="h-6 md:h-8" />
         <div className="relative flex items-center justify-center overflow-visible">
           <div
             ref={scrollContainerRef}
