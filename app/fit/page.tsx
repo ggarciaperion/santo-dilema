@@ -1101,10 +1101,10 @@ export default function FitPage() {
                   <div className="mt-3 md:mt-4 bg-green-500/10 border-2 border-green-500/40 rounded-lg p-3 md:p-4">
                     <p className="text-green-400 text-xs md:text-sm text-center font-semibold flex items-center justify-center gap-2">
                       <span className="text-base md:text-lg">🎁</span>
-                      ¡Esta orden califica para cupón de <span className="font-black">13% descuento</span> en tu próxima compra!
+                      ¡Tu orden califica para la promoción de <span className="font-black">cupón 13%!</span>
                     </p>
                     <p className="text-green-400/70 text-[10px] md:text-xs text-center mt-1">
-                      El código se revelará después de pagar
+                      En el siguiente paso verificaremos tu elegibilidad con tu DNI
                     </p>
                   </div>
                 );

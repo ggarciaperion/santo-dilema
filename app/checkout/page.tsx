@@ -222,6 +222,8 @@ export default function CheckoutPage() {
   const [orderQualifiesForCoupon, setOrderQualifiesForCoupon] = useState(false);
   const [generatedCoupon, setGeneratedCoupon] = useState<any>(null);
   const [couponCopied, setCouponCopied] = useState(false);
+  const [dniHasCoupon, setDniHasCoupon] = useState(false);
+  const [checkingDni, setCheckingDni] = useState(false);
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -352,6 +354,37 @@ export default function CheckoutPage() {
 
     setOrderQualifiesForCoupon(qualifies);
   }, [completedOrders]);
+
+  // Verificar si el DNI ya tiene un cupón generado
+  useEffect(() => {
+    const checkDniCoupon = async () => {
+      // Solo verificar si:
+      // 1. La orden califica para cupón
+      // 2. El DNI tiene 8 dígitos (DNI válido en Perú)
+      if (!orderQualifiesForCoupon || formData.dni.length !== 8) {
+        setDniHasCoupon(false);
+        return;
+      }
+
+      setCheckingDni(true);
+      try {
+        const response = await fetch(`/api/coupons?action=check-eligibility&dni=${formData.dni}`);
+        const data = await response.json();
+
+        // hasPromo = true significa que el DNI YA tiene un cupón
+        setDniHasCoupon(data.hasPromo === true);
+      } catch (error) {
+        console.error("Error verificando DNI:", error);
+        setDniHasCoupon(false);
+      } finally {
+        setCheckingDni(false);
+      }
+    };
+
+    // Debounce: esperar 500ms después de que el usuario deje de escribir
+    const timeoutId = setTimeout(checkDniCoupon, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.dni, orderQualifiesForCoupon]);
 
   // Redirect if no completed orders (solo después de cargar)
   useEffect(() => {
@@ -962,13 +995,34 @@ export default function CheckoutPage() {
 
           {/* Notificación de elegibilidad para cupón */}
           {orderQualifiesForCoupon && (
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2 mb-2">
-              <p className="text-green-400 text-[10px] md:text-xs text-center font-semibold">
-                🎁 ¡Tu pedido califica para cupón de <span className="font-black">13% descuento</span> para tu próxima compra!
-              </p>
-              <p className="text-green-400/70 text-[9px] md:text-[10px] text-center mt-1">
-                El código se revelará después de pagar.
-              </p>
+            <div className={`border rounded-lg p-2 mb-2 ${
+              dniHasCoupon
+                ? 'bg-amber-500/10 border-amber-500/30'
+                : 'bg-green-500/10 border-green-500/30'
+            }`}>
+              {checkingDni ? (
+                <p className="text-gray-400 text-[10px] md:text-xs text-center">
+                  Verificando elegibilidad...
+                </p>
+              ) : dniHasCoupon ? (
+                <>
+                  <p className="text-amber-400 text-[10px] md:text-xs text-center font-semibold">
+                    ℹ️ Ya tienes un cupón activo del <span className="font-black">13% de descuento</span>
+                  </p>
+                  <p className="text-amber-400/70 text-[9px] md:text-[10px] text-center mt-1">
+                    Solo se genera un cupón por DNI. Puedes usarlo en el campo "¿Tienes un cupón?" debajo.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-green-400 text-[10px] md:text-xs text-center font-semibold">
+                    🎁 ¡Tu pedido califica para cupón de <span className="font-black">13% descuento</span> para tu próxima compra!
+                  </p>
+                  <p className="text-green-400/70 text-[9px] md:text-[10px] text-center mt-1">
+                    El código se revelará después de pagar.
+                  </p>
+                </>
+              )}
             </div>
           )}
 
