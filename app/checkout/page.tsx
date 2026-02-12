@@ -204,6 +204,7 @@ export default function CheckoutPage() {
   const [customerFound, setCustomerFound] = useState(false);
   const [showDniSearch, setShowDniSearch] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPreLaunchModal, setShowPreLaunchModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [showQrPayment, setShowQrPayment] = useState(false);
   const [showContraEntregaModal, setShowContraEntregaModal] = useState(false);
@@ -448,9 +449,15 @@ export default function CheckoutPage() {
     setShowDniSearch(true);
   };
 
+  const LAUNCH_DATE = new Date('2026-02-14T23:00:00Z');
+  const isPreLaunch = () => Date.now() < LAUNCH_DATE.getTime();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mostrar modal de confirmación de pago
+    if (isPreLaunch()) {
+      setShowPreLaunchModal(true);
+      return;
+    }
     setShowPaymentModal(true);
   };
 
@@ -1360,6 +1367,36 @@ export default function CheckoutPage() {
                   Cancelar
                 </button>
               </>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pre-lanzamiento */}
+      {showPreLaunchModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 border-2 border-fuchsia-500 neon-border-purple rounded-lg p-6 max-w-sm w-full text-center">
+            <div className="text-5xl mb-4">🚀</div>
+            <h3 className="text-xl font-black text-fuchsia-400 neon-glow-purple mb-2">
+              ¡Casi es la hora!
+            </h3>
+            <p className="text-white text-sm mb-1">
+              Abrimos mañana a las
+            </p>
+            <p className="text-fuchsia-300 font-black text-2xl mb-1">
+              6:00 PM
+            </p>
+            <p className="text-fuchsia-400/70 text-xs mb-5">
+              Jueves 13 de Febrero · Hora Perú
+            </p>
+            <p className="text-gray-300 text-xs mb-6">
+              Puedes seguir explorando el menú y armar tu pedido. ¡Te esperamos mañana!
+            </p>
+            <button
+              onClick={() => setShowPreLaunchModal(false)}
+              className="w-full bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 rounded-lg transition-all neon-border-purple"
+            >
+              Entendido →
+            </button>
           </div>
         </div>
       )}

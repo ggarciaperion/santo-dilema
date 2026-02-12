@@ -4,9 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
+// Fecha de lanzamiento: 13 Feb 2026 a las 18:00 hora Perú (UTC-5)
+const LAUNCH_DATE = new Date('2026-02-14T23:00:00Z');
+
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [isPreLaunch, setIsPreLaunch] = useState(false);
 
   useEffect(() => {
     // Verificar si ya se mostró el modal en esta sesión
@@ -14,6 +19,25 @@ export default function Home() {
     if (!hasSeenWelcome) {
       setShowWelcomeModal(true);
     }
+  }, []);
+
+  useEffect(() => {
+    const update = () => {
+      const diff = LAUNCH_DATE.getTime() - Date.now();
+      if (diff > 0) {
+        setIsPreLaunch(true);
+        setCountdown({
+          hours: Math.floor(diff / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        });
+      } else {
+        setIsPreLaunch(false);
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const closeWelcomeModal = () => {
@@ -69,6 +93,33 @@ export default function Home() {
                   Huaral y Aucallama: previa coordinación
                 </p>
               </div>
+
+              {isPreLaunch && (
+                <div className="bg-black/50 border-2 border-fuchsia-500/60 rounded-lg p-4">
+                  <p className="text-center text-white font-bold mb-1">
+                    🚀 Apertura mañana
+                  </p>
+                  <p className="text-center text-fuchsia-300 text-sm mb-3">
+                    Jueves 13 de Febrero · 6:00 PM
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    {[
+                      { value: countdown.hours, label: 'horas' },
+                      { value: countdown.minutes, label: 'min' },
+                      { value: countdown.seconds, label: 'seg' },
+                    ].map(({ value, label }) => (
+                      <div key={label} className="text-center">
+                        <div className="bg-fuchsia-500/20 border border-fuchsia-500/50 rounded-lg px-3 py-2 min-w-[52px]">
+                          <span className="text-2xl font-black text-fuchsia-300 neon-glow-purple tabular-nums">
+                            {String(value).padStart(2, '0')}
+                          </span>
+                        </div>
+                        <p className="text-fuchsia-400/70 text-[10px] mt-1">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Botón de cerrar */}
