@@ -631,8 +631,12 @@ export default function FitPage() {
             loop
             muted
             playsInline
-            className="hidden md:block w-full object-cover"
-            style={{ maxHeight: '200px' }}
+            preload="metadata"
+            className="hidden md:block w-full h-auto object-contain"
+            style={{
+              maxHeight: '140px',
+              objectPosition: 'center',
+            }}
           />
         </div>
       </section>
