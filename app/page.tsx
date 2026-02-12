@@ -49,27 +49,27 @@ export default function Home() {
     <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
       {/* Modal de Bienvenida */}
       {showWelcomeModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900 border-2 border-fuchsia-500 neon-border-purple rounded-lg max-w-md w-full p-6 md:p-8 relative animate-fade-in">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-gray-900 border-2 border-fuchsia-500 neon-border-purple rounded-lg max-w-md w-full p-5 md:p-8 relative animate-fade-in my-auto">
             {/* Logo */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-4 md:mb-6">
               <Image
                 src="/logoprincipal.png"
                 alt="Santo Dilema"
                 width={250}
                 height={70}
-                className="h-14 md:h-16 w-auto"
+                className="h-11 md:h-16 w-auto"
                 priority
               />
             </div>
 
             {/* Título de bienvenida */}
-            <h2 className="text-xl md:text-2xl font-black text-center mb-4 text-fuchsia-400 neon-glow-purple">
+            <h2 className="text-lg md:text-2xl font-black text-center mb-3 md:mb-4 text-fuchsia-400 neon-glow-purple">
               Bienvenido a la primera Dark Kitchen disruptiva de Chancay
             </h2>
 
             {/* Información de horarios */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
               <div className="bg-black/50 border border-fuchsia-500/30 rounded-lg p-4">
                 <p className="text-center text-white font-bold mb-2">
                   📅 Horario de Atención
