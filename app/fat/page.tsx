@@ -174,7 +174,7 @@ const generateAvailableComplements = () => {
     "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
     "sprite": { name: "Sprite 500ml", price: 4.00 },
     "fanta": { name: "Fanta 500ml", price: 4.00 },
-    "extra-papas": { name: "Extra papas", price: 4.00 },
+    "extra-papas": { name: "Extra papas", price: 5.00 },
     "extra-salsa": { name: "Extra salsa", price: 3.00 },
     "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
     "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
@@ -1327,7 +1327,7 @@ export default function FatPage() {
                             <div className="mt-2 md:mt-3 space-y-1 md:space-y-2">
                               {/* Extra papas */}
                               {(() => {
-                                const extra = { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 4.00 };
+                                const extra = { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 5.00 };
                                 const extraProduct: Product = {
                                   id: extra.id,
                                   name: extra.name,
