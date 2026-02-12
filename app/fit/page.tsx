@@ -1076,9 +1076,22 @@ export default function FitPage() {
 
                           <div className="text-[11px] space-y-0.5">
                             {/* Precio del menú */}
-                            <div className={`${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between`}>
+                            <div className={`${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              <span className="text-amber-400/80">S/ {((!isFatOrder && promoFit30Active ? product.price * 0.70 : product.price) * order.quantity).toFixed(2)}</span>
+                              {(() => {
+                                const originalTotal = product.price * order.quantity;
+                                if (!isFatOrder && promoFit30Active) {
+                                  const discountedTotal = originalTotal * 0.70;
+                                  return (
+                                    <span className="flex items-center gap-2">
+                                      <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
+                                      <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
+                                      <span className="bg-green-500/20 text-green-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-bold">-30%</span>
+                                    </span>
+                                  );
+                                }
+                                return <span className="text-amber-400/80">S/ {originalTotal.toFixed(2)}</span>;
+                              })()}
                             </div>
 
                             {/* Salsas (solo para órdenes de fat) */}
