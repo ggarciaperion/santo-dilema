@@ -966,10 +966,10 @@ export default function FatPage() {
         {/* Banner Carrusel FAT - solo desktop, alineado con carteles */}
         <div className="mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
           <BannerCarousel slides={[
-            { web: "/bwfat1.png" },
-            { web: "/bwfat2.png" },
-            { web: "/bwfat3.png" },
-            { web: "/bwfat4.png" },
+            { web: "/bwfat1.png", movil: "/bmfat1.png" },
+            { web: "/bwfat2.png", movil: "/bmfat2.png" },
+            { web: "/bwfat3.png", movil: "/bmfat3.png" },
+            { web: "/bwfat4.png", movil: "/bmfat4.png" },
           ]} />
         </div>
         <div className="h-6 md:h-8" />
