@@ -264,6 +264,7 @@ export default function AdminPage() {
   });
   const [promotions, setPromotions] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
+  const [promo30Data, setPromo30Data] = useState<any>({ active: true, count: 0, limit: 30, orders: [] });
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
@@ -376,6 +377,7 @@ export default function AdminPage() {
     loadDeductions();
     loadPromotions();
     loadCoupons();
+    loadPromo30();
     loadCatalogProducts();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
@@ -385,6 +387,7 @@ export default function AdminPage() {
       loadDeductions();
       loadPromotions();
       loadCoupons();
+      loadPromo30();
       loadCatalogProducts();
     }, 10000);
     return () => clearInterval(interval);
@@ -637,6 +640,16 @@ export default function AdminPage() {
       setCoupons(data);
     } catch (error) {
       console.error("Error al cargar cupones:", error);
+    }
+  };
+
+  const loadPromo30 = async () => {
+    try {
+      const response = await fetch("/api/promo30");
+      const data = await response.json();
+      setPromo30Data(data);
+    } catch (error) {
+      console.error("Error al cargar promo30:", error);
     }
   };
 
@@ -5493,6 +5506,117 @@ export default function AdminPage() {
 
             {marketingSection === "promotions" && (
               <>
+                {/* Promoción 30% - Salsas Exclusivas */}
+                <div className="mb-8 bg-gradient-to-r from-red-900/30 to-orange-900/30 border-2 border-red-500 rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <div>
+                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400 flex items-center gap-2">
+                        🔥 Promo 30% — Salsas Exclusivas de la Casa
+                      </h3>
+                      <p className="text-gray-400 text-sm mt-1">Parrillera · Honey Mustard · Teriyaki · Sweet & Sour</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-xs text-gray-400">Estado</p>
+                        {promo30Data.active ? (
+                          <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">Activa</span>
+                        ) : (
+                          <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-bold">Agotada</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Barra de progreso */}
+                  <div className="mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-gray-400 text-sm">Órdenes utilizadas</span>
+                      <span className="text-white font-black text-lg">{promo30Data.count} / {promo30Data.limit}</span>
+                    </div>
+                    <div className="w-full bg-gray-800 rounded-full h-4 overflow-hidden">
+                      <div
+                        className={`h-4 rounded-full transition-all duration-500 ${
+                          promo30Data.count >= promo30Data.limit
+                            ? 'bg-red-500'
+                            : promo30Data.count >= promo30Data.limit * 0.8
+                            ? 'bg-orange-500'
+                            : 'bg-green-500'
+                        }`}
+                        style={{ width: `${Math.min(100, (promo30Data.count / promo30Data.limit) * 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-gray-500 text-xs">0</span>
+                      <span className="text-gray-400 text-xs font-semibold">
+                        {promo30Data.active
+                          ? `Quedan ${promo30Data.limit - promo30Data.count} lugares`
+                          : 'Promoción agotada'}
+                      </span>
+                      <span className="text-gray-500 text-xs">{promo30Data.limit}</span>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-black/50 rounded-lg p-4 border border-red-500/30">
+                      <p className="text-gray-400 text-xs mb-1">Total Registradas</p>
+                      <p className="text-3xl font-black text-white">{promo30Data.count} / 30</p>
+                    </div>
+                    <div className="bg-black/50 rounded-lg p-4 border border-orange-500/40">
+                      <p className="text-orange-400 text-xs mb-1">Disponibles</p>
+                      <p className="text-3xl font-black text-orange-400">{Math.max(0, promo30Data.limit - promo30Data.count)}</p>
+                    </div>
+                    <div className="bg-black/50 rounded-lg p-4 border border-gray-600/40">
+                      <p className="text-gray-400 text-xs mb-1">% Completado</p>
+                      <p className="text-3xl font-black text-white">
+                        {promo30Data.limit > 0 ? Math.round((promo30Data.count / promo30Data.limit) * 100) : 0}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Tabla de órdenes */}
+                  {!promo30Data.orders || promo30Data.orders.length === 0 ? (
+                    <div className="text-center py-8 bg-black/30 rounded-lg">
+                      <p className="text-gray-400">No hay órdenes registradas aún</p>
+                      <p className="text-gray-500 text-sm mt-2">Se registran automáticamente cuando un cliente paga con salsas exclusivas de la casa</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-red-500/30">
+                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">#</th>
+                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">DNI</th>
+                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Cliente</th>
+                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Orden ID</th>
+                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Salsas</th>
+                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Fecha</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {promo30Data.orders.map((order: any, index: number) => (
+                            <tr key={index} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
+                              <td className="py-3 px-4 text-orange-400 font-black text-sm">{index + 1}</td>
+                              <td className="py-3 px-4 text-white text-sm font-mono">{order.dni || '-'}</td>
+                              <td className="py-3 px-4 text-white text-sm">{order.customerName}</td>
+                              <td className="py-3 px-4">
+                                <code className="text-red-400 text-xs bg-black/50 px-2 py-1 rounded">{order.orderId}</code>
+                              </td>
+                              <td className="py-3 px-4 text-gray-400 text-xs">{(order.sauces || []).join(', ')}</td>
+                              <td className="py-3 px-4 text-gray-400 text-xs">
+                                {new Date(order.registeredAt).toLocaleDateString('es-PE', {
+                                  day: '2-digit', month: 'short', year: 'numeric',
+                                  hour: '2-digit', minute: '2-digit'
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
                 {/* Promoción 13% - Sección Especial */}
                 <div className="mb-8 bg-gradient-to-r from-fuchsia-900/30 to-purple-900/30 border-2 border-fuchsia-500 rounded-2xl p-6">
                   <div className="flex items-center justify-between mb-4">

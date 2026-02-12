@@ -21,6 +21,7 @@ let productsFilePath: string = '';
 let deductionsFilePath: string = '';
 let dailyClosesFilePath: string = '';
 let couponsFilePath: string = '';
+let promo30FilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -33,6 +34,7 @@ if (!isProduction) {
   deductionsFilePath = path.join(dataDir, 'deductions.json');
   dailyClosesFilePath = path.join(dataDir, 'daily-closes.json');
   couponsFilePath = path.join(dataDir, 'coupons.json');
+  promo30FilePath = path.join(dataDir, 'promo30.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -58,6 +60,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(couponsFilePath)) {
       fs.writeFileSync(couponsFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(promo30FilePath)) {
+      fs.writeFileSync(promo30FilePath, JSON.stringify({ active: true, count: 0, limit: 30, orders: [] }, null, 2));
     }
   }
 }
@@ -610,5 +615,52 @@ export const storage = {
       ensureDataDirectory();
       fs.writeFileSync(couponsFilePath, JSON.stringify(coupons, null, 2));
     }
+  },
+
+  // ========== PROMO 30% ==========
+
+  async getPromo30(): Promise<any> {
+    const defaultData = { active: true, count: 0, limit: 30, orders: [] };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<any>('promo30');
+      return data || defaultData;
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(promo30FilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  async savePromo30(data: any): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('promo30', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(promo30FilePath, JSON.stringify(data, null, 2));
+    }
+  },
+
+  async registerPromo30Order(orderInfo: { orderId: string; customerName: string; dni: string; sauces: string[] }): Promise<{ registered: boolean; newCount: number }> {
+    const promo = await this.getPromo30();
+
+    // Si ya está inactiva, no registrar
+    if (!promo.active) return { registered: false, newCount: promo.count };
+
+    // Agregar la orden
+    promo.orders.push({
+      ...orderInfo,
+      registeredAt: new Date().toISOString(),
+    });
+    promo.count = promo.orders.length;
+
+    // Desactivar si se alcanzó el límite
+    if (promo.count >= promo.limit) {
+      promo.active = false;
+    }
+
+    await this.savePromo30(promo);
+    return { registered: true, newCount: promo.count };
   },
 };

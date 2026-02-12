@@ -142,8 +142,11 @@ const PROMO_SAUCE_IDS = [
   "macerichada"      // Sweet & Sour
 ];
 
-// Función para validar si una orden califica para el descuento del 40%
-const hasPromoDiscount = (order: CompletedOrder, productId: string): boolean => {
+// Función para validar si una orden califica para el descuento del 30%
+const hasPromoDiscount = (order: CompletedOrder, productId: string, promoActive: boolean = true): boolean => {
+  // Si la promo ya no está activa, no aplica descuento
+  if (!promoActive) return false;
+
   // Solo aplica a los 3 menús principales
   if (!["pequeno-dilema", "duo-dilema", "santo-pecado"].includes(productId)) {
     return false;
@@ -207,6 +210,8 @@ export default function FatPage() {
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
   const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  const [promo30Active, setPromo30Active] = useState(true);
+  const [promo30Count, setPromo30Count] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
@@ -223,7 +228,7 @@ export default function FatPage() {
 
     // Calcular precio del producto (con descuento si aplica)
     let productPrice = product.price;
-    if (hasPromoDiscount(order, order.productId)) {
+    if (hasPromoDiscount(order, order.productId, promo30Active)) {
       productPrice = product.price * 0.7; // 30% descuento = pagar 70%
     }
 
@@ -241,7 +246,7 @@ export default function FatPage() {
       const product = products.find(p => p.id === order.productId);
       if (product) {
         // Aplicar descuento si califica
-        const hasDiscount = hasPromoDiscount(order, order.productId);
+        const hasDiscount = hasPromoDiscount(order, order.productId, promo30Active);
         const finalPrice = hasDiscount ? product.price * 0.7 : product.price;
 
         addToCart({
@@ -288,6 +293,18 @@ export default function FatPage() {
     // Limpiar el carrito siempre
     sessionStorage.removeItem("santo-dilema-cart");
     clearCart();
+
+    // Cargar estado de promo 30%
+    fetch("/api/promo30")
+      .then(res => res.json())
+      .then(data => {
+        setPromo30Active(data.active);
+        setPromo30Count(data.count);
+      })
+      .catch(() => {
+        // En caso de error, mantener activa para no bloquear ventas
+        setPromo30Active(true);
+      });
   }, []);
 
   // Guardar órdenes completadas en sessionStorage cuando cambien
@@ -1037,7 +1054,7 @@ export default function FatPage() {
                       {(() => {
                         // Verificar si las salsas seleccionadas califican para descuento
                         const currentSalsas = selectedSalsas[product.id] || [];
-                        const hasDiscount = currentSalsas.length > 0 &&
+                        const hasDiscount = promo30Active && currentSalsas.length > 0 &&
                           currentSalsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
                         const discountedPrice = product.price * 0.7;
 
@@ -1454,24 +1471,45 @@ export default function FatPage() {
           </div>
         </div>
 
-        {/* Texto animado de indulgencia - solo visible cuando no hay órdenes ni cartel expandido */}
+        {/* Banner de promo 30% */}
         {expandedCard === null && completedOrders.length === 0 && (
           <div className="relative w-full flex justify-center items-center py-4 md:py-4 px-4">
             <div className="text-center animated-text-reveal">
-              <h2
-                className="text-base md:text-xl lg:text-2xl font-black tracking-widest uppercase"
-                style={{
-                  fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
-                  fontWeight: 900,
-                  fontStretch: 'expanded',
-                  color: '#ef4444',
-                  letterSpacing: '0.15em',
-                  textTransform: 'uppercase',
-                  textShadow: '0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2)'
-                }}
-              >
-                ¡Promo del día 30% de descuento en órdenes Duo Dilema!
-              </h2>
+              {promo30Active ? (
+                <>
+                  <h2
+                    className="text-base md:text-xl lg:text-2xl font-black tracking-widest uppercase"
+                    style={{
+                      fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
+                      fontWeight: 900,
+                      fontStretch: 'expanded',
+                      color: '#ef4444',
+                      letterSpacing: '0.15em',
+                      textTransform: 'uppercase',
+                      textShadow: '0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2)'
+                    }}
+                  >
+                    ¡Promo del día 30% de descuento en salsas exclusivas!
+                  </h2>
+                  <p className="text-red-400/70 text-xs md:text-sm mt-1">
+                    Solo quedan <span className="font-black text-red-400">{30 - promo30Count}</span> de 30 lugares disponibles
+                  </p>
+                </>
+              ) : (
+                <h2
+                  className="text-base md:text-xl lg:text-2xl font-black tracking-widest uppercase"
+                  style={{
+                    fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
+                    fontWeight: 900,
+                    fontStretch: 'expanded',
+                    color: '#6b7280',
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Promo 30% agotada — ¡Atento a nuevas promociones!
+                </h2>
+              )}
             </div>
           </div>
         )}
@@ -1528,7 +1566,7 @@ export default function FatPage() {
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
                               {(() => {
-                                const hasDiscount = hasPromoDiscount(order, order.productId);
+                                const hasDiscount = hasPromoDiscount(order, order.productId, promo30Active);
                                 const originalTotal = product.price * order.quantity;
                                 const discountedTotal = originalTotal * 0.7;
 
@@ -1772,7 +1810,7 @@ export default function FatPage() {
                 if (!product) return null;
 
               // Aplicar descuento si califica
-              const hasDiscount = hasPromoDiscount(order, order.productId);
+              const hasDiscount = hasPromoDiscount(order, order.productId, promo30Active);
               const productPrice = hasDiscount ? product.price * 0.7 : product.price;
               const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {

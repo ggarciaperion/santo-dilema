@@ -3,6 +3,18 @@ import { storage } from "@/lib/storage";
 import { v2 as cloudinary } from 'cloudinary';
 import { orderQualifiesForCoupon } from "../coupons/route";
 
+// Salsas de la promo 30%
+const PROMO30_SAUCE_IDS = ["anticuchos", "honey-mustard", "teriyaki", "macerichada"];
+const PROMO30_PRODUCT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
+
+function orderQualifiesForPromo30(completedOrders: any[]): boolean {
+  return completedOrders.some(order => {
+    if (!PROMO30_PRODUCT_IDS.includes(order.productId)) return false;
+    if (!order.salsas || order.salsas.length === 0) return false;
+    return order.salsas.every((s: string) => PROMO30_SAUCE_IDS.includes(s));
+  });
+}
+
 // Configurar Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -186,6 +198,28 @@ export async function POST(request: Request) {
     // Guardar usando la utilidad de storage
     await storage.saveOrder(newOrder);
     console.log("💾 Pedido guardado");
+
+    // Registrar en Promo 30% si califica
+    if (orderQualifiesForPromo30(completedOrders)) {
+      try {
+        const promo30Sauces = completedOrders
+          .filter(o => PROMO30_PRODUCT_IDS.includes(o.productId) && o.salsas?.length > 0)
+          .flatMap(o => o.salsas);
+        const result = await storage.registerPromo30Order({
+          orderId: newOrder.id,
+          customerName: name,
+          dni,
+          sauces: [...new Set(promo30Sauces)] as string[],
+        });
+        if (result.registered) {
+          console.log(`🔥 Promo 30% registrada. Total acumulado: ${result.newCount}/30`);
+        } else {
+          console.log("⚠️ Promo 30% ya alcanzó el límite de 30 órdenes");
+        }
+      } catch (error) {
+        console.error("Error al registrar promo30:", error);
+      }
+    }
 
     // Generar cupón si califica (Promoción 13%)
     let generatedCoupon = null;
