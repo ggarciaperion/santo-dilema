@@ -10,6 +10,8 @@ interface BannerSlide {
 interface BannerCarouselProps {
   slides: BannerSlide[];
   intervalMs?: number;
+  webHeight?: number;
+  movilHeight?: number;
 }
 
 function isVideo(src: string) {
@@ -17,11 +19,19 @@ function isVideo(src: string) {
   return clean.endsWith(".mp4") || clean.endsWith(".webm") || clean.endsWith(".ogg");
 }
 
-export default function BannerCarousel({ slides, intervalMs = 6000 }: BannerCarouselProps) {
+export default function BannerCarousel({
+  slides,
+  intervalMs = 6000,
+  webHeight = 140,
+  movilHeight = 200,
+}: BannerCarouselProps) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const movilRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const webRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  const hasMovil = slides.some((s) => s.movil);
+  const hasWeb = slides.some((s) => s.web);
 
   const goTo = (index: number) => {
     movilRefs.current.forEach((v, i) => {
@@ -60,27 +70,21 @@ export default function BannerCarousel({ slides, intervalMs = 6000 }: BannerCaro
 
   if (slides.length === 0) return null;
 
-  const hasMovil = slides.some((s) => s.movil);
-  const hasWeb = slides.some((s) => s.web);
-
   return (
     <section className={`relative w-full bg-black overflow-hidden ${!hasMovil ? "hidden md:block" : ""}`}>
-      <div className="relative w-full">
-        {slides.map((slide, index) => {
-          const active = index === current;
-          return (
+      {/* Contenedor móvil con altura fija */}
+      {hasMovil && (
+        <div className="relative block md:hidden w-full" style={{ height: movilHeight }}>
+          {slides.map((slide, index) => (
             <div
               key={index}
+              className="absolute inset-0"
               style={{
-                position: index === 0 ? "relative" : "absolute",
-                inset: 0,
-                opacity: active ? 1 : 0,
+                opacity: index === current ? 1 : 0,
                 transition: "opacity 0.5s ease",
-                zIndex: active ? 1 : 0,
-                pointerEvents: active ? "auto" : "none",
+                zIndex: index === current ? 1 : 0,
               }}
             >
-              {/* Móvil */}
               {slide.movil && (
                 isVideo(slide.movil) ? (
                   <video
@@ -88,17 +92,31 @@ export default function BannerCarousel({ slides, intervalMs = 6000 }: BannerCaro
                     src={slide.movil}
                     autoPlay={index === 0}
                     loop muted playsInline preload="auto"
-                    className="block md:hidden w-full h-auto object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <img
-                    src={slide.movil}
-                    alt={`Banner móvil ${index + 1}`}
-                    className="block md:hidden w-full h-auto object-cover"
-                  />
+                  <img src={slide.movil} alt="" className="w-full h-full object-cover" />
                 )
               )}
-              {/* Web */}
+            </div>
+          ))}
+          {slides.length > 1 && <Dots slides={slides} current={current} onGoTo={(i) => { if (timerRef.current) clearInterval(timerRef.current); goTo(i); }} />}
+        </div>
+      )}
+
+      {/* Contenedor web con altura fija */}
+      {hasWeb && (
+        <div className={`relative ${hasMovil ? "hidden md:block" : "block"} w-full`} style={{ height: webHeight }}>
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className="absolute inset-0"
+              style={{
+                opacity: index === current ? 1 : 0,
+                transition: "opacity 0.5s ease",
+                zIndex: index === current ? 1 : 0,
+              }}
+            >
               {slide.web && (
                 isVideo(slide.web) ? (
                   <video
@@ -106,40 +124,33 @@ export default function BannerCarousel({ slides, intervalMs = 6000 }: BannerCaro
                     src={slide.web}
                     autoPlay={index === 0}
                     loop muted playsInline preload="auto"
-                    className={`${slide.movil ? "hidden md:block" : "w-full"} h-auto object-contain`}
-                    style={{ maxHeight: "140px", objectPosition: "center" }}
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <img
-                    src={slide.web}
-                    alt={`Banner web ${index + 1}`}
-                    className={`${slide.movil ? "hidden md:block" : "w-full"} h-auto object-contain`}
-                    style={{ maxHeight: "140px", objectPosition: "center" }}
-                  />
+                  <img src={slide.web} alt="" className="w-full h-full object-cover" />
                 )
               )}
             </div>
-          );
-        })}
-
-        {/* Indicadores */}
-        {slides.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  if (timerRef.current) clearInterval(timerRef.current);
-                  goTo(index);
-                }}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === current ? "bg-white scale-125" : "bg-white/40 hover:bg-white/70"
-                }`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+          ))}
+          {slides.length > 1 && <Dots slides={slides} current={current} onGoTo={(i) => { if (timerRef.current) clearInterval(timerRef.current); goTo(i); }} />}
+        </div>
+      )}
     </section>
+  );
+}
+
+function Dots({ slides, current, onGoTo }: { slides: BannerSlide[]; current: number; onGoTo: (i: number) => void }) {
+  return (
+    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+      {slides.map((_, index) => (
+        <button
+          key={index}
+          onClick={() => onGoTo(index)}
+          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            index === current ? "bg-white scale-125" : "bg-white/40 hover:bg-white/70"
+          }`}
+        />
+      ))}
+    </div>
   );
 }
