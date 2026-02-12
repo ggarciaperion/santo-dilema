@@ -23,7 +23,7 @@ export default function BannerCarousel({
   slides,
   intervalMs = 6000,
   webHeight = 140,
-  movilHeight = 200,
+  movilHeight = 0,
 }: BannerCarouselProps) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
