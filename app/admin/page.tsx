@@ -4466,16 +4466,6 @@ export default function AdminPage() {
             );
           })()}
         </>
-      ) : activeTab === "marketing" ? (
-        /* Marketing Tab */
-        <>
-          <section className="container mx-auto px-4 py-8">
-            <div className="text-center py-20">
-              <p className="text-2xl text-gray-400">🎯 Sección en desarrollo</p>
-              <p className="text-gray-500 mt-4">Aquí se implementarán promociones, campañas y fidelización</p>
-            </div>
-          </section>
-        </>
       ) : activeTab === "marketing-OLD-DELETE" ? (
         /* OLD INVENTORY SECTION - TO BE DELETED */
         <>
