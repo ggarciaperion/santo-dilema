@@ -26,6 +26,7 @@ interface CompletedOrder {
   quantity: number;
   salsas: string[];
   complementIds: string[];
+  discountApplied?: boolean;
 }
 
 const products: Product[] = [
@@ -228,7 +229,7 @@ export default function FatPage() {
 
     // Calcular precio del producto (con descuento si aplica)
     let productPrice = product.price;
-    if (hasPromoDiscount(order, order.productId, promo30Active)) {
+    if (order.discountApplied) {
       productPrice = product.price * 0.7; // 30% descuento = pagar 70%
     }
 
@@ -246,8 +247,7 @@ export default function FatPage() {
       const product = products.find(p => p.id === order.productId);
       if (product) {
         // Aplicar descuento si califica
-        const hasDiscount = hasPromoDiscount(order, order.productId, promo30Active);
-        const finalPrice = hasDiscount ? product.price * 0.7 : product.price;
+        const finalPrice = order.discountApplied ? product.price * 0.7 : product.price;
 
         addToCart({
           ...product,
@@ -630,11 +630,14 @@ export default function FatPage() {
 
   const handleCompleteOrder = (product: Product) => {
     // Guardar la orden completada
+    const orderSalsas = selectedSalsas[product.id] || [];
+    const tempOrder = { productId: product.id, quantity: orderQuantity[product.id] || 1, salsas: orderSalsas, complementIds: complementsInCart[product.id] || [] };
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: orderQuantity[product.id] || 1,
-      salsas: selectedSalsas[product.id] || [],
-      complementIds: complementsInCart[product.id] || []
+      salsas: orderSalsas,
+      complementIds: complementsInCart[product.id] || [],
+      discountApplied: hasPromoDiscount(tempOrder, product.id, promo30Active)
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
@@ -1563,11 +1566,10 @@ export default function FatPage() {
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
                               {(() => {
-                                const hasDiscount = hasPromoDiscount(order, order.productId, promo30Active);
                                 const originalTotal = product.price * order.quantity;
                                 const discountedTotal = originalTotal * 0.7;
 
-                                if (hasDiscount) {
+                                if (order.discountApplied) {
                                   return (
                                     <span className="flex items-center gap-2">
                                       <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
@@ -1807,8 +1809,7 @@ export default function FatPage() {
                 if (!product) return null;
 
               // Aplicar descuento si califica
-              const hasDiscount = hasPromoDiscount(order, order.productId, promo30Active);
-              const productPrice = hasDiscount ? product.price * 0.7 : product.price;
+              const productPrice = order.discountApplied ? product.price * 0.7 : product.price;
               const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -1857,7 +1858,7 @@ export default function FatPage() {
                           const originalTotal = product.price * order.quantity;
                           const discountedTotal = originalTotal * 0.7;
 
-                          if (hasDiscount) {
+                          if (order.discountApplied) {
                             return (
                               <span className="flex items-center gap-2">
                                 <span className="text-gray-500 line-through text-[10px]">S/ {originalTotal.toFixed(2)}</span>
