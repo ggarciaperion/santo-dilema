@@ -355,9 +355,13 @@ export default function FatPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Medir ancho real de la fila de carteles para alinear el banner
+  // Medir ancho real de la fila de carteles para alinear el banner (solo desktop)
   useEffect(() => {
     const measure = () => {
+      if (window.innerWidth < 768) {
+        setBannerWidth(null);
+        return;
+      }
       const ids = products.map(p => p.id);
       const first = cardRefs.current[ids[0]];
       const last = cardRefs.current[ids[ids.length - 1]];
