@@ -45,7 +45,7 @@ const products: Product[] = [
     id: "duo-dilema",
     name: "Dúo Dilema",
     description: "12 alitas con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
-    price: 33.50,
+    price: 32.50,
     image: "/duo-dilema.png?v=3",
     category: "fat",
   },
