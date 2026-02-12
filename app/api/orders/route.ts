@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 import { v2 as cloudinary } from 'cloudinary';
+import { orderQualifiesForCoupon } from "../coupons/route";
 
 // Configurar Cloudinary
 cloudinary.config({
@@ -186,7 +187,42 @@ export async function POST(request: Request) {
     await storage.saveOrder(newOrder);
     console.log("💾 Pedido guardado");
 
-    return NextResponse.json(newOrder, { status: 201 });
+    // Generar cupón si califica (Promoción 13%)
+    let generatedCoupon = null;
+
+    // Verificar si alguna orden tiene salsas que califiquen
+    const hasPromoSauces = completedOrders.some((order: any) => {
+      if (!order.salsas || order.salsas.length === 0) return false;
+      return orderQualifiesForCoupon(order.salsas);
+    });
+
+    if (hasPromoSauces) {
+      try {
+        // Intentar generar cupón
+        const couponResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/coupons`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'generate',
+            dni,
+            customerName: name,
+            orderId: newOrder.id,
+            salsas: completedOrders[0].salsas, // Usar las salsas de la primera orden que califique
+          }),
+        });
+
+        if (couponResponse.ok) {
+          const couponData = await couponResponse.json();
+          generatedCoupon = couponData.coupon;
+          console.log("🎁 Cupón generado:", generatedCoupon.code);
+        }
+      } catch (error) {
+        console.error("Error al generar cupón:", error);
+        // No fallar el pedido si falla la generación del cupón
+      }
+    }
+
+    return NextResponse.json({ ...newOrder, coupon: generatedCoupon }, { status: 201 });
   } catch (error) {
     console.error("❌ Error al crear pedido:", error);
     return NextResponse.json(

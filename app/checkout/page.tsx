@@ -213,6 +213,14 @@ export default function CheckoutPage() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Estados para cupón
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponValidating, setCouponValidating] = useState(false);
+  const [couponMessage, setCouponMessage] = useState("");
+  const [couponValid, setCouponValid] = useState(false);
+  const [orderQualifiesForCoupon, setOrderQualifiesForCoupon] = useState(false);
+
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
     if (orderPlaced) {
@@ -234,7 +242,7 @@ export default function CheckoutPage() {
   }, []);
 
   // Calcular el total real basado en completedOrders
-  const realTotal = completedOrders.reduce((total, order) => {
+  const subtotal = completedOrders.reduce((total, order) => {
     // Buscar el producto en los arrays
     const fatProduct = fatProducts.find((p) => p.id === order.productId);
     const fitProduct = fitProducts.find((p) => p.id === order.productId);
@@ -258,6 +266,10 @@ export default function CheckoutPage() {
     return total + productTotal + complementsTotal;
   }, 0);
 
+  // Aplicar descuento de cupón si es válido
+  const couponDiscountAmount = couponValid ? (subtotal * couponDiscount) / 100 : 0;
+  const realTotal = subtotal - couponDiscountAmount;
+
   // Validar si el formulario está completo
   const isFormValid = () => {
     return (
@@ -267,6 +279,64 @@ export default function CheckoutPage() {
       formData.address.trim() !== ""
     );
   };
+
+  // Validar cupón
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponMessage("Ingresa un código de cupón");
+      return;
+    }
+
+    if (!formData.dni || formData.dni.length !== 8) {
+      setCouponMessage("Completa tu DNI primero");
+      return;
+    }
+
+    setCouponValidating(true);
+    setCouponMessage("");
+
+    try {
+      const response = await fetch("/api/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "validate",
+          code: couponCode.trim().toUpperCase(),
+          dni: formData.dni,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.valid) {
+        setCouponValid(true);
+        setCouponDiscount(data.discount);
+        setCouponMessage(`✓ Cupón aplicado: ${data.discount}% de descuento`);
+      } else {
+        setCouponValid(false);
+        setCouponDiscount(0);
+        setCouponMessage(data.error || "Cupón no válido");
+      }
+    } catch (error) {
+      setCouponValid(false);
+      setCouponDiscount(0);
+      setCouponMessage("Error al validar cupón");
+    } finally {
+      setCouponValidating(false);
+    }
+  };
+
+  // Verificar si la orden califica para cupón (salsas promocionales)
+  useEffect(() => {
+    const PROMO_SAUCE_IDS = ["barbecue", "buffalo-picante", "ahumada", "parmesano-ajo"];
+
+    const qualifies = completedOrders.some(order => {
+      if (!order.salsas || order.salsas.length === 0) return false;
+      return order.salsas.every((salsaId: string) => PROMO_SAUCE_IDS.includes(salsaId));
+    });
+
+    setOrderQualifiesForCoupon(qualifies);
+  }, [completedOrders]);
 
   // Redirect if no completed orders (solo después de cargar)
   useEffect(() => {
@@ -808,7 +878,58 @@ export default function CheckoutPage() {
             })}
           </div>
 
+          {/* Notificación de elegibilidad para cupón */}
+          {orderQualifiesForCoupon && (
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2 mb-2">
+              <p className="text-green-400 text-[10px] md:text-xs text-center">
+                🎁 ¡Tu pedido califica para cupón de descuento! El código se revelará después de pagar.
+              </p>
+            </div>
+          )}
+
+          {/* Campo de cupón */}
+          <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
+            <p className="text-white font-bold text-[10px] md:text-xs mb-1.5">¿Tienes un cupón?</p>
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="SANTO13-XXXXXX"
+                disabled={couponValid}
+                className="flex-1 bg-black/50 border border-fuchsia-500/30 rounded-lg px-2 py-1.5 text-white text-xs md:text-sm placeholder-gray-500 focus:outline-none focus:border-fuchsia-400 disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={validateCoupon}
+                disabled={couponValidating || couponValid}
+                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all disabled:opacity-50"
+              >
+                {couponValidating ? "..." : couponValid ? "✓" : "Aplicar"}
+              </button>
+            </div>
+            {couponMessage && (
+              <p className={`text-[9px] md:text-[10px] mt-1 ${couponValid ? 'text-green-400' : 'text-red-400'}`}>
+                {couponMessage}
+              </p>
+            )}
+          </div>
+
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
+            {/* Subtotal y descuento */}
+            {couponValid && couponDiscount > 0 && (
+              <>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-gray-400 text-xs md:text-sm">Subtotal:</span>
+                  <span className="text-gray-400 text-xs md:text-sm">S/ {subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-green-400 text-xs md:text-sm font-bold">Cupón -{couponDiscount}%:</span>
+                  <span className="text-green-400 text-xs md:text-sm font-bold">-S/ {couponDiscountAmount.toFixed(2)}</span>
+                </div>
+              </>
+            )}
+
             <div className="flex justify-between items-center mb-2 md:mb-3">
               <span className="text-white font-bold text-sm md:text-base">Total:</span>
               <span className="text-amber-400 font-black text-lg md:text-xl gold-glow">

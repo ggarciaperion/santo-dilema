@@ -20,6 +20,7 @@ let inventoryFilePath: string = '';
 let productsFilePath: string = '';
 let deductionsFilePath: string = '';
 let dailyClosesFilePath: string = '';
+let couponsFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -31,6 +32,7 @@ if (!isProduction) {
   productsFilePath = path.join(dataDir, 'products.json');
   deductionsFilePath = path.join(dataDir, 'deductions.json');
   dailyClosesFilePath = path.join(dataDir, 'daily-closes.json');
+  couponsFilePath = path.join(dataDir, 'coupons.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -53,6 +55,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(dailyClosesFilePath)) {
       fs.writeFileSync(dailyClosesFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(couponsFilePath)) {
+      fs.writeFileSync(couponsFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -556,5 +561,54 @@ export const storage = {
     }
 
     return true;
+  },
+
+  // ========== CUPONES ==========
+
+  // Obtener todos los cupones
+  async getCoupons(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) {
+        console.error('⚠️ Redis no configurado en producción');
+        throw new Error('Database not configured. Please contact support.');
+      }
+      const coupons = await redis.get<any[]>('coupons');
+      return coupons || [];
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(couponsFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  // Guardar un nuevo cupón
+  async saveCoupon(coupon: any): Promise<any> {
+    const coupons = await this.getCoupons();
+    coupons.unshift(coupon);
+
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('coupons', coupons);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(couponsFilePath, JSON.stringify(coupons, null, 2));
+    }
+
+    return coupon;
+  },
+
+  // Actualizar todos los cupones (para marcar como usado)
+  async updateCoupons(coupons: any[]): Promise<void> {
+    if (isProduction) {
+      if (!redis) {
+        throw new Error('Database not configured. Please contact support.');
+      }
+      await redis.set('coupons', coupons);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(couponsFilePath, JSON.stringify(coupons, null, 2));
+    }
   },
 };
