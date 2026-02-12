@@ -220,6 +220,8 @@ export default function CheckoutPage() {
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
   const [orderQualifiesForCoupon, setOrderQualifiesForCoupon] = useState(false);
+  const [generatedCoupon, setGeneratedCoupon] = useState<any>(null);
+  const [couponCopied, setCouponCopied] = useState(false);
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -323,6 +325,19 @@ export default function CheckoutPage() {
       setCouponMessage("Error al validar cupón");
     } finally {
       setCouponValidating(false);
+    }
+  };
+
+  // Copiar código de cupón generado
+  const copyCouponCode = async () => {
+    if (generatedCoupon?.code) {
+      try {
+        await navigator.clipboard.writeText(generatedCoupon.code);
+        setCouponCopied(true);
+        setTimeout(() => setCouponCopied(false), 2000);
+      } catch (error) {
+        console.error("Error al copiar:", error);
+      }
     }
   };
 
@@ -449,6 +464,30 @@ export default function CheckoutPage() {
         const data = await response.json();
         console.log("Pedido creado exitosamente:", data);
 
+        // Si se usó un cupón válido, marcarlo como usado
+        if (couponValid && couponCode) {
+          try {
+            await fetch("/api/coupons", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "mark-used",
+                code: couponCode,
+                dni: formData.dni,
+              }),
+            });
+            console.log("✓ Cupón marcado como usado");
+          } catch (error) {
+            console.error("Error al marcar cupón como usado:", error);
+          }
+        }
+
+        // Guardar cupón generado si viene en la respuesta
+        if (data.coupon) {
+          setGeneratedCoupon(data.coupon);
+          console.log("🎁 Cupón generado y guardado:", data.coupon.code);
+        }
+
         // Limpiar estados y almacenamiento
         clearCart();
         sessionStorage.removeItem("santo-dilema-orders");
@@ -458,7 +497,7 @@ export default function CheckoutPage() {
 
         setTimeout(() => {
           router.push("/");
-        }, 10000);
+        }, 15000);
       } else {
         const errorData = await response.json();
         console.error("Error del servidor:", response.status, errorData);
@@ -536,6 +575,49 @@ export default function CheckoutPage() {
         <p className="text-gray-400 text-xs md:text-sm mt-3 max-w-xs mx-auto text-center success-sub-text">
           En breve te contactaremos para coordinar la entrega, gracias
         </p>
+
+        {/* Cupón generado */}
+        {generatedCoupon && (
+          <div className="mt-8 max-w-md mx-auto bg-gradient-to-br from-fuchsia-600/20 to-purple-600/20 border-2 border-fuchsia-500/50 rounded-2xl p-6 shadow-lg shadow-fuchsia-500/20">
+            <div className="text-center mb-4">
+              <h3 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 mb-2">
+                🎁 ¡Felicitaciones!
+              </h3>
+              <p className="text-white text-sm md:text-base">
+                Has ganado un cupón de descuento
+              </p>
+            </div>
+
+            {/* Código del cupón */}
+            <div className="bg-black/50 border border-fuchsia-500/30 rounded-xl p-4 mb-4">
+              <p className="text-gray-400 text-xs mb-2 text-center">Código de cupón:</p>
+              <div className="flex items-center justify-center gap-2">
+                <code className="text-fuchsia-400 text-xl md:text-2xl font-bold tracking-wider">
+                  {generatedCoupon.code}
+                </code>
+                <button
+                  onClick={copyCouponCode}
+                  className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-3 py-1.5 rounded-lg text-xs transition-all"
+                >
+                  {couponCopied ? "✓ Copiado" : "Copiar"}
+                </button>
+              </div>
+            </div>
+
+            {/* Detalles del cupón */}
+            <div className="space-y-2 text-center">
+              <p className="text-green-400 text-lg font-bold">
+                {generatedCoupon.discount}% de descuento
+              </p>
+              <p className="text-gray-400 text-xs">
+                Válido hasta: <span className="text-white font-semibold">28 de febrero 2026</span>
+              </p>
+              <p className="text-gray-500 text-xs mt-3 italic">
+                Usa este código en tu próximo pedido
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Logo Santo Dilema */}
         <div className="mt-10 success-logo flex justify-center">

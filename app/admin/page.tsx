@@ -263,6 +263,7 @@ export default function AdminPage() {
     purchaseDate: new Date().toISOString().split('T')[0]
   });
   const [promotions, setPromotions] = useState<any[]>([]);
+  const [coupons, setCoupons] = useState<any[]>([]);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
@@ -374,6 +375,7 @@ export default function AdminPage() {
     loadInventory();
     loadDeductions();
     loadPromotions();
+    loadCoupons();
     loadCatalogProducts();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
@@ -382,6 +384,7 @@ export default function AdminPage() {
       loadInventory();
       loadDeductions();
       loadPromotions();
+      loadCoupons();
       loadCatalogProducts();
     }, 10000);
     return () => clearInterval(interval);
@@ -624,6 +627,16 @@ export default function AdminPage() {
       setPromotions(data);
     } catch (error) {
       console.error("Error al cargar promociones:", error);
+    }
+  };
+
+  const loadCoupons = async () => {
+    try {
+      const response = await fetch("/api/coupons");
+      const data = await response.json();
+      setCoupons(data);
+    } catch (error) {
+      console.error("Error al cargar cupones:", error);
     }
   };
 
@@ -5490,6 +5503,111 @@ export default function AdminPage() {
 
             {marketingSection === "promotions" && (
               <>
+                {/* Promoción 13% - Sección Especial */}
+                <div className="mb-8 bg-gradient-to-r from-fuchsia-900/30 to-purple-900/30 border-2 border-fuchsia-500 rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 flex items-center gap-2">
+                        🎁 Promoción 13% - Primeros 13 Clientes
+                      </h3>
+                      <p className="text-gray-400 text-sm mt-1">Cupones de descuento para pedidos con salsas promocionales</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">Válido hasta</p>
+                      <p className="text-lg font-bold text-fuchsia-400">28 Feb 2026</p>
+                    </div>
+                  </div>
+
+                  {/* Coupon Stats */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/30">
+                      <p className="text-gray-400 text-xs mb-1">Total Generados</p>
+                      <p className="text-3xl font-black text-white">{coupons.length} / 13</p>
+                    </div>
+                    <div className="bg-black/50 rounded-lg p-4 border border-green-500/50">
+                      <p className="text-green-400 text-xs mb-1">Pendientes</p>
+                      <p className="text-3xl font-black text-green-400">
+                        {coupons.filter(c => c.status === 'pending').length}
+                      </p>
+                    </div>
+                    <div className="bg-black/50 rounded-lg p-4 border border-amber-500/50">
+                      <p className="text-amber-400 text-xs mb-1">Usados</p>
+                      <p className="text-3xl font-black text-amber-400">
+                        {coupons.filter(c => c.status === 'used').length}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Coupon Table */}
+                  {coupons.length === 0 ? (
+                    <div className="text-center py-8 bg-black/30 rounded-lg">
+                      <p className="text-gray-400">No hay cupones generados aún</p>
+                      <p className="text-gray-500 text-sm mt-2">Los cupones se generan automáticamente cuando un cliente hace un pedido con las salsas promocionales</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-fuchsia-500/30">
+                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">DNI</th>
+                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Cliente</th>
+                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Código</th>
+                            <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Estado</th>
+                            <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Descuento</th>
+                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Creado</th>
+                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Usado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {coupons.map((coupon, index) => (
+                            <tr key={coupon.id} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
+                              <td className="py-3 px-4 text-white text-sm font-mono">{coupon.dni}</td>
+                              <td className="py-3 px-4 text-white text-sm">{coupon.customerName}</td>
+                              <td className="py-3 px-4">
+                                <code className="text-fuchsia-400 text-xs font-bold bg-black/50 px-2 py-1 rounded">
+                                  {coupon.code}
+                                </code>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                {coupon.status === 'pending' ? (
+                                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold">
+                                    Pendiente
+                                  </span>
+                                ) : (
+                                  <span className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-xs font-bold">
+                                    Usado
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-center text-green-400 font-bold">
+                                {coupon.discount}%
+                              </td>
+                              <td className="py-3 px-4 text-gray-400 text-xs">
+                                {new Date(coupon.createdAt).toLocaleDateString('es-PE', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </td>
+                              <td className="py-3 px-4 text-gray-400 text-xs">
+                                {coupon.usedAt ? new Date(coupon.usedAt).toLocaleDateString('es-PE', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h3 className="text-2xl font-bold text-white">Promociones Activas</h3>
