@@ -943,14 +943,7 @@ export default function FatPage() {
         </div>
       </header>
 
-      {/* Banner Carrusel FAT */}
-      <BannerCarousel slides={[
-        { movil: "/bannermovilfat.mp4",  web: "/bannerwebfat.mp4"  },
-        { movil: "/bannermovilfat1.mp4", web: "/bannerwebfat1.mp4" },
-        { movil: "/bannermovilfat2.mp4", web: "/bannerwebfat2.png" },
-        { movil: "/bannermovilfat3.mp4?v=2", web: "/bannerwebfat3.png" },
-        { movil: "/bannermovilfat3.mp4?v=2", web: "/bannerwebfat4.mp4" },
-      ]} />
+      {/* Banner Carrusel FAT - pendiente agregar archivos */}
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
