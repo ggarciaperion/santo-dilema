@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
+import BannerCarousel from "../components/BannerCarousel";
 
 interface Product {
   id: string;
@@ -624,33 +625,10 @@ export default function FitPage() {
         </div>
       </header>
 
-      <section className="relative w-full overflow-hidden bg-black">
-        <div className="relative w-full bg-black">
-          {/* Banner móvil — video */}
-          <video
-            src="/bannermovilfit.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="block md:hidden w-full h-auto object-cover"
-          />
-          {/* Banner web — video */}
-          <video
-            src="/bannerwebfit.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className="hidden md:block w-full h-auto object-contain"
-            style={{
-              maxHeight: '140px',
-              objectPosition: 'center',
-            }}
-          />
-        </div>
-      </section>
+      {/* Banner Carrusel FIT */}
+      <BannerCarousel slides={[
+        { movil: "/bannermovilfit.mp4", web: "/bannerwebfit.mp4" },
+      ]} />
 
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
         <div className="relative flex items-center justify-center overflow-visible">

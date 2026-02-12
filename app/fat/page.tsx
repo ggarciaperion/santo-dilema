@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
+import BannerCarousel from "../components/BannerCarousel";
 
 interface Product {
   id: string;
@@ -942,37 +943,11 @@ export default function FatPage() {
         </div>
       </header>
 
-      {/* Hero Section - Banner */}
-      <section className="relative w-full overflow-visible bg-black md:bg-transparent pt-6 md:mt-8">
-        <div className="relative w-full bg-black md:bg-transparent overflow-visible">
-          {/* Banner para móvil */}
-          <video
-            src="/bannermovilfat.mp4"
-            poster="/bannermovil.png"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className="block md:hidden w-full h-auto object-cover"
-          />
-          {/* Banner para PC/Tablet */}
-          <video
-            src="/bannerwebfat.mp4?v=2"
-            poster="/bannerpc.png"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className="hidden md:block w-full h-auto object-contain"
-            style={{
-              maxHeight: '140px',
-              objectPosition: 'center',
-            }}
-          />
-        </div>
-      </section>
+      {/* Banner Carrusel FAT */}
+      <BannerCarousel slides={[
+        { movil: "/bannermovilfat.mp4", web: "/bannerwebfat.mp4" },
+        { movil: "/bannermovilfat1.mp4", web: "/bannerwebfat1.mp4" },
+      ]} />
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
