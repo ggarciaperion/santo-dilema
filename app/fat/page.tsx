@@ -928,19 +928,23 @@ export default function FatPage() {
           {/* Banner para móvil */}
           <video
             src="/bannermovilfat.mp4"
+            poster="/bannermovil.png"
             autoPlay
             loop
             muted
             playsInline
+            preload="metadata"
             className="block md:hidden w-full h-auto object-cover"
           />
           {/* Banner para PC/Tablet */}
           <video
             src="/bannerwebfat.mp4"
+            poster="/bannerpc.png"
             autoPlay
             loop
             muted
             playsInline
+            preload="metadata"
             className="hidden md:block w-full h-auto object-contain"
             style={{
               maxHeight: '140px',
