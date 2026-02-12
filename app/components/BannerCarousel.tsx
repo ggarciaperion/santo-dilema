@@ -104,14 +104,16 @@ export default function BannerCarousel({
         </div>
       )}
 
-      {/* Contenedor web con altura fija */}
+      {/* Contenedor web */}
       {hasWeb && (
-        <div className={`relative ${hasMovil ? "hidden md:block" : "block"} w-full`} style={{ height: webHeight }}>
+        <div className={`relative ${hasMovil ? "hidden md:block" : "block"} w-full overflow-hidden rounded-lg`}>
+          {/* Slide 0 visible define la altura natural */}
           {slides.map((slide, index) => (
             <div
               key={index}
-              className="absolute inset-0"
               style={{
+                position: index === 0 ? "relative" : "absolute",
+                inset: 0,
                 opacity: index === current ? 1 : 0,
                 transition: "opacity 0.5s ease",
                 zIndex: index === current ? 1 : 0,
@@ -124,10 +126,10 @@ export default function BannerCarousel({
                     src={slide.web}
                     autoPlay={index === 0}
                     loop muted playsInline preload="auto"
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto block"
                   />
                 ) : (
-                  <img src={slide.web} alt="" className="w-full h-full object-cover" />
+                  <img src={slide.web} alt="" className="w-full h-auto block" />
                 )
               )}
             </div>

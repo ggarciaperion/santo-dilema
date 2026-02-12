@@ -625,13 +625,13 @@ export default function FitPage() {
         </div>
       </header>
 
-      {/* Banner Carrusel FIT - solo desktop */}
-      <BannerCarousel slides={[
-        { web: "/prueba1.png" },
-        { web: "/prueba2.png" },
-      ]} />
-
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
+
+        {/* Banner Carrusel FIT - solo desktop, alineado con carteles */}
+        <BannerCarousel slides={[
+          { web: "/prueba1.png" },
+          { web: "/prueba2.png" },
+        ]} />
         <div className="relative flex items-center justify-center overflow-visible">
           <div
             ref={scrollContainerRef}
