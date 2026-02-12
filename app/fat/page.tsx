@@ -1491,9 +1491,6 @@ export default function FatPage() {
                   >
                     ¡Promo del día 30% de descuento en salsas exclusivas!
                   </h2>
-                  <p className="text-red-400/70 text-xs md:text-sm mt-1">
-                    Solo quedan <span className="font-black text-red-400">{30 - promo30Count}</span> de 30 lugares disponibles
-                  </p>
                 </>
               ) : (
                 <h2

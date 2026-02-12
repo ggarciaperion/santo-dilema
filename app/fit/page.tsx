@@ -1004,9 +1004,6 @@ export default function FitPage() {
                   >
                     ¡Promo del día 30% descuento en todos los bowls FIT!
                   </h2>
-                  <p className="text-sm md:text-base font-bold mt-1" style={{ color: '#f87171' }}>
-                    Solo quedan <span className="font-black text-red-400">{30 - promoFit30Count}</span> de 30 lugares disponibles
-                  </p>
                 </>
               ) : (
                 <h2
