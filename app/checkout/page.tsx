@@ -449,7 +449,7 @@ export default function CheckoutPage() {
     setShowDniSearch(true);
   };
 
-  const LAUNCH_DATE = new Date('2026-02-14T23:00:00Z');
+  const LAUNCH_DATE = new Date('2026-02-13T23:00:00Z');
   const isPreLaunch = () => Date.now() < LAUNCH_DATE.getTime();
 
   const handleSubmit = (e: React.FormEvent) => {

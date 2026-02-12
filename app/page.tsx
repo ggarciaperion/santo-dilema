@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 
 // Fecha de lanzamiento: 13 Feb 2026 a las 18:00 hora Perú (UTC-5)
-const LAUNCH_DATE = new Date('2026-02-14T23:00:00Z');
+const LAUNCH_DATE = new Date('2026-02-13T23:00:00Z');
 
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
