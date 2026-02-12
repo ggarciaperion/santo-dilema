@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface BannerSlide {
   movil: string;
@@ -12,8 +12,10 @@ interface BannerCarouselProps {
   intervalMs?: number;
 }
 
+// Ignora query params al detectar si es video
 function isVideo(src: string) {
-  return src.endsWith(".mp4") || src.endsWith(".webm") || src.endsWith(".ogg");
+  const clean = src.split("?")[0];
+  return clean.endsWith(".mp4") || clean.endsWith(".webm") || clean.endsWith(".ogg");
 }
 
 export default function BannerCarousel({ slides, intervalMs = 6000 }: BannerCarouselProps) {
@@ -22,110 +24,106 @@ export default function BannerCarousel({ slides, intervalMs = 6000 }: BannerCaro
   const movilRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const webRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  const playSlide = useCallback((index: number) => {
-    slides.forEach((_, i) => {
-      const mv = movilRefs.current[i];
-      const wb = webRefs.current[i];
-      if (i === index) {
-        mv?.play().catch(() => {});
-        wb?.play().catch(() => {});
-      } else {
-        mv?.pause();
-        wb?.pause();
-      }
-    });
-  }, [slides]);
-
-  const startTimer = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (slides.length > 1) {
-      timerRef.current = setInterval(() => {
-        setCurrent((prev) => {
-          const next = (prev + 1) % slides.length;
-          playSlide(next);
-          return next;
-        });
-      }, intervalMs);
-    }
-  }, [slides.length, intervalMs, playSlide]);
-
-  useEffect(() => {
-    // Reproducir primer slide al montar
-    playSlide(0);
-    startTimer();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
   const goTo = (index: number) => {
+    // Pausar todos, reproducir el nuevo
+    movilRefs.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === index) { v.currentTime = 0; v.play().catch(() => {}); }
+      else v.pause();
+    });
+    webRefs.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === index) { v.currentTime = 0; v.play().catch(() => {}); }
+      else v.pause();
+    });
     setCurrent(index);
-    playSlide(index);
-    startTimer();
   };
+
+  // Auto-avance
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    timerRef.current = setInterval(() => {
+      setCurrent((prev) => {
+        const next = (prev + 1) % slides.length;
+        movilRefs.current.forEach((v, i) => {
+          if (!v) return;
+          if (i === next) { v.currentTime = 0; v.play().catch(() => {}); }
+          else v.pause();
+        });
+        webRefs.current.forEach((v, i) => {
+          if (!v) return;
+          if (i === next) { v.currentTime = 0; v.play().catch(() => {}); }
+          else v.pause();
+        });
+        return next;
+      });
+    }, intervalMs);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [slides.length, intervalMs]);
 
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative w-full overflow-hidden bg-black">
-      <div className="relative w-full bg-black">
-        {slides.map((slide, index) => (
-          <div
-            key={index}
-            className="w-full"
-            style={{
-              position: index === 0 ? "relative" : "absolute",
-              top: 0,
-              left: 0,
-              opacity: index === current ? 1 : 0,
-              transition: "opacity 0.4s ease",
-              pointerEvents: index === current ? "auto" : "none",
-            }}
-          >
-            {/* Móvil */}
-            {isVideo(slide.movil) ? (
-              <video
-                ref={(el) => { movilRefs.current[index] = el; }}
-                src={slide.movil}
-                autoPlay={index === 0}
-                loop
-                muted
-                playsInline
-                preload={index === 0 ? "auto" : "metadata"}
-                className="block md:hidden w-full h-auto object-cover"
-              />
-            ) : (
-              <img
-                src={slide.movil}
-                alt={`Banner móvil ${index + 1}`}
-                loading={index === 0 ? "eager" : "lazy"}
-                className="block md:hidden w-full h-auto object-cover"
-              />
-            )}
-            {/* Web */}
-            {isVideo(slide.web) ? (
-              <video
-                ref={(el) => { webRefs.current[index] = el; }}
-                src={slide.web}
-                autoPlay={index === 0}
-                loop
-                muted
-                playsInline
-                preload={index === 0 ? "auto" : "metadata"}
-                className="hidden md:block w-full h-auto object-contain"
-                style={{ maxHeight: "140px", objectPosition: "center" }}
-              />
-            ) : (
-              <img
-                src={slide.web}
-                alt={`Banner web ${index + 1}`}
-                loading={index === 0 ? "eager" : "lazy"}
-                className="hidden md:block w-full h-auto object-contain"
-                style={{ maxHeight: "140px", objectPosition: "center" }}
-              />
-            )}
-          </div>
-        ))}
+    <section className="relative w-full bg-black overflow-hidden">
+      {/* Contenedor con altura definida por el slide visible */}
+      <div className="relative w-full">
+        {slides.map((slide, index) => {
+          const active = index === current;
+          return (
+            <div
+              key={index}
+              style={{
+                position: index === 0 ? "relative" : "absolute",
+                inset: 0,
+                opacity: active ? 1 : 0,
+                transition: "opacity 0.5s ease",
+                zIndex: active ? 1 : 0,
+                pointerEvents: active ? "auto" : "none",
+              }}
+            >
+              {/* Móvil */}
+              {isVideo(slide.movil) ? (
+                <video
+                  ref={(el) => { movilRefs.current[index] = el; }}
+                  src={slide.movil}
+                  autoPlay={index === 0}
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="block md:hidden w-full h-auto object-cover"
+                />
+              ) : (
+                <img
+                  src={slide.movil}
+                  alt={`Banner móvil ${index + 1}`}
+                  className="block md:hidden w-full h-auto object-cover"
+                />
+              )}
+              {/* Web */}
+              {isVideo(slide.web) ? (
+                <video
+                  ref={(el) => { webRefs.current[index] = el; }}
+                  src={slide.web}
+                  autoPlay={index === 0}
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="hidden md:block w-full h-auto object-contain"
+                  style={{ maxHeight: "140px", objectPosition: "center" }}
+                />
+              ) : (
+                <img
+                  src={slide.web}
+                  alt={`Banner web ${index + 1}`}
+                  className="hidden md:block w-full h-auto object-contain"
+                  style={{ maxHeight: "140px", objectPosition: "center" }}
+                />
+              )}
+            </div>
+          );
+        })}
 
         {/* Indicadores */}
         {slides.length > 1 && (
@@ -133,7 +131,10 @@ export default function BannerCarousel({ slides, intervalMs = 6000 }: BannerCaro
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => goTo(index)}
+                onClick={() => {
+                  if (timerRef.current) clearInterval(timerRef.current);
+                  goTo(index);
+                }}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   index === current
                     ? "bg-white scale-125"
