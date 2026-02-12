@@ -27,6 +27,8 @@ interface CompletedOrder {
   salsas: string[];
   complementIds: string[];
   discountApplied?: boolean;
+  originalPrice?: number;
+  finalPrice?: number;
 }
 
 const products: Product[] = [
@@ -62,7 +64,7 @@ const fitProducts: Product[] = [
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
     description: "Lechuga bogi, tomate cherry, pepino, zanahoria, maiz americano, palta y huevo. Con vinagreta clasica de la casa.",
-    price: 18.90,
+    price: 18.50,
     image: "/clasica-fresh-bowl.png",
     category: "fit",
   },
@@ -70,7 +72,7 @@ const fitProducts: Product[] = [
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
     description: "Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. Con salsa César cremosa de la casa.",
-    price: 24.90,
+    price: 22.50,
     image: "/cesar-power-bowl.png",
     category: "fit",
   },
@@ -78,7 +80,7 @@ const fitProducts: Product[] = [
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
     description: "Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Con aderezo de yogurt griego.",
-    price: 22.90,
+    price: 23.50,
     image: "/protein-fit-bowl.png",
     category: "fit",
   },
@@ -86,7 +88,7 @@ const fitProducts: Product[] = [
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
     description: "Lechuga romana, atún en trozos, tomate cherry, pepino, choclo, palta y huevo. Aderezo a elección.",
-    price: 21.90,
+    price: 23.50,
     image: "/tuna-fresh-bowl.png",
     category: "fit",
   },
@@ -220,20 +222,12 @@ export default function FatPage() {
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
-    // Buscar en productos fat primero, luego en productos fit
-    let product = products.find(p => p.id === order.productId);
-    if (!product) {
-      product = fitProducts.find(p => p.id === order.productId);
-    }
-    if (!product) return total;
-
-    // Calcular precio del producto (con descuento si aplica)
-    let productPrice = product.price;
-    if (order.discountApplied) {
-      productPrice = product.price * 0.7; // 30% descuento = pagar 70%
-    }
-
-    let orderTotal = productPrice * order.quantity;
+    const unitPrice = order.finalPrice ?? order.originalPrice ?? (() => {
+      let product = products.find(p => p.id === order.productId);
+      if (!product) product = fitProducts.find(p => p.id === order.productId);
+      return product ? product.price : 0;
+    })();
+    let orderTotal = unitPrice * order.quantity;
     order.complementIds.forEach(compId => {
       const complement = availableComplements[compId];
       if (complement) orderTotal += complement.price;
@@ -244,10 +238,10 @@ export default function FatPage() {
   const navigateToCheckout = () => {
     clearCart();
     completedOrders.forEach(order => {
-      const product = products.find(p => p.id === order.productId);
+      let product = products.find(p => p.id === order.productId);
+      if (!product) product = fitProducts.find(p => p.id === order.productId);
       if (product) {
-        // Aplicar descuento si califica
-        const finalPrice = order.discountApplied ? product.price * 0.7 : product.price;
+        const finalPrice = order.finalPrice ?? product.price;
 
         addToCart({
           ...product,
@@ -631,13 +625,19 @@ export default function FatPage() {
   const handleCompleteOrder = (product: Product) => {
     // Guardar la orden completada
     const orderSalsas = selectedSalsas[product.id] || [];
-    const tempOrder = { productId: product.id, quantity: orderQuantity[product.id] || 1, salsas: orderSalsas, complementIds: complementsInCart[product.id] || [] };
+    const qty = orderQuantity[product.id] || 1;
+    const tempOrder = { productId: product.id, quantity: qty, salsas: orderSalsas, complementIds: complementsInCart[product.id] || [] };
+    const applyDiscount = hasPromoDiscount(tempOrder, product.id, promo30Active);
+    const orig = product.price;
+    const final = applyDiscount ? orig * 0.70 : orig;
     const completedOrder: CompletedOrder = {
       productId: product.id,
-      quantity: orderQuantity[product.id] || 1,
+      quantity: qty,
       salsas: orderSalsas,
       complementIds: complementsInCart[product.id] || [],
-      discountApplied: hasPromoDiscount(tempOrder, product.id, promo30Active)
+      discountApplied: applyDiscount,
+      originalPrice: orig,
+      finalPrice: final
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
@@ -1566,10 +1566,9 @@ export default function FatPage() {
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
                               {(() => {
-                                const originalTotal = product.price * order.quantity;
-                                const discountedTotal = originalTotal * 0.7;
-
-                                if (order.discountApplied) {
+                                if (order.discountApplied && order.originalPrice !== undefined && order.finalPrice !== undefined) {
+                                  const originalTotal = order.originalPrice * order.quantity;
+                                  const discountedTotal = order.finalPrice * order.quantity;
                                   return (
                                     <span className="flex items-center gap-2">
                                       <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
@@ -1578,7 +1577,8 @@ export default function FatPage() {
                                     </span>
                                   );
                                 }
-                                return <span className="text-amber-400/80">S/ {originalTotal.toFixed(2)}</span>;
+                                const total = (order.finalPrice ?? product.price) * order.quantity;
+                                return <span className="text-amber-400/80">S/ {total.toFixed(2)}</span>;
                               })()}
                             </div>
 
@@ -1628,7 +1628,8 @@ export default function FatPage() {
                     </div>
                     <div className="text-amber-400 font-bold text-sm md:text-base gold-glow">
                       S/ {(() => {
-                        const productTotal = product.price * order.quantity;
+                        const unitPrice = order.finalPrice ?? product.price;
+                        const productTotal = unitPrice * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
                           return sum + (availableComplements[compId]?.price || 0);
                         }, 0);
@@ -1808,8 +1809,7 @@ export default function FatPage() {
               {(() => {
                 if (!product) return null;
 
-              // Aplicar descuento si califica
-              const productPrice = order.discountApplied ? product.price * 0.7 : product.price;
+              const productPrice = order.finalPrice ?? product.price;
               const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -1855,10 +1855,9 @@ export default function FatPage() {
                       <div className={`flex justify-between items-center ${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} text-xs`}>
                         <span>• {product.name} x{order.quantity}</span>
                         {(() => {
-                          const originalTotal = product.price * order.quantity;
-                          const discountedTotal = originalTotal * 0.7;
-
-                          if (order.discountApplied) {
+                          if (order.discountApplied && order.originalPrice !== undefined && order.finalPrice !== undefined) {
+                            const originalTotal = order.originalPrice * order.quantity;
+                            const discountedTotal = order.finalPrice * order.quantity;
                             return (
                               <span className="flex items-center gap-2">
                                 <span className="text-gray-500 line-through text-[10px]">S/ {originalTotal.toFixed(2)}</span>
@@ -1867,7 +1866,8 @@ export default function FatPage() {
                               </span>
                             );
                           }
-                          return <span className="text-amber-400/80">S/ {originalTotal.toFixed(2)}</span>;
+                          const total = (order.finalPrice ?? product.price) * order.quantity;
+                          return <span className="text-amber-400/80">S/ {total.toFixed(2)}</span>;
                         })()}
                       </div>
 

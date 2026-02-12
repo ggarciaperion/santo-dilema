@@ -21,6 +21,8 @@ interface CompletedOrder {
   salsas?: string[];
   complementIds: string[];
   discountApplied?: boolean;
+  originalPrice?: number;
+  finalPrice?: number;
 }
 
 const products: Product[] = [
@@ -136,14 +138,11 @@ export default function FitPage() {
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
-    // Buscar en productos fit primero, luego en productos fat
-    let product = products.find(p => p.id === order.productId);
-    const isFitProduct = !!product;
-    if (!product) {
-      product = fatProducts.find(p => p.id === order.productId);
-    }
-    if (!product) return total;
-    const unitPrice = (isFitProduct && order.discountApplied) ? product.price * 0.70 : product.price;
+    const unitPrice = order.finalPrice ?? order.originalPrice ?? (() => {
+      let product = products.find(p => p.id === order.productId);
+      if (!product) product = fatProducts.find(p => p.id === order.productId);
+      return product ? product.price : 0;
+    })();
     let orderTotal = unitPrice * order.quantity;
     order.complementIds.forEach(compId => {
       const complement = availableComplements[compId];
@@ -155,11 +154,11 @@ export default function FitPage() {
   const navigateToCheckout = () => {
     clearCart();
     completedOrders.forEach(order => {
-      const product = products.find(p => p.id === order.productId);
+      let product = products.find(p => p.id === order.productId);
+      if (!product) product = fatProducts.find(p => p.id === order.productId);
       if (product) {
-        const discountedProduct = order.discountApplied
-          ? { ...product, price: product.price * 0.70 }
-          : product;
+        const finalUnitPrice = order.finalPrice ?? product.price;
+        const discountedProduct = { ...product, price: finalUnitPrice };
         addToCart(discountedProduct, order.quantity);
         order.complementIds.forEach(compId => {
           const complement = availableComplements[compId];
@@ -324,11 +323,16 @@ export default function FitPage() {
   };
 
   const handleCompleteOrder = (product: Product) => {
+    const qty = orderQuantity[product.id] || 1;
+    const orig = product.price;
+    const final = promoFit30Active ? orig * 0.70 : orig;
     const completedOrder: CompletedOrder = {
       productId: product.id,
-      quantity: orderQuantity[product.id] || 1,
+      quantity: qty,
       complementIds: complementsInCart[product.id] || [],
-      discountApplied: promoFit30Active
+      discountApplied: promoFit30Active,
+      originalPrice: orig,
+      finalPrice: final
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
@@ -1081,9 +1085,9 @@ export default function FitPage() {
                             <div className={`${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
                               {(() => {
-                                const originalTotal = product.price * order.quantity;
-                                if (!isFatOrder && order.discountApplied) {
-                                  const discountedTotal = originalTotal * 0.70;
+                                if (order.discountApplied && order.originalPrice !== undefined && order.finalPrice !== undefined) {
+                                  const originalTotal = order.originalPrice * order.quantity;
+                                  const discountedTotal = order.finalPrice * order.quantity;
                                   return (
                                     <span className="flex items-center gap-2">
                                       <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
@@ -1092,7 +1096,8 @@ export default function FitPage() {
                                     </span>
                                   );
                                 }
-                                return <span className="text-amber-400/80">S/ {originalTotal.toFixed(2)}</span>;
+                                const total = (order.finalPrice ?? product.price) * order.quantity;
+                                return <span className="text-amber-400/80">S/ {total.toFixed(2)}</span>;
                               })()}
                             </div>
 
@@ -1142,8 +1147,7 @@ export default function FitPage() {
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
                       S/ {(() => {
-                        const isFit = products.some(p => p.id === order.productId);
-                        const unitPrice = (isFit && order.discountApplied) ? product.price * 0.70 : product.price;
+                        const unitPrice = order.finalPrice ?? product.price;
                         const productTotal = unitPrice * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
                           return sum + (availableComplements[compId]?.price || 0);
@@ -1236,8 +1240,7 @@ export default function FitPage() {
               {(() => {
                 if (!product) return null;
 
-              const isFitProduct = products.some(p => p.id === order.productId);
-              const unitPrice = (isFitProduct && order.discountApplied) ? product.price * 0.70 : product.price;
+              const unitPrice = order.finalPrice ?? product.price;
               const productTotal = unitPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -1282,7 +1285,7 @@ export default function FitPage() {
                     <div className="space-y-1">
                       <div className={`flex justify-between ${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} text-xs`}>
                         <span>• {product.name} x{order.quantity}</span>
-                        <span className="text-amber-400/80">S/ {((!isFatOrder && order.discountApplied ? product.price * 0.70 : product.price) * order.quantity).toFixed(2)}</span>
+                        <span className="text-amber-400/80">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
                       </div>
 
                       {/* Salsas (solo para órdenes fat) */}
