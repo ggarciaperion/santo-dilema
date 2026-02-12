@@ -938,7 +938,7 @@ export default function FatPage() {
           />
           {/* Banner para PC/Tablet */}
           <video
-            src="/bannerwebfat.mp4"
+            src="/bannerwebfat.mp4?v=2"
             poster="/bannerpc.png"
             autoPlay
             loop
