@@ -963,8 +963,11 @@ export default function CheckoutPage() {
           {/* Notificación de elegibilidad para cupón */}
           {orderQualifiesForCoupon && (
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2 mb-2">
-              <p className="text-green-400 text-[10px] md:text-xs text-center">
-                🎁 ¡Tu pedido califica para cupón de descuento! El código se revelará después de pagar.
+              <p className="text-green-400 text-[10px] md:text-xs text-center font-semibold">
+                🎁 ¡Tu pedido califica para cupón de <span className="font-black">13% descuento</span> para tu próxima compra!
+              </p>
+              <p className="text-green-400/70 text-[9px] md:text-[10px] text-center mt-1">
+                El código se revelará después de pagar.
               </p>
             </div>
           )}

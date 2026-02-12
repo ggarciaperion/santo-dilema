@@ -1087,6 +1087,30 @@ export default function FitPage() {
                 );
               })}
             </div>
+
+            {/* Mensaje de calificación para cupón 13% */}
+            {(() => {
+              const PROMO_SAUCE_IDS = ["barbecue", "buffalo-picante", "ahumada", "parmesano-ajo"];
+              const qualifiesForCoupon = completedOrders.some(order => {
+                if (!order.salsas || order.salsas.length === 0) return false;
+                return order.salsas.every((salsaId: string) => PROMO_SAUCE_IDS.includes(salsaId));
+              });
+
+              if (qualifiesForCoupon) {
+                return (
+                  <div className="mt-3 md:mt-4 bg-green-500/10 border-2 border-green-500/40 rounded-lg p-3 md:p-4">
+                    <p className="text-green-400 text-xs md:text-sm text-center font-semibold flex items-center justify-center gap-2">
+                      <span className="text-base md:text-lg">🎁</span>
+                      ¡Esta orden califica para cupón de <span className="font-black">13% descuento</span> en tu próxima compra!
+                    </p>
+                    <p className="text-green-400/70 text-[10px] md:text-xs text-center mt-1">
+                      El código se revelará después de pagar
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
         )}
 
