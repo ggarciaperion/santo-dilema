@@ -1078,7 +1078,7 @@ export default function FitPage() {
                             {/* Precio del menú */}
                             <div className={`${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                              <span className="text-amber-400/80">S/ {((!isFatOrder && promoFit30Active ? product.price * 0.70 : product.price) * order.quantity).toFixed(2)}</span>
                             </div>
 
                             {/* Salsas (solo para órdenes de fat) */}
