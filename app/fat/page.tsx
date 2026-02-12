@@ -943,10 +943,16 @@ export default function FatPage() {
         </div>
       </header>
 
-      {/* Banner Carrusel FAT - pendiente agregar archivos */}
-
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
+
+        {/* Banner Carrusel FAT - solo desktop, alineado con carteles */}
+        <BannerCarousel slides={[
+          { web: "/bwfat1.png" },
+          { web: "/bwfat2.png" },
+          { web: "/bwfat3.png" },
+          { web: "/bwfat4.png" },
+        ]} />
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible">
           {/* Scrollable Products - Carrusel en móvil, grilla en desktop */}
