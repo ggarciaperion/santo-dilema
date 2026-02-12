@@ -3,7 +3,7 @@ import { storage } from "@/lib/storage";
 import { v2 as cloudinary } from 'cloudinary';
 import { orderQualifiesForCoupon } from "../coupons/route";
 
-// Salsas de la promo 30%
+// Salsas de la promo 30% FAT
 const PROMO30_SAUCE_IDS = ["anticuchos", "honey-mustard", "teriyaki", "macerichada"];
 const PROMO30_PRODUCT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
 
@@ -13,6 +13,18 @@ function orderQualifiesForPromo30(completedOrders: any[]): boolean {
     if (!order.salsas || order.salsas.length === 0) return false;
     return order.salsas.every((s: string) => PROMO30_SAUCE_IDS.includes(s));
   });
+}
+
+// Promo 30% FIT — cualquier bowl FIT califica
+const PROMO_FIT30_PRODUCT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
+
+function orderQualifiesForPromoFit30(completedOrders: any[]): boolean {
+  return completedOrders.some(order => PROMO_FIT30_PRODUCT_IDS.includes(order.productId));
+}
+
+function getFirstFitProductId(completedOrders: any[]): string {
+  const fitOrder = completedOrders.find(o => PROMO_FIT30_PRODUCT_IDS.includes(o.productId));
+  return fitOrder?.productId || '';
 }
 
 // Configurar Cloudinary
@@ -218,6 +230,25 @@ export async function POST(request: Request) {
         }
       } catch (error) {
         console.error("Error al registrar promo30:", error);
+      }
+    }
+
+    // Registrar en Promo FIT 30% si califica
+    if (orderQualifiesForPromoFit30(completedOrders)) {
+      try {
+        const result = await storage.registerPromoFit30Order({
+          orderId: newOrder.id,
+          customerName: name,
+          dni,
+          productId: getFirstFitProductId(completedOrders),
+        });
+        if (result.registered) {
+          console.log(`🥗 Promo FIT 30% registrada. Total acumulado: ${result.newCount}/30`);
+        } else {
+          console.log("⚠️ Promo FIT 30% ya alcanzó el límite de 30 órdenes");
+        }
+      } catch (error) {
+        console.error("Error al registrar promoFit30:", error);
       }
     }
 

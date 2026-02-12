@@ -110,6 +110,8 @@ const availableComplements: Record<string, { name: string; price: number }> = {
 
 export default function FitPage() {
   const { cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
+  const [promoFit30Active, setPromoFit30Active] = useState<boolean>(true);
+  const [promoFit30Count, setPromoFit30Count] = useState<number>(0);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -170,6 +172,17 @@ export default function FitPage() {
     });
     router.push('/checkout');
   };
+
+  // Cargar estado promo FIT 30%
+  useEffect(() => {
+    fetch('/api/promofit30')
+      .then(r => r.json())
+      .then(data => {
+        setPromoFit30Active(data.active);
+        setPromoFit30Count(data.count);
+      })
+      .catch(() => {});
+  }, []);
 
   // Cargar órdenes al inicio, filtrando solo las de otras categorías
   useEffect(() => {
@@ -600,27 +613,26 @@ export default function FitPage() {
         </div>
       </header>
 
-      <section className="relative w-full overflow-visible bg-black pt-6 md:mt-8">
-        <div className="relative w-full bg-black overflow-visible">
-          <Image
-            src="/bannermovilfi.png?v=1"
-            alt="Banner promocional FIT"
-            width={800}
-            height={400}
-            priority={true}
-            className="block md:hidden w-full h-auto object-cover moto-drive"
+      <section className="relative w-full overflow-hidden bg-black">
+        <div className="relative w-full bg-black">
+          {/* Banner móvil — video */}
+          <video
+            src="/bannermovilfit.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="block md:hidden w-full h-auto object-cover"
           />
-          <Image
-            src="/bannerpcfit.png?v=1"
-            alt="Banner promocional FIT"
-            width={1200}
-            height={140}
-            priority={true}
-            className="hidden md:block w-full h-auto object-contain moto-drive"
-            style={{
-              maxHeight: '140px',
-              objectPosition: 'center',
-            }}
+          {/* Banner web — video */}
+          <video
+            src="/bannerwebfit.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="hidden md:block w-full object-cover"
+            style={{ maxHeight: '200px' }}
           />
         </div>
       </section>
@@ -698,9 +710,22 @@ export default function FitPage() {
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                      <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
-                        S/ {product.price.toFixed(2)}
-                      </span>
+                      <div className="flex flex-col">
+                        {promoFit30Active ? (
+                          <>
+                            <span className="text-[10px] text-gray-400 line-through leading-none">
+                              S/ {product.price.toFixed(2)}
+                            </span>
+                            <span className="text-sm md:text-base font-black text-green-400" style={{ textShadow: '0 0 8px rgba(74,222,128,0.6)' }}>
+                              S/ {(product.price * 0.70).toFixed(2)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                            S/ {product.price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
                           onClick={(e) => {
@@ -959,20 +984,40 @@ export default function FitPage() {
         {expandedCard === null && completedOrders.length === 0 && (
           <div className="relative w-full flex justify-center items-center py-4 md:py-3 px-4">
             <div className="text-center animated-text-reveal">
-              <h2
-                className="text-base md:text-lg font-black tracking-widest uppercase"
-                style={{
-                  fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
-                  fontWeight: 900,
-                  fontStretch: 'expanded',
-                  color: '#06b6d4',
-                  letterSpacing: '0.15em',
-                  textTransform: 'uppercase',
-                  textShadow: '0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4), 0 0 40px rgba(6, 182, 212, 0.2)'
-                }}
-              >
-                ¡Promo del día 30% descuento en órdenes César Power Bowl!
-              </h2>
+              {promoFit30Active ? (
+                <>
+                  <h2
+                    className="text-base md:text-lg font-black tracking-widest uppercase"
+                    style={{
+                      fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
+                      fontWeight: 900,
+                      fontStretch: 'expanded',
+                      color: '#06b6d4',
+                      letterSpacing: '0.15em',
+                      textTransform: 'uppercase',
+                      textShadow: '0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4), 0 0 40px rgba(6, 182, 212, 0.2)'
+                    }}
+                  >
+                    ¡Promo del día 30% descuento en todos los bowls FIT!
+                  </h2>
+                  <p className="text-sm md:text-base font-bold mt-1" style={{ color: '#f87171' }}>
+                    Solo quedan <span className="font-black text-red-400">{30 - promoFit30Count}</span> de 30 lugares disponibles
+                  </p>
+                </>
+              ) : (
+                <h2
+                  className="text-base md:text-lg font-black tracking-widest uppercase"
+                  style={{
+                    fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
+                    fontWeight: 900,
+                    color: '#6b7280',
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Promo 30% FIT agotada — ¡Atento a nuevas promociones!
+                </h2>
+              )}
             </div>
           </div>
         )}

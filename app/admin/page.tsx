@@ -265,6 +265,7 @@ export default function AdminPage() {
   const [promotions, setPromotions] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
   const [promo30Data, setPromo30Data] = useState<any>({ active: true, count: 0, limit: 30, orders: [] });
+  const [promoFit30Data, setPromoFit30Data] = useState<any>({ active: true, count: 0, limit: 30, orders: [] });
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
@@ -378,6 +379,7 @@ export default function AdminPage() {
     loadPromotions();
     loadCoupons();
     loadPromo30();
+    loadPromoFit30();
     loadCatalogProducts();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
@@ -388,6 +390,7 @@ export default function AdminPage() {
       loadPromotions();
       loadCoupons();
       loadPromo30();
+      loadPromoFit30();
       loadCatalogProducts();
     }, 10000);
     return () => clearInterval(interval);
@@ -650,6 +653,16 @@ export default function AdminPage() {
       setPromo30Data(data);
     } catch (error) {
       console.error("Error al cargar promo30:", error);
+    }
+  };
+
+  const loadPromoFit30 = async () => {
+    try {
+      const response = await fetch("/api/promofit30");
+      const data = await response.json();
+      setPromoFit30Data(data);
+    } catch (error) {
+      console.error("Error al cargar promoFit30:", error);
     }
   };
 
@@ -5603,6 +5616,116 @@ export default function AdminPage() {
                                 <code className="text-red-400 text-xs bg-black/50 px-2 py-1 rounded">{order.orderId}</code>
                               </td>
                               <td className="py-3 px-4 text-gray-400 text-xs">{(order.sauces || []).join(', ')}</td>
+                              <td className="py-3 px-4 text-gray-400 text-xs">
+                                {new Date(order.registeredAt).toLocaleDateString('es-PE', {
+                                  day: '2-digit', month: 'short', year: 'numeric',
+                                  hour: '2-digit', minute: '2-digit'
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Promo FIT 30% */}
+                <div className="mb-8 bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border-2 border-cyan-500 rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400 flex items-center gap-2">
+                        🥗 Promo 30% FIT — Bowls con Descuento
+                      </h3>
+                      <p className="text-gray-400 text-sm mt-1">30% descuento en todos los bowls FIT — primeras 30 órdenes</p>
+                    </div>
+                    <div>
+                      {promoFit30Data.active ? (
+                        <span className="px-4 py-2 rounded-full text-sm font-black bg-green-500/20 text-green-400 border border-green-500/50">
+                          ✅ ACTIVA
+                        </span>
+                      ) : (
+                        <span className="px-4 py-2 rounded-full text-sm font-black bg-red-500/20 text-red-400 border border-red-500/50">
+                          🔴 AGOTADA
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Barra de progreso */}
+                  <div className="mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-white font-black text-lg">{promoFit30Data.count} / {promoFit30Data.limit}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-56 h-4 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              promoFit30Data.count >= promoFit30Data.limit
+                                ? 'bg-red-500'
+                                : promoFit30Data.count >= promoFit30Data.limit * 0.8
+                                ? 'bg-orange-500'
+                                : 'bg-cyan-500'
+                            }`}
+                            style={{ width: `${Math.min(100, (promoFit30Data.count / promoFit30Data.limit) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-gray-400 text-xs">
+                          {promoFit30Data.active
+                            ? `Quedan ${promoFit30Data.limit - promoFit30Data.count} lugares`
+                            : 'Agotada'}
+                        </span>
+                        <span className="text-gray-500 text-xs">{promoFit30Data.limit}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
+                      <p className="text-gray-400 text-xs mb-1">Total Órdenes</p>
+                      <p className="text-3xl font-black text-white">{promoFit30Data.count} / 30</p>
+                    </div>
+                    <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
+                      <p className="text-gray-400 text-xs mb-1">Disponibles</p>
+                      <p className="text-3xl font-black text-cyan-400">{Math.max(0, promoFit30Data.limit - promoFit30Data.count)}</p>
+                    </div>
+                    <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
+                      <p className="text-gray-400 text-xs mb-1">% Completado</p>
+                      <p className="text-3xl font-black text-orange-400">
+                        {promoFit30Data.limit > 0 ? Math.round((promoFit30Data.count / promoFit30Data.limit) * 100) : 0}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Tabla de órdenes */}
+                  {!promoFit30Data.orders || promoFit30Data.orders.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-4xl mb-2">🥗</p>
+                      <p>Aún no hay órdenes FIT registradas en esta promo</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-xl border border-cyan-500/30">
+                      <table className="w-full">
+                        <thead className="bg-black/50">
+                          <tr>
+                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">#</th>
+                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">DNI</th>
+                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Cliente</th>
+                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Orden ID</th>
+                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Producto</th>
+                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Fecha</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {promoFit30Data.orders.map((order: any, index: number) => (
+                            <tr key={index} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
+                              <td className="py-3 px-4 text-cyan-400 font-black text-sm">{index + 1}</td>
+                              <td className="py-3 px-4 text-white text-sm font-mono">{order.dni || '-'}</td>
+                              <td className="py-3 px-4 text-white text-sm">{order.customerName}</td>
+                              <td className="py-3 px-4">
+                                <code className="text-cyan-400 text-xs bg-black/50 px-2 py-1 rounded">{order.orderId}</code>
+                              </td>
+                              <td className="py-3 px-4 text-gray-400 text-xs">{order.productId || '-'}</td>
                               <td className="py-3 px-4 text-gray-400 text-xs">
                                 {new Date(order.registeredAt).toLocaleDateString('es-PE', {
                                   day: '2-digit', month: 'short', year: 'numeric',
