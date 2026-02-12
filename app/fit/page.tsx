@@ -137,11 +137,13 @@ export default function FitPage() {
   const completedTotal = completedOrders.reduce((total, order) => {
     // Buscar en productos fit primero, luego en productos fat
     let product = products.find(p => p.id === order.productId);
+    const isFitProduct = !!product;
     if (!product) {
       product = fatProducts.find(p => p.id === order.productId);
     }
     if (!product) return total;
-    let orderTotal = product.price * order.quantity;
+    const unitPrice = (isFitProduct && promoFit30Active) ? product.price * 0.70 : product.price;
+    let orderTotal = unitPrice * order.quantity;
     order.complementIds.forEach(compId => {
       const complement = availableComplements[compId];
       if (complement) orderTotal += complement.price;
@@ -154,7 +156,10 @@ export default function FitPage() {
     completedOrders.forEach(order => {
       const product = products.find(p => p.id === order.productId);
       if (product) {
-        addToCart(product, order.quantity);
+        const discountedProduct = promoFit30Active
+          ? { ...product, price: product.price * 0.70 }
+          : product;
+        addToCart(discountedProduct, order.quantity);
         order.complementIds.forEach(compId => {
           const complement = availableComplements[compId];
           if (complement) {
@@ -1122,7 +1127,9 @@ export default function FitPage() {
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
                       S/ {(() => {
-                        const productTotal = product.price * order.quantity;
+                        const isFit = products.some(p => p.id === order.productId);
+                        const unitPrice = (isFit && promoFit30Active) ? product.price * 0.70 : product.price;
+                        const productTotal = unitPrice * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
                           return sum + (availableComplements[compId]?.price || 0);
                         }, 0);
