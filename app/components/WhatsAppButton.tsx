@@ -3,7 +3,7 @@
 export default function WhatsAppButton() {
   return (
     <a
-      href="https://wa.me/51926011920?text=Hola%20%F0%9F%91%8B%20necesito%20ayuda%20con%20mi%20pedido%20en%20Santo%20Dilema"
+      href="https://wa.me/51910064469?text=Hola%20%F0%9F%91%8B%20necesito%20ayuda%20con%20mi%20pedido%20en%20Santo%20Dilema"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"
