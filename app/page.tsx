@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
-// Fecha de lanzamiento: 13 Feb 2026 a las 18:00 hora Perú (UTC-5)
-const LAUNCH_DATE = new Date('2026-02-13T23:00:00Z');
+// Fecha de lanzamiento: 13 Feb 2026 a las 18:30 hora Perú (UTC-5)
+const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
@@ -97,10 +97,13 @@ export default function Home() {
               {isPreLaunch && (
                 <div className="bg-black/50 border-2 border-fuchsia-500/60 rounded-lg p-4">
                   <p className="text-center text-white font-bold mb-1">
-                    🚀 Apertura mañana
+                    🔥 Apertura hoy
                   </p>
-                  <p className="text-center text-fuchsia-300 text-sm mb-3">
-                    Viernes 13 de Febrero · 6:00 PM
+                  <p className="text-center text-fuchsia-300 text-sm mb-1">
+                    Viernes 13 de Febrero · 6:30 PM
+                  </p>
+                  <p className="text-center text-fuchsia-200/70 text-xs italic mb-3">
+                    Porque queremos darte lo mejor, estamos ultimando cada detalle para ti.
                   </p>
                   <div className="flex justify-center gap-3">
                     {[

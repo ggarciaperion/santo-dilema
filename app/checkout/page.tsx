@@ -449,7 +449,7 @@ export default function CheckoutPage() {
     setShowDniSearch(true);
   };
 
-  const LAUNCH_DATE = new Date('2026-02-13T23:00:00Z');
+  const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
   const isPreLaunch = () => Date.now() < LAUNCH_DATE.getTime();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1380,16 +1380,16 @@ export default function CheckoutPage() {
               ¡Casi es la hora!
             </h3>
             <p className="text-white text-sm mb-1">
-              Abrimos mañana a las
+              Abrimos hoy a las
             </p>
             <p className="text-fuchsia-300 font-black text-2xl mb-1">
-              6:00 PM
+              6:30 PM
             </p>
             <p className="text-fuchsia-400/70 text-xs mb-5">
               Viernes 13 de Febrero · Hora Perú
             </p>
             <p className="text-gray-300 text-xs mb-6">
-              Puedes seguir explorando el menú y armar tu pedido. ¡Te esperamos mañana!
+              Puedes seguir explorando el menú y armar tu pedido. ¡Te esperamos en unos minutos!
             </p>
             <button
               onClick={() => setShowPreLaunchModal(false)}
