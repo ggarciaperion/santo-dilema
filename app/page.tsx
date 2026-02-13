@@ -100,7 +100,7 @@ export default function Home() {
                     🚀 Apertura mañana
                   </p>
                   <p className="text-center text-fuchsia-300 text-sm mb-3">
-                    Jueves 13 de Febrero · 6:00 PM
+                    Viernes 13 de Febrero · 6:00 PM
                   </p>
                   <div className="flex justify-center gap-3">
                     {[

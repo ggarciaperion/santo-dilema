@@ -1386,7 +1386,7 @@ export default function CheckoutPage() {
               6:00 PM
             </p>
             <p className="text-fuchsia-400/70 text-xs mb-5">
-              Jueves 13 de Febrero · Hora Perú
+              Viernes 13 de Febrero · Hora Perú
             </p>
             <p className="text-gray-300 text-xs mb-6">
               Puedes seguir explorando el menú y armar tu pedido. ¡Te esperamos mañana!
