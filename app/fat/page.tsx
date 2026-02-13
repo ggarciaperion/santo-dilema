@@ -1052,7 +1052,7 @@ export default function FatPage() {
                     <h4 className="text-xs md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-2 line-clamp-3 h-10 md:h-12">
+                    <p className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-2 md:line-clamp-3 md:h-12">
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
