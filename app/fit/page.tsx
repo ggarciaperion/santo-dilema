@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import BannerCarousel from "../components/BannerCarousel";
+import WhatsAppButton from "../components/WhatsAppButton";
 
 interface Product {
   id: string;
@@ -1339,6 +1340,8 @@ export default function FitPage() {
           </div>
         );
       })()}
+
+      <WhatsAppButton />
     </div>
   );
 }
