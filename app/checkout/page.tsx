@@ -201,12 +201,6 @@ export default function CheckoutPage() {
   const [couponValidating, setCouponValidating] = useState(false);
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
-  const [orderQualifiesForCoupon, setOrderQualifiesForCoupon] = useState(false);
-  const [generatedCoupon, setGeneratedCoupon] = useState<any>(null);
-  const [couponCopied, setCouponCopied] = useState(false);
-  const [dniHasCoupon, setDniHasCoupon] = useState(false);
-  const [dniCouponStatus, setDniCouponStatus] = useState<"pending" | "used" | null>(null);
-  const [checkingDni, setCheckingDni] = useState(false);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
 
   // Reproducir sonido cuando el pedido se confirma
@@ -326,65 +320,6 @@ export default function CheckoutPage() {
       setCouponValidating(false);
     }
   };
-
-  // Copiar código de cupón generado
-  const copyCouponCode = async () => {
-    if (generatedCoupon?.code) {
-      try {
-        await navigator.clipboard.writeText(generatedCoupon.code);
-        setCouponCopied(true);
-        setTimeout(() => setCouponCopied(false), 2000);
-      } catch (error) {
-        console.error("Error al copiar:", error);
-      }
-    }
-  };
-
-  // Verificar si la orden califica para cupón (salsas promocionales)
-  useEffect(() => {
-    const PROMO_SAUCE_IDS = ["barbecue", "buffalo-picante", "ahumada", "parmesano-ajo"];
-
-    const qualifies = completedOrders.some(order => {
-      if (!order.salsas || order.salsas.length === 0) return false;
-      return order.salsas.every((salsaId: string) => PROMO_SAUCE_IDS.includes(salsaId));
-    });
-
-    setOrderQualifiesForCoupon(qualifies);
-  }, [completedOrders]);
-
-  // Verificar si el DNI ya tiene un cupón generado
-  useEffect(() => {
-    const checkDniCoupon = async () => {
-      // Solo verificar si:
-      // 1. La orden califica para cupón
-      // 2. El DNI tiene 8 dígitos (DNI válido en Perú)
-      if (!orderQualifiesForCoupon || formData.dni.length !== 8) {
-        setDniHasCoupon(false);
-        setDniCouponStatus(null);
-        return;
-      }
-
-      setCheckingDni(true);
-      try {
-        const response = await fetch(`/api/coupons?action=check-eligibility&dni=${formData.dni}`);
-        const data = await response.json();
-
-        // hasPromo = true significa que el DNI YA tiene un cupón
-        setDniHasCoupon(data.hasPromo === true);
-        setDniCouponStatus(data.couponStatus); // "pending" | "used" | null
-      } catch (error) {
-        console.error("Error verificando DNI:", error);
-        setDniHasCoupon(false);
-        setDniCouponStatus(null);
-      } finally {
-        setCheckingDni(false);
-      }
-    };
-
-    // Debounce: esperar 500ms después de que el usuario deje de escribir
-    const timeoutId = setTimeout(checkDniCoupon, 500);
-    return () => clearTimeout(timeoutId);
-  }, [formData.dni, orderQualifiesForCoupon]);
 
   // Redirect if no completed orders (solo después de cargar)
   useEffect(() => {
@@ -618,48 +553,6 @@ export default function CheckoutPage() {
           En breve te contactaremos para coordinar la entrega, gracias
         </p>
 
-        {/* Cupón generado */}
-        {generatedCoupon && (
-          <div className="mt-8 max-w-md mx-auto bg-gradient-to-br from-fuchsia-600/20 to-purple-600/20 border-2 border-fuchsia-500/50 rounded-2xl p-6 shadow-lg shadow-fuchsia-500/20">
-            <div className="text-center mb-4">
-              <h3 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 mb-2">
-                🎁 ¡Felicitaciones!
-              </h3>
-              <p className="text-white text-sm md:text-base">
-                Has ganado un cupón de descuento
-              </p>
-            </div>
-
-            {/* Código del cupón */}
-            <div className="bg-black/50 border border-fuchsia-500/30 rounded-xl p-4 mb-4">
-              <p className="text-gray-400 text-xs mb-2 text-center">Código de cupón:</p>
-              <div className="flex items-center justify-center gap-2">
-                <code className="text-fuchsia-400 text-xl md:text-2xl font-bold tracking-wider">
-                  {generatedCoupon.code}
-                </code>
-                <button
-                  onClick={copyCouponCode}
-                  className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-3 py-1.5 rounded-lg text-xs transition-all"
-                >
-                  {couponCopied ? "✓ Copiado" : "Copiar"}
-                </button>
-              </div>
-            </div>
-
-            {/* Detalles del cupón */}
-            <div className="space-y-2 text-center">
-              <p className="text-green-400 text-lg font-bold">
-                {generatedCoupon.discount}% de descuento
-              </p>
-              <p className="text-gray-400 text-xs">
-                Válido hasta: <span className="text-white font-semibold">28 de febrero 2026</span>
-              </p>
-              <p className="text-gray-500 text-xs mt-3 italic">
-                Usa este código en tu próximo pedido
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Logo Santo Dilema */}
         <div className="mt-10 success-logo flex justify-center">
@@ -1040,54 +933,6 @@ export default function CheckoutPage() {
             })}
           </div>
 
-          {/* Notificación de elegibilidad para cupón */}
-          {orderQualifiesForCoupon && (
-            <div className={`border rounded-lg p-2 mb-2 ${
-              dniHasCoupon
-                ? dniCouponStatus === 'used'
-                  ? 'bg-gray-500/10 border-gray-500/30'
-                  : 'bg-amber-500/10 border-amber-500/30'
-                : 'bg-green-500/10 border-green-500/30'
-            }`}>
-              {checkingDni ? (
-                <p className="text-gray-400 text-[10px] md:text-xs text-center">
-                  Verificando elegibilidad...
-                </p>
-              ) : dniHasCoupon ? (
-                dniCouponStatus === 'used' ? (
-                  // Cupón ya usado
-                  <>
-                    <p className="text-gray-400 text-[10px] md:text-xs text-center font-semibold">
-                      ✓ Tu cupón del 13% ya fue utilizado
-                    </p>
-                    <p className="text-gray-400/70 text-[9px] md:text-[10px] text-center mt-1">
-                      Solo se genera un cupón por DNI. ¡Atento a próximas promociones!
-                    </p>
-                  </>
-                ) : (
-                  // Cupón pendiente (no usado)
-                  <>
-                    <p className="text-amber-400 text-[10px] md:text-xs text-center font-semibold">
-                      ℹ️ Ya tienes un cupón activo del <span className="font-black">13% de descuento</span>
-                    </p>
-                    <p className="text-amber-400/70 text-[9px] md:text-[10px] text-center mt-1">
-                      Solo se genera un cupón por DNI. Puedes usarlo en el campo "¿Tienes un cupón?" debajo.
-                    </p>
-                  </>
-                )
-              ) : (
-                // Elegible para nuevo cupón
-                <>
-                  <p className="text-green-400 text-[10px] md:text-xs text-center font-semibold">
-                    🎁 ¡Tu pedido califica para cupón de <span className="font-black">13% descuento</span> para tu próxima compra!
-                  </p>
-                  <p className="text-green-400/70 text-[9px] md:text-[10px] text-center mt-1">
-                    El código se revelará después de pagar.
-                  </p>
-                </>
-              )}
-            </div>
-          )}
 
           {/* Campo de cupón */}
           <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
