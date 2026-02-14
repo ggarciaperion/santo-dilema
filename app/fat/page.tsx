@@ -211,6 +211,14 @@ export default function FatPage() {
     return total + orderTotal;
   }, 0);
 
+  const FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
+  const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
+  const hasComboDiscount =
+    completedOrders.some(o => FAT_IDS.includes(o.productId)) &&
+    completedOrders.some(o => FIT_IDS.includes(o.productId));
+  const comboDiscountAmount = hasComboDiscount ? completedTotal * 0.14 : 0;
+  const comboTotal = completedTotal - comboDiscountAmount;
+
   const navigateToCheckout = () => {
     clearCart();
     completedOrders.forEach(order => {
@@ -1566,6 +1574,20 @@ export default function FatPage() {
               })}
             </div>
 
+            {/* Banner de descuento COMBO FAT + FIT */}
+            {hasComboDiscount && (
+              <div className="mt-4 bg-fuchsia-500/10 border-2 border-fuchsia-500/50 rounded-lg p-3 md:p-4">
+                <p className="text-fuchsia-300 text-xs md:text-sm text-center font-semibold flex items-center justify-center gap-2">
+                  <span className="text-base md:text-lg">🔥</span>
+                  ¡Combo FAT + FIT activado! <span className="font-black text-fuchsia-200">14% de descuento</span>
+                </p>
+                <div className="flex justify-center items-center gap-3 mt-1">
+                  <span className="text-gray-400 line-through text-xs">S/ {completedTotal.toFixed(2)}</span>
+                  <span className="text-amber-400 font-black text-sm gold-glow">S/ {comboTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+
             {/* Mensaje de calificación para cupón 13% */}
             {(() => {
               const PROMO_SAUCE_IDS = ["barbecue", "buffalo-picante", "ahumada", "parmesano-ajo"];
@@ -1614,9 +1636,25 @@ export default function FatPage() {
             <div className="flex justify-between items-center gap-3 md:gap-5">
               <div className="flex items-center gap-2 md:gap-3">
                 <span className="text-white font-bold text-sm md:text-xl">Total</span>
-                <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
-                  S/ {completedTotal.toFixed(2)}
-                </span>
+                {hasComboDiscount ? (
+                  <div className="flex flex-col items-start">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400 line-through text-sm md:text-xl">
+                        S/ {completedTotal.toFixed(2)}
+                      </span>
+                      <span className="bg-fuchsia-500 text-white text-[10px] md:text-xs font-black px-1.5 py-0.5 rounded">
+                        COMBO -14%
+                      </span>
+                    </div>
+                    <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
+                      S/ {comboTotal.toFixed(2)}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
+                    S/ {completedTotal.toFixed(2)}
+                  </span>
+                )}
               </div>
               {isOpen ? (
                 <button

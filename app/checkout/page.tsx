@@ -254,9 +254,17 @@ export default function CheckoutPage() {
     return total + productTotal + complementsTotal;
   }, 0);
 
+  // Detectar combo FAT + FIT para descuento 14%
+  const COMBO_FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
+  const COMBO_FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
+  const hasComboDiscount =
+    completedOrders.some(o => COMBO_FAT_IDS.includes(o.productId)) &&
+    completedOrders.some(o => COMBO_FIT_IDS.includes(o.productId));
+  const comboDiscountAmount = hasComboDiscount ? subtotal * 0.14 : 0;
+
   // Aplicar descuento de cupón si es válido
-  const couponDiscountAmount = couponValid ? (subtotal * couponDiscount) / 100 : 0;
-  const realTotal = subtotal - couponDiscountAmount;
+  const couponDiscountAmount = couponValid ? ((subtotal - comboDiscountAmount) * couponDiscount) / 100 : 0;
+  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount;
 
   // Validar si el formulario está completo
   const isFormValid = () => {
@@ -468,6 +476,7 @@ export default function CheckoutPage() {
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
       formDataToSend.append('totalItems', completedOrders.length.toString());
       formDataToSend.append('totalPrice', realTotal.toString());
+      formDataToSend.append('comboDiscount', hasComboDiscount ? '14' : '0');
       formDataToSend.append('couponDiscount', couponValid ? couponDiscount.toString() : '0');
       formDataToSend.append('couponCode', couponValid ? couponCode.trim().toUpperCase() : '');
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
@@ -1104,17 +1113,25 @@ export default function CheckoutPage() {
           </div>
 
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
-            {/* Subtotal y descuento */}
-            {couponValid && couponDiscount > 0 && (
+            {/* Subtotal y descuentos */}
+            {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
               <>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-gray-400 text-xs md:text-sm">Subtotal:</span>
                   <span className="text-gray-400 text-xs md:text-sm">S/ {subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-green-400 text-xs md:text-sm font-bold">Cupón -{couponDiscount}%:</span>
-                  <span className="text-green-400 text-xs md:text-sm font-bold">-S/ {couponDiscountAmount.toFixed(2)}</span>
-                </div>
+                {hasComboDiscount && (
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-fuchsia-400 text-xs md:text-sm font-bold">🔥 Combo FAT+FIT -14%:</span>
+                    <span className="text-fuchsia-400 text-xs md:text-sm font-bold">-S/ {comboDiscountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                {couponValid && couponDiscount > 0 && (
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-green-400 text-xs md:text-sm font-bold">Cupón -{couponDiscount}%:</span>
+                    <span className="text-green-400 text-xs md:text-sm font-bold">-S/ {couponDiscountAmount.toFixed(2)}</span>
+                  </div>
+                )}
               </>
             )}
 
