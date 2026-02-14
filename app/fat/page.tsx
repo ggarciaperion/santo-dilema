@@ -1116,9 +1116,10 @@ export default function FatPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDecreaseQuantity(product.id);
+                            if (!isSoldOut) handleDecreaseQuantity(product.id);
                           }}
-                          className="w-5 h-5 md:w-7 md:h-7 bg-red-600 hover:bg-red-500 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center"
+                          disabled={isSoldOut}
+                          className={`w-5 h-5 md:w-7 md:h-7 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
                         >
                           −
                         </button>
@@ -1128,9 +1129,10 @@ export default function FatPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleIncreaseQuantity(product.id);
+                            if (!isSoldOut) handleIncreaseQuantity(product.id);
                           }}
-                          className="w-5 h-5 md:w-7 md:h-7 bg-red-600 hover:bg-red-500 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center"
+                          disabled={isSoldOut}
+                          className={`w-5 h-5 md:w-7 md:h-7 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
                         >
                           +
                         </button>
