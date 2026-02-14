@@ -224,6 +224,7 @@ export default function FatPage() {
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
   const [bannerWidth, setBannerWidth] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
+  const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -276,6 +277,14 @@ export default function FatPage() {
   useEffect(() => {
     const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Cargar estado de stock de la carta desde el servidor
+  useEffect(() => {
+    fetch("/api/menu-stock")
+      .then((r) => r.json())
+      .then((data) => setMenuStock(data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -1003,15 +1012,16 @@ export default function FatPage() {
               const requiredSalsas = getRequiredSalsasCount(product.id);
               const currentSalsas = selectedSalsas[product.id] || [];
               const canAdd = canAddProduct(product.id);
+              const isSoldOut = !!menuStock[product.id];
 
               return (
                 <div
                   key={product.id}
                   ref={(el) => { cardRefs.current[product.id] = el; }}
-                  onClick={() => handleCardClick(product.id)}
-                  onMouseEnter={() => handleCardHover(product.id)}
+                  onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
+                  onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fat shadow-xl shadow-red-500/30 snap-center md:snap-none border-2 md:border-0 border-red-400
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fat shadow-xl shadow-red-500/30 snap-center md:snap-none border-2 md:border-0 border-red-400 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
                       : 'w-[240px] md:w-[280px] lg:w-[300px]'
@@ -1035,6 +1045,13 @@ export default function FatPage() {
                       ? 'bg-black h-40 md:h-48 border-0'
                       : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
                   }`}>
+                    {isSoldOut && (
+                      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
+                        <div className="border-4 border-red-500 rounded-sm px-3 py-1 select-none" style={{ transform: 'rotate(-20deg)', boxShadow: '0 0 12px rgba(239,68,68,0.7)' }}>
+                          <span className="text-red-500 font-black text-xl md:text-2xl tracking-widest uppercase" style={{ textShadow: '0 0 8px rgba(239,68,68,0.8)' }}>AGOTADO</span>
+                        </div>
+                      </div>
+                    )}
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
@@ -1466,15 +1483,17 @@ export default function FatPage() {
                           handleCompleteOrder(product);
                           setIsEditingOrder(false);
                         }}
-                        disabled={!canAdd}
+                        disabled={!canAdd || isSoldOut}
                         className={`w-full py-2.5 md:py-3.5 rounded-lg md:rounded-xl font-bold text-sm md:text-base transition-all
-                          ${canAdd
-                            ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat cursor-pointer active:scale-95'
-                            : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
+                          ${isSoldOut
+                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
+                            : canAdd
+                              ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat cursor-pointer active:scale-95'
+                              : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
                           }
                         `}
                       >
-                        {canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {isSoldOut ? 'No disponible' : canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   </div>

@@ -23,6 +23,7 @@ let dailyClosesFilePath: string = '';
 let couponsFilePath: string = '';
 let promo30FilePath: string = '';
 let promoFit30FilePath: string = '';
+let menuStockFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -37,6 +38,7 @@ if (!isProduction) {
   couponsFilePath = path.join(dataDir, 'coupons.json');
   promo30FilePath = path.join(dataDir, 'promo30.json');
   promoFit30FilePath = path.join(dataDir, 'promofit30.json');
+  menuStockFilePath = path.join(dataDir, 'menu-stock.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -68,6 +70,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(promoFit30FilePath)) {
       fs.writeFileSync(promoFit30FilePath, JSON.stringify({ active: true, count: 0, limit: 30, orders: [] }, null, 2));
+    }
+    if (!fs.existsSync(menuStockFilePath)) {
+      fs.writeFileSync(menuStockFilePath, JSON.stringify({}, null, 2));
     }
   }
 }
@@ -711,5 +716,30 @@ export const storage = {
 
     await this.savePromoFit30(promo);
     return { registered: true, newCount: promo.count };
+  },
+
+  // ========== STOCK DE CARTA (MENÚ) ==========
+  // Estructura: { [productId]: boolean } — true = agotado
+
+  async getMenuStock(): Promise<Record<string, boolean>> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<Record<string, boolean>>('menuStock');
+      return data || {};
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(menuStockFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  async saveMenuStock(data: Record<string, boolean>): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('menuStock', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(menuStockFilePath, JSON.stringify(data, null, 2));
+    }
   },
 };

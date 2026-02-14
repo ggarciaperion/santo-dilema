@@ -45,7 +45,6 @@ const products: Product[] = [
     price: 22.50,
     image: "/2.png",
     category: "fit",
-    soldOut: true,
   },
   {
     id: "ensalada-caesar",
@@ -54,7 +53,6 @@ const products: Product[] = [
     price: 23.50,
     image: "/3.png",
     category: "fit",
-    soldOut: true,
   },
   {
     id: "ensalada-mediterranea",
@@ -143,6 +141,7 @@ export default function FitPage() {
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
   const [bannerWidth, setBannerWidth] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
+  const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -271,6 +270,14 @@ export default function FitPage() {
   useEffect(() => {
     const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Cargar estado de stock de la carta desde el servidor
+  useEffect(() => {
+    fetch("/api/menu-stock")
+      .then((r) => r.json())
+      .then((data) => setMenuStock(data))
+      .catch(() => {});
   }, []);
 
   // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
@@ -679,7 +686,7 @@ export default function FitPage() {
           >
             {products.map((product) => {
               const isExpanded = expandedCard === product.id;
-              const isSoldOut = product.soldOut === true;
+              const isSoldOut = !!menuStock[product.id];
 
               return (
                 <div

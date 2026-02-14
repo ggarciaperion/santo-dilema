@@ -223,7 +223,9 @@ export default function AdminPage() {
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing" | "carta">("orders");
+  const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
+  const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
   const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock">("dashboard");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -381,6 +383,7 @@ export default function AdminPage() {
     loadPromo30();
     loadPromoFit30();
     loadCatalogProducts();
+    loadMenuStock();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
       loadOrders();
@@ -470,6 +473,32 @@ export default function AdminPage() {
       console.error("❌ [ADMIN] Error al cargar pedidos:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMenuStock = async () => {
+    try {
+      const res = await fetch("/api/menu-stock");
+      const data = await res.json();
+      setMenuStock(data);
+    } catch (error) {
+      console.error("Error al cargar menu stock:", error);
+    }
+  };
+
+  const toggleMenuStock = async (productId: string, currentValue: boolean) => {
+    setMenuStockSaving(productId);
+    try {
+      await fetch("/api/menu-stock", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, soldOut: !currentValue }),
+      });
+      setMenuStock((prev) => ({ ...prev, [productId]: !currentValue }));
+    } catch (error) {
+      console.error("Error al actualizar menu stock:", error);
+    } finally {
+      setMenuStockSaving(null);
     }
   };
 
@@ -1954,6 +1983,16 @@ export default function AdminPage() {
             }`}
           >
             🎯 Marketing
+          </button>
+          <button
+            onClick={() => setActiveTab("carta")}
+            className={`px-6 py-3 font-bold transition-all ${
+              activeTab === "carta"
+                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                : "text-gray-400 hover:text-gray-300"
+            }`}
+          >
+            🍽️ Carta
           </button>
         </div>
       </section>
@@ -6255,6 +6294,104 @@ export default function AdminPage() {
             </div>
           )}
         </>
+      ) : activeTab === "carta" ? (
+        /* Carta Tab — control de stock de menús */
+        <section className="container mx-auto px-4 py-8">
+          <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-2">Stock de Carta</h2>
+          <p className="text-gray-400 text-sm mb-8">
+            Activa el sello <span className="text-red-400 font-bold">AGOTADO</span> para que los clientes no puedan pedir ese plato.
+            El cambio se refleja en la carta al instante.
+          </p>
+
+          {/* FAT */}
+          <div className="mb-10">
+            <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2">
+              🥩 Carta FAT
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 18.50" },
+                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 33.50" },
+                { id: "santo-pecado", name: "Santo Pecado", price: "S/ 45.00" },
+              ].map((item) => {
+                const isSoldOut = !!menuStock[item.id];
+                const isSaving = menuStockSaving === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    className={`bg-gray-900 rounded-xl border-2 p-5 flex items-center justify-between transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : "border-gray-700"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-white font-bold text-base">{item.name}</p>
+                      <p className="text-gray-400 text-sm">{item.price}</p>
+                      {isSoldOut && (
+                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => toggleMenuStock(item.id, isSoldOut)}
+                      disabled={isSaving}
+                      className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
+                        isSoldOut
+                          ? "bg-green-700 hover:bg-green-600 text-white"
+                          : "bg-red-700 hover:bg-red-600 text-white"
+                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* FIT */}
+          <div>
+            <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2">
+              🥗 Carta FIT
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.90" },
+                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 24.90" },
+                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 22.90" },
+                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 21.90" },
+              ].map((item) => {
+                const isSoldOut = !!menuStock[item.id];
+                const isSaving = menuStockSaving === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    className={`bg-gray-900 rounded-xl border-2 p-5 flex items-center justify-between transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : "border-gray-700"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-white font-bold text-base">{item.name}</p>
+                      <p className="text-gray-400 text-sm">{item.price}</p>
+                      {isSoldOut && (
+                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => toggleMenuStock(item.id, isSoldOut)}
+                      disabled={isSaving}
+                      className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
+                        isSoldOut
+                          ? "bg-green-700 hover:bg-green-600 text-white"
+                          : "bg-red-700 hover:bg-red-600 text-white"
+                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
       ) : null}
 
       {/* ==================== MODAL DE INVENTARIO (GLOBAL) ==================== */}
