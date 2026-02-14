@@ -165,29 +165,6 @@ const fitProducts = [
   },
 ];
 
-// 🎁 PROMOCIÓN: Salsas que califican para 40% de descuento
-const PROMO_SAUCE_IDS = [
-  "anticuchos",      // Parrillera
-  "honey-mustard",   // Honey Mustard
-  "teriyaki",        // Teriyaki
-  "macerichada"      // Sweet & Sour
-];
-
-// Función para validar si una orden califica para el descuento del 40%
-const hasPromoDiscount = (order: CompletedOrder, productId: string): boolean => {
-  // Solo aplica a los 3 menús principales de FAT
-  if (!["pequeno-dilema", "duo-dilema", "santo-pecado"].includes(productId)) {
-    return false;
-  }
-
-  // Verificar que todas las salsas sean promocionales
-  if (!order.salsas || order.salsas.length === 0) {
-    return false;
-  }
-
-  // TODAS las salsas deben ser promocionales
-  return order.salsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
-};
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -266,7 +243,7 @@ export default function CheckoutPage() {
 
     if (!product) return total;
 
-    const productPrice = order.finalPrice ?? (hasPromoDiscount(order, order.productId) ? product.price * 0.7 : product.price);
+    const productPrice = order.finalPrice ?? product.price;
     const productTotal = productPrice * order.quantity;
 
     // Calcular total de complementos
@@ -986,10 +963,8 @@ export default function CheckoutPage() {
 
               if (!product) return null;
 
-              const hasDiscount = order.discountApplied || hasPromoDiscount(order, order.productId);
-              const productPrice = order.finalPrice ?? (hasDiscount ? product.price * 0.7 : product.price);
+              const productPrice = order.finalPrice ?? product.price;
               const productTotal = productPrice * order.quantity;
-              const originalTotal = (order.originalPrice ?? product.price) * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
               }, 0);
@@ -1043,23 +1018,7 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <div className="text-amber-400 font-bold text-xs md:text-sm gold-glow flex-shrink-0">
-                      {hasDiscount ? (
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className="text-gray-500 line-through text-[9px]">
-                            S/ {originalTotal.toFixed(2)}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-green-400 font-bold">
-                              S/ {productTotal.toFixed(2)}
-                            </span>
-                            <span className="bg-green-500/20 text-green-400 text-[8px] px-1 py-0.5 rounded font-bold">
-                              -30%
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <span>S/ {productTotal.toFixed(2)}</span>
-                      )}
+                      <span>S/ {productTotal.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -72,9 +72,9 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
   const [alerted, setAlerted] = useState(false);
 
   useEffect(() => {
-    // Si el pedido está cancelado o entregado, detener el contador y cerrar alerta
+    // Si el pedido estÃ¡ cancelado o entregado, detener el contador y cerrar alerta
     if (status === 'cancelled' || status === 'delivered') {
-      setShowAlert(false); // Cerrar alerta si está abierta
+      setShowAlert(false); // Cerrar alerta si estÃ¡ abierta
       return; // No iniciar el interval
     }
 
@@ -91,7 +91,7 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
       const minutes = Math.floor(diff / 60);
       const seconds = diff % 60;
 
-      // Alerta a los 20 minutos SOLO si el pedido está pendiente o confirmado
+      // Alerta a los 20 minutos SOLO si el pedido estÃ¡ pendiente o confirmado
       if (minutes >= 20 && !alerted && (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed' || status === 'en-camino')) {
         setShowAlert(true);
         setAlerted(true);
@@ -119,13 +119,13 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowAlert(false)}>
           <div className="bg-red-600 rounded-xl p-8 max-w-md mx-4 shadow-2xl animate-pulse" onClick={(e) => e.stopPropagation()}>
             <div className="text-center">
-              <div className="text-6xl mb-4">⚠️</div>
-              <h3 className="text-3xl font-black text-white mb-4">¡ALERTA DE TIEMPO!</h3>
+              <div className="text-6xl mb-4">âš ï¸</div>
+              <h3 className="text-3xl font-black text-white mb-4">Â¡ALERTA DE TIEMPO!</h3>
               <p className="text-xl text-white mb-2">
                 El pedido <span className="font-mono font-black">#{orderId}</span>
               </p>
               <p className="text-2xl font-black text-yellow-300 mb-6">
-                ¡Lleva más de 20 minutos en cola!
+                Â¡Lleva mÃ¡s de 20 minutos en cola!
               </p>
               <button
                 onClick={() => setShowAlert(false)}
@@ -146,7 +146,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Verificar autenticación
+  // Verificar autenticaciÃ³n
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("admin_token");
@@ -168,7 +168,7 @@ export default function AdminPage() {
           router.push("/admin/login");
         }
       } catch (error) {
-        console.error("Error verificando autenticación:", error);
+        console.error("Error verificando autenticaciÃ³n:", error);
         localStorage.removeItem("admin_token");
         router.push("/admin/login");
       }
@@ -177,20 +177,20 @@ export default function AdminPage() {
     checkAuth();
   }, [router]);
 
-  // Función para cerrar sesión
+  // FunciÃ³n para cerrar sesiÃ³n
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
     router.push("/admin/login");
   };
 
-  // Helper para obtener fecha/hora en zona horaria de Perú (UTC-5)
+  // Helper para obtener fecha/hora en zona horaria de PerÃº (UTC-5)
   const getPeruDate = (date?: Date | string) => {
     const d = date ? new Date(date) : new Date();
-    // Convertir a hora de Perú (UTC-5)
+    // Convertir a hora de PerÃº (UTC-5)
     return new Date(d.toLocaleString('en-US', { timeZone: 'America/Lima' }));
   };
 
-  // Helper para verificar si dos fechas son del mismo día en Perú
+  // Helper para verificar si dos fechas son del mismo dÃ­a en PerÃº
   const isSameDayPeru = (date1: Date | string, date2?: Date | string) => {
     const d1 = getPeruDate(date1);
     const d2 = date2 ? getPeruDate(date2) : getPeruDate();
@@ -202,7 +202,7 @@ export default function AdminPage() {
     );
   };
 
-  // Helper para obtener nombre del mes en español
+  // Helper para obtener nombre del mes en espaÃ±ol
   const getMonthName = (yearMonth: string) => {
     const months = [
       "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
@@ -266,8 +266,6 @@ export default function AdminPage() {
   });
   const [promotions, setPromotions] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
-  const [promo30Data, setPromo30Data] = useState<any>({ active: true, count: 0, limit: 30, orders: [] });
-  const [promoFit30Data, setPromoFit30Data] = useState<any>({ active: true, count: 0, limit: 30, orders: [] });
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
@@ -345,7 +343,7 @@ export default function AdminPage() {
     }
   }, [activeTab, financialSection, dashboardDateInitialized]);
 
-  // Inicializar AudioContext con interacción del usuario (requerido por navegadores)
+  // Inicializar AudioContext con interacciÃ³n del usuario (requerido por navegadores)
   useEffect(() => {
     const initAudio = () => {
       if (!audioContextInitialized) {
@@ -353,8 +351,8 @@ export default function AdminPage() {
           const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
           setAudioContext(ctx);
           setAudioContextInitialized(true);
-          console.log("✅ AudioContext inicializado");
-          // Remover listeners después de inicializar
+          console.log("âœ… AudioContext inicializado");
+          // Remover listeners despuÃ©s de inicializar
           document.removeEventListener('click', initAudio);
           document.removeEventListener('keydown', initAudio);
         } catch (error) {
@@ -380,8 +378,6 @@ export default function AdminPage() {
     loadDeductions();
     loadPromotions();
     loadCoupons();
-    loadPromo30();
-    loadPromoFit30();
     loadCatalogProducts();
     loadMenuStock();
     // Auto-refresh cada 10 segundos
@@ -392,8 +388,6 @@ export default function AdminPage() {
       loadDeductions();
       loadPromotions();
       loadCoupons();
-      loadPromo30();
-      loadPromoFit30();
       loadCatalogProducts();
     }, 10000);
     return () => clearInterval(interval);
@@ -416,42 +410,42 @@ export default function AdminPage() {
       const response = await fetch("/api/orders");
       const data = await response.json();
 
-      console.log(`📊 [ADMIN] loadOrders - Total pedidos recibidos: ${data.length}`);
-      console.log(`📊 [ADMIN] IDs previos guardados: ${previousOrderIdsRef.current.size}`);
+      console.log(`ðŸ“Š [ADMIN] loadOrders - Total pedidos recibidos: ${data.length}`);
+      console.log(`ðŸ“Š [ADMIN] IDs previos guardados: ${previousOrderIdsRef.current.size}`);
 
       // Detectar NUEVOS pedidos por ID usando useRef (evita stale closure)
       if (previousOrderIdsRef.current.size > 0) {
         const currentIds = new Set(data.map((o: Order) => o.id));
         const newOrders = data.filter((order: Order) => !previousOrderIdsRef.current.has(order.id));
 
-        console.log(`📊 [ADMIN] IDs actuales: ${currentIds.size}`);
-        console.log(`📊 [ADMIN] Nuevos pedidos detectados: ${newOrders.length}`);
+        console.log(`ðŸ“Š [ADMIN] IDs actuales: ${currentIds.size}`);
+        console.log(`ðŸ“Š [ADMIN] Nuevos pedidos detectados: ${newOrders.length}`);
 
         if (newOrders.length > 0) {
-          console.log(`🔔 [ADMIN] ¡${newOrders.length} pedido(s) NUEVO(S) detectado(s)!`);
-          console.log(`🔔 [ADMIN] IDs nuevos:`, newOrders.map(o => o.id));
-          console.log(`🔔 [ADMIN] Llamando a playNotificationSound()...`);
+          console.log(`ðŸ”” [ADMIN] Â¡${newOrders.length} pedido(s) NUEVO(S) detectado(s)!`);
+          console.log(`ðŸ”” [ADMIN] IDs nuevos:`, newOrders.map(o => o.id));
+          console.log(`ðŸ”” [ADMIN] Llamando a playNotificationSound()...`);
           playNotificationSound();
         } else {
-          console.log(`✅ [ADMIN] No hay pedidos nuevos (solo actualizaciones)`);
+          console.log(`âœ… [ADMIN] No hay pedidos nuevos (solo actualizaciones)`);
         }
 
-        // Detectar pedidos recién entregados (delivery confirmó entrega) usando useRef
+        // Detectar pedidos reciÃ©n entregados (delivery confirmÃ³ entrega) usando useRef
         const newlyDelivered = data.filter((order: Order) => {
           const previousStatus = previousOrderStatusRef.current.get(order.id);
           const isNewlyDelivered = previousStatus !== 'delivered' && previousStatus !== undefined && order.status === 'delivered';
 
           if (isNewlyDelivered) {
-            console.log(`📦 [ADMIN] Pedido ${order.id} cambió: ${previousStatus} → ${order.status}`);
+            console.log(`ðŸ“¦ [ADMIN] Pedido ${order.id} cambiÃ³: ${previousStatus} â†’ ${order.status}`);
           }
 
           return isNewlyDelivered;
         });
 
         if (newlyDelivered.length > 0) {
-          console.log(`✅ [ADMIN] ¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
-          console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
-          console.log(`🔊 [ADMIN] Llamando a playDeliveryConfirmSound()...`);
+          console.log(`âœ… [ADMIN] Â¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
+          console.log(`âœ… [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
+          console.log(`ðŸ”Š [ADMIN] Llamando a playDeliveryConfirmSound()...`);
           playDeliveryConfirmSound();
           // Mostrar toast con el primer pedido entregado detectado
           const firstDelivered = newlyDelivered[0];
@@ -460,17 +454,17 @@ export default function AdminPage() {
         }
       } else {
         // Primera carga - solo guardar sin reproducir sonido
-        console.log("📋 [ADMIN] Primera carga de pedidos (no reproducir sonido)");
+        console.log("ðŸ“‹ [ADMIN] Primera carga de pedidos (no reproducir sonido)");
       }
 
       // Actualizar refs con los datos actuales
       previousOrderIdsRef.current = new Set(data.map((o: Order) => o.id));
       previousOrderStatusRef.current = new Map(data.map((o: Order) => [o.id, o.status]));
-      console.log(`💾 [ADMIN] Refs actualizados - IDs: ${previousOrderIdsRef.current.size}, Status: ${previousOrderStatusRef.current.size}`);
+      console.log(`ðŸ’¾ [ADMIN] Refs actualizados - IDs: ${previousOrderIdsRef.current.size}, Status: ${previousOrderStatusRef.current.size}`);
 
       setOrders(data);
     } catch (error) {
-      console.error("❌ [ADMIN] Error al cargar pedidos:", error);
+      console.error("âŒ [ADMIN] Error al cargar pedidos:", error);
     } finally {
       setLoading(false);
     }
@@ -502,33 +496,33 @@ export default function AdminPage() {
     }
   };
 
-  // Función para reproducir sonido de notificación (2+ segundos)
+  // FunciÃ³n para reproducir sonido de notificaciÃ³n (2+ segundos)
   const playNotificationSound = () => {
-    console.log("🔊 [ADMIN] ═══ playNotificationSound INICIADO ═══");
+    console.log("ðŸ”Š [ADMIN] â•â•â• playNotificationSound INICIADO â•â•â•");
     try {
       // Usar el audioContext inicializado o crear uno nuevo
       let ctx = audioContext;
       if (!ctx) {
-        console.log("📢 [ADMIN] Creando NUEVO AudioContext...");
+        console.log("ðŸ“¢ [ADMIN] Creando NUEVO AudioContext...");
         ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         setAudioContext(ctx);
         setAudioContextInitialized(true);
-        console.log("✅ [ADMIN] AudioContext creado exitosamente");
+        console.log("âœ… [ADMIN] AudioContext creado exitosamente");
       } else {
-        console.log("✅ [ADMIN] Usando AudioContext existente");
+        console.log("âœ… [ADMIN] Usando AudioContext existente");
       }
 
-      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
+      console.log(`ðŸŽµ [ADMIN] Estado del AudioContext: ${ctx.state}`);
 
-      // Resume el contexto si está suspendido (requerido en Chrome/Edge)
+      // Resume el contexto si estÃ¡ suspendido (requerido en Chrome/Edge)
       if (ctx.state === 'suspended') {
-        console.log("⏸️ [ADMIN] AudioContext está SUSPENDIDO, intentando resume...");
+        console.log("â¸ï¸ [ADMIN] AudioContext estÃ¡ SUSPENDIDO, intentando resume...");
         ctx.resume().then(() => {
-          console.log("▶️ [ADMIN] AudioContext RESUMIDO exitosamente");
+          console.log("â–¶ï¸ [ADMIN] AudioContext RESUMIDO exitosamente");
         });
       }
 
-      // Función para crear un beep con volumen y duración personalizados
+      // FunciÃ³n para crear un beep con volumen y duraciÃ³n personalizados
       const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.4) => {
         const oscillator = ctx!.createOscillator();
         const gainNode = ctx!.createGain();
@@ -549,50 +543,50 @@ export default function AdminPage() {
         oscillator.stop(ctx!.currentTime + startTime + duration);
       };
 
-      // Secuencia de beeps tipo "notificación de pedido" - Duración total: 2.5 segundos
-      // Patrón: BEEP-BEEP-BEEEEP (ding-ding-dooong)
-      console.log("🎶 [ADMIN] Reproduciendo secuencia de tonos...");
+      // Secuencia de beeps tipo "notificaciÃ³n de pedido" - DuraciÃ³n total: 2.5 segundos
+      // PatrÃ³n: BEEP-BEEP-BEEEEP (ding-ding-dooong)
+      console.log("ðŸŽ¶ [ADMIN] Reproduciendo secuencia de tonos...");
       playBeep(880, 0, 0.3, 0.5);        // Primer tono (La alto)
-      playBeep(880, 0.35, 0.3, 0.5);     // Segundo tono (repetición)
-      playBeep(1047, 0.75, 0.8, 0.6);    // Tercer tono largo (Do más alto y sostenido)
+      playBeep(880, 0.35, 0.3, 0.5);     // Segundo tono (repeticiÃ³n)
+      playBeep(1047, 0.75, 0.8, 0.6);    // Tercer tono largo (Do mÃ¡s alto y sostenido)
 
-      // Tono de confirmación final (más suave)
-      playBeep(784, 1.6, 0.4, 0.3);      // Cuarto tono (Sol, confirmación suave)
+      // Tono de confirmaciÃ³n final (mÃ¡s suave)
+      playBeep(784, 1.6, 0.4, 0.3);      // Cuarto tono (Sol, confirmaciÃ³n suave)
 
-      console.log("✅ [ADMIN] ═══ Sonido de NUEVO PEDIDO reproducido exitosamente ═══");
-      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
+      console.log("âœ… [ADMIN] â•â•â• Sonido de NUEVO PEDIDO reproducido exitosamente â•â•â•");
+      console.log(`ðŸŽµ [ADMIN] Estado final del AudioContext: ${ctx.state}`);
     } catch (error) {
-      console.error("❌ [ADMIN] ERROR al reproducir sonido:", error);
-      console.error("❌ [ADMIN] Stack trace:", error);
+      console.error("âŒ [ADMIN] ERROR al reproducir sonido:", error);
+      console.error("âŒ [ADMIN] Stack trace:", error);
     }
   };
 
   const playDeliveryConfirmSound = () => {
-    console.log("🚚 [ADMIN] ═══ playDeliveryConfirmSound INICIADO ═══");
+    console.log("ðŸšš [ADMIN] â•â•â• playDeliveryConfirmSound INICIADO â•â•â•");
     try {
       // Usar el audioContext inicializado o crear uno nuevo
       let ctx = audioContext;
       if (!ctx) {
-        console.log("📢 [ADMIN] Creando NUEVO AudioContext para sonido de entrega...");
+        console.log("ðŸ“¢ [ADMIN] Creando NUEVO AudioContext para sonido de entrega...");
         ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         setAudioContext(ctx);
         setAudioContextInitialized(true);
-        console.log("✅ [ADMIN] AudioContext creado exitosamente");
+        console.log("âœ… [ADMIN] AudioContext creado exitosamente");
       } else {
-        console.log("✅ [ADMIN] Usando AudioContext existente");
+        console.log("âœ… [ADMIN] Usando AudioContext existente");
       }
 
-      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
+      console.log(`ðŸŽµ [ADMIN] Estado del AudioContext: ${ctx.state}`);
 
-      // Resume el contexto si está suspendido
+      // Resume el contexto si estÃ¡ suspendido
       if (ctx.state === 'suspended') {
-        console.log("⏸️ [ADMIN] AudioContext está SUSPENDIDO, intentando resume...");
+        console.log("â¸ï¸ [ADMIN] AudioContext estÃ¡ SUSPENDIDO, intentando resume...");
         ctx.resume().then(() => {
-          console.log("▶️ [ADMIN] AudioContext RESUMIDO exitosamente");
+          console.log("â–¶ï¸ [ADMIN] AudioContext RESUMIDO exitosamente");
         });
       }
 
-      // Función para crear un beep
+      // FunciÃ³n para crear un beep
       const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.3) => {
         const oscillator = ctx!.createOscillator();
         const gainNode = ctx!.createGain();
@@ -611,17 +605,17 @@ export default function AdminPage() {
         oscillator.stop(ctx!.currentTime + startTime + duration);
       };
 
-      // Sonido de confirmación tipo "check" - Patrón ascendente más agudo
-      console.log("🎶 [ADMIN] Reproduciendo sonido de ENTREGA CONFIRMADA...");
+      // Sonido de confirmaciÃ³n tipo "check" - PatrÃ³n ascendente mÃ¡s agudo
+      console.log("ðŸŽ¶ [ADMIN] Reproduciendo sonido de ENTREGA CONFIRMADA...");
       playBeep(1300, 0, 0.15, 0.5);      // Mi6
       playBeep(1600, 0.15, 0.2, 0.6);    // Sol#6
-      playBeep(2000, 0.35, 0.3, 0.7);    // Si6 (más largo y fuerte)
+      playBeep(2000, 0.35, 0.3, 0.7);    // Si6 (mÃ¡s largo y fuerte)
 
-      console.log("✅ [ADMIN] ═══ Sonido de ENTREGA CONFIRMADA reproducido exitosamente ═══");
-      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
+      console.log("âœ… [ADMIN] â•â•â• Sonido de ENTREGA CONFIRMADA reproducido exitosamente â•â•â•");
+      console.log(`ðŸŽµ [ADMIN] Estado final del AudioContext: ${ctx.state}`);
     } catch (error) {
-      console.error("❌ [ADMIN] ERROR al reproducir sonido de confirmación:", error);
-      console.error("❌ [ADMIN] Stack trace:", error);
+      console.error("âŒ [ADMIN] ERROR al reproducir sonido de confirmaciÃ³n:", error);
+      console.error("âŒ [ADMIN] Stack trace:", error);
     }
   };
 
@@ -675,33 +669,13 @@ export default function AdminPage() {
     }
   };
 
-  const loadPromo30 = async () => {
-    try {
-      const response = await fetch("/api/promo30");
-      const data = await response.json();
-      setPromo30Data(data);
-    } catch (error) {
-      console.error("Error al cargar promo30:", error);
-    }
-  };
-
-  const loadPromoFit30 = async () => {
-    try {
-      const response = await fetch("/api/promofit30");
-      const data = await response.json();
-      setPromoFit30Data(data);
-    } catch (error) {
-      console.error("Error al cargar promoFit30:", error);
-    }
-  };
-
   const loadCatalogProducts = async () => {
     try {
       const response = await fetch("/api/products");
       const data = await response.json();
       setCatalogProducts(data);
     } catch (error) {
-      console.error("Error al cargar catálogo de productos:", error);
+      console.error("Error al cargar catÃ¡logo de productos:", error);
     }
   };
 
@@ -714,7 +688,7 @@ export default function AdminPage() {
       }
 
       if (!catalogForm.category.trim()) {
-        alert("La categoría es requerida");
+        alert("La categorÃ­a es requerida");
         return;
       }
 
@@ -752,7 +726,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteCatalogProduct = async (id: string) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este producto del catálogo?")) {
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar este producto del catÃ¡logo?")) {
       return;
     }
 
@@ -778,10 +752,10 @@ export default function AdminPage() {
     newStatus: Order["status"]
   ) => {
     try {
-      // Buscar el pedido para obtener su información
+      // Buscar el pedido para obtener su informaciÃ³n
       const order = orders.find((o) => o.id === orderId);
 
-      // Si el nuevo estado es "delivered", deducir stock automáticamente
+      // Si el nuevo estado es "delivered", deducir stock automÃ¡ticamente
       if (newStatus === "delivered" && order && order.status !== "delivered") {
         await deductStockFromOrder(order);
       }
@@ -799,7 +773,7 @@ export default function AdminPage() {
     }
   };
 
-  // Función para deducir stock automáticamente cuando se entrega un pedido
+  // FunciÃ³n para deducir stock automÃ¡ticamente cuando se entrega un pedido
   const deductStockFromOrder = async (order: Order) => {
     try {
       // Calcular los componentes/empaques usados
@@ -813,7 +787,7 @@ export default function AdminPage() {
         const product = products.find((p: any) => p.name === itemName);
 
         if (product && product.components && product.components.length > 0) {
-          // Si el producto tiene componentes/receta, calcular cuánto se usó
+          // Si el producto tiene componentes/receta, calcular cuÃ¡nto se usÃ³
           product.components.forEach((component: any) => {
             const totalUsed = component.quantity * cartItem.quantity;
 
@@ -835,7 +809,7 @@ export default function AdminPage() {
         }
       });
 
-      // Si hay componentes para deducir, registrar la deducción
+      // Si hay componentes para deducir, registrar la deducciÃ³n
       if (itemsToDeduct.length > 0) {
         const deduction = {
           orderId: order.id,
@@ -844,7 +818,7 @@ export default function AdminPage() {
           deductionDate: new Date().toISOString(),
         };
 
-        // Guardar la deducción en el sistema
+        // Guardar la deducciÃ³n en el sistema
         const response = await fetch("/api/deductions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -852,21 +826,21 @@ export default function AdminPage() {
         });
 
         if (response.ok) {
-          console.log("✅ Stock deducido automáticamente:", itemsToDeduct);
+          console.log("âœ… Stock deducido automÃ¡ticamente:", itemsToDeduct);
           // Recargar deducciones para actualizar el stock
           loadDeductions();
         } else {
-          console.error("❌ Error al registrar deducción automática");
+          console.error("âŒ Error al registrar deducciÃ³n automÃ¡tica");
         }
       } else {
-        console.log("ℹ️ No hay componentes configurados para los productos de este pedido");
+        console.log("â„¹ï¸ No hay componentes configurados para los productos de este pedido");
       }
     } catch (error) {
       console.error("Error al deducir stock:", error);
     }
   };
 
-  // Función para aplicar filtro de fechas
+  // FunciÃ³n para aplicar filtro de fechas
   const applyDateFilter = () => {
     if (dateFrom && dateTo) {
       setIsDateFiltered(true);
@@ -881,7 +855,7 @@ export default function AdminPage() {
     setShowDateModal(false);
   };
 
-  // Filtrar pedidos según el filtro de fecha
+  // Filtrar pedidos segÃºn el filtro de fecha
   let dateFilteredOrders = orders;
 
   if (isDateFiltered && dateFrom && dateTo) {
@@ -899,12 +873,12 @@ export default function AdminPage() {
     dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
   }
 
-  // Filtrar pedidos por estado y búsqueda
+  // Filtrar pedidos por estado y bÃºsqueda
   const filteredOrders = dateFilteredOrders.filter((order) => {
     // Filtro por estado
     const statusMatch = filter === "all" || order.status === filter;
 
-    // Filtro de búsqueda en tiempo real
+    // Filtro de bÃºsqueda en tiempo real
     const searchMatch = searchTerm === "" ||
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -943,7 +917,7 @@ export default function AdminPage() {
   // Product CRUD functions
   const handleCreateProduct = async () => {
     try {
-      // Siempre marcar como producto de venta (type: "sale") cuando se crea desde Órdenes
+      // Siempre marcar como producto de venta (type: "sale") cuando se crea desde Ã“rdenes
       await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -974,7 +948,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este producto?")) return;
+    if (!confirm("Â¿EstÃ¡s seguro de eliminar este producto?")) return;
     try {
       await fetch(`/api/products?id=${id}`, { method: "DELETE" });
       loadProducts();
@@ -1023,7 +997,7 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        alert("✅ Receta guardada exitosamente!");
+        alert("âœ… Receta guardada exitosamente!");
         setShowRecipeModal(false);
         setEditingRecipeProduct(null);
         setRecipeComponents([]);
@@ -1056,10 +1030,10 @@ export default function AdminPage() {
   // Inventory functions
   const handleCreateInventory = async () => {
     try {
-      console.log("📦 Datos a enviar:", inventoryForm);
-      console.log("📦 Items a enviar:", inventoryForm.items);
-      console.log("📦 Total de items:", inventoryForm.items.length);
-      console.log("📦 Detalle de cada item:");
+      console.log("ðŸ“¦ Datos a enviar:", inventoryForm);
+      console.log("ðŸ“¦ Items a enviar:", inventoryForm.items);
+      console.log("ðŸ“¦ Total de items:", inventoryForm.items.length);
+      console.log("ðŸ“¦ Detalle de cada item:");
       inventoryForm.items.forEach((item, idx) => {
         console.log(`   Item ${idx + 1}:`, {
           productName: item.productName,
@@ -1077,12 +1051,12 @@ export default function AdminPage() {
         body: JSON.stringify(inventoryForm),
       });
 
-      console.log("📦 Response status:", response.status);
-      console.log("📦 Response ok:", response.ok);
+      console.log("ðŸ“¦ Response status:", response.status);
+      console.log("ðŸ“¦ Response ok:", response.ok);
 
       if (response.ok) {
         const savedData = await response.json();
-        console.log("📦 Datos guardados en servidor:", savedData);
+        console.log("ðŸ“¦ Datos guardados en servidor:", savedData);
         await loadInventory();
         setShowInventoryModal(false);
         setInventoryForm({
@@ -1098,17 +1072,17 @@ export default function AdminPage() {
         alert("Compra registrada exitosamente");
       } else {
         const errorData = await response.json();
-        console.error("❌ Error al registrar compra:", errorData);
+        console.error("âŒ Error al registrar compra:", errorData);
         alert("Error al registrar la compra. Por favor, intenta de nuevo.");
       }
     } catch (error) {
-      console.error("❌ Error de conexión:", error);
-      alert("Error de conexión. Por favor, intenta de nuevo.");
+      console.error("âŒ Error de conexiÃ³n:", error);
+      alert("Error de conexiÃ³n. Por favor, intenta de nuevo.");
     }
   };
 
   const handleDeleteInventory = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este registro?")) return;
+    if (!confirm("Â¿EstÃ¡s seguro de eliminar este registro?")) return;
     try {
       await fetch(`/api/inventory?id=${id}`, { method: "DELETE" });
       loadInventory();
@@ -1136,7 +1110,7 @@ export default function AdminPage() {
     const newItems = [...inventoryForm.items];
     newItems[index] = { ...newItems[index], [field]: value };
 
-    // Auto-calculate unit cost (Costo total / (Cantidad × Volumen))
+    // Auto-calculate unit cost (Costo total / (Cantidad Ã— Volumen))
     if (field === 'quantity' || field === 'unitCost' || field === 'volume') {
       const quantity = newItems[index].quantity || 0;
       const volume = newItems[index].volume || 1;
@@ -1167,7 +1141,7 @@ export default function AdminPage() {
       setShowPromotionModal(false);
       resetPromotionForm();
     } catch (error) {
-      console.error("Error al crear promoción:", error);
+      console.error("Error al crear promociÃ³n:", error);
     }
   };
 
@@ -1183,17 +1157,17 @@ export default function AdminPage() {
       setEditingPromotion(null);
       resetPromotionForm();
     } catch (error) {
-      console.error("Error al actualizar promoción:", error);
+      console.error("Error al actualizar promociÃ³n:", error);
     }
   };
 
   const handleDeletePromotion = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar esta promoción?")) return;
+    if (!confirm("Â¿EstÃ¡s seguro de eliminar esta promociÃ³n?")) return;
     try {
       await fetch(`/api/promotions?id=${id}`, { method: "DELETE" });
       loadPromotions();
     } catch (error) {
-      console.error("Error al eliminar promoción:", error);
+      console.error("Error al eliminar promociÃ³n:", error);
     }
   };
 
@@ -1261,7 +1235,7 @@ export default function AdminPage() {
         order.status?.toLowerCase() === "entregado";
 
       if (!isDelivered) {
-        // No procesar pedidos que no están entregados
+        // No procesar pedidos que no estÃ¡n entregados
         return;
       }
 
@@ -1284,7 +1258,7 @@ export default function AdminPage() {
       customer.totalOrders += 1;
       customer.totalSpent += order.totalPrice || 0;
 
-      // Actualizar última orden si es más reciente
+      // Actualizar Ãºltima orden si es mÃ¡s reciente
       if (new Date(order.createdAt) > new Date(customer.lastOrderDate)) {
         customer.lastOrderDate = order.createdAt;
         customer.name = order.name;
@@ -1299,16 +1273,16 @@ export default function AdminPage() {
 
   const allCustomers = getCustomersData();
 
-  // Segmentación avanzada de clientes
+  // SegmentaciÃ³n avanzada de clientes
   const getCustomerSegments = () => {
-    const now = getPeruDate(); // Usar hora de Perú
+    const now = getPeruDate(); // Usar hora de PerÃº
     const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
 
-    // Obtener primer y último día del mes actual en Perú
+    // Obtener primer y Ãºltimo dÃ­a del mes actual en PerÃº
     const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    // Obtener primer y último día del mes pasado en Perú
+    // Obtener primer y Ãºltimo dÃ­a del mes pasado en PerÃº
     const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
@@ -1379,7 +1353,7 @@ export default function AdminPage() {
         return lastMonthOrders.length >= 4;
       }),
 
-      // INACTIVOS: Más de 15 días sin comprar
+      // INACTIVOS: MÃ¡s de 15 dÃ­as sin comprar
       inactive: allCustomers.filter((c: any) => {
         const lastOrder = getPeruDate(c.lastOrderDate);
         return lastOrder < fifteenDaysAgo;
@@ -1393,7 +1367,7 @@ export default function AdminPage() {
   const customerSegments = getCustomerSegments();
   const segmentCustomers = customerSegments[customerSegment as keyof typeof customerSegments] || allCustomers;
 
-  // Filtrar clientes por búsqueda en tiempo real
+  // Filtrar clientes por bÃºsqueda en tiempo real
   const customers = segmentCustomers.filter((customer: any) => {
     if (customerSearchTerm === "") return true;
     const searchLower = customerSearchTerm.toLowerCase();
@@ -1438,7 +1412,7 @@ export default function AdminPage() {
     const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-    // 1. VENTAS DEL DÍA - Importe S/ del día en curso
+    // 1. VENTAS DEL DÃA - Importe S/ del dÃ­a en curso
     const todayOrders = deliveredOrders.filter((order: any) => {
       const orderDate = getPeruDate(order.createdAt);
       return orderDate >= startOfToday && orderDate <= endOfToday;
@@ -1452,7 +1426,7 @@ export default function AdminPage() {
     });
     const monthlySales = currentMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
-    // 3. VENTAS DEL MES ANTERIOR - Para comparación
+    // 3. VENTAS DEL MES ANTERIOR - Para comparaciÃ³n
     const lastMonthOrders = deliveredOrders.filter((order: any) => {
       const orderDate = getPeruDate(order.createdAt);
       return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
@@ -1467,7 +1441,7 @@ export default function AdminPage() {
       ? lastMonthSales / lastMonthOrders.length
       : 0;
 
-    // 5. INGRESOS TOTALES - Desde el día uno
+    // 5. INGRESOS TOTALES - Desde el dÃ­a uno
     const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
     // NUEVO: Productos vendidos en el MES ACTUAL (ordenados de mayor a menor)
@@ -1530,7 +1504,7 @@ export default function AdminPage() {
 
     const productsArray = Array.from(productSales.values()).sort((a, b) => b.quantity - a.quantity);
 
-    // NUEVO: Ranking de los 5 días con más órdenes del mes anterior
+    // NUEVO: Ranking de los 5 dÃ­as con mÃ¡s Ã³rdenes del mes anterior
     const dayOrdersMap = new Map<string, number>();
     lastMonthOrders.forEach((order: any) => {
       const orderDate = getPeruDate(order.createdAt);
@@ -1542,7 +1516,7 @@ export default function AdminPage() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    // NUEVO: Productos del mes anterior CON COMPARACIÓN vs mes actual
+    // NUEVO: Productos del mes anterior CON COMPARACIÃ“N vs mes actual
     const lastMonthProductSales = new Map();
     lastMonthOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
@@ -1573,7 +1547,7 @@ export default function AdminPage() {
 
     const lastMonthProductsArray = Array.from(lastMonthProductSales.values()).sort((a, b) => b.quantity - a.quantity);
 
-    // Crear mapas de posiciones para comparación
+    // Crear mapas de posiciones para comparaciÃ³n
     const lastMonthPositions = new Map();
     lastMonthProductsArray.forEach((product: any, index) => {
       lastMonthPositions.set(product.id, index + 1);
@@ -1584,7 +1558,7 @@ export default function AdminPage() {
       currentMonthPositions.set(product.id, index + 1);
     });
 
-    // Agregar comparación a productos del mes anterior
+    // Agregar comparaciÃ³n a productos del mes anterior
     const lastMonthProductsWithComparison = lastMonthProductsArray.map((product: any) => {
       const lastMonthPos = lastMonthPositions.get(product.id);
       const currentMonthPos = currentMonthPositions.get(product.id);
@@ -1593,12 +1567,12 @@ export default function AdminPage() {
       let positionChange = 0;
 
       if (currentMonthPos !== undefined) {
-        // Comparar posiciones: si bajó el número de posición = subió en ranking (mejor)
+        // Comparar posiciones: si bajÃ³ el nÃºmero de posiciÃ³n = subiÃ³ en ranking (mejor)
         positionChange = lastMonthPos - currentMonthPos;
         if (positionChange > 0) {
-          trend = "up"; // Subió en el ranking
+          trend = "up"; // SubiÃ³ en el ranking
         } else if (positionChange < 0) {
-          trend = "down"; // Bajó en el ranking
+          trend = "down"; // BajÃ³ en el ranking
         } else {
           trend = "same"; // Se mantuvo
         }
@@ -1623,13 +1597,13 @@ export default function AdminPage() {
     const topProductLastMonth = lastMonthProductsArray[0] || null;
     const leastProductLastMonth = lastMonthProductsArray[lastMonthProductsArray.length - 1] || null;
 
-    // Órdenes del día (solo entregadas)
+    // Ã“rdenes del dÃ­a (solo entregadas)
     const todayDeliveredOrders = deliveredOrders.filter((order: any) => {
       const orderDate = getPeruDate(order.createdAt);
       return orderDate >= startOfToday && orderDate <= endOfToday;
     });
 
-    // Progreso de órdenes: mes actual vs mes anterior
+    // Progreso de Ã³rdenes: mes actual vs mes anterior
     const ordersProgressPercentage = lastMonthOrders.length > 0
       ? (currentMonthOrders.length / lastMonthOrders.length) * 100
       : 0;
@@ -1637,20 +1611,20 @@ export default function AdminPage() {
     // Clientes frecuentes (solo con pedidos entregados, 3+ pedidos)
     const frequentCustomers = allCustomers.filter((c: any) => c.totalOrders >= 3);
 
-    // Clientes inactivos (más de 15 días sin comprar)
+    // Clientes inactivos (mÃ¡s de 15 dÃ­as sin comprar)
     const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
     const inactiveCustomers = allCustomers.filter((c: any) =>
       getPeruDate(c.lastOrderDate) < fifteenDaysAgo
     );
 
-    // Ticket promedio del día
+    // Ticket promedio del dÃ­a
     const todayAverageTicket = todayDeliveredOrders.length > 0
       ? dailySales / todayDeliveredOrders.length
       : 0;
 
-    // DATOS ADICIONALES ÚTILES
+    // DATOS ADICIONALES ÃšTILES
 
-    // 1. Método de pago más usado
+    // 1. MÃ©todo de pago mÃ¡s usado
     const paymentMethodCount = new Map<string, number>();
     currentMonthOrders.forEach((order: any) => {
       const method = order.paymentMethod || 'No especificado';
@@ -1661,7 +1635,7 @@ export default function AdminPage() {
       .sort((a, b) => b.count - a.count);
     const mostUsedPaymentMethod = paymentMethodsArray[0] || { method: 'Sin datos', count: 0 };
 
-    // 2. Horarios pico - Análisis por hora del día
+    // 2. Horarios pico - AnÃ¡lisis por hora del dÃ­a
     const hourlyOrders = new Map<number, number>();
     currentMonthOrders.forEach((order: any) => {
       const orderDate = getPeruDate(order.createdAt);
@@ -1674,7 +1648,7 @@ export default function AdminPage() {
     const peakHour = peakHourData ? `${peakHourData.hour}:00 - ${peakHourData.hour + 1}:00` : 'Sin datos';
     const peakHourCount = peakHourData?.count || 0;
 
-    // 3. Complementos/extras más vendidos - TODOS, agrupados por categoría
+    // 3. Complementos/extras mÃ¡s vendidos - TODOS, agrupados por categorÃ­a
     const complementSales = new Map<string, { id: string; name: string; count: number; revenue: number; category: string }>();
     currentMonthOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
@@ -1683,7 +1657,7 @@ export default function AdminPage() {
         complementIds.forEach((compId: string) => {
           const complement = availableComplements[compId];
           if (complement) {
-            // Determinar categoría
+            // Determinar categorÃ­a
             let category = 'Otros';
             if (compId.startsWith('extra-salsa-')) {
               category = 'Salsas';
@@ -1714,7 +1688,7 @@ export default function AdminPage() {
     const allComplements = Array.from(complementSales.values()).sort((a, b) => b.count - a.count);
     const mostSoldComplement = allComplements[0] || { name: 'Sin datos', count: 0, revenue: 0 };
 
-    // Agrupar por categoría
+    // Agrupar por categorÃ­a
     const complementsByCategory = {
       'Bebidas': allComplements.filter(c => c.category === 'Bebidas'),
       'Extras': allComplements.filter(c => c.category === 'Extras'),
@@ -1725,7 +1699,7 @@ export default function AdminPage() {
     // Lista de IDs de bebidas conocidas
     const beverageIds = ['agua-mineral', 'coca-cola', 'inka-cola', 'sprite', 'fanta'];
 
-    // 4a. Menús del día (excluyendo items sin nombre válido)
+    // 4a. MenÃºs del dÃ­a (excluyendo items sin nombre vÃ¡lido)
     const menuSalesToday = new Map<string, { name: string; quantity: number }>();
     todayOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
@@ -1765,7 +1739,7 @@ export default function AdminPage() {
     });
     const beveragesSoldToday = Array.from(beverageSalesToday.values()).sort((a, b) => b.quantity - a.quantity);
 
-    // 5. Tasa de conversión (pedidos confirmados vs totales)
+    // 5. Tasa de conversiÃ³n (pedidos confirmados vs totales)
     const confirmedOrders = orders.filter((o: any) =>
       o.status === "confirmed" ||
       o.status === "en-camino" ||
@@ -1811,7 +1785,7 @@ export default function AdminPage() {
 
   const analytics = getAnalytics();
 
-  // Generar datos para la gráfica de órdenes entregadas en línea de tiempo
+  // Generar datos para la grÃ¡fica de Ã³rdenes entregadas en lÃ­nea de tiempo
   const getChartData = () => {
     const deliveredOrders = orders.filter((order: any) =>
       order.status === "delivered" ||
@@ -1826,10 +1800,10 @@ export default function AdminPage() {
       let key = "";
 
       if (chartTimeFilter === "days") {
-        // Agrupar por día (últimos 30 días)
+        // Agrupar por dÃ­a (Ãºltimos 30 dÃ­as)
         key = orderDate.toLocaleDateString("es-PE");
       } else if (chartTimeFilter === "weeks") {
-        // Agrupar por semana (últimas 12 semanas)
+        // Agrupar por semana (Ãºltimas 12 semanas)
         const weekStart = new Date(orderDate);
         weekStart.setDate(orderDate.getDate() - orderDate.getDay());
         key = weekStart.toLocaleDateString("es-PE");
@@ -1837,7 +1811,7 @@ export default function AdminPage() {
         // Agrupar por mes
         key = `${orderDate.getMonth() + 1}/${orderDate.getFullYear()}`;
       } else if (chartTimeFilter === "years") {
-        // Agrupar por año
+        // Agrupar por aÃ±o
         key = orderDate.getFullYear().toString();
       }
 
@@ -1851,7 +1825,7 @@ export default function AdminPage() {
         if (chartTimeFilter === "years") {
           return parseInt(a.label) - parseInt(b.label);
         }
-        return 0; // Para días, semanas y meses mantener orden
+        return 0; // Para dÃ­as, semanas y meses mantener orden
       });
 
     return chartData;
@@ -1859,7 +1833,7 @@ export default function AdminPage() {
 
   const chartData = getChartData();
 
-  // Mostrar pantalla de carga mientras se verifica la autenticación
+  // Mostrar pantalla de carga mientras se verifica la autenticaciÃ³n
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -1871,7 +1845,7 @@ export default function AdminPage() {
     );
   }
 
-  // Si no está autenticado, no mostrar nada (el useEffect redirigirá)
+  // Si no estÃ¡ autenticado, no mostrar nada (el useEffect redirigirÃ¡)
   if (!isAuthenticated) {
     return null;
   }
@@ -1882,13 +1856,13 @@ export default function AdminPage() {
       {deliveryToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-green-900 border border-green-500 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">✅</span>
+            <span className="text-2xl">âœ…</span>
             <div className="flex-1">
               <p className="text-green-300 text-xs font-bold uppercase tracking-wider mb-0.5">Pedido entregado</p>
               <p className="text-white font-black text-base">#{deliveryToast.orderId}</p>
               <p className="text-green-400 text-sm font-medium">{deliveryToast.customerName}</p>
             </div>
-            <button onClick={() => setDeliveryToast(null)} className="text-green-500 hover:text-white text-sm leading-none mt-0.5">✕</button>
+            <button onClick={() => setDeliveryToast(null)} className="text-green-500 hover:text-white text-sm leading-none mt-0.5">âœ•</button>
           </div>
         </div>
       )}
@@ -1907,24 +1881,24 @@ export default function AdminPage() {
               />
               <div>
                 <h1 className="text-4xl font-black text-fuchsia-400 neon-glow-purple">
-                  Panel de Administración
+                  Panel de AdministraciÃ³n
                 </h1>
-                <p className="text-amber-400 mt-1 gold-glow">Santo Dilema - Gestión de Pedidos</p>
+                <p className="text-amber-400 mt-1 gold-glow">Santo Dilema - GestiÃ³n de Pedidos</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105"
-                title="Cerrar Sesión"
+                title="Cerrar SesiÃ³n"
               >
-                🚪 Salir
+                ðŸšª Salir
               </button>
               <Link
                 href="/"
                 className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
               >
-                ← Volver al Sitio
+                â† Volver al Sitio
               </Link>
             </div>
           </div>
@@ -1942,7 +1916,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            📦 Gestión de Pedidos
+            ðŸ“¦ GestiÃ³n de Pedidos
           </button>
           <button
             onClick={() => setActiveTab("customers")}
@@ -1952,7 +1926,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            👥 Base de Clientes
+            ðŸ‘¥ Base de Clientes
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
@@ -1962,7 +1936,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            📊 Analytics & CRM
+            ðŸ“Š Analytics & CRM
           </button>
           <button
             onClick={() => setActiveTab("financial")}
@@ -1972,7 +1946,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            💰 Financiero
+            ðŸ’° Financiero
           </button>
           <button
             onClick={() => setActiveTab("marketing")}
@@ -1982,7 +1956,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            🎯 Marketing
+            ðŸŽ¯ Marketing
           </button>
           <button
             onClick={() => setActiveTab("carta")}
@@ -1992,14 +1966,14 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            🍽️ Carta
+            ðŸ½ï¸ Carta
           </button>
         </div>
       </section>
 
       {activeTab === "orders" ? (
         <>
-          {/* Stats - Solo pedidos de HOY en hora de Perú */}
+          {/* Stats - Solo pedidos de HOY en hora de PerÃº */}
           <section className="container mx-auto px-4 py-4">
             <div className="grid grid-cols-5 gap-3">
               <button
@@ -2049,7 +2023,7 @@ export default function AdminPage() {
                     : "border-blue-500/50 hover:border-blue-500"
                 }`}
               >
-                <p className="text-blue-400 text-xs font-bold text-left">🚚 En Camino</p>
+                <p className="text-blue-400 text-xs font-bold text-left">ðŸšš En Camino</p>
                 <p className="text-3xl font-black text-blue-400 mt-1 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "en-camino").length}
                 </p>
@@ -2073,7 +2047,7 @@ export default function AdminPage() {
       {/* Barra de herramientas */}
       <section className="container mx-auto px-4 pb-6">
         <div className="flex gap-2 items-center justify-end">
-          {/* Botón de calendario */}
+          {/* BotÃ³n de calendario */}
           <button
             onClick={() => setShowDateModal(true)}
             className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
@@ -2090,7 +2064,7 @@ export default function AdminPage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar pedido, cliente, dirección, menú..."
+              placeholder="Buscar pedido, cliente, direcciÃ³n, menÃº..."
               className="w-full sm:w-80 px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
             />
             <svg
@@ -2174,7 +2148,7 @@ export default function AdminPage() {
               {isDateFiltered && dateFrom && dateTo && (
                 <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
                   <p className="text-sm text-gray-400">
-                    📊 Filtrando desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
+                    ðŸ“Š Filtrando desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
                   </p>
                 </div>
               )}
@@ -2210,7 +2184,7 @@ export default function AdminPage() {
                 {/* LAYOUT HORIZONTAL TIPO CINTA */}
                 <div className="flex items-center gap-3 p-3">
 
-                  {/* HEADER: ESTADO Y NÚMERO */}
+                  {/* HEADER: ESTADO Y NÃšMERO */}
                   <div className={`flex-shrink-0 px-3 py-2 rounded ${
                     order.status === 'pending' ? 'bg-yellow-500/20' :
                     order.status === 'pendiente-verificacion' ? 'bg-purple-500/20' :
@@ -2239,7 +2213,7 @@ export default function AdminPage() {
                     {/* RASTRO DE TIEMPOS POR ETAPA */}
                     {(() => {
                       const steps: { label: string; time: string | undefined; color: string }[] = [
-                        { label: 'Ingresó', time: order.createdAt, color: 'text-gray-400' },
+                        { label: 'IngresÃ³', time: order.createdAt, color: 'text-gray-400' },
                         { label: 'Confirmado', time: order.confirmedAt, color: 'text-cyan-400' },
                         { label: 'En camino', time: order.enCaminoAt, color: 'text-blue-400' },
                         { label: 'Entregado', time: order.deliveredAt, color: 'text-green-400' },
@@ -2270,16 +2244,16 @@ export default function AdminPage() {
                     })()}
                   </div>
 
-                  {/* SECCIÓN 1: PRODUCTOS */}
+                  {/* SECCIÃ“N 1: PRODUCTOS */}
                   <div className="flex-1 bg-black rounded border border-white/10 px-3 py-2">
-                    <h3 className="text-xs font-black text-white uppercase mb-2">🍽️ PEDIDO</h3>
+                    <h3 className="text-xs font-black text-white uppercase mb-2">ðŸ½ï¸ PEDIDO</h3>
                     <div className="flex flex-wrap gap-2">
                       {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
                         (order as any).completedOrders.map((item: any, idx: number) => {
                           const productName = item.name || 'Sin nombre';
-                          // Usar finalPrice (promo 30%) si existe, sino precio catálogo
+                          // Usar finalPrice (promo 30%) si existe, sino precio catÃ¡logo
                           const basePrice = item.finalPrice ?? item.price ?? 0;
-                          // Aplicar factor del cupón 13% si el pedido lo tiene
+                          // Aplicar factor del cupÃ³n 13% si el pedido lo tiene
                           const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
                           const productPrice = basePrice * couponFactor;
                           const catalogPrice = item.price || 0;
@@ -2321,7 +2295,7 @@ export default function AdminPage() {
                               {/* Mostrar salsas si existen */}
                               {itemSalsas.length > 0 && (
                                 <div className="mt-1 ml-8 text-[10px] text-yellow-300">
-                                  <span className="font-bold">🌶️ Salsas: </span>
+                                  <span className="font-bold">ðŸŒ¶ï¸ Salsas: </span>
                                   {itemSalsas.map((salsaId: string) => {
                                     const salsa = salsas.find(s => s.id === salsaId);
                                     return salsa?.name || salsaId;
@@ -2383,21 +2357,21 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* SECCIÓN 2: CLIENTE */}
+                  {/* SECCIÃ“N 2: CLIENTE */}
                   <div className="flex-shrink-0 w-48 bg-gray-800 rounded px-3 py-2">
-                    <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">👤 Cliente</h4>
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">ðŸ‘¤ Cliente</h4>
                     <p className="text-xs font-bold text-white mb-1 truncate">{order.name}</p>
                     <p className="text-xs font-bold text-white flex items-center gap-1 mb-1">
-                      <span>📱</span>
+                      <span>ðŸ“±</span>
                       <span className="font-mono">{order.phone}</span>
                     </p>
                     <p className="text-xs font-bold text-white flex items-start gap-1">
-                      <span>📍</span>
+                      <span>ðŸ“</span>
                       <span className="line-clamp-2">{order.address}</span>
                     </p>
                   </div>
 
-                  {/* SECCIÓN 3: TOTAL */}
+                  {/* SECCIÃ“N 3: TOTAL */}
                   <div className="flex-shrink-0 bg-gradient-to-br from-cyan-600 to-blue-600 rounded px-3 py-2 text-center min-w-[100px]">
                     <p className="text-[10px] text-cyan-100 font-bold uppercase mb-0.5">Total</p>
                     <p className="text-xl font-black text-white">
@@ -2406,12 +2380,12 @@ export default function AdminPage() {
                     <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
                     {(order as any).couponDiscount > 0 && (
                       <p className="text-[9px] bg-purple-900/60 text-purple-200 rounded px-1 mt-1 font-bold">
-                        Cupón -{(order as any).couponDiscount}% aplicado
+                        CupÃ³n -{(order as any).couponDiscount}% aplicado
                       </p>
                     )}
                   </div>
 
-                  {/* SECCIÓN 4: PAGO */}
+                  {/* SECCIÃ“N 4: PAGO */}
                   <div className={`flex-shrink-0 rounded px-3 py-2 min-w-[110px] ${
                     order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
                     order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
@@ -2420,7 +2394,7 @@ export default function AdminPage() {
                     <p className="text-[10px] text-white/80 font-bold uppercase mb-0.5">Pago</p>
                     {order.paymentMethod === 'anticipado' ? (
                       <div>
-                        <p className="text-sm font-black text-white">✓ PAGADO</p>
+                        <p className="text-sm font-black text-white">âœ“ PAGADO</p>
                         <p className="text-[10px] text-white/80">Yape/Plin</p>
                         {order.paymentProofPath && (
                           <button
@@ -2430,7 +2404,7 @@ export default function AdminPage() {
                             }}
                             className="mt-1 w-full bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1"
                           >
-                            📄 Ver comprobante
+                            ðŸ“„ Ver comprobante
                           </button>
                         )}
                       </div>
@@ -2466,12 +2440,12 @@ export default function AdminPage() {
                   {/* NOTA SI EXISTE */}
                   {order.notes && (
                     <div className="flex-shrink-0 bg-yellow-500/20 border border-yellow-500 rounded px-2 py-2 max-w-[150px]">
-                      <p className="text-[10px] text-yellow-400 font-bold uppercase mb-1">⚠️ NOTA</p>
+                      <p className="text-[10px] text-yellow-400 font-bold uppercase mb-1">âš ï¸ NOTA</p>
                       <p className="text-xs font-medium text-yellow-100 line-clamp-2">{order.notes}</p>
                     </div>
                   )}
 
-                  {/* BOTONES DE ACCIÓN */}
+                  {/* BOTONES DE ACCIÃ“N */}
                   <div className="flex-shrink-0 flex gap-2">
                     {order.status === "pendiente-verificacion" && (
                       <>
@@ -2479,13 +2453,13 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
                           className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          ✓ Verificar y Confirmar
+                          âœ“ Verificar y Confirmar
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
                           className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
-                          ✕
+                          âœ•
                         </button>
                       </>
                     )}
@@ -2495,13 +2469,13 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
                           className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          ✓ Confirmar
+                          âœ“ Confirmar
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
                           className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
-                          ✕
+                          âœ•
                         </button>
                       </>
                     )}
@@ -2511,13 +2485,13 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "en-camino")}
                           className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          🚚 En Camino
+                          ðŸšš En Camino
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
                           className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
-                          ✕
+                          âœ•
                         </button>
                       </>
                     )}
@@ -2527,24 +2501,24 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "delivered")}
                           className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          ✓ Entregado
+                          âœ“ Entregado
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
                           className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
-                          ✕ Cancelar
+                          âœ• Cancelar
                         </button>
                       </>
                     )}
                     {order.status === "delivered" && (
                       <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase">
-                        ✓ Entregado
+                        âœ“ Entregado
                       </div>
                     )}
                     {order.status === "cancelled" && (
                       <div className="bg-red-900/50 border border-red-500 text-red-400 px-4 py-2 rounded text-xs font-black text-center uppercase">
-                        ✕ Cancelado
+                        âœ• Cancelado
                       </div>
                     )}
                   </div>
@@ -2563,7 +2537,7 @@ export default function AdminPage() {
           <section className="container mx-auto px-4 py-8">
             <div className="mb-6">
               <h2 className="text-2xl font-black text-fuchsia-400 neon-glow-purple mb-4">
-                Segmentación de Clientes
+                SegmentaciÃ³n de Clientes
               </h2>
               <div className="flex gap-2 flex-wrap">
                 <button
@@ -2584,7 +2558,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  👑 VIP ({customerSegments.vip.length})
+                  ðŸ‘‘ VIP ({customerSegments.vip.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("new")}
@@ -2594,7 +2568,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  ✨ Nuevos ({customerSegments.new.length})
+                  âœ¨ Nuevos ({customerSegments.new.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("active")}
@@ -2604,7 +2578,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  🟢 Activos ({customerSegments.active.length})
+                  ðŸŸ¢ Activos ({customerSegments.active.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("recurrent")}
@@ -2614,7 +2588,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  🔁 Recurrentes ({customerSegments.recurrent.length})
+                  ðŸ” Recurrentes ({customerSegments.recurrent.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("inactive")}
@@ -2624,7 +2598,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  💤 Inactivos ({customerSegments.inactive.length})
+                  ðŸ’¤ Inactivos ({customerSegments.inactive.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("email_pending")}
@@ -2634,7 +2608,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  📧 Email Pendiente ({customerSegments.email_pending.length})
+                  ðŸ“§ Email Pendiente ({customerSegments.email_pending.length})
                 </button>
               </div>
             </div>
@@ -2644,7 +2618,7 @@ export default function AdminPage() {
           <section className="container mx-auto px-4 pb-12">
             {/* Modal de detalle de cliente */}
             {selectedCustomer && (() => {
-              // Calcular productos más comprados
+              // Calcular productos mÃ¡s comprados
               const productCount: Record<string, { name: string; qty: number; revenue: number }> = {};
               selectedCustomer.orders.forEach((order: any) => {
                 const items = order.completedOrders || order.cart || [];
@@ -2668,10 +2642,10 @@ export default function AdminPage() {
                     <div className="flex items-start justify-between p-4 border-b border-fuchsia-500/30">
                       <div>
                         <h2 className="text-xl font-black text-white">{selectedCustomer.name}</h2>
-                        <p className="text-gray-400 text-xs mt-0.5">DNI {selectedCustomer.dni} · {selectedCustomer.phone}{selectedCustomer.email ? ` · ${selectedCustomer.email}` : ''}</p>
+                        <p className="text-gray-400 text-xs mt-0.5">DNI {selectedCustomer.dni} Â· {selectedCustomer.phone}{selectedCustomer.email ? ` Â· ${selectedCustomer.email}` : ''}</p>
                         <p className="text-gray-500 text-xs mt-0.5">{selectedCustomer.address}</p>
                       </div>
-                      <button onClick={() => setSelectedCustomer(null)} className="text-gray-400 hover:text-white text-xl leading-none ml-4">✕</button>
+                      <button onClick={() => setSelectedCustomer(null)} className="text-gray-400 hover:text-white text-xl leading-none ml-4">âœ•</button>
                     </div>
 
                     {/* KPIs compactos */}
@@ -2686,11 +2660,11 @@ export default function AdminPage() {
                       </div>
                       <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/20 text-center">
                         <p className="text-2xl font-black text-cyan-400">{daysSince}d</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Última compra</p>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Ãšltima compra</p>
                       </div>
                     </div>
 
-                    {/* Productos más comprados */}
+                    {/* Productos mÃ¡s comprados */}
                     {topProducts.length > 0 && (
                       <div className="px-4 pb-3">
                         <p className="text-xs font-black text-fuchsia-400 uppercase tracking-wider mb-2">Productos favoritos</p>
@@ -2729,7 +2703,7 @@ export default function AdminPage() {
                               if (!items.length) return null;
                               return (
                                 <p className="text-[10px] text-gray-500 mt-0.5 ml-1">
-                                  {items.map((it: any) => `${it.name || it.product?.name || '?'} x${it.quantity || 0}`).join(' · ')}
+                                  {items.map((it: any) => `${it.name || it.product?.name || '?'} x${it.quantity || 0}`).join(' Â· ')}
                                 </p>
                               );
                             })()}
@@ -2759,7 +2733,7 @@ export default function AdminPage() {
                       type="text"
                       value={customerSearchTerm}
                       onChange={(e) => setCustomerSearchTerm(e.target.value)}
-                      placeholder="Buscar cliente por DNI, nombre, teléfono, email..."
+                      placeholder="Buscar cliente por DNI, nombre, telÃ©fono, email..."
                       className="w-full px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
                     />
                     <svg
@@ -2798,8 +2772,8 @@ export default function AdminPage() {
                     }
                   };
                   const SortIcon = ({ col }: { col: string }) => {
-                    if (customerSortKey !== col) return <span className="text-gray-600 ml-1">↕</span>;
-                    return <span className="text-fuchsia-300 ml-1">{customerSortDir === "asc" ? "↑" : "↓"}</span>;
+                    if (customerSortKey !== col) return <span className="text-gray-600 ml-1">â†•</span>;
+                    return <span className="text-fuchsia-300 ml-1">{customerSortDir === "asc" ? "â†‘" : "â†“"}</span>;
                   };
                   const sortedCustomers = [...customers].sort((a: any, b: any) => {
                     let aVal: any, bVal: any;
@@ -2828,7 +2802,7 @@ export default function AdminPage() {
                               Nombre <SortIcon col="name" />
                             </th>
                             <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden md:table-cell" onClick={() => handleSort("phone")}>
-                              Teléfono <SortIcon col="phone" />
+                              TelÃ©fono <SortIcon col="phone" />
                             </th>
                             <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalOrders")}>
                               Pedidos <SortIcon col="totalOrders" />
@@ -2837,7 +2811,7 @@ export default function AdminPage() {
                               Total Gastado <SortIcon col="totalSpent" />
                             </th>
                             <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
-                              Última Compra <SortIcon col="lastOrderDate" />
+                              Ãšltima Compra <SortIcon col="lastOrderDate" />
                             </th>
                             <th className="text-center p-3 text-fuchsia-400 font-bold hidden lg:table-cell">Estado</th>
                           </tr>
@@ -2867,11 +2841,11 @@ export default function AdminPage() {
                                 </td>
                                 <td className="p-3 text-center hidden lg:table-cell">
                                   {customer.totalOrders > 1 ? (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500">⭐ Recurrente</span>
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500">â­ Recurrente</span>
                                   ) : daysSinceLastOrder > 30 ? (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">⚠️ Inactivo</span>
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">âš ï¸ Inactivo</span>
                                   ) : (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">🆕 Nuevo</span>
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">ðŸ†• Nuevo</span>
                                   )}
                                 </td>
                               </tr>
@@ -2938,7 +2912,7 @@ export default function AdminPage() {
                 )}
                 {isDateFiltered && (
                   <span className="text-sm text-green-400 font-bold">
-                    ✓ Mostrando datos del {new Date(dateFrom).toLocaleDateString("es-PE")} al {new Date(dateTo).toLocaleDateString("es-PE")}
+                    âœ“ Mostrando datos del {new Date(dateFrom).toLocaleDateString("es-PE")} al {new Date(dateTo).toLocaleDateString("es-PE")}
                   </span>
                 )}
               </div>
@@ -2948,53 +2922,53 @@ export default function AdminPage() {
           <section className="container mx-auto px-4 py-8">
             {/* CARTELES PRINCIPALES */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              {/* 1. VENTAS DEL DÍA */}
+              {/* 1. VENTAS DEL DÃA */}
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
+                <p className="text-cyan-400 text-sm font-bold mb-2">ðŸ’° Ventas del DÃ­a</p>
                 <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {isDateFiltered ? `${new Date(dateFrom).toLocaleDateString("es-PE")} - ${new Date(dateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
                 </p>
               </div>
 
-              {/* 2. PEDIDOS ENTREGADOS DEL DÍA */}
+              {/* 2. PEDIDOS ENTREGADOS DEL DÃA */}
               <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold mb-2">📦 Pedidos Entregados</p>
+                <p className="text-green-400 text-sm font-bold mb-2">ðŸ“¦ Pedidos Entregados</p>
                 <p className="text-4xl font-black text-green-400">{analytics.todayDeliveredOrdersCount}</p>
                 <p className="text-gray-400 text-xs mt-2">
-                  {isDateFiltered ? "Del período filtrado" : "Hoy"}
+                  {isDateFiltered ? "Del perÃ­odo filtrado" : "Hoy"}
                 </p>
               </div>
 
               {/* 3. ACUMULADO DEL MES */}
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                <p className="text-purple-400 text-sm font-bold mb-2">📊 Acumulado del Mes</p>
+                <p className="text-purple-400 text-sm font-bold mb-2">ðŸ“Š Acumulado del Mes</p>
                 <p className="text-4xl font-black text-purple-400">S/ {analytics.monthlySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {analytics.currentMonthOrdersCount} pedidos
                 </p>
               </div>
 
-              {/* 4. TICKET PROMEDIO DEL DÍA */}
+              {/* 4. TICKET PROMEDIO DEL DÃA */}
               <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold mb-2">🎫 Ticket Promedio</p>
+                <p className="text-amber-400 text-sm font-bold mb-2">ðŸŽ« Ticket Promedio</p>
                 <p className="text-4xl font-black text-amber-400">S/ {analytics.todayAverageTicket.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
-                  {isDateFiltered ? "Del período filtrado" : "Del día"} ({analytics.todayDeliveredOrdersCount} pedidos)
+                  {isDateFiltered ? "Del perÃ­odo filtrado" : "Del dÃ­a"} ({analytics.todayDeliveredOrdersCount} pedidos)
                 </p>
               </div>
             </div>
 
-            {/* SECCIÓN: PRODUCTOS ENTREGADOS DEL PERÍODO */}
+            {/* SECCIÃ“N: PRODUCTOS ENTREGADOS DEL PERÃODO */}
             <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
-              <h3 className="text-2xl font-black text-fuchsia-400 mb-2">📦 Productos Entregados {isDateFiltered ? "del Período" : "del Mes"}</h3>
+              <h3 className="text-2xl font-black text-fuchsia-400 mb-2">ðŸ“¦ Productos Entregados {isDateFiltered ? "del PerÃ­odo" : "del Mes"}</h3>
               <p className="text-gray-400 text-sm mb-4">
-                Ranking de productos por cantidad vendida • Identifica los más y menos vendidos
+                Ranking de productos por cantidad vendida â€¢ Identifica los mÃ¡s y menos vendidos
               </p>
               {analytics.currentMonthProductsArray.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No hay productos vendidos en este período</p>
+                <p className="text-gray-400 text-center py-8">No hay productos vendidos en este perÃ­odo</p>
               ) : (() => {
-                // Calcular total de ingresos del período
+                // Calcular total de ingresos del perÃ­odo
                 const totalRevenue = analytics.currentMonthProductsArray.reduce((sum: number, p: any) => sum + p.revenue, 0);
 
                 return (
@@ -3021,8 +2995,8 @@ export default function AdminPage() {
                             }`}>
                               #{idx + 1}
                             </span>
-                            {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">🔥 MÁS VENDIDO</span>}
-                            {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">❄️ MENOS VENDIDO</span>}
+                            {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">ðŸ”¥ MÃS VENDIDO</span>}
+                            {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">â„ï¸ MENOS VENDIDO</span>}
                           </div>
                           <p className="text-white font-bold text-base mb-1">{product.name}</p>
                           <p className="text-gray-400 text-xs mb-3">{product.category}</p>
@@ -3056,17 +3030,17 @@ export default function AdminPage() {
               })()}
             </div>
 
-            {/* SECCIÓN: INSIGHTS DEL NEGOCIO */}
+            {/* SECCIÃ“N: INSIGHTS DEL NEGOCIO */}
             <div className="mb-8">
-              <h3 className="text-2xl font-black text-cyan-400 mb-4">📊 Insights del Negocio</h3>
+              <h3 className="text-2xl font-black text-cyan-400 mb-4">ðŸ“Š Insights del Negocio</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* 1. MÉTODO DE PAGO MÁS USADO */}
+                {/* 1. MÃ‰TODO DE PAGO MÃS USADO */}
                 <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                  <p className="text-green-400 text-sm font-bold mb-2">💳 Método de Pago Preferido</p>
+                  <p className="text-green-400 text-sm font-bold mb-2">ðŸ’³ MÃ©todo de Pago Preferido</p>
                   <p className="text-2xl font-black text-white mb-1">
-                    {analytics.mostUsedPaymentMethod.method === 'anticipado' ? '💰 Anticipado' :
-                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
-                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
+                    {analytics.mostUsedPaymentMethod.method === 'anticipado' ? 'ðŸ’° Anticipado' :
+                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? 'ðŸ’µ Efectivo Exacto' :
+                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-cambio' ? 'ðŸ’µ Con Cambio' :
                      analytics.mostUsedPaymentMethod.method}
                   </p>
                   <p className="text-gray-400 text-xs mt-2">{analytics.mostUsedPaymentMethod.count} pedidos ({((analytics.mostUsedPaymentMethod.count / analytics.currentMonthOrdersCount) * 100).toFixed(0)}%)</p>
@@ -3074,31 +3048,31 @@ export default function AdminPage() {
 
                 {/* 2. HORARIO PICO */}
                 <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                  <p className="text-amber-400 text-sm font-bold mb-2">⏰ Horario Pico</p>
+                  <p className="text-amber-400 text-sm font-bold mb-2">â° Horario Pico</p>
                   <p className="text-2xl font-black text-white mb-1">{analytics.peakHour}</p>
                   <p className="text-gray-400 text-xs mt-2">{analytics.peakHourCount} pedidos en esa hora</p>
                 </div>
 
-                {/* 3. TASA DE CONVERSIÓN */}
+                {/* 3. TASA DE CONVERSIÃ“N */}
                 <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                  <p className="text-cyan-400 text-sm font-bold mb-2">📈 Tasa de Conversión</p>
+                  <p className="text-cyan-400 text-sm font-bold mb-2">ðŸ“ˆ Tasa de ConversiÃ³n</p>
                   <p className="text-3xl font-black text-white mb-1">{analytics.conversionRate.toFixed(1)}%</p>
                   <p className="text-gray-400 text-xs mt-2">Pedidos confirmados vs totales</p>
                 </div>
               </div>
             </div>
 
-            {/* SECCIÓN: DISTRIBUCIÓN DE MÉTODOS DE PAGO - formato filas */}
+            {/* SECCIÃ“N: DISTRIBUCIÃ“N DE MÃ‰TODOS DE PAGO - formato filas */}
             <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6 mb-8">
-              <h3 className="text-xl font-black text-blue-400 mb-4">💳 Distribución de Métodos de Pago</h3>
+              <h3 className="text-xl font-black text-blue-400 mb-4">ðŸ’³ DistribuciÃ³n de MÃ©todos de Pago</h3>
               <div className="space-y-3">
                 {analytics.paymentMethodsArray.map((pm: any, idx: number) => (
                   <div key={idx} className="flex items-center gap-4">
                     <div className="w-44 flex-shrink-0">
                       <p className="text-white font-bold text-sm">
-                        {pm.method === 'anticipado' ? '💰 Anticipado' :
-                         pm.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
-                         pm.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
+                        {pm.method === 'anticipado' ? 'ðŸ’° Anticipado' :
+                         pm.method === 'contraentrega-efectivo-exacto' ? 'ðŸ’µ Efectivo Exacto' :
+                         pm.method === 'contraentrega-efectivo-cambio' ? 'ðŸ’µ Con Cambio' :
                          pm.method}
                       </p>
                     </div>
@@ -3118,16 +3092,16 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* SECCIÓN: CONTROL DE STOCK DEL DÍA */}
+            {/* SECCIÃ“N: CONTROL DE STOCK DEL DÃA */}
             {(analytics.menusSoldToday.length > 0 || analytics.beveragesSoldToday.length > 0) && (
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-cyan-400 mb-2">📋 Control de Stock Hoy</h3>
-                <p className="text-gray-400 text-sm mb-5">Unidades despachadas del día • Para reposición de insumos</p>
+                <h3 className="text-xl font-black text-cyan-400 mb-2">ðŸ“‹ Control de Stock Hoy</h3>
+                <p className="text-gray-400 text-sm mb-5">Unidades despachadas del dÃ­a â€¢ Para reposiciÃ³n de insumos</p>
 
-                {/* Menús */}
+                {/* MenÃºs */}
                 {analytics.menusSoldToday.length > 0 && (
                   <div className="mb-5">
-                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🍽️ Menús</h4>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">ðŸ½ï¸ MenÃºs</h4>
                     <div className="space-y-2">
                       {analytics.menusSoldToday.map((menu: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-4">
@@ -3139,7 +3113,7 @@ export default function AdminPage() {
                       ))}
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-gray-700 pt-3">
-                      <p className="text-gray-400 text-xs font-bold">Total menús</p>
+                      <p className="text-gray-400 text-xs font-bold">Total menÃºs</p>
                       <p className="text-xl font-black text-cyan-400">
                         {analytics.menusSoldToday.reduce((sum: number, m: any) => sum + m.quantity, 0)}
                       </p>
@@ -3150,7 +3124,7 @@ export default function AdminPage() {
                 {/* Bebidas */}
                 {analytics.beveragesSoldToday.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🥤 Bebidas</h4>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">ðŸ¥¤ Bebidas</h4>
                     <div className="space-y-2">
                       {analytics.beveragesSoldToday.map((bev: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-4">
@@ -3176,11 +3150,11 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* SECCIÓN: TODOS LOS COMPLEMENTOS/EXTRAS POR CATEGORÍA */}
+            {/* SECCIÃ“N: TODOS LOS COMPLEMENTOS/EXTRAS POR CATEGORÃA */}
             {analytics.allComplements.length > 0 && (
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-purple-400 mb-2">🌟 Ranking de Extras, Complementos y Salsas</h3>
-                <p className="text-gray-400 text-sm mb-4">Todos los complementos vendidos • Organizado por categoría y ranking</p>
+                <h3 className="text-xl font-black text-purple-400 mb-2">ðŸŒŸ Ranking de Extras, Complementos y Salsas</h3>
+                <p className="text-gray-400 text-sm mb-4">Todos los complementos vendidos â€¢ Organizado por categorÃ­a y ranking</p>
 
                 <div className="space-y-6">
                   {Object.entries(analytics.complementsByCategory).map(([category, items]: [string, any[]]) => (
@@ -3193,7 +3167,7 @@ export default function AdminPage() {
                               <div className="flex items-center gap-3 flex-1">
                                 <span className="text-lg font-black text-purple-400 w-8">#{idx + 1}</span>
                                 {idx === 0 && (
-                                  <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">👑</span>
+                                  <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">ðŸ‘‘</span>
                                 )}
                                 <p className="text-white font-bold text-sm">{comp.name}</p>
                               </div>
@@ -3223,9 +3197,9 @@ export default function AdminPage() {
         /* Financial Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">💰 Módulo Financiero</h2>
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">ðŸ’° MÃ³dulo Financiero</h2>
 
-            {/* Sub-tabs del Módulo Financiero */}
+            {/* Sub-tabs del MÃ³dulo Financiero */}
             <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
               <button
                 onClick={() => setFinancialSection("dashboard")}
@@ -3235,7 +3209,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                📊 Dashboard
+                ðŸ“Š Dashboard
               </button>
               <button
                 onClick={() => setFinancialSection("purchases")}
@@ -3245,7 +3219,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                🛒 Compras y Gastos
+                ðŸ›’ Compras y Gastos
               </button>
               <button
                 onClick={() => setFinancialSection("products")}
@@ -3255,14 +3229,14 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                🍗 Productos de Venta
+                ðŸ— Productos de Venta
               </button>
               {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
             </div>
 
             {/* DASHBOARD FINANCIERO */}
             {financialSection === "dashboard" && (() => {
-              // Normaliza: quita tildes, mayúsculas, espacios extra
+              // Normaliza: quita tildes, mayÃºsculas, espacios extra
               const normalize = (s: string) =>
                 s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
 
@@ -3296,7 +3270,7 @@ export default function AdminPage() {
                 const items = order.completedOrders || order.cart || [];
                 const couponFactor = 1 - (order.couponDiscount || 0) / 100;
                 items.forEach((item: any) => {
-                  // 1. Menú principal
+                  // 1. MenÃº principal
                   const menuName = item.name || item.product?.name || "";
                   const qty = item.quantity || 0;
                   const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
@@ -3350,9 +3324,9 @@ export default function AdminPage() {
                 <div>
                   {/* Header con filtros */}
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                    <h3 className="text-2xl font-black text-cyan-400">📊 Dashboard Financiero</h3>
+                    <h3 className="text-2xl font-black text-cyan-400">ðŸ“Š Dashboard Financiero</h3>
 
-                    {/* Filtros rápidos y manuales */}
+                    {/* Filtros rÃ¡pidos y manuales */}
                     <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                       <div className="flex gap-2">
                         <button
@@ -3386,7 +3360,7 @@ export default function AdminPage() {
                           }}
                           className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                         >
-                          Ver histórico
+                          Ver histÃ³rico
                         </button>
                       </div>
 
@@ -3401,7 +3375,7 @@ export default function AdminPage() {
                           }}
                           className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-xs"
                         />
-                        <span className="text-gray-400">→</span>
+                        <span className="text-gray-400">â†’</span>
                         <input
                           type="date"
                           value={dashboardDateTo}
@@ -3418,7 +3392,7 @@ export default function AdminPage() {
                   {/* Indicador del periodo */}
                   {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
                     <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 mb-6 text-xs text-cyan-300">
-                      📅 Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      ðŸ“… Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </div>
                   )}
 
@@ -3428,21 +3402,21 @@ export default function AdminPage() {
 
                     {/* Ventas */}
                     <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl border-2 border-green-500/50 p-5">
-                      <p className="text-green-400 text-xs font-bold mb-1.5 uppercase">💵 Ventas</p>
+                      <p className="text-green-400 text-xs font-bold mb-1.5 uppercase">ðŸ’µ Ventas</p>
                       <p className="text-4xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-1.5">{deliveredOrders.length} pedidos entregados</p>
                     </div>
 
                     {/* COGS */}
                     <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 rounded-xl border-2 border-orange-500/50 p-5">
-                      <p className="text-orange-400 text-xs font-bold mb-1.5 uppercase">🍖 Costo de Ventas (COGS)</p>
+                      <p className="text-orange-400 text-xs font-bold mb-1.5 uppercase">ðŸ– Costo de Ventas (COGS)</p>
                       <p className="text-4xl font-black text-orange-400">S/ {totalCOGS.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-1.5">Costo de productos vendidos</p>
                     </div>
 
                     {/* Margen Bruto */}
                     <div className="bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 rounded-xl border-2 border-emerald-500/50 p-5">
-                      <p className="text-emerald-400 text-xs font-bold mb-1.5 uppercase">📊 Margen Bruto</p>
+                      <p className="text-emerald-400 text-xs font-bold mb-1.5 uppercase">ðŸ“Š Margen Bruto</p>
                       <p className="text-4xl font-black text-emerald-400">{margenBruto.toFixed(1)}%</p>
                       <p className="text-xs text-gray-400 mt-1.5">
                         S/ {(totalRevenue - totalCOGS).toFixed(2)}
@@ -3453,7 +3427,7 @@ export default function AdminPage() {
 
                     {/* Gastos Operativos */}
                     <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 rounded-xl border-2 border-red-500/50 p-5">
-                      <p className="text-red-400 text-xs font-bold mb-1.5 uppercase">📉 Gastos Operativos</p>
+                      <p className="text-red-400 text-xs font-bold mb-1.5 uppercase">ðŸ“‰ Gastos Operativos</p>
                       <p className="text-4xl font-black text-red-400">S/ {gastosOperativos.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-1.5">{filteredPurchases.length} compras/gastos</p>
                     </div>
@@ -3461,7 +3435,7 @@ export default function AdminPage() {
                     {/* Utilidad Operativa */}
                     <div className={`bg-gradient-to-br ${utilidadOperativa >= 0 ? 'from-fuchsia-900/40 to-fuchsia-800/20 border-fuchsia-500/50' : 'from-amber-900/40 to-amber-800/20 border-amber-500/50'} rounded-xl border-2 p-5`}>
                       <p className={`${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'} text-xs font-bold mb-1.5 uppercase`}>
-                        ✅ Utilidad Operativa
+                        âœ… Utilidad Operativa
                       </p>
                       <p className={`text-4xl font-black ${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'}`}>
                         S/ {utilidadOperativa.toFixed(2)}
@@ -3471,10 +3445,10 @@ export default function AdminPage() {
 
                     {/* Margen Neto */}
                     <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl border-2 border-cyan-500/50 p-5">
-                      <p className="text-cyan-400 text-xs font-bold mb-1.5 uppercase">📈 Margen Neto</p>
+                      <p className="text-cyan-400 text-xs font-bold mb-1.5 uppercase">ðŸ“ˆ Margen Neto</p>
                       <p className="text-4xl font-black text-cyan-400">{margenNeto.toFixed(1)}%</p>
                       <p className="text-xs text-gray-400 mt-1.5">
-                        {margenNeto >= 30 ? '¡Excelente!' : margenNeto >= 15 ? 'Bueno' : margenNeto >= 0 ? 'Mejorable' : 'Negativo'}
+                        {margenNeto >= 30 ? 'Â¡Excelente!' : margenNeto >= 15 ? 'Bueno' : margenNeto >= 0 ? 'Mejorable' : 'Negativo'}
                       </p>
                     </div>
                   </div>
@@ -3482,7 +3456,7 @@ export default function AdminPage() {
                   {/* Info adicional */}
                   <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4 mt-6">
                     <p className="text-cyan-300 text-xs">
-                      <span className="font-bold">💡 Información:</span> Este dashboard integra datos de ventas (Productos de Venta) y gastos operativos (Compras y Gastos) para darte una visión completa de tu negocio.
+                      <span className="font-bold">ðŸ’¡ InformaciÃ³n:</span> Este dashboard integra datos de ventas (Productos de Venta) y gastos operativos (Compras y Gastos) para darte una visiÃ³n completa de tu negocio.
                       El <strong>Margen Bruto</strong> muestra rentabilidad de productos, mientras que el <strong>Margen Neto</strong> considera todos los gastos operativos.
                     </p>
                   </div>
@@ -3505,7 +3479,7 @@ export default function AdminPage() {
                       }
                     }
 
-                    // Filtro por fecha específica
+                    // Filtro por fecha especÃ­fica
                     if (inventoryDateFilter) {
                       const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
                       if (purchaseDate !== inventoryDateFilter) {
@@ -3530,7 +3504,7 @@ export default function AdminPage() {
                   return (
                     <>
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-4">💰 Compras y Gastos {getMonthName(inventoryMonthFilter)}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4">ðŸ’° Compras y Gastos {getMonthName(inventoryMonthFilter)}</h3>
 
                   {/* Sub-tabs */}
                   <div className="flex gap-2 mb-4 border-b-2 border-fuchsia-500/20">
@@ -3542,7 +3516,7 @@ export default function AdminPage() {
                           : "text-gray-400 hover:text-gray-300"
                       }`}
                     >
-                      📋 Historial de Compras
+                      ðŸ“‹ Historial de Compras
                     </button>
                     <button
                       onClick={() => setPurchasesSubTab("stock")}
@@ -3552,11 +3526,11 @@ export default function AdminPage() {
                           : "text-gray-400 hover:text-gray-300"
                       }`}
                     >
-                      📦 Control de Stock
+                      ðŸ“¦ Control de Stock
                     </button>
                   </div>
 
-                  {/* Header con filtros y botón */}
+                  {/* Header con filtros y botÃ³n */}
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                       <input
@@ -3569,7 +3543,7 @@ export default function AdminPage() {
                     {purchasesSubTab === "history" && (
                       <button
                         onClick={() => {
-                          console.log('🔥 Click en Nueva Compra');
+                          console.log('ðŸ”¥ Click en Nueva Compra');
                           setShowInventoryModal(true);
                           setProductSearchTerms([""]);
                         }}
@@ -3584,7 +3558,7 @@ export default function AdminPage() {
                 {/* ========== HISTORIAL DE COMPRAS ========== */}
                 {purchasesSubTab === "history" && (
                   <>
-                    {/* Pequeño cartel con totales */}
+                    {/* PequeÃ±o cartel con totales */}
                     <div className="flex gap-3 mb-6">
                   <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-fuchsia-500/20">
                     <p className="text-xs text-gray-400">Compras del mes</p>
@@ -3665,14 +3639,14 @@ export default function AdminPage() {
                                         className="text-amber-400 hover:text-amber-300 text-sm"
                                         title="Editar"
                                       >
-                                        ✏️
+                                        âœï¸
                                       </button>
                                       <button
                                         onClick={() => handleDeleteInventory(purchase.id)}
                                         className="text-red-400 hover:text-red-300 text-sm font-bold"
                                         title="Eliminar"
                                       >
-                                        ✕
+                                        âœ•
                                       </button>
                                     </div>
                                   )}
@@ -3696,13 +3670,13 @@ export default function AdminPage() {
                           onClick={() => setShowInventoryDetailModal(false)}
                           className="text-gray-400 hover:text-white text-2xl"
                         >
-                          ✕
+                          âœ•
                         </button>
                       </div>
 
-                      {/* Información del Proveedor */}
+                      {/* InformaciÃ³n del Proveedor */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 Información del Proveedor</h4>
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">ðŸ“‹ InformaciÃ³n del Proveedor</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-gray-400">Proveedor:</p>
@@ -3716,7 +3690,7 @@ export default function AdminPage() {
                           )}
                           {selectedPurchaseDetail.supplierPhone && (
                             <div>
-                              <p className="text-gray-400">Teléfono:</p>
+                              <p className="text-gray-400">TelÃ©fono:</p>
                               <p className="text-white font-bold">{selectedPurchaseDetail.supplierPhone}</p>
                             </div>
                           )}
@@ -3731,7 +3705,7 @@ export default function AdminPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Método de Pago:</p>
+                            <p className="text-gray-400">MÃ©todo de Pago:</p>
                             <p className="text-cyan-400 font-bold uppercase">{selectedPurchaseDetail.paymentMethod.replace('-', ' ')}</p>
                           </div>
                         </div>
@@ -3739,7 +3713,7 @@ export default function AdminPage() {
 
                       {/* Productos Comprados */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-cyan-500/30">
-                        <h4 className="text-sm font-bold text-cyan-400 mb-3">🛒 Productos Comprados</h4>
+                        <h4 className="text-sm font-bold text-cyan-400 mb-3">ðŸ›’ Productos Comprados</h4>
                         <div className="space-y-2">
                           {selectedPurchaseDetail.items.map((item: any, idx: number) => (
                             <div key={idx} className="flex justify-between items-center bg-gray-900 rounded px-3 py-2">
@@ -3774,12 +3748,12 @@ export default function AdminPage() {
                   </>
                 )}
 
-                {/* ========== CONTROL DE STOCK (NUEVA SECCIÓN) ========== */}
+                {/* ========== CONTROL DE STOCK (NUEVA SECCIÃ“N) ========== */}
                 {purchasesSubTab === "stock" && (
                   <div className="space-y-4">
                     {/* Encabezado */}
                     <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-black text-cyan-400">📦 Control de Stock</h3>
+                      <h3 className="text-xl font-black text-cyan-400">ðŸ“¦ Control de Stock</h3>
                       <input
                         type="text"
                         placeholder="Buscar producto..."
@@ -3796,12 +3770,12 @@ export default function AdminPage() {
                           <thead>
                             <tr className="bg-cyan-900/20 border-b border-cyan-500/30">
                               <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Producto</th>
-                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Categoría</th>
+                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">CategorÃ­a</th>
                               <th className="px-4 py-3 text-center text-xs font-bold text-green-400">Stock Actual</th>
                               <th className="px-4 py-3 text-center text-xs font-bold text-cyan-400">Unidad</th>
                               <th className="px-4 py-3 text-center text-xs font-bold text-red-400">Consumo Hoy</th>
                               <th className="px-4 py-3 text-center text-xs font-bold text-amber-400">Nuevo Stock</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400">Acción</th>
+                              <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400">AcciÃ³n</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -3811,7 +3785,7 @@ export default function AdminPage() {
 
                               inventory.forEach((purchase: any) => {
                                 purchase.items.forEach((item: any) => {
-                                  // Excluir categoría SERVICIO
+                                  // Excluir categorÃ­a SERVICIO
                                   if (item.category === "SERVICIO") return;
 
                                   const key = `${item.productName}-${item.unit}`;
@@ -3823,7 +3797,7 @@ export default function AdminPage() {
                                   } else {
                                     stockMap.set(key, {
                                       productName: item.productName,
-                                      category: item.category || "SIN CATEGORÍA",
+                                      category: item.category || "SIN CATEGORÃA",
                                       unit: item.unit,
                                       totalStock: itemStock
                                     });
@@ -3831,7 +3805,7 @@ export default function AdminPage() {
                                 });
                               });
 
-                              // Filtrar por búsqueda
+                              // Filtrar por bÃºsqueda
                               const filteredStock = Array.from(stockMap.values()).filter(item =>
                                 item.productName.toLowerCase().includes(stockSearchTerm.toLowerCase()) ||
                                 item.category.toLowerCase().includes(stockSearchTerm.toLowerCase())
@@ -3859,10 +3833,10 @@ export default function AdminPage() {
                                     <td className="px-4 py-3 text-sm text-white font-medium">{item.productName}</td>
                                     <td className="px-4 py-3 text-xs text-gray-300">
                                       <span className="px-2 py-1 rounded bg-gray-800 border border-gray-700">
-                                        {item.category === "INSUMO" && "🥘 INSUMO"}
-                                        {item.category === "EMPAQUE" && "📦 EMPAQUE"}
-                                        {item.category === "SERVICIO" && "⚡ SERVICIO"}
-                                        {item.category === "UTENCILIO" && "🔧 UTENCILIO"}
+                                        {item.category === "INSUMO" && "ðŸ¥˜ INSUMO"}
+                                        {item.category === "EMPAQUE" && "ðŸ“¦ EMPAQUE"}
+                                        {item.category === "SERVICIO" && "âš¡ SERVICIO"}
+                                        {item.category === "UTENCILIO" && "ðŸ”§ UTENCILIO"}
                                         {!["INSUMO", "EMPAQUE", "SERVICIO", "UTENCILIO"].includes(item.category) && item.category}
                                       </span>
                                     </td>
@@ -3893,9 +3867,9 @@ export default function AdminPage() {
                                     <td className="px-4 py-3 text-center">
                                       <button
                                         onClick={async () => {
-                                          if (consumption > 0 && confirm(`¿Confirmar consumo de ${consumption} ${item.unit} de ${item.productName}?`)) {
+                                          if (consumption > 0 && confirm(`Â¿Confirmar consumo de ${consumption} ${item.unit} de ${item.productName}?`)) {
                                             try {
-                                              // Registrar deducción
+                                              // Registrar deducciÃ³n
                                               const response = await fetch("/api/deductions", {
                                                 method: "POST",
                                                 headers: { "Content-Type": "application/json" },
@@ -3920,16 +3894,16 @@ export default function AdminPage() {
                                               const updatedInventory = await inventoryResponse.json();
                                               setInventory(updatedInventory);
 
-                                              // Limpiar consumo después de guardar
+                                              // Limpiar consumo despuÃ©s de guardar
                                               const newConsumptions = new Map(stockConsumptions);
                                               newConsumptions.delete(key);
                                               setStockConsumptions(newConsumptions);
 
-                                              // Mostrar confirmación
-                                              alert(`✅ Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
+                                              // Mostrar confirmaciÃ³n
+                                              alert(`âœ… Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
                                             } catch (error) {
                                               console.error("Error al guardar consumo:", error);
-                                              alert("❌ Error al guardar el consumo. Intenta nuevamente.");
+                                              alert("âŒ Error al guardar el consumo. Intenta nuevamente.");
                                             }
                                           }
                                         }}
@@ -3948,10 +3922,10 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* Información adicional */}
+                    {/* InformaciÃ³n adicional */}
                     <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4">
                       <p className="text-cyan-300 text-xs">
-                        <span className="font-bold">💡 Instrucciones:</span> Ingresa la cantidad consumida en la columna "Consumo Hoy" y presiona "Guardar" para actualizar el stock.
+                        <span className="font-bold">ðŸ’¡ Instrucciones:</span> Ingresa la cantidad consumida en la columna "Consumo Hoy" y presiona "Guardar" para actualizar el stock.
                       </p>
                     </div>
                   </div>
@@ -3964,13 +3938,13 @@ export default function AdminPage() {
 
             {/* PRODUCTOS DE VENTA */}
             {financialSection === "products" && (() => {
-              // Normaliza: quita tildes, mayúsculas, espacios extra → "Dúo Dilema" = "DUO DILEMA" = "duo dilema"
+              // Normaliza: quita tildes, mayÃºsculas, espacios extra â†’ "DÃºo Dilema" = "DUO DILEMA" = "duo dilema"
               const normalize = (s: string) =>
                 s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
 
               const saleProducts = products.filter((p: any) => p.type === "sale");
 
-              // --- Rendimiento: cruzar catálogo con pedidos entregados ---
+              // --- Rendimiento: cruzar catÃ¡logo con pedidos entregados ---
               let deliveredOrders = orders.filter((o: any) =>
                 o.status === "delivered" || o.status === "Entregado"
               );
@@ -3984,7 +3958,7 @@ export default function AdminPage() {
                   return orderDate >= fromDate && orderDate <= toDate;
                 });
               }
-              // Mapa nombre normalizado → { qty, revenue }
+              // Mapa nombre normalizado â†’ { qty, revenue }
               const soldMap: Record<string, { qty: number; revenue: number }> = {};
               const addToSoldMap = (name: string, qty: number, revenue: number) => {
                 const key = normalize(name);
@@ -3998,17 +3972,17 @@ export default function AdminPage() {
                 const items = order.completedOrders || order.cart || [];
                 const couponFactor = 1 - (order.couponDiscount || 0) / 100;
                 items.forEach((item: any) => {
-                  // 1. Menú principal
+                  // 1. MenÃº principal
                   const menuName = item.name || item.product?.name || "";
                   const qty = item.quantity || 0;
                   const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
                   if (menuName) addToSoldMap(menuName, qty, price * qty);
 
-                  // 2. Salsas (array de IDs de salsas base incluidas en el menú)
+                  // 2. Salsas (array de IDs de salsas base incluidas en el menÃº)
                   const itemSalsas: string[] = item.salsas || [];
                   itemSalsas.forEach((salsaId: string) => {
                     const salsa = salsas.find(s => s.id === salsaId);
-                    if (salsa) addToSoldMap(salsa.name, 1, 0); // incluidas en precio, costo 0 o lo defines tú
+                    if (salsa) addToSoldMap(salsa.name, 1, 0); // incluidas en precio, costo 0 o lo defines tÃº
                   });
 
                   // 3. Complementos pagados (bebidas, extras, salsas extra)
@@ -4020,7 +3994,7 @@ export default function AdminPage() {
                 });
               });
 
-              // Construir filas de rendimiento cruzando catálogo + ventas
+              // Construir filas de rendimiento cruzando catÃ¡logo + ventas
               const perfRows = saleProducts.map((p: any) => {
                 const key = normalize(p.name || "");
                 const sold = soldMap[key] || { qty: 0, revenue: 0 };
@@ -4040,17 +4014,17 @@ export default function AdminPage() {
               const avgMargin = soldProducts.length > 0 ? soldProducts.reduce((s: number, r: any) => s + r.margin, 0) / soldProducts.length : 0;
 
               const catLabel: Record<string, string> = {
-                fat: "🍗 FAT", fit: "🥗 FIT", bebida: "🥤 Bebida",
-                complemento: "➕ Complemento", extra: "⚡ Extra",
-                "extra-papas": "🍟 Extra Papas", "extra-salsas": "🌶️ Extra Salsas",
+                fat: "ðŸ— FAT", fit: "ðŸ¥— FIT", bebida: "ðŸ¥¤ Bebida",
+                complemento: "âž• Complemento", extra: "âš¡ Extra",
+                "extra-papas": "ðŸŸ Extra Papas", "extra-salsas": "ðŸŒ¶ï¸ Extra Salsas",
               };
 
               return (
                 <div className="space-y-8">
-                  {/* ── SECCIÓN 1: CATÁLOGO ── */}
+                  {/* â”€â”€ SECCIÃ“N 1: CATÃLOGO â”€â”€ */}
                   <div>
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-black text-cyan-400">📋 Catálogo de Productos</h3>
+                      <h3 className="text-xl font-black text-cyan-400">ðŸ“‹ CatÃ¡logo de Productos</h3>
                       <button
                         onClick={() => {
                           setEditingProduct(null);
@@ -4068,7 +4042,7 @@ export default function AdminPage() {
                         <thead className="bg-black/60 border-b-2 border-fuchsia-500/30">
                           <tr>
                             <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase">Producto</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase hidden md:table-cell">Categoría</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase hidden md:table-cell">CategorÃ­a</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Precio Venta</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
@@ -4114,32 +4088,32 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* ── SECCIÓN 2: RENDIMIENTO DE VENTAS ── */}
+                  {/* â”€â”€ SECCIÃ“N 2: RENDIMIENTO DE VENTAS â”€â”€ */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-black text-amber-400">📊 Rendimiento de Ventas (Pedidos Entregados)</h3>
+                      <h3 className="text-xl font-black text-amber-400">ðŸ“Š Rendimiento de Ventas (Pedidos Entregados)</h3>
                     </div>
 
                     {/* Filtro de fechas */}
                     <div className="bg-gray-900 rounded-lg border-2 border-amber-500/30 p-4 mb-5">
                       <div className="flex flex-col gap-3">
-                        {/* Indicador período activo */}
+                        {/* Indicador perÃ­odo activo */}
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-400">Mostrando:</span>
                           {isSalesDateFiltered ? (
                             <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 text-xs font-bold">
-                              📅 {new Date(salesDateFrom).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
+                              ðŸ“… {new Date(salesDateFrom).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
                             </span>
                           ) : (
                             <span className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-full text-gray-300 text-xs font-bold">
-                              📊 Histórico completo
+                              ðŸ“Š HistÃ³rico completo
                             </span>
                           )}
                         </div>
 
                         {/* Controles */}
                         <div className="flex flex-wrap items-center gap-2">
-                          {/* Botones rápidos */}
+                          {/* Botones rÃ¡pidos */}
                           <button
                             onClick={() => {
                               const today = new Date().toISOString().split('T')[0];
@@ -4171,7 +4145,7 @@ export default function AdminPage() {
                             }}
                             className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-xs"
                           >
-                            Ver histórico
+                            Ver histÃ³rico
                           </button>
 
                           <div className="w-px h-6 bg-gray-700 mx-1"></div>
@@ -4245,7 +4219,7 @@ export default function AdminPage() {
                           {perfRows.length === 0 ? (
                             <tr>
                               <td colSpan={6} className="px-6 py-10 text-center text-gray-500 text-sm">
-                                Registra productos en el catálogo para ver el rendimiento.
+                                Registra productos en el catÃ¡logo para ver el rendimiento.
                               </td>
                             </tr>
                           ) : (
@@ -4301,10 +4275,10 @@ export default function AdminPage() {
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-2xl font-black text-purple-400">🧾 Configurar Receta</h3>
+                    <h3 className="text-2xl font-black text-purple-400">ðŸ§¾ Configurar Receta</h3>
                     <p className="text-cyan-400 text-lg font-bold mt-1">{editingRecipeProduct.name}</p>
                     <p className="text-gray-400 text-sm mt-2">
-                      Define qué empaques/insumos se usan para preparar este producto y en qué cantidades
+                      Define quÃ© empaques/insumos se usan para preparar este producto y en quÃ© cantidades
                     </p>
                   </div>
                   <button
@@ -4315,7 +4289,7 @@ export default function AdminPage() {
                     }}
                     className="text-gray-400 hover:text-white text-2xl font-bold"
                   >
-                    ✕
+                    âœ•
                   </button>
                 </div>
 
@@ -4412,7 +4386,7 @@ export default function AdminPage() {
                               className="text-red-400 hover:text-red-300 font-bold text-lg"
                               title="Eliminar componente"
                             >
-                              ✕
+                              âœ•
                             </button>
                           </div>
                         </div>
@@ -4453,7 +4427,7 @@ export default function AdminPage() {
                     onClick={saveRecipe}
                     className="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple"
                   >
-                    ✓ Guardar Receta
+                    âœ“ Guardar Receta
                   </button>
                 </div>
               </div>
@@ -4470,9 +4444,9 @@ export default function AdminPage() {
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="text-xl font-black text-fuchsia-400">
-                    {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}
+                    {editingProduct ? 'âœï¸ Editar Producto' : 'âž• Nuevo Producto'}
                   </h3>
-                  <button onClick={() => { setShowProductModal(false); setEditingProduct(null); }} className="text-gray-400 hover:text-white text-xl">✕</button>
+                  <button onClick={() => { setShowProductModal(false); setEditingProduct(null); }} className="text-gray-400 hover:text-white text-xl">âœ•</button>
                 </div>
 
                 <div className="space-y-4">
@@ -4483,24 +4457,24 @@ export default function AdminPage() {
                       value={productForm.name}
                       onChange={(e) => setProductForm({ ...productForm, name: e.target.value.toUpperCase() })}
                       className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
-                      placeholder="Ej: PEQUEÑO DILEMA, COCA-COLA, EXTRA PAPAS"
+                      placeholder="Ej: PEQUEÃ‘O DILEMA, COCA-COLA, EXTRA PAPAS"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">Categoría *</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">CategorÃ­a *</label>
                     <select
                       value={productForm.category}
                       onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
                     >
-                      <option value="fat">🍗 FAT (Alitas)</option>
-                      <option value="fit">🥗 FIT (Ensaladas)</option>
-                      <option value="bebida">🥤 Bebida</option>
-                      <option value="complemento">➕ Complemento</option>
-                      <option value="extra">⚡ Extra</option>
-                      <option value="extra-papas">🍟 Extra Papas</option>
-                      <option value="extra-salsas">🌶️ Extra Salsas</option>
+                      <option value="fat">ðŸ— FAT (Alitas)</option>
+                      <option value="fit">ðŸ¥— FIT (Ensaladas)</option>
+                      <option value="bebida">ðŸ¥¤ Bebida</option>
+                      <option value="complemento">âž• Complemento</option>
+                      <option value="extra">âš¡ Extra</option>
+                      <option value="extra-papas">ðŸŸ Extra Papas</option>
+                      <option value="extra-salsas">ðŸŒ¶ï¸ Extra Salsas</option>
                     </select>
                   </div>
 
@@ -4572,7 +4546,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                🛒 Compras y Gastos
+                ðŸ›’ Compras y Gastos
               </button>
               <button
                 onClick={() => setInventorySection("stock")}
@@ -4582,7 +4556,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                📊 Control de Stock
+                ðŸ“Š Control de Stock
               </button>
             </div>
 
@@ -4600,7 +4574,7 @@ export default function AdminPage() {
                       }
                     }
 
-                    // Filtro por fecha específica
+                    // Filtro por fecha especÃ­fica
                     if (inventoryDateFilter) {
                       const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
                       if (purchaseDate !== inventoryDateFilter) {
@@ -4635,7 +4609,7 @@ export default function AdminPage() {
                     />
                     <button
                       onClick={() => {
-                        console.log('🔥 Click en Nueva Compra');
+                        console.log('ðŸ”¥ Click en Nueva Compra');
                         setShowInventoryModal(true);
                         setProductSearchTerms([""]);
                       }}
@@ -4646,7 +4620,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Pequeño cartel con totales */}
+                {/* PequeÃ±o cartel con totales */}
                 <div className="flex gap-3 mb-6">
                   <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-fuchsia-500/20">
                     <p className="text-xs text-gray-400">Compras del mes</p>
@@ -4727,14 +4701,14 @@ export default function AdminPage() {
                                         className="text-amber-400 hover:text-amber-300 text-sm"
                                         title="Editar"
                                       >
-                                        ✏️
+                                        âœï¸
                                       </button>
                                       <button
                                         onClick={() => handleDeleteInventory(purchase.id)}
                                         className="text-red-400 hover:text-red-300 text-sm font-bold"
                                         title="Eliminar"
                                       >
-                                        ✕
+                                        âœ•
                                       </button>
                                     </div>
                                   )}
@@ -4758,13 +4732,13 @@ export default function AdminPage() {
                           onClick={() => setShowInventoryDetailModal(false)}
                           className="text-gray-400 hover:text-white text-2xl"
                         >
-                          ✕
+                          âœ•
                         </button>
                       </div>
 
-                      {/* Información del Proveedor */}
+                      {/* InformaciÃ³n del Proveedor */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 Información del Proveedor</h4>
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">ðŸ“‹ InformaciÃ³n del Proveedor</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-gray-400">Proveedor:</p>
@@ -4778,7 +4752,7 @@ export default function AdminPage() {
                           )}
                           {selectedPurchaseDetail.supplierPhone && (
                             <div>
-                              <p className="text-gray-400">Teléfono:</p>
+                              <p className="text-gray-400">TelÃ©fono:</p>
                               <p className="text-white font-bold">{selectedPurchaseDetail.supplierPhone}</p>
                             </div>
                           )}
@@ -4793,12 +4767,12 @@ export default function AdminPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Método de Pago:</p>
+                            <p className="text-gray-400">MÃ©todo de Pago:</p>
                             <p className="text-white font-bold">
-                              {selectedPurchaseDetail.paymentMethod === 'plin-yape' && '📱 Plin / Yape'}
-                              {selectedPurchaseDetail.paymentMethod === 'efectivo' && '💵 Efectivo'}
-                              {selectedPurchaseDetail.paymentMethod === 'transferencia' && '🏦 Transferencia'}
-                              {selectedPurchaseDetail.paymentMethod === 'tarjeta' && '💳 Tarjeta'}
+                              {selectedPurchaseDetail.paymentMethod === 'plin-yape' && 'ðŸ“± Plin / Yape'}
+                              {selectedPurchaseDetail.paymentMethod === 'efectivo' && 'ðŸ’µ Efectivo'}
+                              {selectedPurchaseDetail.paymentMethod === 'transferencia' && 'ðŸ¦ Transferencia'}
+                              {selectedPurchaseDetail.paymentMethod === 'tarjeta' && 'ðŸ’³ Tarjeta'}
                             </p>
                           </div>
                           <div>
@@ -4808,9 +4782,9 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      {/* Lista de Artículos */}
+                      {/* Lista de ArtÃ­culos */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📦 Artículos Comprados</h4>
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">ðŸ“¦ ArtÃ­culos Comprados</h4>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                             <thead>
@@ -4855,12 +4829,12 @@ export default function AdminPage() {
                       {selectedPurchaseDetail.notes && (
                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
                           <p className="text-sm text-gray-400">
-                            <span className="font-bold text-amber-400">📝 Notas:</span> {selectedPurchaseDetail.notes}
+                            <span className="font-bold text-amber-400">ðŸ“ Notas:</span> {selectedPurchaseDetail.notes}
                           </p>
                         </div>
                       )}
 
-                      {/* Botón Cerrar */}
+                      {/* BotÃ³n Cerrar */}
                       <div className="mt-4 flex justify-end">
                         <button
                           onClick={() => setShowInventoryDetailModal(false)}
@@ -4886,11 +4860,11 @@ export default function AdminPage() {
 
                   inventory.forEach((purchase) => {
                     purchase.items.forEach((item: any) => {
-                      // Excluir categoría SERVICIO
+                      // Excluir categorÃ­a SERVICIO
                       if (item.category === "SERVICIO") return;
 
                       const key = `${item.productName}-${item.unit}`;
-                      // Calcular stock: cantidad × volumen
+                      // Calcular stock: cantidad Ã— volumen
                       const stockQuantity = item.quantity * (item.volume || 1);
 
                       if (stockMap.has(key)) {
@@ -4923,7 +4897,7 @@ export default function AdminPage() {
                     a.productName.localeCompare(b.productName)
                   );
 
-                  // Filtrar items de stock según búsqueda
+                  // Filtrar items de stock segÃºn bÃºsqueda
                   const filteredStockItems = stockItems.filter((item) => {
                     if (!stockSearchTerm) return true;
                     const searchLower = stockSearchTerm.toLowerCase();
@@ -4938,7 +4912,7 @@ export default function AdminPage() {
                           type="text"
                           value={stockSearchTerm}
                           onChange={(e) => setStockSearchTerm(e.target.value)}
-                          placeholder="🔍 Buscar producto..."
+                          placeholder="ðŸ” Buscar producto..."
                           className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-cyan-400 focus:outline-none w-64"
                         />
                       </div>
@@ -4991,7 +4965,7 @@ export default function AdminPage() {
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full">
                 <h3 className="text-xl font-black text-fuchsia-400 mb-4">
-                  {editingCatalogProduct ? '✏️ Editar Producto' : '📦 Nuevo Producto'}
+                  {editingCatalogProduct ? 'âœï¸ Editar Producto' : 'ðŸ“¦ Nuevo Producto'}
                 </h3>
 
                 <div className="space-y-4">
@@ -5019,13 +4993,13 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2">Categoría *</label>
+                    <label className="block text-xs font-bold text-gray-400 mb-2">CategorÃ­a *</label>
                     <select
                       value={catalogForm.category}
                       onChange={(e) => setCatalogForm({ ...catalogForm, category: e.target.value })}
                       className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
                     >
-                      <option value="">Seleccionar categoría *</option>
+                      <option value="">Seleccionar categorÃ­a *</option>
                       <option value="EMPAQUE">EMPAQUE</option>
                       <option value="INSUMO">INSUMO</option>
                       <option value="SERVICIO">SERVICIO</option>
@@ -5080,13 +5054,13 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* MODAL ELIMINADO - AHORA ESTÁ FUERA DE LOS TABS */}
+          {/* MODAL ELIMINADO - AHORA ESTÃ FUERA DE LOS TABS */}
           {false && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
-                <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
+                <h3 className="text-xl font-black text-fuchsia-400 mb-3">ðŸ“¦ Registrar Nueva Compra</h3>
 
-                {/* Información Compacta en Grid */}
+                {/* InformaciÃ³n Compacta en Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
                   <div>
                     <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
@@ -5110,7 +5084,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
+                    <label className="block text-xs font-bold text-gray-400 mb-1">TelÃ©fono</label>
                     <input
                       type="tel"
                       value={inventoryForm.supplierPhone}
@@ -5132,24 +5106,24 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Método de pago *</label>
+                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">MÃ©todo de pago *</label>
                     <select
                       value={inventoryForm.paymentMethod}
                       onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
                       className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                     >
-                      <option value="plin-yape">📱 Plin / Yape</option>
-                      <option value="efectivo">💵 Efectivo</option>
-                      <option value="transferencia">🏦 Transferencia</option>
-                      <option value="tarjeta">💳 Tarjeta</option>
+                      <option value="plin-yape">ðŸ“± Plin / Yape</option>
+                      <option value="efectivo">ðŸ’µ Efectivo</option>
+                      <option value="transferencia">ðŸ¦ Transferencia</option>
+                      <option value="tarjeta">ðŸ’³ Tarjeta</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Lista de Artículos */}
+                {/* Lista de ArtÃ­culos */}
                 <div className="mb-3">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
+                    <h4 className="text-sm font-bold text-white">ðŸ“‹ ArtÃ­culos</h4>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowNewMaterialForm(!showNewMaterialForm)}
@@ -5169,7 +5143,7 @@ export default function AdminPage() {
                   {/* Formulario para nuevo material */}
                   {showNewMaterialForm && (
                     <div className="bg-gray-900 rounded-lg p-3 mb-3 border border-amber-500/30">
-                      <p className="text-sm font-bold text-amber-400 mb-2">Agregar Nuevo Material al Catálogo</p>
+                      <p className="text-sm font-bold text-amber-400 mb-2">Agregar Nuevo Material al CatÃ¡logo</p>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                         <div>
                           <label className="block text-xs font-bold text-gray-400 mb-1">Nombre del Material *</label>
@@ -5216,13 +5190,13 @@ export default function AdminPage() {
                             onClick={async () => {
                               if (newMaterialForm.productName && newMaterialForm.unit) {
                                 try {
-                                  // Crear el material en el catálogo de productos
+                                  // Crear el material en el catÃ¡logo de productos
                                   const response = await fetch("/api/products", {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({
                                       name: newMaterialForm.productName,
-                                      category: "EMPAQUE", // Categoría por defecto
+                                      category: "EMPAQUE", // CategorÃ­a por defecto
                                       unit: newMaterialForm.unit,
                                       price: 0,
                                       cost: 0,
@@ -5234,10 +5208,10 @@ export default function AdminPage() {
                                   });
 
                                   if (response.ok) {
-                                    await loadCatalogProducts(); // Recargar catálogo
+                                    await loadCatalogProducts(); // Recargar catÃ¡logo
                                     setShowNewMaterialForm(false);
                                     setNewMaterialForm({ productName: "", unit: "" });
-                                    alert(`✅ Material "${newMaterialForm.productName}" agregado al catálogo`);
+                                    alert(`âœ… Material "${newMaterialForm.productName}" agregado al catÃ¡logo`);
                                   }
                                 } catch (error) {
                                   console.error("Error al crear material:", error);
@@ -5287,7 +5261,7 @@ export default function AdminPage() {
                               type="text"
                               value={item.productName || ""}
                               onChange={(e) => {
-                                console.log('🔥 onChange ejecutado:', e.target.value);
+                                console.log('ðŸ”¥ onChange ejecutado:', e.target.value);
                                 updateInventoryItem(idx, 'productName', e.target.value);
                                 const newSearchTerms = [...productSearchTerms];
                                 newSearchTerms[idx] = e.target.value;
@@ -5295,7 +5269,7 @@ export default function AdminPage() {
                                 setActiveDropdownIndex(idx);
                               }}
                               onFocus={() => {
-                                console.log('🔥 onFocus ejecutado, idx:', idx);
+                                console.log('ðŸ”¥ onFocus ejecutado, idx:', idx);
                                 setActiveDropdownIndex(idx);
                               }}
                               placeholder="Escribir o seleccionar producto *"
@@ -5306,7 +5280,7 @@ export default function AdminPage() {
                                 {(() => {
                                   const searchTerm = item.productName?.toLowerCase() || "";
 
-                                  // Obtener materiales únicos del inventario (compras registradas)
+                                  // Obtener materiales Ãºnicos del inventario (compras registradas)
                                   const materialsMap = new Map<string, { productName: string; unit: string; productId?: string }>();
 
                                   inventory.forEach((purchase: any) => {
@@ -5321,7 +5295,7 @@ export default function AdminPage() {
                                     });
                                   });
 
-                                  // También agregar materiales del catálogo con categoría de inventario
+                                  // TambiÃ©n agregar materiales del catÃ¡logo con categorÃ­a de inventario
                                   const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
                                   catalogProducts.forEach((product: any) => {
                                     if (materialCategories.includes(product.category)) {
@@ -5336,7 +5310,7 @@ export default function AdminPage() {
                                     }
                                   });
 
-                                  // Convertir a array y filtrar por búsqueda
+                                  // Convertir a array y filtrar por bÃºsqueda
                                   const allMaterials = Array.from(materialsMap.values());
                                   const filteredProducts = searchTerm.length >= 3
                                     ? allMaterials.filter(m =>
@@ -5345,7 +5319,7 @@ export default function AdminPage() {
                                       )
                                     : allMaterials;
 
-                                  // Ordenar alfabéticamente
+                                  // Ordenar alfabÃ©ticamente
                                   filteredProducts.sort((a, b) => a.productName.localeCompare(b.productName));
 
                                   if (filteredProducts.length === 0) {
@@ -5362,7 +5336,7 @@ export default function AdminPage() {
                                       onMouseDown={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log('🔥 onMouseDown - Material a seleccionar:', material.productName);
+                                        console.log('ðŸ”¥ onMouseDown - Material a seleccionar:', material.productName);
 
                                         // Actualizar el nombre del producto y la unidad
                                         const newItems = [...inventoryForm.items];
@@ -5382,13 +5356,13 @@ export default function AdminPage() {
                                         // Cerrar dropdown
                                         setActiveDropdownIndex(null);
 
-                                        console.log('🔥 Material guardado:', material.productName);
+                                        console.log('ðŸ”¥ Material guardado:', material.productName);
                                       }}
                                       className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer border-b border-fuchsia-500/10 last:border-b-0"
                                     >
                                       <div className="font-bold">{material.productName}</div>
                                       <div className="text-cyan-400 text-[10px] mt-0.5">
-                                        {material.productId && `ID: ${material.productId} • `}
+                                        {material.productId && `ID: ${material.productId} â€¢ `}
                                         Unidad: {material.unit}
                                       </div>
                                     </div>
@@ -5473,7 +5447,7 @@ export default function AdminPage() {
                                 className="text-red-400 hover:text-red-300 text-xs"
                                 title="Eliminar"
                               >
-                                ❌
+                                âŒ
                               </button>
                             </div>
                           )}
@@ -5484,7 +5458,7 @@ export default function AdminPage() {
                               onClick={() => removeInventoryItem(idx)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              ❌ Eliminar
+                              âŒ Eliminar
                             </button>
                           </div>
                         )}
@@ -5528,13 +5502,13 @@ export default function AdminPage() {
                     }}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
                   >
-                    ❌ Cancelar
+                    âŒ Cancelar
                   </button>
                   <button
                     onClick={handleCreateInventory}
                     className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
                   >
-                    ✅ Registrar Compra
+                    âœ… Registrar Compra
                   </button>
                 </div>
               </div>
@@ -5545,7 +5519,7 @@ export default function AdminPage() {
         /* Marketing Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Marketing y Fidelización</h2>
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Marketing y FidelizaciÃ³n</h2>
 
             {/* Sub-tabs */}
             <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
@@ -5557,7 +5531,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                🎟️ Promociones y Cupones
+                ðŸŽŸï¸ Promociones y Cupones
               </button>
               <button
                 onClick={() => setMarketingSection("campaigns")}
@@ -5567,7 +5541,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                📢 Campañas de Marketing
+                ðŸ“¢ CampaÃ±as de Marketing
               </button>
               <button
                 onClick={() => setMarketingSection("loyalty")}
@@ -5577,244 +5551,24 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                🏆 Programa de Fidelización
+                ðŸ† Programa de FidelizaciÃ³n
               </button>
             </div>
 
             {marketingSection === "promotions" && (
               <>
-                {/* Promoción 30% - Salsas Exclusivas */}
-                <div className="mb-8 bg-gradient-to-r from-red-900/30 to-orange-900/30 border-2 border-red-500 rounded-2xl p-6">
-                  <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-                    <div>
-                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400 flex items-center gap-2">
-                        🔥 Promo 30% — Salsas Exclusivas de la Casa
-                      </h3>
-                      <p className="text-gray-400 text-sm mt-1">Parrillera · Honey Mustard · Teriyaki · Sweet & Sour</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="text-xs text-gray-400">Estado</p>
-                        {promo30Data.active ? (
-                          <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">Activa</span>
-                        ) : (
-                          <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-bold">Agotada</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Barra de progreso */}
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-400 text-sm">Órdenes utilizadas</span>
-                      <span className="text-white font-black text-lg">{promo30Data.count} / {promo30Data.limit}</span>
-                    </div>
-                    <div className="w-full bg-gray-800 rounded-full h-4 overflow-hidden">
-                      <div
-                        className={`h-4 rounded-full transition-all duration-500 ${
-                          promo30Data.count >= promo30Data.limit
-                            ? 'bg-red-500'
-                            : promo30Data.count >= promo30Data.limit * 0.8
-                            ? 'bg-orange-500'
-                            : 'bg-green-500'
-                        }`}
-                        style={{ width: `${Math.min(100, (promo30Data.count / promo30Data.limit) * 100)}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-gray-500 text-xs">0</span>
-                      <span className="text-gray-400 text-xs font-semibold">
-                        {promo30Data.active
-                          ? `Quedan ${promo30Data.limit - promo30Data.count} lugares`
-                          : 'Promoción agotada'}
-                      </span>
-                      <span className="text-gray-500 text-xs">{promo30Data.limit}</span>
-                    </div>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-black/50 rounded-lg p-4 border border-red-500/30">
-                      <p className="text-gray-400 text-xs mb-1">Total Registradas</p>
-                      <p className="text-3xl font-black text-white">{promo30Data.count} / 30</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-orange-500/40">
-                      <p className="text-orange-400 text-xs mb-1">Disponibles</p>
-                      <p className="text-3xl font-black text-orange-400">{Math.max(0, promo30Data.limit - promo30Data.count)}</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-gray-600/40">
-                      <p className="text-gray-400 text-xs mb-1">% Completado</p>
-                      <p className="text-3xl font-black text-white">
-                        {promo30Data.limit > 0 ? Math.round((promo30Data.count / promo30Data.limit) * 100) : 0}%
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Tabla de órdenes */}
-                  {!promo30Data.orders || promo30Data.orders.length === 0 ? (
-                    <div className="text-center py-8 bg-black/30 rounded-lg">
-                      <p className="text-gray-400">No hay órdenes registradas aún</p>
-                      <p className="text-gray-500 text-sm mt-2">Se registran automáticamente cuando un cliente paga con salsas exclusivas de la casa</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-red-500/30">
-                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">#</th>
-                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">DNI</th>
-                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Cliente</th>
-                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Orden ID</th>
-                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Salsas</th>
-                            <th className="text-left py-3 px-4 text-red-400 font-bold text-sm">Fecha</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {promo30Data.orders.map((order: any, index: number) => (
-                            <tr key={index} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
-                              <td className="py-3 px-4 text-orange-400 font-black text-sm">{index + 1}</td>
-                              <td className="py-3 px-4 text-white text-sm font-mono">{order.dni || '-'}</td>
-                              <td className="py-3 px-4 text-white text-sm">{order.customerName}</td>
-                              <td className="py-3 px-4">
-                                <code className="text-red-400 text-xs bg-black/50 px-2 py-1 rounded">{order.orderId}</code>
-                              </td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">{(order.sauces || []).join(', ')}</td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">
-                                {new Date(order.registeredAt).toLocaleDateString('es-PE', {
-                                  day: '2-digit', month: 'short', year: 'numeric',
-                                  hour: '2-digit', minute: '2-digit'
-                                })}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-
-                {/* Promo FIT 30% */}
-                <div className="mb-8 bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border-2 border-cyan-500 rounded-2xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400 flex items-center gap-2">
-                        🥗 Promo 30% FIT — Bowls con Descuento
-                      </h3>
-                      <p className="text-gray-400 text-sm mt-1">30% descuento en todos los bowls FIT — primeras 30 órdenes</p>
-                    </div>
-                    <div>
-                      {promoFit30Data.active ? (
-                        <span className="px-4 py-2 rounded-full text-sm font-black bg-green-500/20 text-green-400 border border-green-500/50">
-                          ✅ ACTIVA
-                        </span>
-                      ) : (
-                        <span className="px-4 py-2 rounded-full text-sm font-black bg-red-500/20 text-red-400 border border-red-500/50">
-                          🔴 AGOTADA
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Barra de progreso */}
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-white font-black text-lg">{promoFit30Data.count} / {promoFit30Data.limit}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-56 h-4 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              promoFit30Data.count >= promoFit30Data.limit
-                                ? 'bg-red-500'
-                                : promoFit30Data.count >= promoFit30Data.limit * 0.8
-                                ? 'bg-orange-500'
-                                : 'bg-cyan-500'
-                            }`}
-                            style={{ width: `${Math.min(100, (promoFit30Data.count / promoFit30Data.limit) * 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-gray-400 text-xs">
-                          {promoFit30Data.active
-                            ? `Quedan ${promoFit30Data.limit - promoFit30Data.count} lugares`
-                            : 'Agotada'}
-                        </span>
-                        <span className="text-gray-500 text-xs">{promoFit30Data.limit}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
-                      <p className="text-gray-400 text-xs mb-1">Total Órdenes</p>
-                      <p className="text-3xl font-black text-white">{promoFit30Data.count} / 30</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
-                      <p className="text-gray-400 text-xs mb-1">Disponibles</p>
-                      <p className="text-3xl font-black text-cyan-400">{Math.max(0, promoFit30Data.limit - promoFit30Data.count)}</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-cyan-500/30">
-                      <p className="text-gray-400 text-xs mb-1">% Completado</p>
-                      <p className="text-3xl font-black text-orange-400">
-                        {promoFit30Data.limit > 0 ? Math.round((promoFit30Data.count / promoFit30Data.limit) * 100) : 0}%
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Tabla de órdenes */}
-                  {!promoFit30Data.orders || promoFit30Data.orders.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <p className="text-4xl mb-2">🥗</p>
-                      <p>Aún no hay órdenes FIT registradas en esta promo</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto rounded-xl border border-cyan-500/30">
-                      <table className="w-full">
-                        <thead className="bg-black/50">
-                          <tr>
-                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">#</th>
-                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">DNI</th>
-                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Cliente</th>
-                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Orden ID</th>
-                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Producto</th>
-                            <th className="text-left py-3 px-4 text-cyan-400 font-bold text-sm">Fecha</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {promoFit30Data.orders.map((order: any, index: number) => (
-                            <tr key={index} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
-                              <td className="py-3 px-4 text-cyan-400 font-black text-sm">{index + 1}</td>
-                              <td className="py-3 px-4 text-white text-sm font-mono">{order.dni || '-'}</td>
-                              <td className="py-3 px-4 text-white text-sm">{order.customerName}</td>
-                              <td className="py-3 px-4">
-                                <code className="text-cyan-400 text-xs bg-black/50 px-2 py-1 rounded">{order.orderId}</code>
-                              </td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">{order.productId || '-'}</td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">
-                                {new Date(order.registeredAt).toLocaleDateString('es-PE', {
-                                  day: '2-digit', month: 'short', year: 'numeric',
-                                  hour: '2-digit', minute: '2-digit'
-                                })}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-
-                {/* Promoción 13% - Sección Especial */}
+                {/* PromociÃ³n 13% - SecciÃ³n Especial */}
                 <div className="mb-8 bg-gradient-to-r from-fuchsia-900/30 to-purple-900/30 border-2 border-fuchsia-500 rounded-2xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 flex items-center gap-2">
-                        🎁 Promoción 13% - Primeros 13 Clientes
+                        ðŸŽ PromociÃ³n 13% - Primeros 13 Clientes
                       </h3>
                       <p className="text-gray-400 text-sm mt-1">Cupones de descuento para pedidos con salsas promocionales</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-400">Válido hasta</p>
+                      <p className="text-sm text-gray-400">VÃ¡lido hasta</p>
                       <p className="text-lg font-bold text-fuchsia-400">28 Feb 2026</p>
                     </div>
                   </div>
@@ -5842,8 +5596,8 @@ export default function AdminPage() {
                   {/* Coupon Table */}
                   {coupons.length === 0 ? (
                     <div className="text-center py-8 bg-black/30 rounded-lg">
-                      <p className="text-gray-400">No hay cupones generados aún</p>
-                      <p className="text-gray-500 text-sm mt-2">Los cupones se generan automáticamente cuando un cliente hace un pedido con las salsas promocionales</p>
+                      <p className="text-gray-400">No hay cupones generados aÃºn</p>
+                      <p className="text-gray-500 text-sm mt-2">Los cupones se generan automÃ¡ticamente cuando un cliente hace un pedido con las salsas promocionales</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -5852,7 +5606,7 @@ export default function AdminPage() {
                           <tr className="border-b border-fuchsia-500/30">
                             <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">DNI</th>
                             <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Cliente</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Código</th>
+                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">CÃ³digo</th>
                             <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Estado</th>
                             <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Descuento</th>
                             <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Creado</th>
@@ -5922,7 +5676,7 @@ export default function AdminPage() {
                     }}
                     className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
                   >
-                    + Nueva Promoción
+                    + Nueva PromociÃ³n
                   </button>
                 </div>
 
@@ -5945,7 +5699,7 @@ export default function AdminPage() {
                     </p>
                   </div>
                   <div className="bg-gray-900 rounded-xl border-2 border-red-500/50 p-6">
-                    <p className="text-red-400 text-sm font-bold">Por Vencer (7 días)</p>
+                    <p className="text-red-400 text-sm font-bold">Por Vencer (7 dÃ­as)</p>
                     <p className="text-5xl font-black text-red-400 mt-2">
                       {promotions.filter((p) => {
                         const daysLeft = Math.ceil((new Date(p.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -5978,7 +5732,7 @@ export default function AdminPage() {
                                 </span>
                                 {promo.code && (
                                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500">
-                                    CÓDIGO: {promo.code}
+                                    CÃ“DIGO: {promo.code}
                                   </span>
                                 )}
                               </div>
@@ -5989,12 +5743,12 @@ export default function AdminPage() {
                                   <span className="text-white font-bold ml-2">
                                     {promo.type === 'percentage' ? `${promo.value}% DESC` :
                                      promo.type === 'fixed' ? `S/ ${promo.value} DESC` :
-                                     promo.type === 'shipping' ? 'Envío Gratis' : 'Combo'}
+                                     promo.type === 'shipping' ? 'EnvÃ­o Gratis' : 'Combo'}
                                   </span>
                                 </div>
                                 {promo.minAmount > 0 && (
                                   <div>
-                                    <span className="text-gray-500">Compra mín:</span>
+                                    <span className="text-gray-500">Compra mÃ­n:</span>
                                     <span className="text-white font-bold ml-2">S/ {promo.minAmount}</span>
                                   </div>
                                 )}
@@ -6012,7 +5766,7 @@ export default function AdminPage() {
                               {isExpired ? (
                                 <span className="text-red-400 font-bold text-sm">Expirada</span>
                               ) : daysLeft <= 7 ? (
-                                <span className="text-orange-400 font-bold text-sm">Vence en {daysLeft} días</span>
+                                <span className="text-orange-400 font-bold text-sm">Vence en {daysLeft} dÃ­as</span>
                               ) : (
                                 <span className="text-green-400 font-bold text-sm">Vigente</span>
                               )}
@@ -6046,32 +5800,32 @@ export default function AdminPage() {
             {marketingSection === "campaigns" && (
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-8">
                 <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Campañas Segmentadas</h3>
+                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">CampaÃ±as Segmentadas</h3>
                   <p className="text-gray-400 mb-6">
-                    Crea campañas de marketing dirigidas a segmentos específicos de clientes
+                    Crea campaÃ±as de marketing dirigidas a segmentos especÃ­ficos de clientes
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                     <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">👑</div>
+                      <div className="text-4xl mb-3">ðŸ‘‘</div>
                       <h4 className="text-lg font-bold text-white mb-2">Clientes VIP</h4>
                       <p className="text-sm text-gray-400 mb-4">Promociones exclusivas para tus mejores clientes</p>
                       <p className="text-2xl font-black text-fuchsia-400">{customerSegments.vip.length} clientes</p>
                     </div>
                     <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">💤</div>
+                      <div className="text-4xl mb-3">ðŸ’¤</div>
                       <h4 className="text-lg font-bold text-white mb-2">Clientes Inactivos</h4>
                       <p className="text-sm text-gray-400 mb-4">Recupera clientes que dejaron de comprar</p>
                       <p className="text-2xl font-black text-red-400">{customerSegments.inactive.length} clientes</p>
                     </div>
                     <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">✨</div>
+                      <div className="text-4xl mb-3">âœ¨</div>
                       <h4 className="text-lg font-bold text-white mb-2">Nuevos Clientes</h4>
                       <p className="text-sm text-gray-400 mb-4">Bienvenida y primera compra especial</p>
                       <p className="text-2xl font-black text-cyan-400">{customerSegments.new.length} clientes</p>
                     </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-8">
-                    Las campañas se integran con las promociones activas para enviar ofertas personalizadas
+                    Las campaÃ±as se integran con las promociones activas para enviar ofertas personalizadas
                   </p>
                 </div>
               </div>
@@ -6080,55 +5834,55 @@ export default function AdminPage() {
             {marketingSection === "loyalty" && (
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-8">
                 <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Programa de Fidelización</h3>
+                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Programa de FidelizaciÃ³n</h3>
                   <p className="text-gray-400 mb-8">
                     Sistema de puntos y recompensas para incentivar compras recurrentes
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                     <div className="bg-black/50 rounded-lg p-6 border border-amber-500/30 text-left">
                       <div className="flex items-center gap-3 mb-4">
-                        <span className="text-4xl">⭐</span>
+                        <span className="text-4xl">â­</span>
                         <h4 className="text-xl font-bold text-amber-400">Sistema de Puntos</h4>
                       </div>
                       <ul className="space-y-3 text-sm text-gray-300">
                         <li className="flex items-center gap-2">
-                          <span className="text-amber-400">•</span>
+                          <span className="text-amber-400">â€¢</span>
                           <span>1 punto por cada S/ 10 gastado</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <span className="text-amber-400">•</span>
+                          <span className="text-amber-400">â€¢</span>
                           <span>100 puntos = S/ 10 de descuento</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <span className="text-amber-400">•</span>
+                          <span className="text-amber-400">â€¢</span>
                           <span>Puntos acumulables sin vencimiento</span>
                         </li>
                       </ul>
                     </div>
                     <div className="bg-black/50 rounded-lg p-6 border border-purple-500/30 text-left">
                       <div className="flex items-center gap-3 mb-4">
-                        <span className="text-4xl">🎁</span>
+                        <span className="text-4xl">ðŸŽ</span>
                         <h4 className="text-xl font-bold text-purple-400">Beneficios VIP</h4>
                       </div>
                       <ul className="space-y-3 text-sm text-gray-300">
                         <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
+                          <span className="text-purple-400">â€¢</span>
                           <span>Acceso anticipado a nuevos productos</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
-                          <span>Envío gratis en compras mayores a S/ 50</span>
+                          <span className="text-purple-400">â€¢</span>
+                          <span>EnvÃ­o gratis en compras mayores a S/ 50</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
-                          <span>Descuentos exclusivos en cumpleaños</span>
+                          <span className="text-purple-400">â€¢</span>
+                          <span>Descuentos exclusivos en cumpleaÃ±os</span>
                         </li>
                       </ul>
                     </div>
                   </div>
                   <div className="mt-8 p-6 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/30 max-w-2xl mx-auto">
                     <p className="text-fuchsia-300 text-sm">
-                      💡 <strong>Próximamente:</strong> Integración automática de puntos y niveles de fidelización con cada compra
+                      ðŸ’¡ <strong>PrÃ³ximamente:</strong> IntegraciÃ³n automÃ¡tica de puntos y niveles de fidelizaciÃ³n con cada compra
                     </p>
                   </div>
                 </div>
@@ -6141,7 +5895,7 @@ export default function AdminPage() {
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-2xl w-full my-8">
                 <h3 className="text-2xl font-black text-fuchsia-400 mb-4">
-                  {editingPromotion ? 'Editar Promoción' : 'Nueva Promoción'}
+                  {editingPromotion ? 'Editar PromociÃ³n' : 'Nueva PromociÃ³n'}
                 </h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -6156,7 +5910,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Código de Cupón (opcional)</label>
+                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">CÃ³digo de CupÃ³n (opcional)</label>
                       <input
                         type="text"
                         value={promotionForm.code}
@@ -6167,13 +5921,13 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Descripción</label>
+                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">DescripciÃ³n</label>
                     <textarea
                       value={promotionForm.description}
                       onChange={(e) => setPromotionForm({ ...promotionForm, description: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                       rows={2}
-                      placeholder="Descripción de la promoción"
+                      placeholder="DescripciÃ³n de la promociÃ³n"
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-4">
@@ -6186,7 +5940,7 @@ export default function AdminPage() {
                       >
                         <option value="percentage">Porcentaje</option>
                         <option value="fixed">Monto Fijo</option>
-                        <option value="shipping">Envío Gratis</option>
+                        <option value="shipping">EnvÃ­o Gratis</option>
                         <option value="combo">Combo</option>
                       </select>
                     </div>
@@ -6205,7 +5959,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Compra Mínima</label>
+                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Compra MÃ­nima</label>
                       <input
                         type="number"
                         step="0.01"
@@ -6236,7 +5990,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Límite de Uso</label>
+                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">LÃ­mite de Uso</label>
                       <input
                         type="number"
                         value={promotionForm.usageLimit}
@@ -6268,7 +6022,7 @@ export default function AdminPage() {
                       onChange={(e) => setPromotionForm({ ...promotionForm, active: e.target.checked })}
                       className="w-4 h-4"
                     />
-                    <label className="text-sm text-white">Promoción activa</label>
+                    <label className="text-sm text-white">PromociÃ³n activa</label>
                   </div>
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -6287,7 +6041,7 @@ export default function AdminPage() {
                     disabled={!promotionForm.name || !promotionForm.startDate || !promotionForm.endDate}
                     className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {editingPromotion ? 'Guardar' : 'Crear Promoción'}
+                    {editingPromotion ? 'Guardar' : 'Crear PromociÃ³n'}
                   </button>
                 </div>
               </div>
@@ -6295,7 +6049,7 @@ export default function AdminPage() {
           )}
         </>
       ) : activeTab === "carta" ? (
-        /* Carta Tab — control de stock de menús */
+        /* Carta Tab â€” control de stock de menÃºs */
         <section className="container mx-auto px-4 py-8">
           <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-2">Stock de Carta</h2>
           <p className="text-gray-400 text-sm mb-8">
@@ -6306,12 +6060,12 @@ export default function AdminPage() {
           {/* FAT */}
           <div className="mb-10">
             <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2">
-              🥩 Carta FAT
+              ðŸ¥© Carta FAT
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 18.50" },
-                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 32.50" },
+                { id: "pequeno-dilema", name: "PequeÃ±o Dilema", price: "S/ 18.50" },
+                { id: "duo-dilema", name: "DÃºo Dilema", price: "S/ 32.50" },
                 { id: "santo-pecado", name: "Santo Pecado", price: "S/ 45.00" },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
@@ -6350,12 +6104,12 @@ export default function AdminPage() {
           {/* FIT */}
           <div>
             <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2">
-              🥗 Carta FIT
+              ðŸ¥— Carta FIT
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.50" },
-                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 22.50" },
+                { id: "ensalada-clasica", name: "CLÃSICA FRESH BOWL", price: "S/ 18.50" },
+                { id: "ensalada-proteica", name: "CÃ‰SAR POWER BOWL", price: "S/ 22.50" },
                 { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 23.50" },
                 { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 23.50" },
               ].map((item) => {
@@ -6398,9 +6152,9 @@ export default function AdminPage() {
       {showInventoryModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
           <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
-            <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
+            <h3 className="text-xl font-black text-fuchsia-400 mb-3">ðŸ“¦ Registrar Nueva Compra</h3>
 
-            {/* Información Compacta en Grid */}
+            {/* InformaciÃ³n Compacta en Grid */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
@@ -6424,7 +6178,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
+                <label className="block text-xs font-bold text-gray-400 mb-1">TelÃ©fono</label>
                 <input
                   type="tel"
                   value={inventoryForm.supplierPhone}
@@ -6446,24 +6200,24 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Método de pago *</label>
+                <label className="block text-xs font-bold text-fuchsia-400 mb-1">MÃ©todo de pago *</label>
                 <select
                   value={inventoryForm.paymentMethod}
                   onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
                   className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                 >
-                  <option value="plin-yape">📱 Plin / Yape</option>
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="transferencia">🏦 Transferencia</option>
-                  <option value="tarjeta">💳 Tarjeta</option>
+                  <option value="plin-yape">ðŸ“± Plin / Yape</option>
+                  <option value="efectivo">ðŸ’µ Efectivo</option>
+                  <option value="transferencia">ðŸ¦ Transferencia</option>
+                  <option value="tarjeta">ðŸ’³ Tarjeta</option>
                 </select>
               </div>
             </div>
 
-            {/* Lista de Artículos */}
+            {/* Lista de ArtÃ­culos */}
             <div className="mb-3">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
+                <h4 className="text-sm font-bold text-white">ðŸ“‹ ArtÃ­culos</h4>
                 <button
                   onClick={addInventoryItem}
                   className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
@@ -6479,7 +6233,7 @@ export default function AdminPage() {
                     <p className="text-xs font-bold text-fuchsia-400">Producto</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-xs font-bold text-fuchsia-400">Categoría</p>
+                    <p className="text-xs font-bold text-fuchsia-400">CategorÃ­a</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-xs font-bold text-fuchsia-400 text-center">Compra</p>
@@ -6516,7 +6270,7 @@ export default function AdminPage() {
                         />
                       </div>
 
-                      {/* Categoría */}
+                      {/* CategorÃ­a */}
                       <div className="col-span-12 md:col-span-2">
                         <select
                           value={item.category || ""}
@@ -6524,10 +6278,10 @@ export default function AdminPage() {
                           className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                         >
                           <option value="">-- Tipo --</option>
-                          <option value="INSUMO">🥘 INSUMO</option>
-                          <option value="EMPAQUE">📦 EMPAQUE</option>
-                          <option value="SERVICIO">⚡ SERVICIO</option>
-                          <option value="UTENCILIO">🔧 UTENCILIO</option>
+                          <option value="INSUMO">ðŸ¥˜ INSUMO</option>
+                          <option value="EMPAQUE">ðŸ“¦ EMPAQUE</option>
+                          <option value="SERVICIO">âš¡ SERVICIO</option>
+                          <option value="UTENCILIO">ðŸ”§ UTENCILIO</option>
                         </select>
                       </div>
 
@@ -6602,7 +6356,7 @@ export default function AdminPage() {
                           onClick={() => removeInventoryItem(idx)}
                           className="text-red-400 hover:text-red-300 text-xs"
                         >
-                          ❌ Eliminar
+                          âŒ Eliminar
                         </button>
                       </div>
                     )}
@@ -6646,26 +6400,26 @@ export default function AdminPage() {
                 }}
                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
               >
-                ❌ Cancelar
+                âŒ Cancelar
               </button>
               <button
                 onClick={handleCreateInventory}
                 className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
               >
-                ✅ Registrar Compra
+                âœ… Registrar Compra
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de Edición de Compra */}
+      {/* Modal de EdiciÃ³n de Compra */}
       {showInventoryEditModal && editingPurchase && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
           <div className="bg-gray-900 rounded-xl border-2 border-amber-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto">
-            <h3 className="text-xl font-black text-amber-400 mb-3">✏️ Editar Compra</h3>
+            <h3 className="text-xl font-black text-amber-400 mb-3">âœï¸ Editar Compra</h3>
 
-            {/* Información Compacta en Grid */}
+            {/* InformaciÃ³n Compacta en Grid */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
@@ -6689,7 +6443,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
+                <label className="block text-xs font-bold text-gray-400 mb-1">TelÃ©fono</label>
                 <input
                   type="tel"
                   defaultValue={editingPurchase.supplierPhone}
@@ -6711,24 +6465,24 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-amber-400 mb-1">Método de pago *</label>
+                <label className="block text-xs font-bold text-amber-400 mb-1">MÃ©todo de pago *</label>
                 <select
                   defaultValue={editingPurchase.paymentMethod}
                   onChange={(e) => setEditingPurchase({ ...editingPurchase, paymentMethod: e.target.value })}
                   className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
                 >
-                  <option value="plin-yape">📱 Plin / Yape</option>
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="transferencia">🏦 Transferencia</option>
-                  <option value="tarjeta">💳 Tarjeta</option>
+                  <option value="plin-yape">ðŸ“± Plin / Yape</option>
+                  <option value="efectivo">ðŸ’µ Efectivo</option>
+                  <option value="transferencia">ðŸ¦ Transferencia</option>
+                  <option value="tarjeta">ðŸ’³ Tarjeta</option>
                 </select>
               </div>
             </div>
 
-            {/* Lista de Artículos */}
+            {/* Lista de ArtÃ­culos */}
             <div className="mb-3">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
+                <h4 className="text-sm font-bold text-white">ðŸ“‹ ArtÃ­culos</h4>
               </div>
 
               {/* Encabezados de columnas */}
@@ -6738,7 +6492,7 @@ export default function AdminPage() {
                     <p className="text-xs font-bold text-amber-400">Producto</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-xs font-bold text-amber-400">Categoría</p>
+                    <p className="text-xs font-bold text-amber-400">CategorÃ­a</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-xs font-bold text-amber-400 text-center">Compra</p>
@@ -6779,7 +6533,7 @@ export default function AdminPage() {
                         />
                       </div>
 
-                      {/* Categoría */}
+                      {/* CategorÃ­a */}
                       <div className="col-span-12 md:col-span-2">
                         <select
                           defaultValue={item.category || ""}
@@ -6791,10 +6545,10 @@ export default function AdminPage() {
                           className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
                         >
                           <option value="">-- Tipo --</option>
-                          <option value="INSUMO">🥘 INSUMO</option>
-                          <option value="EMPAQUE">📦 EMPAQUE</option>
-                          <option value="SERVICIO">⚡ SERVICIO</option>
-                          <option value="UTENCILIO">🔧 UTENCILIO</option>
+                          <option value="INSUMO">ðŸ¥˜ INSUMO</option>
+                          <option value="EMPAQUE">ðŸ“¦ EMPAQUE</option>
+                          <option value="SERVICIO">âš¡ SERVICIO</option>
+                          <option value="UTENCILIO">ðŸ”§ UTENCILIO</option>
                         </select>
                       </div>
 
@@ -6913,7 +6667,7 @@ export default function AdminPage() {
                 }}
                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
               >
-                ❌ Cancelar
+                âŒ Cancelar
               </button>
               <button
                 onClick={async () => {
@@ -6936,7 +6690,7 @@ export default function AdminPage() {
                 }}
                 className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all transform hover:scale-105"
               >
-                ✅ Guardar Cambios
+                âœ… Guardar Cambios
               </button>
             </div>
           </div>
@@ -6959,7 +6713,7 @@ export default function AdminPage() {
                 onClick={() => setShowVoucherModal(false)}
                 className="text-gray-400 hover:text-white text-2xl font-bold transition-colors"
               >
-                ×
+                Ã—
               </button>
             </div>
             <div className="p-6">

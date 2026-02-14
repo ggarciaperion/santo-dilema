@@ -117,8 +117,6 @@ const availableComplements: Record<string, { name: string; price: number }> = {
 
 export default function FitPage() {
   const { cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
-  const [promoFit30Active, setPromoFit30Active] = useState<boolean>(true);
-  const [promoFit30Count, setPromoFit30Count] = useState<number>(0);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -185,16 +183,6 @@ export default function FitPage() {
     router.push('/checkout');
   };
 
-  // Cargar estado promo FIT 30%
-  useEffect(() => {
-    fetch('/api/promofit30')
-      .then(r => r.json())
-      .then(data => {
-        setPromoFit30Active(data.active);
-        setPromoFit30Count(data.count);
-      })
-      .catch(() => {});
-  }, []);
 
   // Cargar órdenes al inicio, filtrando solo las de otras categorías
   useEffect(() => {
@@ -365,14 +353,13 @@ export default function FitPage() {
   const handleCompleteOrder = (product: Product) => {
     const qty = orderQuantity[product.id] || 1;
     const orig = product.price;
-    const final = promoFit30Active ? orig * 0.70 : orig;
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: qty,
       complementIds: complementsInCart[product.id] || [],
-      discountApplied: promoFit30Active,
+      discountApplied: false,
       originalPrice: orig,
-      finalPrice: final
+      finalPrice: orig
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
@@ -764,20 +751,9 @@ export default function FitPage() {
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
                       <div className="flex flex-col">
-                        {promoFit30Active ? (
-                          <>
-                            <span className="text-[10px] text-gray-400 line-through leading-none">
-                              S/ {product.price.toFixed(2)}
-                            </span>
-                            <span className="text-sm md:text-base font-black text-green-400" style={{ textShadow: '0 0 8px rgba(74,222,128,0.6)' }}>
-                              S/ {(product.price * 0.70).toFixed(2)}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
-                            S/ {product.price.toFixed(2)}
-                          </span>
-                        )}
+                        <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                          S/ {product.price.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
@@ -1038,43 +1014,6 @@ export default function FitPage() {
           </div>
         </div>
 
-        {expandedCard === null && completedOrders.length === 0 && (
-          <div className="relative w-full flex justify-center items-center py-4 md:py-3 px-4">
-            <div className="text-center animated-text-reveal">
-              {promoFit30Active ? (
-                <>
-                  <h2
-                    className="text-base md:text-lg font-black tracking-widest uppercase"
-                    style={{
-                      fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
-                      fontWeight: 900,
-                      fontStretch: 'expanded',
-                      color: '#06b6d4',
-                      letterSpacing: '0.15em',
-                      textTransform: 'uppercase',
-                      textShadow: '0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6), 0 0 30px rgba(6, 182, 212, 0.4), 0 0 40px rgba(6, 182, 212, 0.2)'
-                    }}
-                  >
-                    ¡Promo del día 30% descuento en todos los bowls FIT!
-                  </h2>
-                </>
-              ) : (
-                <h2
-                  className="text-base md:text-lg font-black tracking-widest uppercase"
-                  style={{
-                    fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
-                    fontWeight: 900,
-                    color: '#6b7280',
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Promo 30% FIT agotada — ¡Atento a nuevas promociones!
-                </h2>
-              )}
-            </div>
-          </div>
-        )}
 
         {completedOrders.length > 0 && (
           <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0 lg:mt-2">
@@ -1126,21 +1065,7 @@ export default function FitPage() {
                             {/* Precio del menú */}
                             <div className={`${isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              {(() => {
-                                if (order.discountApplied && order.originalPrice !== undefined && order.finalPrice !== undefined) {
-                                  const originalTotal = order.originalPrice * order.quantity;
-                                  const discountedTotal = order.finalPrice * order.quantity;
-                                  return (
-                                    <span className="flex items-center gap-2">
-                                      <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
-                                      <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
-                                      <span className="bg-green-500/20 text-green-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-bold">-30%</span>
-                                    </span>
-                                  );
-                                }
-                                const total = (order.finalPrice ?? product.price) * order.quantity;
-                                return <span className="text-amber-400/80">S/ {total.toFixed(2)}</span>;
-                              })()}
+                              <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                             </div>
 
                             {/* Salsas (solo para órdenes de fat) */}

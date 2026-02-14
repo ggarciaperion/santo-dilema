@@ -140,34 +140,6 @@ const salsas: Salsa[] = [
   },
 ];
 
-// 🎁 PROMOCIÓN: Salsas que califican para 40% de descuento
-const PROMO_SAUCE_IDS = [
-  "anticuchos",      // Parrillera
-  "honey-mustard",   // Honey Mustard
-  "teriyaki",        // Teriyaki
-  "macerichada"      // Sweet & Sour
-];
-
-// Función para validar si una orden califica para el descuento del 30%
-const hasPromoDiscount = (order: CompletedOrder, productId: string, promoActive: boolean = true): boolean => {
-  // Si la promo ya no está activa, no aplica descuento
-  if (!promoActive) return false;
-
-  // Solo aplica a los 3 menús principales
-  if (!["pequeno-dilema", "duo-dilema", "santo-pecado"].includes(productId)) {
-    return false;
-  }
-
-  // Verificar que todas las salsas sean promocionales
-  // Si no tiene salsas seleccionadas, no aplica
-  if (!order.salsas || order.salsas.length === 0) {
-    return false;
-  }
-
-  // TODAS las salsas deben ser promocionales
-  return order.salsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
-};
-
 // Generar dinámicamente el diccionario de complementos disponibles
 const generateAvailableComplements = () => {
   const complements: Record<string, { name: string; price: number }> = {
@@ -216,8 +188,6 @@ export default function FatPage() {
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
   const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
-  const [promo30Active, setPromo30Active] = useState(true);
-  const [promo30Count, setPromo30Count] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
@@ -308,17 +278,6 @@ export default function FatPage() {
     sessionStorage.removeItem("santo-dilema-cart");
     clearCart();
 
-    // Cargar estado de promo 30%
-    fetch("/api/promo30")
-      .then(res => res.json())
-      .then(data => {
-        setPromo30Active(data.active);
-        setPromo30Count(data.count);
-      })
-      .catch(() => {
-        // En caso de error, mantener activa para no bloquear ventas
-        setPromo30Active(true);
-      });
   }, []);
 
   // Guardar órdenes completadas en sessionStorage cuando cambien
@@ -666,18 +625,14 @@ export default function FatPage() {
     // Guardar la orden completada
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
-    const tempOrder = { productId: product.id, quantity: qty, salsas: orderSalsas, complementIds: complementsInCart[product.id] || [] };
-    const applyDiscount = hasPromoDiscount(tempOrder, product.id, promo30Active);
-    const orig = product.price;
-    const final = applyDiscount ? orig * 0.70 : orig;
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: qty,
       salsas: orderSalsas,
       complementIds: complementsInCart[product.id] || [],
-      discountApplied: applyDiscount,
-      originalPrice: orig,
-      finalPrice: final
+      discountApplied: false,
+      originalPrice: product.price,
+      finalPrice: product.price
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
@@ -1082,30 +1037,6 @@ export default function FatPage() {
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
                       {(() => {
-                        // Verificar si las salsas seleccionadas califican para descuento
-                        const currentSalsas = selectedSalsas[product.id] || [];
-                        const hasDiscount = promo30Active && currentSalsas.length > 0 &&
-                          currentSalsas.every(salsaId => PROMO_SAUCE_IDS.includes(salsaId));
-                        const discountedPrice = product.price * 0.7;
-
-                        if (hasDiscount) {
-                          return (
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-gray-500 line-through text-[10px] md:text-xs">
-                                S/ {product.price.toFixed(2)}
-                              </span>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-sm md:text-lg font-black text-green-400 gold-glow">
-                                  S/ {discountedPrice.toFixed(2)}
-                                </span>
-                                <span className="bg-green-500/20 text-green-400 text-[8px] md:text-[10px] px-1 py-0.5 rounded font-bold">
-                                  -30%
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        }
-
                         return (
                           <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
                             S/ {product.price.toFixed(2)}
@@ -1505,45 +1436,6 @@ export default function FatPage() {
           </div>
         </div>
 
-        {/* Banner de promo 30% */}
-        {expandedCard === null && completedOrders.length === 0 && (
-          <div className="relative w-full flex justify-center items-center py-4 md:py-4 px-4">
-            <div className="text-center animated-text-reveal">
-              {promo30Active ? (
-                <>
-                  <h2
-                    className="text-base md:text-xl lg:text-2xl font-black tracking-widest uppercase"
-                    style={{
-                      fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
-                      fontWeight: 900,
-                      fontStretch: 'expanded',
-                      color: '#ef4444',
-                      letterSpacing: '0.15em',
-                      textTransform: 'uppercase',
-                      textShadow: '0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2)'
-                    }}
-                  >
-                    ¡Promo del día 30% de descuento en salsas exclusivas!
-                  </h2>
-                </>
-              ) : (
-                <h2
-                  className="text-base md:text-xl lg:text-2xl font-black tracking-widest uppercase"
-                  style={{
-                    fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', 'Oswald', sans-serif",
-                    fontWeight: 900,
-                    fontStretch: 'expanded',
-                    color: '#6b7280',
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Promo 30% agotada — ¡Atento a nuevas promociones!
-                </h2>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
@@ -1596,21 +1488,7 @@ export default function FatPage() {
                             {/* Precio del menú */}
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              {(() => {
-                                if (order.discountApplied && order.originalPrice !== undefined && order.finalPrice !== undefined) {
-                                  const originalTotal = order.originalPrice * order.quantity;
-                                  const discountedTotal = order.finalPrice * order.quantity;
-                                  return (
-                                    <span className="flex items-center gap-2">
-                                      <span className="text-gray-500 line-through text-[10px] md:text-xs">S/ {originalTotal.toFixed(2)}</span>
-                                      <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
-                                      <span className="bg-green-500/20 text-green-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-bold">-30%</span>
-                                    </span>
-                                  );
-                                }
-                                const total = (order.finalPrice ?? product.price) * order.quantity;
-                                return <span className="text-amber-400/80">S/ {total.toFixed(2)}</span>;
-                              })()}
+                              <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                             </div>
 
                             {/* Salsas seleccionadas - solo para ordenes de fat */}
@@ -1894,21 +1772,7 @@ export default function FatPage() {
                     <div className="space-y-1">
                       <div className={`flex justify-between items-center ${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} text-xs`}>
                         <span>• {product.name} x{order.quantity}</span>
-                        {(() => {
-                          if (order.discountApplied && order.originalPrice !== undefined && order.finalPrice !== undefined) {
-                            const originalTotal = order.originalPrice * order.quantity;
-                            const discountedTotal = order.finalPrice * order.quantity;
-                            return (
-                              <span className="flex items-center gap-2">
-                                <span className="text-gray-500 line-through text-[10px]">S/ {originalTotal.toFixed(2)}</span>
-                                <span className="text-green-400 font-bold">S/ {discountedTotal.toFixed(2)}</span>
-                                <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded font-bold">-30%</span>
-                              </span>
-                            );
-                          }
-                          const total = (order.finalPrice ?? product.price) * order.quantity;
-                          return <span className="text-amber-400/80">S/ {total.toFixed(2)}</span>;
-                        })()}
+                        <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                       </div>
 
                       {/* Salsas (solo para órdenes fat) */}

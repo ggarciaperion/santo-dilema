@@ -1,31 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 import { v2 as cloudinary } from 'cloudinary';
-import { orderQualifiesForCoupon } from "../coupons/route";
-
-// Salsas de la promo 30% FAT
-const PROMO30_SAUCE_IDS = ["anticuchos", "honey-mustard", "teriyaki", "macerichada"];
-const PROMO30_PRODUCT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
-
-function orderQualifiesForPromo30(completedOrders: any[]): boolean {
-  return completedOrders.some(order => {
-    if (!PROMO30_PRODUCT_IDS.includes(order.productId)) return false;
-    if (!order.salsas || order.salsas.length === 0) return false;
-    return order.salsas.every((s: string) => PROMO30_SAUCE_IDS.includes(s));
-  });
-}
-
-// Promo 30% FIT — cualquier bowl FIT califica
-const PROMO_FIT30_PRODUCT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
-
-function orderQualifiesForPromoFit30(completedOrders: any[]): boolean {
-  return completedOrders.some(order => PROMO_FIT30_PRODUCT_IDS.includes(order.productId));
-}
-
-function getFirstFitProductId(completedOrders: any[]): string {
-  const fitOrder = completedOrders.find(o => PROMO_FIT30_PRODUCT_IDS.includes(o.productId));
-  return fitOrder?.productId || '';
-}
 
 // Configurar Cloudinary
 cloudinary.config({
@@ -215,110 +190,7 @@ export async function POST(request: Request) {
     await storage.saveOrder(newOrder);
     console.log("💾 Pedido guardado");
 
-    // Registrar en Promo 30% si califica
-    if (orderQualifiesForPromo30(completedOrders)) {
-      try {
-        const promo30Sauces = completedOrders
-          .filter(o => PROMO30_PRODUCT_IDS.includes(o.productId) && o.salsas?.length > 0)
-          .flatMap(o => o.salsas);
-        const result = await storage.registerPromo30Order({
-          orderId: newOrder.id,
-          customerName: name,
-          dni,
-          sauces: [...new Set(promo30Sauces)] as string[],
-        });
-        if (result.registered) {
-          console.log(`🔥 Promo 30% registrada. Total acumulado: ${result.newCount}/30`);
-        } else {
-          console.log("⚠️ Promo 30% ya alcanzó el límite de 30 órdenes");
-        }
-      } catch (error) {
-        console.error("Error al registrar promo30:", error);
-      }
-    }
-
-    // Registrar en Promo FIT 30% si califica
-    if (orderQualifiesForPromoFit30(completedOrders)) {
-      try {
-        const result = await storage.registerPromoFit30Order({
-          orderId: newOrder.id,
-          customerName: name,
-          dni,
-          productId: getFirstFitProductId(completedOrders),
-        });
-        if (result.registered) {
-          console.log(`🥗 Promo FIT 30% registrada. Total acumulado: ${result.newCount}/30`);
-        } else {
-          console.log("⚠️ Promo FIT 30% ya alcanzó el límite de 30 órdenes");
-        }
-      } catch (error) {
-        console.error("Error al registrar promoFit30:", error);
-      }
-    }
-
-    // Generar cupón si califica (Promoción 13%)
-    let generatedCoupon = null;
-
-    // Verificar si alguna orden tiene salsas que califiquen
-    const hasPromoSauces = completedOrders.some((order: any) => {
-      if (!order.salsas || order.salsas.length === 0) return false;
-      return orderQualifiesForCoupon(order.salsas);
-    });
-
-    console.log("🔍 Verificando elegibilidad para cupón:");
-    console.log("  - hasPromoSauces:", hasPromoSauces);
-    console.log("  - DNI:", dni);
-    console.log("  - Salsas en orden:", completedOrders.map((o: any) => o.salsas));
-
-    if (hasPromoSauces) {
-      try {
-        // Generar cupón directamente usando storage (sin fetch interno)
-        const coupons = await storage.getCoupons();
-
-        console.log("📊 Estado de cupones:");
-        console.log("  - Total cupones existentes:", coupons.length);
-        console.log("  - Cupones del DNI:", coupons.filter((c: any) => c.dni === dni).length);
-
-        // Verificar límite de 13 cupones
-        if (coupons.length >= 13) {
-          console.log("⚠️ Límite de 13 cupones alcanzado");
-        }
-        // Verificar un cupón por DNI
-        else if (coupons.some((c: any) => c.dni === dni)) {
-          console.log("⚠️ DNI ya tiene un cupón:", dni);
-        }
-        // Generar cupón
-        else {
-          const couponCode = `SANTO13-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-          const newCoupon = {
-            id: `coupon-${Date.now()}`,
-            code: couponCode,
-            dni,
-            customerName: name,
-            discount: 13,
-            status: "pending",
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date("2026-02-28T23:59:59").toISOString(),
-            orderId: newOrder.id,
-          };
-
-          await storage.saveCoupon(newCoupon);
-
-          generatedCoupon = {
-            code: newCoupon.code,
-            discount: newCoupon.discount,
-            expiresAt: newCoupon.expiresAt,
-          };
-
-          console.log("✅ Cupón generado exitosamente:", generatedCoupon.code);
-        }
-      } catch (error) {
-        console.error("❌ Error al generar cupón:", error);
-        // No fallar el pedido si falla la generación del cupón
-      }
-    }
-
-    return NextResponse.json({ ...newOrder, coupon: generatedCoupon }, { status: 201 });
+    return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {
     console.error("❌ Error al crear pedido:", error);
     return NextResponse.json(
