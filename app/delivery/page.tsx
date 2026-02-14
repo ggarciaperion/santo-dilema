@@ -58,27 +58,17 @@ interface Order {
 
 // Componente de contador de tiempo para delivery
 function DeliveryTimer({ startTime }: { startTime: string }) {
-  const [elapsed, setElapsed] = useState({ minutes: 0, seconds: 0 });
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const updateElapsed = () => {
-      const now = new Date().getTime();
-      const start = new Date(startTime).getTime();
-      let diff = Math.floor((now - start) / 1000);
-
-      if (diff < 0) diff = 0;
-
-      const minutes = Math.floor(diff / 60);
-      const seconds = diff % 60;
-
-      setElapsed({ minutes, seconds });
-    };
-
-    updateElapsed();
-    const interval = setInterval(updateElapsed, 1000);
-
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, []);
+
+  const startMs = new Date(startTime).getTime();
+  const diff = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+  const minutes = Math.floor(diff / 60);
+  const seconds = diff % 60;
 
   return (
     <div className="inline-flex items-center gap-2 bg-orange-600/30 border-2 border-orange-500/70 rounded-lg px-3 py-2 shadow-lg">
@@ -86,7 +76,7 @@ function DeliveryTimer({ startTime }: { startTime: string }) {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <span className="text-orange-300 font-mono font-black text-lg">
-        {String(elapsed.minutes).padStart(2, '0')}:{String(elapsed.seconds).padStart(2, '0')}
+        {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </span>
       <span className="text-orange-400 text-sm font-bold">min</span>
     </div>
