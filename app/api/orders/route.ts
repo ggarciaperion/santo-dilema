@@ -20,7 +20,7 @@ const fatProducts = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    price: 33.50,
+    price: 32.50,
     category: "fat",
   },
   {
@@ -36,25 +36,25 @@ const fitProducts = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    price: 18.90,
+    price: 18.50,
     category: "fit",
   },
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    price: 24.90,
+    price: 22.50,
     category: "fit",
   },
   {
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
-    price: 22.90,
+    price: 23.50,
     category: "fit",
   },
   {
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
-    price: 21.90,
+    price: 23.50,
     category: "fit",
   },
 ];
