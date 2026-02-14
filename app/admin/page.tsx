@@ -6311,7 +6311,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 18.50" },
-                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 33.50" },
+                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 32.50" },
                 { id: "santo-pecado", name: "Santo Pecado", price: "S/ 45.00" },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
@@ -6354,10 +6354,10 @@ export default function AdminPage() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.90" },
-                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 24.90" },
-                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 22.90" },
-                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 21.90" },
+                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.50" },
+                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 22.50" },
+                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 23.50" },
+                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 23.50" },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
