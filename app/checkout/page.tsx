@@ -1427,7 +1427,7 @@ export default function CheckoutPage() {
             <div className="flex justify-center mb-3">
               <div className="bg-white rounded-lg p-2" style={{ width: '140px', height: '140px' }}>
                 <img
-                  src="/WSP PLIN.jpeg"
+                  src="/qrfinal.jpeg"
                   alt="QR Pago"
                   className="w-full h-full object-contain"
                 />
