@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
+// Fecha de corte global: ningún cupón es válido después de esta fecha
+const COUPON_GLOBAL_EXPIRY = new Date("2026-02-28T23:59:59-05:00"); // Hora Perú (UTC-5)
+
 // IDs de salsas promocionales (Promoción 13%)
 const PROMO_SAUCE_IDS = [
   "barbecue",        // BBQ Ahumada
@@ -103,6 +106,14 @@ export async function POST(request: Request) {
       if (coupon.status === "used") {
         return NextResponse.json(
           { error: "Cupón ya utilizado" },
+          { status: 400 }
+        );
+      }
+
+      // Verificar fecha de corte global (28 de febrero 2026)
+      if (new Date() > COUPON_GLOBAL_EXPIRY) {
+        return NextResponse.json(
+          { error: "Los cupones promocionales vencieron el 28 de febrero" },
           { status: 400 }
         );
       }
