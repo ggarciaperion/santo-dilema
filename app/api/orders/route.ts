@@ -113,6 +113,8 @@ export async function POST(request: Request) {
     const completedOrders = JSON.parse(formData.get('completedOrders') as string || '[]');
     const totalItems = parseInt(formData.get('totalItems') as string);
     const totalPrice = parseFloat(formData.get('totalPrice') as string);
+    const couponDiscount = parseFloat(formData.get('couponDiscount') as string) || 0;
+    const couponCode = formData.get('couponCode') as string || '';
     const paymentMethod = formData.get('paymentMethod') as string;
     const cantoCancelo = formData.get('cantoCancelo') as string | null;
     const timestamp = formData.get('timestamp') as string;
@@ -197,6 +199,8 @@ export async function POST(request: Request) {
       completedOrders: expandedOrders,
       totalItems,
       totalPrice,
+      couponDiscount: couponDiscount > 0 ? couponDiscount : undefined,
+      couponCode: couponCode || undefined,
       paymentMethod,
       cantoCancelo: cantoCancelo || undefined,
       paymentProofPath,

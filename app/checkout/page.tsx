@@ -484,6 +484,8 @@ export default function CheckoutPage() {
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
       formDataToSend.append('totalItems', completedOrders.length.toString());
       formDataToSend.append('totalPrice', realTotal.toString());
+      formDataToSend.append('couponDiscount', couponValid ? couponDiscount.toString() : '0');
+      formDataToSend.append('couponCode', couponValid ? couponCode.trim().toUpperCase() : '');
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
       if (cantoCancelo) {
         formDataToSend.append('cantoCancelo', cantoCancelo);

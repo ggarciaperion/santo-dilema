@@ -1445,11 +1445,12 @@ export default function AdminPage() {
     const currentMonthProductSales = new Map();
     currentMonthOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
+      const couponFactor = 1 - (order.couponDiscount || 0) / 100;
       if (orderItems.length > 0) {
         orderItems.forEach((item: any) => {
           const productId = item.productId || item.product?.id;
           const productName = item.name || item.product?.name;
-          const productPrice = item.price || item.product?.price || 0;
+          const productPrice = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
           const quantity = item.quantity;
 
           if (currentMonthProductSales.has(productId)) {
@@ -1474,11 +1475,12 @@ export default function AdminPage() {
     const productSales = new Map();
     deliveredOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
+      const couponFactor = 1 - (order.couponDiscount || 0) / 100;
       if (orderItems.length > 0) {
         orderItems.forEach((item: any) => {
           const productId = item.productId || item.product?.id;
           const productName = item.name || item.product?.name;
-          const productPrice = item.price || item.product?.price || 0;
+          const productPrice = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
           const quantity = item.quantity;
 
           if (productSales.has(productId)) {
@@ -1515,11 +1517,12 @@ export default function AdminPage() {
     const lastMonthProductSales = new Map();
     lastMonthOrders.forEach((order: any) => {
       const orderItems = order.completedOrders || order.cart || [];
+      const couponFactor = 1 - (order.couponDiscount || 0) / 100;
       if (orderItems.length > 0) {
         orderItems.forEach((item: any) => {
           const productId = item.productId || item.product?.id;
           const productName = item.name || item.product?.name;
-          const productPrice = item.price || item.product?.price || 0;
+          const productPrice = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
           const quantity = item.quantity;
 
           if (lastMonthProductSales.has(productId)) {
@@ -2235,18 +2238,23 @@ export default function AdminPage() {
                       {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
                         (order as any).completedOrders.map((item: any, idx: number) => {
                           const productName = item.name || 'Sin nombre';
-                          const productPrice = item.price || 0;
+                          // Usar finalPrice (promo 30%) si existe, sino precio catálogo
+                          const basePrice = item.finalPrice ?? item.price ?? 0;
+                          // Aplicar factor del cupón 13% si el pedido lo tiene
+                          const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
+                          const productPrice = basePrice * couponFactor;
+                          const catalogPrice = item.price || 0;
                           const quantity = item.quantity || 0;
                           const itemSalsas = item.salsas || [];
                           const itemComplementIds = item.complementIds || [];
+                          const hasItemDiscount = item.finalPrice != null || (order as any).couponDiscount > 0;
 
                           // Calcular precio total del item (producto + complementos)
                           let itemTotal = productPrice * quantity;
                           itemComplementIds.forEach((compId: string) => {
                             const complement = availableComplements[compId];
                             if (complement) {
-                              // Los complementos se cobran 1 sola vez, no por cantidad
-                              itemTotal += complement.price;
+                              itemTotal += complement.price * couponFactor;
                             }
                           });
 
@@ -2258,7 +2266,16 @@ export default function AdminPage() {
                                 </div>
                                 <div className="flex-1">
                                   <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                  <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
+                                  {hasItemDiscount ? (
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-gray-500 line-through text-xs">S/ {(catalogPrice * quantity).toFixed(2)}</span>
+                                      <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
+                                      {item.finalPrice != null && <span className="text-[9px] bg-green-600/30 text-green-400 px-1 rounded font-bold">-30%</span>}
+                                      {(order as any).couponDiscount > 0 && <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>}
+                                    </div>
+                                  ) : (
+                                    <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
+                                  )}
                                 </div>
                               </div>
 
@@ -2348,6 +2365,11 @@ export default function AdminPage() {
                       S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
                     </p>
                     <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
+                    {(order as any).couponDiscount > 0 && (
+                      <p className="text-[9px] bg-purple-900/60 text-purple-200 rounded px-1 mt-1 font-bold">
+                        Cupón -{(order as any).couponDiscount}% aplicado
+                      </p>
+                    )}
                   </div>
 
                   {/* SECCIÓN 4: PAGO */}
@@ -2587,10 +2609,11 @@ export default function AdminPage() {
               const productCount: Record<string, { name: string; qty: number; revenue: number }> = {};
               selectedCustomer.orders.forEach((order: any) => {
                 const items = order.completedOrders || order.cart || [];
+                const couponFactor = 1 - (order.couponDiscount || 0) / 100;
                 items.forEach((item: any) => {
                   const name = item.name || item.product?.name || 'Sin nombre';
                   const qty = item.quantity || 0;
-                  const price = item.price || item.product?.price || 0;
+                  const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
                   if (!productCount[name]) productCount[name] = { name, qty: 0, revenue: 0 };
                   productCount[name].qty += qty;
                   productCount[name].revenue += price * qty;
@@ -3232,11 +3255,12 @@ export default function AdminPage() {
 
               deliveredOrders.forEach((order: any) => {
                 const items = order.completedOrders || order.cart || [];
+                const couponFactor = 1 - (order.couponDiscount || 0) / 100;
                 items.forEach((item: any) => {
                   // 1. Menú principal
                   const menuName = item.name || item.product?.name || "";
                   const qty = item.quantity || 0;
-                  const price = item.price || item.product?.price || 0;
+                  const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
                   if (menuName) addToSoldMap(menuName, qty, price * qty);
 
                   // 2. Salsas
@@ -3933,11 +3957,12 @@ export default function AdminPage() {
 
               deliveredOrders.forEach((order: any) => {
                 const items = order.completedOrders || order.cart || [];
+                const couponFactor = 1 - (order.couponDiscount || 0) / 100;
                 items.forEach((item: any) => {
                   // 1. Menú principal
                   const menuName = item.name || item.product?.name || "";
                   const qty = item.quantity || 0;
-                  const price = item.price || item.product?.price || 0;
+                  const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
                   if (menuName) addToSoldMap(menuName, qty, price * qty);
 
                   // 2. Salsas (array de IDs de salsas base incluidas en el menú)
