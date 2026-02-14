@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import BannerCarousel from "../components/BannerCarousel";
 import WhatsAppButton from "../components/WhatsAppButton";
+import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 interface Product {
   id: string;
@@ -222,6 +223,7 @@ export default function FatPage() {
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
   const [bannerWidth, setBannerWidth] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -270,6 +272,12 @@ export default function FatPage() {
   };
 
   // Cargar órdenes al inicio, filtrando solo las de otras categorías
+  // Actualizar estado de apertura cada minuto
+  useEffect(() => {
+    const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const savedOrders = sessionStorage.getItem("santo-dilema-orders");
     if (savedOrders) {
@@ -1695,12 +1703,21 @@ export default function FatPage() {
                   S/ {completedTotal.toFixed(2)}
                 </span>
               </div>
-              <button
-                onClick={navigateToCheckout}
-                className="bg-red-500 hover:bg-red-400 active:scale-95 text-white px-5 md:px-9 py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-xl transition-all neon-border-fat"
-              >
-                Continuar<span className="hidden sm:inline"> Pedido</span> →
-              </button>
+              {isOpen ? (
+                <button
+                  onClick={navigateToCheckout}
+                  className="bg-red-500 hover:bg-red-400 active:scale-95 text-white px-5 md:px-9 py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-xl transition-all neon-border-fat"
+                >
+                  Continuar<span className="hidden sm:inline"> Pedido</span> →
+                </button>
+              ) : (
+                <div className="flex flex-col items-end gap-0.5">
+                  <div className="bg-gray-700 text-gray-400 px-4 md:px-7 py-2 md:py-3 rounded-lg md:rounded-xl font-black text-xs md:text-base cursor-not-allowed border-2 border-gray-600 text-center">
+                    🔒 Cerrado
+                  </div>
+                  <span className="text-gray-500 text-[10px] md:text-xs text-right">{getNextOpenMessage()}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

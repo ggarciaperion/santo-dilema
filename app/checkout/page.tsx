@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
+import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -229,6 +230,7 @@ export default function CheckoutPage() {
   const [dniHasCoupon, setDniHasCoupon] = useState(false);
   const [dniCouponStatus, setDniCouponStatus] = useState<"pending" | "used" | null>(null);
   const [checkingDni, setCheckingDni] = useState(false);
+  const [isOpen, setIsOpen] = useState(isBusinessOpen);
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -236,6 +238,11 @@ export default function CheckoutPage() {
       playSuccessSound();
     }
   }, [orderPlaced]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Cargar órdenes desde sessionStorage (vienen de /fat o /fit)
   useEffect(() => {
@@ -672,6 +679,62 @@ export default function CheckoutPage() {
             height={50}
             className="h-8 md:h-10 w-auto"
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isOpen) {
+    return (
+      <div className="h-[100dvh] bg-black flex flex-col items-center justify-center relative overflow-hidden">
+        {/* Fondo decorativo */}
+        <div className="fixed inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-red-500 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-orange-500 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center gap-6 px-8 text-center">
+          {/* Logo */}
+          <Image
+            src="/logo.png"
+            alt="Santo Dilema"
+            width={120}
+            height={120}
+            className="w-24 h-24 md:w-32 md:h-32 object-contain opacity-80"
+          />
+
+          {/* Candado */}
+          <div className="text-6xl md:text-8xl">🔒</div>
+
+          {/* Mensaje cerrado */}
+          <div className="flex flex-col gap-2">
+            <h1 className="text-white font-black text-2xl md:text-4xl tracking-wide">
+              Estamos Cerrados
+            </h1>
+            <p className="text-gray-400 text-sm md:text-base max-w-xs">
+              El horario de atención es de <span className="text-white font-bold">6:00 PM – 11:00 PM</span>,{" "}
+              <span className="text-white font-bold">Jueves a Domingo</span>.
+            </p>
+            <p className="text-amber-400 font-bold text-sm md:text-base mt-1">
+              {getNextOpenMessage()}
+            </p>
+          </div>
+
+          {/* Botones de navegación */}
+          <div className="flex flex-col sm:flex-row gap-3 mt-2">
+            <Link
+              href="/fat"
+              className="bg-red-600 hover:bg-red-500 text-white font-black px-6 py-3 rounded-xl text-sm md:text-base transition-all active:scale-95"
+            >
+              Ver carta FAT
+            </Link>
+            <Link
+              href="/fit"
+              className="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-6 py-3 rounded-xl text-sm md:text-base transition-all active:scale-95"
+            >
+              Ver carta FIT
+            </Link>
+          </div>
         </div>
       </div>
     );

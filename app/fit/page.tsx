@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import BannerCarousel from "../components/BannerCarousel";
 import WhatsAppButton from "../components/WhatsAppButton";
+import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 interface Product {
   id: string;
@@ -141,6 +142,7 @@ export default function FitPage() {
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
   const [bannerWidth, setBannerWidth] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const router = useRouter();
 
   const completedTotal = completedOrders.reduce((total, order) => {
@@ -264,6 +266,11 @@ export default function FitPage() {
     const t = setTimeout(measure, 200);
     window.addEventListener('resize', measure);
     return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
+    return () => clearInterval(interval);
   }, []);
 
   // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
@@ -1238,12 +1245,21 @@ export default function FitPage() {
                   S/ {completedTotal.toFixed(2)}
                 </span>
               </div>
-              <button
-                onClick={navigateToCheckout}
-                className="bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-black px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-fit"
-              >
-                Continuar<span className="hidden sm:inline"> Pedido</span> →
-              </button>
+              {isOpen ? (
+                <button
+                  onClick={navigateToCheckout}
+                  className="bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-black px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-fit"
+                >
+                  Continuar<span className="hidden sm:inline"> Pedido</span> →
+                </button>
+              ) : (
+                <div className="flex flex-col items-end gap-0.5">
+                  <div className="bg-gray-700 text-gray-400 px-4 md:px-7 py-2 md:py-3 rounded-lg font-black text-xs md:text-base cursor-not-allowed border-2 border-gray-600 text-center">
+                    🔒 Cerrado
+                  </div>
+                  <span className="text-gray-500 text-[10px] md:text-xs text-right">{getNextOpenMessage()}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
