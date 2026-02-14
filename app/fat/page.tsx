@@ -953,14 +953,17 @@ export default function FatPage() {
           />
         </div>
 
-        {/* Banner Carrusel FAT - solo desktop, alineado con carteles */}
+        {/* Banner web - Promo San Valentín */}
         <div className="hidden md:block mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
-          <BannerCarousel slides={[
-            { web: "/bwfat1.png" },
-            { web: "/bwfat2.png" },
-            { web: "/bwfat3.png" },
-            { web: "/bwfat4.png" },
-          ]} />
+          <video
+            src="/SANVALENTINWEB.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-auto block rounded-lg"
+          />
         </div>
         <div className="h-6 md:h-8" />
         {/* Carousel Container */}

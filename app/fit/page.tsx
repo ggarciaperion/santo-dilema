@@ -666,12 +666,17 @@ export default function FitPage() {
           />
         </div>
 
-        {/* Banner Carrusel FIT - solo desktop, alineado con carteles */}
+        {/* Banner web - Promo San Valentín */}
         <div className="hidden md:block mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
-          <BannerCarousel slides={[
-            { web: "/prueba1.png" },
-            { web: "/prueba2.png" },
-          ]} />
+          <video
+            src="/SANVALENTINWEB.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-auto block rounded-lg"
+          />
         </div>
         <div className="h-6 md:h-8" />
         <div className="relative flex items-center justify-center overflow-visible">
