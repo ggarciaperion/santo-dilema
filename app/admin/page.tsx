@@ -2388,6 +2388,16 @@ export default function AdminPage() {
                         Cupón -{(order as any).couponDiscount}% aplicado
                       </p>
                     )}
+                    {(order as any).deliveryCost > 0 && (
+                      <p className="text-[9px] bg-sky-900/60 text-sky-200 rounded px-1 mt-1 font-bold">
+                        🛵 +S/ {(order as any).deliveryCost.toFixed(2)} delivery
+                      </p>
+                    )}
+                    {(order as any).deliveryOption && (
+                      <p className="text-[9px] text-sky-300 mt-0.5">
+                        {(order as any).deliveryOption === 'centro' ? 'Chancay centro' : 'Chancay alrededores'}
+                      </p>
+                    )}
                   </div>
 
                   {/* SECCIÓN 4: PAGO */}

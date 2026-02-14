@@ -202,6 +202,7 @@ export default function CheckoutPage() {
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
+  const [deliveryOption, setDeliveryOption] = useState<'centro' | 'alrededores' | null>(null);
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -258,7 +259,8 @@ export default function CheckoutPage() {
 
   // Aplicar descuento de cupón si es válido
   const couponDiscountAmount = couponValid ? ((subtotal - comboDiscountAmount) * couponDiscount) / 100 : 0;
-  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount;
+  const deliveryCost = deliveryOption === 'centro' ? 4.00 : 0;
+  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount + deliveryCost;
 
   // Validar si el formulario está completo
   const isFormValid = () => {
@@ -266,7 +268,8 @@ export default function CheckoutPage() {
       formData.name.trim() !== "" &&
       formData.dni.length === 8 &&
       formData.phone.length === 9 &&
-      formData.address.trim() !== ""
+      formData.address.trim() !== "" &&
+      deliveryOption !== null
     );
   };
 
@@ -418,6 +421,8 @@ export default function CheckoutPage() {
       formDataToSend.append('totalPrice', realTotal.toString());
       formDataToSend.append('comboDiscount', hasComboDiscount ? '14' : '0');
       formDataToSend.append('couponDiscount', couponValid ? couponDiscount.toString() : '0');
+      formDataToSend.append('deliveryOption', deliveryOption || '');
+      formDataToSend.append('deliveryCost', deliveryCost.toString());
       formDataToSend.append('couponCode', couponValid ? couponCode.trim().toUpperCase() : '');
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
       if (cantoCancelo) {
@@ -970,6 +975,47 @@ export default function CheckoutPage() {
             )}
           </div>
 
+          {/* Opción de Delivery */}
+          <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-3 mb-2 md:mb-3">
+            <p className="text-white font-bold text-xs md:text-sm mb-2">🛵 Tipo de delivery <span className="text-red-400">*</span></p>
+            <div className="space-y-2">
+              <label className={`flex items-start gap-2 cursor-pointer rounded-lg px-3 py-2 border transition-all ${deliveryOption === 'centro' ? 'border-fuchsia-500 bg-fuchsia-900/30' : 'border-white/10 bg-white/5 hover:border-white/30'}`}>
+                <input
+                  type="radio"
+                  name="deliveryOption"
+                  value="centro"
+                  checked={deliveryOption === 'centro'}
+                  onChange={() => setDeliveryOption('centro')}
+                  className="mt-0.5 accent-fuchsia-500 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-[11px] md:text-xs font-semibold leading-tight">Delivery Chancay centro</p>
+                  <p className="text-gray-400 text-[10px] md:text-[11px] leading-tight">(Colegio Salazar Bondy hasta Castillo de Chancay)</p>
+                </div>
+                <span className="text-amber-400 font-black text-xs md:text-sm flex-shrink-0">S/ 4.00</span>
+              </label>
+
+              <label className={`flex items-start gap-2 cursor-pointer rounded-lg px-3 py-2 border transition-all ${deliveryOption === 'alrededores' ? 'border-fuchsia-500 bg-fuchsia-900/30' : 'border-white/10 bg-white/5 hover:border-white/30'}`}>
+                <input
+                  type="radio"
+                  name="deliveryOption"
+                  value="alrededores"
+                  checked={deliveryOption === 'alrededores'}
+                  onChange={() => setDeliveryOption('alrededores')}
+                  className="mt-0.5 accent-fuchsia-500 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-[11px] md:text-xs font-semibold leading-tight">Delivery Chancay alrededores</p>
+                  <p className="text-gray-400 text-[10px] md:text-[11px] leading-tight">(Se coordina con el motorizado contraentrega)</p>
+                </div>
+                <span className="text-gray-400 font-bold text-xs md:text-sm flex-shrink-0">S/ 0.00</span>
+              </label>
+            </div>
+            {deliveryOption === null && (
+              <p className="text-red-400 text-[9px] md:text-[10px] mt-1.5">⚠️ Debes seleccionar una opción de delivery</p>
+            )}
+          </div>
+
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
             {/* Subtotal y descuentos */}
             {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
@@ -991,6 +1037,13 @@ export default function CheckoutPage() {
                   </div>
                 )}
               </>
+            )}
+
+            {deliveryCost > 0 && (
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sky-400 text-xs md:text-sm font-bold">🛵 Delivery Chancay centro:</span>
+                <span className="text-sky-400 text-xs md:text-sm font-bold">+S/ {deliveryCost.toFixed(2)}</span>
+              </div>
             )}
 
             <div className="flex justify-between items-center mb-2 md:mb-3">
