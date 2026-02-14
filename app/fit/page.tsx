@@ -653,11 +653,24 @@ export default function FitPage() {
 
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
+        {/* Banner móvil - Promo San Valentín */}
+        <div className="block md:hidden w-full mb-2">
+          <video
+            src="/SANVALENTINMOVIL.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-auto block"
+          />
+        </div>
+
         {/* Banner Carrusel FIT - solo desktop, alineado con carteles */}
-        <div className="mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
+        <div className="hidden md:block mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
           <BannerCarousel slides={[
-            { web: "/prueba1.png", movil: "/bmfit1.png" },
-            { web: "/prueba2.png", movil: "/bmfit2.png" },
+            { web: "/prueba1.png" },
+            { web: "/prueba2.png" },
           ]} />
         </div>
         <div className="h-6 md:h-8" />

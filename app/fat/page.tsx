@@ -940,13 +940,26 @@ export default function FatPage() {
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
+        {/* Banner móvil - Promo San Valentín */}
+        <div className="block md:hidden w-full mb-2">
+          <video
+            src="/SANVALENTINMOVIL.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-auto block"
+          />
+        </div>
+
         {/* Banner Carrusel FAT - solo desktop, alineado con carteles */}
-        <div className="mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
+        <div className="hidden md:block mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
           <BannerCarousel slides={[
-            { web: "/bwfat1.png", movil: "/bmfat1.png" },
-            { web: "/bwfat2.png", movil: "/bmfat2.png" },
-            { web: "/bwfat3.png", movil: "/bmfat3.png" },
-            { web: "/bwfat4.png", movil: "/bmfat4.png" },
+            { web: "/bwfat1.png" },
+            { web: "/bwfat2.png" },
+            { web: "/bwfat3.png" },
+            { web: "/bwfat4.png" },
           ]} />
         </div>
         <div className="h-6 md:h-8" />
