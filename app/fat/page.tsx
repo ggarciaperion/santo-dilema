@@ -193,6 +193,7 @@ export default function FatPage() {
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
   const [bannerWidth, setBannerWidth] = useState<number | null>(null);
+  const [bannerSlide, setBannerSlide] = useState(0);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const router = useRouter();
@@ -338,6 +339,12 @@ export default function FatPage() {
     // Esperar un momento para que el DOM esté completamente renderizado
     const timer = setTimeout(centerCarousel, 100);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Auto-avanzar carrusel de banner cada 5 segundos
+  useEffect(() => {
+    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
+    return () => clearInterval(t);
   }, []);
 
   // Medir ancho real de la fila de carteles para alinear el banner (solo desktop)
@@ -948,30 +955,48 @@ export default function FatPage() {
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
-        {/* Banner móvil - Promo San Valentín */}
-        <div className="block md:hidden w-full mb-2">
-          <video
-            src="/SANVALENTINMOVIL.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className="w-full h-auto block"
-          />
+        {/* Banner móvil - Carrusel */}
+        <div className="block md:hidden w-full mb-2 relative overflow-hidden rounded">
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
+          >
+            <div className="w-full flex-shrink-0">
+              <video src="/SANVALENTINMOVIL.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
+            </div>
+            <div className="w-full flex-shrink-0">
+              <img src="/vale21movil.png" alt="Promo Vale 21" className="w-full h-auto block" />
+            </div>
+          </div>
+          {/* Dots */}
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+            {[0, 1].map(i => (
+              <button key={i} onClick={() => setBannerSlide(i)}
+                className={`w-2 h-2 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
+            ))}
+          </div>
         </div>
 
-        {/* Banner web - Promo San Valentín */}
-        <div className="hidden md:block mx-auto" style={bannerWidth ? { width: bannerWidth } : {}}>
-          <video
-            src="/SANVALENTINWEB.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className="w-full h-auto block rounded-lg"
-          />
+        {/* Banner web - Carrusel */}
+        <div className="hidden md:block mx-auto relative overflow-hidden rounded-lg" style={bannerWidth ? { width: bannerWidth } : {}}>
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
+          >
+            <div className="w-full flex-shrink-0">
+              <video src="/SANVALENTINWEB.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
+            </div>
+            <div className="w-full flex-shrink-0">
+              <img src="/vale21web.png" alt="Promo Vale 21" className="w-full h-auto block" />
+            </div>
+          </div>
+          {/* Dots */}
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+            {[0, 1].map(i => (
+              <button key={i} onClick={() => setBannerSlide(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
+            ))}
+          </div>
         </div>
         <div className="h-6 md:h-8" />
         {/* Carousel Container */}
