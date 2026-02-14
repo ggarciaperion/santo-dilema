@@ -15,6 +15,7 @@ interface Product {
   price: number;
   image: string;
   category: "fit" | "fat" | "bebida";
+  soldOut?: boolean;
 }
 
 interface CompletedOrder {
@@ -43,6 +44,7 @@ const products: Product[] = [
     price: 22.50,
     image: "/2.png",
     category: "fit",
+    soldOut: true,
   },
   {
     id: "ensalada-caesar",
@@ -51,6 +53,7 @@ const products: Product[] = [
     price: 23.50,
     image: "/3.png",
     category: "fit",
+    soldOut: true,
   },
   {
     id: "ensalada-mediterranea",
@@ -669,24 +672,26 @@ export default function FitPage() {
           >
             {products.map((product) => {
               const isExpanded = expandedCard === product.id;
+              const isSoldOut = product.soldOut === true;
 
               return (
                 <div
                   key={product.id}
                   ref={(el) => { cardRefs.current[product.id] = el; }}
-                  onClick={() => handleCardClick(product.id)}
-                  onMouseEnter={() => handleCardHover(product.id)}
+                  onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
+                  onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fit shadow-xl shadow-cyan-500/30 snap-center md:snap-none border-2 md:border-0 border-cyan-400
+                    ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
                       : 'w-[240px] md:w-[240px] lg:w-[260px]'
                     }
-                    ${!isExpanded && hoveredCard === product.id && !expandedCard
+                    ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
                       : !isExpanded && !expandedCard ? 'md:shadow-none scale-100 translate-y-0' : ''
                     }
-                    ${(orderQuantity[product.id] || 0) > 0 && !isExpanded ? 'cursor-pointer' : ''}
+                    ${(orderQuantity[product.id] || 0) > 0 && !isExpanded && !isSoldOut ? 'cursor-pointer' : ''}
                   `}
                   style={{
                     transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
@@ -720,6 +725,21 @@ export default function FitPage() {
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
+                    {isSoldOut && (
+                      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
+                        <div
+                          className="border-4 border-red-500 rounded-sm px-3 py-1 select-none"
+                          style={{
+                            transform: 'rotate(-20deg)',
+                            boxShadow: '0 0 12px rgba(239,68,68,0.7)',
+                          }}
+                        >
+                          <span className="text-red-500 font-black text-xl md:text-2xl tracking-widest uppercase" style={{ textShadow: '0 0 8px rgba(239,68,68,0.8)' }}>
+                            AGOTADO
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="p-3 md:p-2.5">
                     <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
@@ -749,9 +769,10 @@ export default function FitPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDecreaseQuantity(product.id);
+                            if (!isSoldOut) handleDecreaseQuantity(product.id);
                           }}
-                          className="w-5 h-5 md:w-6 md:h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          disabled={isSoldOut}
+                          className={`w-5 h-5 md:w-6 md:h-6 text-white rounded text-xs font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-cyan-600 hover:bg-cyan-500'}`}
                         >
                           −
                         </button>
@@ -761,9 +782,10 @@ export default function FitPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleIncreaseQuantity(product.id);
+                            if (!isSoldOut) handleIncreaseQuantity(product.id);
                           }}
-                          className="w-5 h-5 md:w-6 md:h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold transition-all flex items-center justify-center"
+                          disabled={isSoldOut}
+                          className={`w-5 h-5 md:w-6 md:h-6 text-white rounded text-xs font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-cyan-600 hover:bg-cyan-500'}`}
                         >
                           +
                         </button>
@@ -984,13 +1006,15 @@ export default function FitPage() {
 
                       <button
                         onClick={() => {
-                          handleCompleteOrder(product);
-                          setIsEditingOrder(false);
+                          if (!isSoldOut) {
+                            handleCompleteOrder(product);
+                            setIsEditingOrder(false);
+                          }
                         }}
-                        disabled={false}
-                        className="w-full py-2.5 rounded font-bold text-sm transition-all bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95"
+                        disabled={isSoldOut}
+                        className={`w-full py-2.5 rounded font-bold text-sm transition-all ${isSoldOut ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95'}`}
                       >
-                        {isEditingOrder ? 'Confirmar orden' : 'Agregar orden'}
+                        {isSoldOut ? 'No disponible' : isEditingOrder ? 'Confirmar orden' : 'Agregar orden'}
                       </button>
                     </div>
                   </div>
