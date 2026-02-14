@@ -278,6 +278,11 @@ export default function CheckoutPage() {
 
   // Validar cupón
   const validateCoupon = async () => {
+    if (hasComboDiscount) {
+      setCouponMessage("Los descuentos no son acumulables");
+      return;
+    }
+
     if (!couponCode.trim()) {
       setCouponMessage("Ingresa un código de cupón");
       return;
@@ -1087,28 +1092,36 @@ export default function CheckoutPage() {
           {/* Campo de cupón */}
           <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
             <p className="text-white font-bold text-[10px] md:text-xs mb-1.5">¿Tienes un cupón?</p>
-            <div className="flex gap-1.5">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                placeholder="SANTO13-XXXXXX"
-                disabled={couponValid}
-                className="flex-1 bg-black/50 border border-fuchsia-500/30 rounded-lg px-2 py-1.5 text-white text-xs md:text-sm placeholder-gray-500 focus:outline-none focus:border-fuchsia-400 disabled:opacity-50"
-              />
-              <button
-                type="button"
-                onClick={validateCoupon}
-                disabled={couponValidating || couponValid}
-                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all disabled:opacity-50"
-              >
-                {couponValidating ? "..." : couponValid ? "✓" : "Aplicar"}
-              </button>
-            </div>
-            {couponMessage && (
-              <p className={`text-[9px] md:text-[10px] mt-1 ${couponValid ? 'text-green-400' : 'text-red-400'}`}>
-                {couponMessage}
+            {hasComboDiscount ? (
+              <p className="text-amber-400/80 text-[9px] md:text-[10px] italic">
+                ⚠️ El descuento combo 14% no es acumulable con cupones
               </p>
+            ) : (
+              <>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="SANTO13-XXXXXX"
+                    disabled={couponValid}
+                    className="flex-1 bg-black/50 border border-fuchsia-500/30 rounded-lg px-2 py-1.5 text-white text-xs md:text-sm placeholder-gray-500 focus:outline-none focus:border-fuchsia-400 disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={validateCoupon}
+                    disabled={couponValidating || couponValid}
+                    className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all disabled:opacity-50"
+                  >
+                    {couponValidating ? "..." : couponValid ? "✓" : "Aplicar"}
+                  </button>
+                </div>
+                {couponMessage && (
+                  <p className={`text-[9px] md:text-[10px] mt-1 ${couponValid ? 'text-green-400' : 'text-red-400'}`}>
+                    {couponMessage}
+                  </p>
+                )}
+              </>
             )}
           </div>
 
