@@ -1065,14 +1065,14 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 form="checkout-form"
-                disabled={isSubmitting || !isFormValid() || showDniSearch}
+                disabled={isSubmitting || !isFormValid()}
                 className="flex-1 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105"
               >
                 {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
               </button>
             </div>
 
-            {!isFormValid() && !showDniSearch && (
+            {!isFormValid() && (
               <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-2">
                 ⚠️ Completa todos los campos obligatorios
               </p>
