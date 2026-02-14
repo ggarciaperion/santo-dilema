@@ -2365,10 +2365,20 @@ export default function AdminPage() {
                       <span>📱</span>
                       <span className="font-mono">{order.phone}</span>
                     </p>
-                    <p className="text-xs font-bold text-white flex items-start gap-1">
+                    <p className="text-xs font-bold text-white flex items-start gap-1 mb-1">
                       <span>📍</span>
                       <span className="line-clamp-2">{order.address}</span>
                     </p>
+                    {(order as any).deliveryOption ? (
+                      <div className={`mt-1 rounded px-1.5 py-0.5 text-[9px] font-bold flex items-center gap-1 ${(order as any).deliveryCost > 0 ? 'bg-sky-900/60 text-sky-200' : 'bg-gray-700 text-gray-300'}`}>
+                        <span>🛵</span>
+                        <span>
+                          {(order as any).deliveryOption === 'centro'
+                            ? `Chancay centro +S/ ${((order as any).deliveryCost || 0).toFixed(2)}`
+                            : 'Chancay alrededores'}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* SECCIÓN 3: TOTAL */}
