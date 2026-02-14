@@ -351,7 +351,7 @@ export default function AdminPage() {
           const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
           setAudioContext(ctx);
           setAudioContextInitialized(true);
-          console.log("âœ… AudioContext inicializado");
+          console.log("✅ AudioContext inicializado");
           // Remover listeners despuÃ©s de inicializar
           document.removeEventListener('click', initAudio);
           document.removeEventListener('keydown', initAudio);
@@ -410,24 +410,24 @@ export default function AdminPage() {
       const response = await fetch("/api/orders");
       const data = await response.json();
 
-      console.log(`ðŸ“Š [ADMIN] loadOrders - Total pedidos recibidos: ${data.length}`);
-      console.log(`ðŸ“Š [ADMIN] IDs previos guardados: ${previousOrderIdsRef.current.size}`);
+      console.log(`📊 [ADMIN] loadOrders - Total pedidos recibidos: ${data.length}`);
+      console.log(`📊 [ADMIN] IDs previos guardados: ${previousOrderIdsRef.current.size}`);
 
       // Detectar NUEVOS pedidos por ID usando useRef (evita stale closure)
       if (previousOrderIdsRef.current.size > 0) {
         const currentIds = new Set(data.map((o: Order) => o.id));
         const newOrders = data.filter((order: Order) => !previousOrderIdsRef.current.has(order.id));
 
-        console.log(`ðŸ“Š [ADMIN] IDs actuales: ${currentIds.size}`);
-        console.log(`ðŸ“Š [ADMIN] Nuevos pedidos detectados: ${newOrders.length}`);
+        console.log(`📊 [ADMIN] IDs actuales: ${currentIds.size}`);
+        console.log(`📊 [ADMIN] Nuevos pedidos detectados: ${newOrders.length}`);
 
         if (newOrders.length > 0) {
-          console.log(`ðŸ”” [ADMIN] Â¡${newOrders.length} pedido(s) NUEVO(S) detectado(s)!`);
-          console.log(`ðŸ”” [ADMIN] IDs nuevos:`, newOrders.map(o => o.id));
-          console.log(`ðŸ”” [ADMIN] Llamando a playNotificationSound()...`);
+          console.log(`🔔 [ADMIN] Â¡${newOrders.length} pedido(s) NUEVO(S) detectado(s)!`);
+          console.log(`🔔 [ADMIN] IDs nuevos:`, newOrders.map(o => o.id));
+          console.log(`🔔 [ADMIN] Llamando a playNotificationSound()...`);
           playNotificationSound();
         } else {
-          console.log(`âœ… [ADMIN] No hay pedidos nuevos (solo actualizaciones)`);
+          console.log(`✅ [ADMIN] No hay pedidos nuevos (solo actualizaciones)`);
         }
 
         // Detectar pedidos reciÃ©n entregados (delivery confirmÃ³ entrega) usando useRef
@@ -436,16 +436,16 @@ export default function AdminPage() {
           const isNewlyDelivered = previousStatus !== 'delivered' && previousStatus !== undefined && order.status === 'delivered';
 
           if (isNewlyDelivered) {
-            console.log(`ðŸ“¦ [ADMIN] Pedido ${order.id} cambiÃ³: ${previousStatus} â†’ ${order.status}`);
+            console.log(`📦 [ADMIN] Pedido ${order.id} cambiÃ³: ${previousStatus} â†’ ${order.status}`);
           }
 
           return isNewlyDelivered;
         });
 
         if (newlyDelivered.length > 0) {
-          console.log(`âœ… [ADMIN] Â¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
-          console.log(`âœ… [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
-          console.log(`ðŸ”Š [ADMIN] Llamando a playDeliveryConfirmSound()...`);
+          console.log(`✅ [ADMIN] Â¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
+          console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
+          console.log(`🔊 [ADMIN] Llamando a playDeliveryConfirmSound()...`);
           playDeliveryConfirmSound();
           // Mostrar toast con el primer pedido entregado detectado
           const firstDelivered = newlyDelivered[0];
@@ -454,13 +454,13 @@ export default function AdminPage() {
         }
       } else {
         // Primera carga - solo guardar sin reproducir sonido
-        console.log("ðŸ“‹ [ADMIN] Primera carga de pedidos (no reproducir sonido)");
+        console.log("📋 [ADMIN] Primera carga de pedidos (no reproducir sonido)");
       }
 
       // Actualizar refs con los datos actuales
       previousOrderIdsRef.current = new Set(data.map((o: Order) => o.id));
       previousOrderStatusRef.current = new Map(data.map((o: Order) => [o.id, o.status]));
-      console.log(`ðŸ’¾ [ADMIN] Refs actualizados - IDs: ${previousOrderIdsRef.current.size}, Status: ${previousOrderStatusRef.current.size}`);
+      console.log(`💾 [ADMIN] Refs actualizados - IDs: ${previousOrderIdsRef.current.size}, Status: ${previousOrderStatusRef.current.size}`);
 
       setOrders(data);
     } catch (error) {
@@ -498,21 +498,21 @@ export default function AdminPage() {
 
   // FunciÃ³n para reproducir sonido de notificaciÃ³n (2+ segundos)
   const playNotificationSound = () => {
-    console.log("ðŸ”Š [ADMIN] â•â•â• playNotificationSound INICIADO â•â•â•");
+    console.log("🔊 [ADMIN] â•â•â• playNotificationSound INICIADO â•â•â•");
     try {
       // Usar el audioContext inicializado o crear uno nuevo
       let ctx = audioContext;
       if (!ctx) {
-        console.log("ðŸ“¢ [ADMIN] Creando NUEVO AudioContext...");
+        console.log("📢 [ADMIN] Creando NUEVO AudioContext...");
         ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         setAudioContext(ctx);
         setAudioContextInitialized(true);
-        console.log("âœ… [ADMIN] AudioContext creado exitosamente");
+        console.log("✅ [ADMIN] AudioContext creado exitosamente");
       } else {
-        console.log("âœ… [ADMIN] Usando AudioContext existente");
+        console.log("✅ [ADMIN] Usando AudioContext existente");
       }
 
-      console.log(`ðŸŽµ [ADMIN] Estado del AudioContext: ${ctx.state}`);
+      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
 
       // Resume el contexto si estÃ¡ suspendido (requerido en Chrome/Edge)
       if (ctx.state === 'suspended') {
@@ -545,7 +545,7 @@ export default function AdminPage() {
 
       // Secuencia de beeps tipo "notificaciÃ³n de pedido" - DuraciÃ³n total: 2.5 segundos
       // PatrÃ³n: BEEP-BEEP-BEEEEP (ding-ding-dooong)
-      console.log("ðŸŽ¶ [ADMIN] Reproduciendo secuencia de tonos...");
+      console.log("🎶 [ADMIN] Reproduciendo secuencia de tonos...");
       playBeep(880, 0, 0.3, 0.5);        // Primer tono (La alto)
       playBeep(880, 0.35, 0.3, 0.5);     // Segundo tono (repeticiÃ³n)
       playBeep(1047, 0.75, 0.8, 0.6);    // Tercer tono largo (Do mÃ¡s alto y sostenido)
@@ -553,8 +553,8 @@ export default function AdminPage() {
       // Tono de confirmaciÃ³n final (mÃ¡s suave)
       playBeep(784, 1.6, 0.4, 0.3);      // Cuarto tono (Sol, confirmaciÃ³n suave)
 
-      console.log("âœ… [ADMIN] â•â•â• Sonido de NUEVO PEDIDO reproducido exitosamente â•â•â•");
-      console.log(`ðŸŽµ [ADMIN] Estado final del AudioContext: ${ctx.state}`);
+      console.log("✅ [ADMIN] â•â•â• Sonido de NUEVO PEDIDO reproducido exitosamente â•â•â•");
+      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
     } catch (error) {
       console.error("âŒ [ADMIN] ERROR al reproducir sonido:", error);
       console.error("âŒ [ADMIN] Stack trace:", error);
@@ -562,21 +562,21 @@ export default function AdminPage() {
   };
 
   const playDeliveryConfirmSound = () => {
-    console.log("ðŸšš [ADMIN] â•â•â• playDeliveryConfirmSound INICIADO â•â•â•");
+    console.log("🚚 [ADMIN] â•â•â• playDeliveryConfirmSound INICIADO â•â•â•");
     try {
       // Usar el audioContext inicializado o crear uno nuevo
       let ctx = audioContext;
       if (!ctx) {
-        console.log("ðŸ“¢ [ADMIN] Creando NUEVO AudioContext para sonido de entrega...");
+        console.log("📢 [ADMIN] Creando NUEVO AudioContext para sonido de entrega...");
         ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         setAudioContext(ctx);
         setAudioContextInitialized(true);
-        console.log("âœ… [ADMIN] AudioContext creado exitosamente");
+        console.log("✅ [ADMIN] AudioContext creado exitosamente");
       } else {
-        console.log("âœ… [ADMIN] Usando AudioContext existente");
+        console.log("✅ [ADMIN] Usando AudioContext existente");
       }
 
-      console.log(`ðŸŽµ [ADMIN] Estado del AudioContext: ${ctx.state}`);
+      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
 
       // Resume el contexto si estÃ¡ suspendido
       if (ctx.state === 'suspended') {
@@ -606,13 +606,13 @@ export default function AdminPage() {
       };
 
       // Sonido de confirmaciÃ³n tipo "check" - PatrÃ³n ascendente mÃ¡s agudo
-      console.log("ðŸŽ¶ [ADMIN] Reproduciendo sonido de ENTREGA CONFIRMADA...");
+      console.log("🎶 [ADMIN] Reproduciendo sonido de ENTREGA CONFIRMADA...");
       playBeep(1300, 0, 0.15, 0.5);      // Mi6
       playBeep(1600, 0.15, 0.2, 0.6);    // Sol#6
       playBeep(2000, 0.35, 0.3, 0.7);    // Si6 (mÃ¡s largo y fuerte)
 
-      console.log("âœ… [ADMIN] â•â•â• Sonido de ENTREGA CONFIRMADA reproducido exitosamente â•â•â•");
-      console.log(`ðŸŽµ [ADMIN] Estado final del AudioContext: ${ctx.state}`);
+      console.log("✅ [ADMIN] â•â•â• Sonido de ENTREGA CONFIRMADA reproducido exitosamente â•â•â•");
+      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
     } catch (error) {
       console.error("âŒ [ADMIN] ERROR al reproducir sonido de confirmaciÃ³n:", error);
       console.error("âŒ [ADMIN] Stack trace:", error);
@@ -675,7 +675,7 @@ export default function AdminPage() {
       const data = await response.json();
       setCatalogProducts(data);
     } catch (error) {
-      console.error("Error al cargar catÃ¡logo de productos:", error);
+      console.error("Error al cargar catálogo de productos:", error);
     }
   };
 
@@ -726,7 +726,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteCatalogProduct = async (id: string) => {
-    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar este producto del catÃ¡logo?")) {
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar este producto del catálogo?")) {
       return;
     }
 
@@ -826,7 +826,7 @@ export default function AdminPage() {
         });
 
         if (response.ok) {
-          console.log("âœ… Stock deducido automÃ¡ticamente:", itemsToDeduct);
+          console.log("✅ Stock deducido automÃ¡ticamente:", itemsToDeduct);
           // Recargar deducciones para actualizar el stock
           loadDeductions();
         } else {
@@ -997,7 +997,7 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        alert("âœ… Receta guardada exitosamente!");
+        alert("✅ Receta guardada exitosamente!");
         setShowRecipeModal(false);
         setEditingRecipeProduct(null);
         setRecipeComponents([]);
@@ -1030,10 +1030,10 @@ export default function AdminPage() {
   // Inventory functions
   const handleCreateInventory = async () => {
     try {
-      console.log("ðŸ“¦ Datos a enviar:", inventoryForm);
-      console.log("ðŸ“¦ Items a enviar:", inventoryForm.items);
-      console.log("ðŸ“¦ Total de items:", inventoryForm.items.length);
-      console.log("ðŸ“¦ Detalle de cada item:");
+      console.log("📦 Datos a enviar:", inventoryForm);
+      console.log("📦 Items a enviar:", inventoryForm.items);
+      console.log("📦 Total de items:", inventoryForm.items.length);
+      console.log("📦 Detalle de cada item:");
       inventoryForm.items.forEach((item, idx) => {
         console.log(`   Item ${idx + 1}:`, {
           productName: item.productName,
@@ -1051,12 +1051,12 @@ export default function AdminPage() {
         body: JSON.stringify(inventoryForm),
       });
 
-      console.log("ðŸ“¦ Response status:", response.status);
-      console.log("ðŸ“¦ Response ok:", response.ok);
+      console.log("📦 Response status:", response.status);
+      console.log("📦 Response ok:", response.ok);
 
       if (response.ok) {
         const savedData = await response.json();
-        console.log("ðŸ“¦ Datos guardados en servidor:", savedData);
+        console.log("📦 Datos guardados en servidor:", savedData);
         await loadInventory();
         setShowInventoryModal(false);
         setInventoryForm({
@@ -1856,7 +1856,7 @@ export default function AdminPage() {
       {deliveryToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-green-900 border border-green-500 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">âœ…</span>
+            <span className="text-2xl">✅</span>
             <div className="flex-1">
               <p className="text-green-300 text-xs font-bold uppercase tracking-wider mb-0.5">Pedido entregado</p>
               <p className="text-white font-black text-base">#{deliveryToast.orderId}</p>
@@ -1892,7 +1892,7 @@ export default function AdminPage() {
                 className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105"
                 title="Cerrar SesiÃ³n"
               >
-                ðŸšª Salir
+                🚪 Salir
               </button>
               <Link
                 href="/"
@@ -1916,7 +1916,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸ“¦ GestiÃ³n de Pedidos
+            📦 GestiÃ³n de Pedidos
           </button>
           <button
             onClick={() => setActiveTab("customers")}
@@ -1926,7 +1926,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸ‘¥ Base de Clientes
+            👥 Base de Clientes
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
@@ -1936,7 +1936,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸ“Š Analytics & CRM
+            📊 Analytics & CRM
           </button>
           <button
             onClick={() => setActiveTab("financial")}
@@ -1946,7 +1946,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸ’° Financiero
+            💰 Financiero
           </button>
           <button
             onClick={() => setActiveTab("marketing")}
@@ -1956,7 +1956,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸŽ¯ Marketing
+            🎯 Marketing
           </button>
           <button
             onClick={() => setActiveTab("carta")}
@@ -1966,7 +1966,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            ðŸ½ï¸ Carta
+            🍽️ Carta
           </button>
         </div>
       </section>
@@ -2023,7 +2023,7 @@ export default function AdminPage() {
                     : "border-blue-500/50 hover:border-blue-500"
                 }`}
               >
-                <p className="text-blue-400 text-xs font-bold text-left">ðŸšš En Camino</p>
+                <p className="text-blue-400 text-xs font-bold text-left">🚚 En Camino</p>
                 <p className="text-3xl font-black text-blue-400 mt-1 text-left">
                   {dateFilteredOrders.filter((o) => o.status === "en-camino").length}
                 </p>
@@ -2148,7 +2148,7 @@ export default function AdminPage() {
               {isDateFiltered && dateFrom && dateTo && (
                 <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
                   <p className="text-sm text-gray-400">
-                    ðŸ“Š Filtrando desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
+                    📊 Filtrando desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
                   </p>
                 </div>
               )}
@@ -2244,30 +2244,30 @@ export default function AdminPage() {
                     })()}
                   </div>
 
-                  {/* SECCIÃ“N 1: PRODUCTOS */}
+                  {/* SECCIÓN 1: PRODUCTOS */}
                   <div className="flex-1 bg-black rounded border border-white/10 px-3 py-2">
-                    <h3 className="text-xs font-black text-white uppercase mb-2">ðŸ½ï¸ PEDIDO</h3>
+                    <h3 className="text-xs font-black text-white uppercase mb-2">🍽️ PEDIDO</h3>
                     <div className="flex flex-wrap gap-2">
                       {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
                         (order as any).completedOrders.map((item: any, idx: number) => {
                           const productName = item.name || 'Sin nombre';
-                          // Usar finalPrice (promo 30%) si existe, sino precio catÃ¡logo
-                          const basePrice = item.finalPrice ?? item.price ?? 0;
-                          // Aplicar factor del cupÃ³n 13% si el pedido lo tiene
-                          const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
-                          const productPrice = basePrice * couponFactor;
+                          // Usar precio catálogo (ya no hay promo 30%)
                           const catalogPrice = item.price || 0;
+                          // Aplicar factor del combo 14% y cupón si el pedido los tiene
+                          const comboFactor = 1 - ((order as any).comboDiscount > 0 ? 0.14 : 0);
+                          const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
+                          const productPrice = catalogPrice * comboFactor * couponFactor;
                           const quantity = item.quantity || 0;
                           const itemSalsas = item.salsas || [];
                           const itemComplementIds = item.complementIds || [];
-                          const hasItemDiscount = item.finalPrice != null || (order as any).couponDiscount > 0;
+                          const hasItemDiscount = (order as any).comboDiscount > 0 || (order as any).couponDiscount > 0;
 
                           // Calcular precio total del item (producto + complementos)
                           let itemTotal = productPrice * quantity;
                           itemComplementIds.forEach((compId: string) => {
                             const complement = availableComplements[compId];
                             if (complement) {
-                              itemTotal += complement.price * couponFactor;
+                              itemTotal += complement.price * comboFactor * couponFactor;
                             }
                           });
 
@@ -2283,7 +2283,7 @@ export default function AdminPage() {
                                     <div className="flex items-center gap-1.5 flex-wrap">
                                       <span className="text-gray-500 line-through text-xs">S/ {(catalogPrice * quantity).toFixed(2)}</span>
                                       <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                      {item.finalPrice != null && <span className="text-[9px] bg-green-600/30 text-green-400 px-1 rounded font-bold">-30%</span>}
+                                      {(order as any).comboDiscount > 0 && <span className="text-[9px] bg-fuchsia-600/30 text-fuchsia-400 px-1 rounded font-bold">COMBO -14%</span>}
                                       {(order as any).couponDiscount > 0 && <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>}
                                     </div>
                                   ) : (
@@ -2295,7 +2295,7 @@ export default function AdminPage() {
                               {/* Mostrar salsas si existen */}
                               {itemSalsas.length > 0 && (
                                 <div className="mt-1 ml-8 text-[10px] text-yellow-300">
-                                  <span className="font-bold">ðŸŒ¶ï¸ Salsas: </span>
+                                  <span className="font-bold">🌶️ Salsas: </span>
                                   {itemSalsas.map((salsaId: string) => {
                                     const salsa = salsas.find(s => s.id === salsaId);
                                     return salsa?.name || salsaId;
@@ -2357,35 +2357,40 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* SECCIÃ“N 2: CLIENTE */}
+                  {/* SECCIÓN 2: CLIENTE */}
                   <div className="flex-shrink-0 w-48 bg-gray-800 rounded px-3 py-2">
-                    <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">ðŸ‘¤ Cliente</h4>
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">👤 Cliente</h4>
                     <p className="text-xs font-bold text-white mb-1 truncate">{order.name}</p>
                     <p className="text-xs font-bold text-white flex items-center gap-1 mb-1">
-                      <span>ðŸ“±</span>
+                      <span>📱</span>
                       <span className="font-mono">{order.phone}</span>
                     </p>
                     <p className="text-xs font-bold text-white flex items-start gap-1">
-                      <span>ðŸ“</span>
+                      <span>📍</span>
                       <span className="line-clamp-2">{order.address}</span>
                     </p>
                   </div>
 
-                  {/* SECCIÃ“N 3: TOTAL */}
+                  {/* SECCIÓN 3: TOTAL */}
                   <div className="flex-shrink-0 bg-gradient-to-br from-cyan-600 to-blue-600 rounded px-3 py-2 text-center min-w-[100px]">
                     <p className="text-[10px] text-cyan-100 font-bold uppercase mb-0.5">Total</p>
                     <p className="text-xl font-black text-white">
                       S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
                     </p>
                     <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
+                    {(order as any).comboDiscount > 0 && (
+                      <p className="text-[9px] bg-fuchsia-900/60 text-fuchsia-200 rounded px-1 mt-1 font-bold">
+                        🔥 Combo FAT+FIT -14%
+                      </p>
+                    )}
                     {(order as any).couponDiscount > 0 && (
                       <p className="text-[9px] bg-purple-900/60 text-purple-200 rounded px-1 mt-1 font-bold">
-                        CupÃ³n -{(order as any).couponDiscount}% aplicado
+                        Cupón -{(order as any).couponDiscount}% aplicado
                       </p>
                     )}
                   </div>
 
-                  {/* SECCIÃ“N 4: PAGO */}
+                  {/* SECCIÓN 4: PAGO */}
                   <div className={`flex-shrink-0 rounded px-3 py-2 min-w-[110px] ${
                     order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
                     order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
@@ -2394,7 +2399,7 @@ export default function AdminPage() {
                     <p className="text-[10px] text-white/80 font-bold uppercase mb-0.5">Pago</p>
                     {order.paymentMethod === 'anticipado' ? (
                       <div>
-                        <p className="text-sm font-black text-white">âœ“ PAGADO</p>
+                        <p className="text-sm font-black text-white">✓ PAGADO</p>
                         <p className="text-[10px] text-white/80">Yape/Plin</p>
                         {order.paymentProofPath && (
                           <button
@@ -2404,7 +2409,7 @@ export default function AdminPage() {
                             }}
                             className="mt-1 w-full bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1"
                           >
-                            ðŸ“„ Ver comprobante
+                            📄 Ver comprobante
                           </button>
                         )}
                       </div>
@@ -2453,7 +2458,7 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
                           className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          âœ“ Verificar y Confirmar
+                          ✓ Verificar y Confirmar
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
@@ -2469,7 +2474,7 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
                           className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          âœ“ Confirmar
+                          ✓ Confirmar
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
@@ -2485,7 +2490,7 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "en-camino")}
                           className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          ðŸšš En Camino
+                          🚚 En Camino
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
@@ -2501,7 +2506,7 @@ export default function AdminPage() {
                           onClick={() => updateOrderStatus(order.id, "delivered")}
                           className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
-                          âœ“ Entregado
+                          ✓ Entregado
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
@@ -2513,7 +2518,7 @@ export default function AdminPage() {
                     )}
                     {order.status === "delivered" && (
                       <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase">
-                        âœ“ Entregado
+                        ✓ Entregado
                       </div>
                     )}
                     {order.status === "cancelled" && (
@@ -2558,7 +2563,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  ðŸ‘‘ VIP ({customerSegments.vip.length})
+                  👑 VIP ({customerSegments.vip.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("new")}
@@ -2578,7 +2583,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  ðŸŸ¢ Activos ({customerSegments.active.length})
+                  🟢 Activos ({customerSegments.active.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("recurrent")}
@@ -2598,7 +2603,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  ðŸ’¤ Inactivos ({customerSegments.inactive.length})
+                  💤 Inactivos ({customerSegments.inactive.length})
                 </button>
                 <button
                   onClick={() => setCustomerSegment("email_pending")}
@@ -2608,7 +2613,7 @@ export default function AdminPage() {
                       : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
                   }`}
                 >
-                  ðŸ“§ Email Pendiente ({customerSegments.email_pending.length})
+                  📧 Email Pendiente ({customerSegments.email_pending.length})
                 </button>
               </div>
             </div>
@@ -2845,7 +2850,7 @@ export default function AdminPage() {
                                   ) : daysSinceLastOrder > 30 ? (
                                     <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">âš ï¸ Inactivo</span>
                                   ) : (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">ðŸ†• Nuevo</span>
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">🆕 Nuevo</span>
                                   )}
                                 </td>
                               </tr>
@@ -2912,7 +2917,7 @@ export default function AdminPage() {
                 )}
                 {isDateFiltered && (
                   <span className="text-sm text-green-400 font-bold">
-                    âœ“ Mostrando datos del {new Date(dateFrom).toLocaleDateString("es-PE")} al {new Date(dateTo).toLocaleDateString("es-PE")}
+                    ✓ Mostrando datos del {new Date(dateFrom).toLocaleDateString("es-PE")} al {new Date(dateTo).toLocaleDateString("es-PE")}
                   </span>
                 )}
               </div>
@@ -2924,7 +2929,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               {/* 1. VENTAS DEL DÃA */}
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                <p className="text-cyan-400 text-sm font-bold mb-2">ðŸ’° Ventas del DÃ­a</p>
+                <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del DÃ­a</p>
                 <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {isDateFiltered ? `${new Date(dateFrom).toLocaleDateString("es-PE")} - ${new Date(dateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
@@ -2933,7 +2938,7 @@ export default function AdminPage() {
 
               {/* 2. PEDIDOS ENTREGADOS DEL DÃA */}
               <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold mb-2">ðŸ“¦ Pedidos Entregados</p>
+                <p className="text-green-400 text-sm font-bold mb-2">📦 Pedidos Entregados</p>
                 <p className="text-4xl font-black text-green-400">{analytics.todayDeliveredOrdersCount}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {isDateFiltered ? "Del perÃ­odo filtrado" : "Hoy"}
@@ -2942,7 +2947,7 @@ export default function AdminPage() {
 
               {/* 3. ACUMULADO DEL MES */}
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                <p className="text-purple-400 text-sm font-bold mb-2">ðŸ“Š Acumulado del Mes</p>
+                <p className="text-purple-400 text-sm font-bold mb-2">📊 Acumulado del Mes</p>
                 <p className="text-4xl font-black text-purple-400">S/ {analytics.monthlySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {analytics.currentMonthOrdersCount} pedidos
@@ -2951,7 +2956,7 @@ export default function AdminPage() {
 
               {/* 4. TICKET PROMEDIO DEL DÃA */}
               <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold mb-2">ðŸŽ« Ticket Promedio</p>
+                <p className="text-amber-400 text-sm font-bold mb-2">🎫 Ticket Promedio</p>
                 <p className="text-4xl font-black text-amber-400">S/ {analytics.todayAverageTicket.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {isDateFiltered ? "Del perÃ­odo filtrado" : "Del dÃ­a"} ({analytics.todayDeliveredOrdersCount} pedidos)
@@ -2959,9 +2964,9 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* SECCIÃ“N: PRODUCTOS ENTREGADOS DEL PERÃODO */}
+            {/* SECCIÓN: PRODUCTOS ENTREGADOS DEL PERÃODO */}
             <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
-              <h3 className="text-2xl font-black text-fuchsia-400 mb-2">ðŸ“¦ Productos Entregados {isDateFiltered ? "del PerÃ­odo" : "del Mes"}</h3>
+              <h3 className="text-2xl font-black text-fuchsia-400 mb-2">📦 Productos Entregados {isDateFiltered ? "del PerÃ­odo" : "del Mes"}</h3>
               <p className="text-gray-400 text-sm mb-4">
                 Ranking de productos por cantidad vendida â€¢ Identifica los mÃ¡s y menos vendidos
               </p>
@@ -2995,7 +3000,7 @@ export default function AdminPage() {
                             }`}>
                               #{idx + 1}
                             </span>
-                            {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">ðŸ”¥ MÃS VENDIDO</span>}
+                            {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">🔥 MÃS VENDIDO</span>}
                             {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">â„ï¸ MENOS VENDIDO</span>}
                           </div>
                           <p className="text-white font-bold text-base mb-1">{product.name}</p>
@@ -3030,17 +3035,17 @@ export default function AdminPage() {
               })()}
             </div>
 
-            {/* SECCIÃ“N: INSIGHTS DEL NEGOCIO */}
+            {/* SECCIÓN: INSIGHTS DEL NEGOCIO */}
             <div className="mb-8">
-              <h3 className="text-2xl font-black text-cyan-400 mb-4">ðŸ“Š Insights del Negocio</h3>
+              <h3 className="text-2xl font-black text-cyan-400 mb-4">📊 Insights del Negocio</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* 1. MÃ‰TODO DE PAGO MÃS USADO */}
                 <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                  <p className="text-green-400 text-sm font-bold mb-2">ðŸ’³ MÃ©todo de Pago Preferido</p>
+                  <p className="text-green-400 text-sm font-bold mb-2">💳 MÃ©todo de Pago Preferido</p>
                   <p className="text-2xl font-black text-white mb-1">
-                    {analytics.mostUsedPaymentMethod.method === 'anticipado' ? 'ðŸ’° Anticipado' :
-                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? 'ðŸ’µ Efectivo Exacto' :
-                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-cambio' ? 'ðŸ’µ Con Cambio' :
+                    {analytics.mostUsedPaymentMethod.method === 'anticipado' ? '💰 Anticipado' :
+                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
+                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
                      analytics.mostUsedPaymentMethod.method}
                   </p>
                   <p className="text-gray-400 text-xs mt-2">{analytics.mostUsedPaymentMethod.count} pedidos ({((analytics.mostUsedPaymentMethod.count / analytics.currentMonthOrdersCount) * 100).toFixed(0)}%)</p>
@@ -3055,24 +3060,24 @@ export default function AdminPage() {
 
                 {/* 3. TASA DE CONVERSIÃ“N */}
                 <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                  <p className="text-cyan-400 text-sm font-bold mb-2">ðŸ“ˆ Tasa de ConversiÃ³n</p>
+                  <p className="text-cyan-400 text-sm font-bold mb-2">📈 Tasa de ConversiÃ³n</p>
                   <p className="text-3xl font-black text-white mb-1">{analytics.conversionRate.toFixed(1)}%</p>
                   <p className="text-gray-400 text-xs mt-2">Pedidos confirmados vs totales</p>
                 </div>
               </div>
             </div>
 
-            {/* SECCIÃ“N: DISTRIBUCIÃ“N DE MÃ‰TODOS DE PAGO - formato filas */}
+            {/* SECCIÓN: DISTRIBUCIÃ“N DE MÃ‰TODOS DE PAGO - formato filas */}
             <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6 mb-8">
-              <h3 className="text-xl font-black text-blue-400 mb-4">ðŸ’³ DistribuciÃ³n de MÃ©todos de Pago</h3>
+              <h3 className="text-xl font-black text-blue-400 mb-4">💳 DistribuciÃ³n de MÃ©todos de Pago</h3>
               <div className="space-y-3">
                 {analytics.paymentMethodsArray.map((pm: any, idx: number) => (
                   <div key={idx} className="flex items-center gap-4">
                     <div className="w-44 flex-shrink-0">
                       <p className="text-white font-bold text-sm">
-                        {pm.method === 'anticipado' ? 'ðŸ’° Anticipado' :
-                         pm.method === 'contraentrega-efectivo-exacto' ? 'ðŸ’µ Efectivo Exacto' :
-                         pm.method === 'contraentrega-efectivo-cambio' ? 'ðŸ’µ Con Cambio' :
+                        {pm.method === 'anticipado' ? '💰 Anticipado' :
+                         pm.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
+                         pm.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
                          pm.method}
                       </p>
                     </div>
@@ -3092,16 +3097,16 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* SECCIÃ“N: CONTROL DE STOCK DEL DÃA */}
+            {/* SECCIÓN: CONTROL DE STOCK DEL DÃA */}
             {(analytics.menusSoldToday.length > 0 || analytics.beveragesSoldToday.length > 0) && (
               <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-cyan-400 mb-2">ðŸ“‹ Control de Stock Hoy</h3>
+                <h3 className="text-xl font-black text-cyan-400 mb-2">📋 Control de Stock Hoy</h3>
                 <p className="text-gray-400 text-sm mb-5">Unidades despachadas del dÃ­a â€¢ Para reposiciÃ³n de insumos</p>
 
                 {/* MenÃºs */}
                 {analytics.menusSoldToday.length > 0 && (
                   <div className="mb-5">
-                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">ðŸ½ï¸ MenÃºs</h4>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🍽️ MenÃºs</h4>
                     <div className="space-y-2">
                       {analytics.menusSoldToday.map((menu: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-4">
@@ -3124,7 +3129,7 @@ export default function AdminPage() {
                 {/* Bebidas */}
                 {analytics.beveragesSoldToday.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">ðŸ¥¤ Bebidas</h4>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🥤 Bebidas</h4>
                     <div className="space-y-2">
                       {analytics.beveragesSoldToday.map((bev: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-4">
@@ -3150,10 +3155,10 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* SECCIÃ“N: TODOS LOS COMPLEMENTOS/EXTRAS POR CATEGORÃA */}
+            {/* SECCIÓN: TODOS LOS COMPLEMENTOS/EXTRAS POR CATEGORÃA */}
             {analytics.allComplements.length > 0 && (
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-purple-400 mb-2">ðŸŒŸ Ranking de Extras, Complementos y Salsas</h3>
+                <h3 className="text-xl font-black text-purple-400 mb-2">🌟 Ranking de Extras, Complementos y Salsas</h3>
                 <p className="text-gray-400 text-sm mb-4">Todos los complementos vendidos â€¢ Organizado por categorÃ­a y ranking</p>
 
                 <div className="space-y-6">
@@ -3167,7 +3172,7 @@ export default function AdminPage() {
                               <div className="flex items-center gap-3 flex-1">
                                 <span className="text-lg font-black text-purple-400 w-8">#{idx + 1}</span>
                                 {idx === 0 && (
-                                  <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">ðŸ‘‘</span>
+                                  <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">👑</span>
                                 )}
                                 <p className="text-white font-bold text-sm">{comp.name}</p>
                               </div>
@@ -3197,7 +3202,7 @@ export default function AdminPage() {
         /* Financial Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">ðŸ’° MÃ³dulo Financiero</h2>
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">💰 MÃ³dulo Financiero</h2>
 
             {/* Sub-tabs del MÃ³dulo Financiero */}
             <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
@@ -3209,7 +3214,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸ“Š Dashboard
+                📊 Dashboard
               </button>
               <button
                 onClick={() => setFinancialSection("purchases")}
@@ -3219,7 +3224,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸ›’ Compras y Gastos
+                🛒 Compras y Gastos
               </button>
               <button
                 onClick={() => setFinancialSection("products")}
@@ -3229,7 +3234,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸ— Productos de Venta
+                🍗 Productos de Venta
               </button>
               {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
             </div>
@@ -3324,7 +3329,7 @@ export default function AdminPage() {
                 <div>
                   {/* Header con filtros */}
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                    <h3 className="text-2xl font-black text-cyan-400">ðŸ“Š Dashboard Financiero</h3>
+                    <h3 className="text-2xl font-black text-cyan-400">📊 Dashboard Financiero</h3>
 
                     {/* Filtros rÃ¡pidos y manuales */}
                     <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
@@ -3392,7 +3397,7 @@ export default function AdminPage() {
                   {/* Indicador del periodo */}
                   {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
                     <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 mb-6 text-xs text-cyan-300">
-                      ðŸ“… Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      📅 Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </div>
                   )}
 
@@ -3402,21 +3407,21 @@ export default function AdminPage() {
 
                     {/* Ventas */}
                     <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl border-2 border-green-500/50 p-5">
-                      <p className="text-green-400 text-xs font-bold mb-1.5 uppercase">ðŸ’µ Ventas</p>
+                      <p className="text-green-400 text-xs font-bold mb-1.5 uppercase">💵 Ventas</p>
                       <p className="text-4xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-1.5">{deliveredOrders.length} pedidos entregados</p>
                     </div>
 
                     {/* COGS */}
                     <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 rounded-xl border-2 border-orange-500/50 p-5">
-                      <p className="text-orange-400 text-xs font-bold mb-1.5 uppercase">ðŸ– Costo de Ventas (COGS)</p>
+                      <p className="text-orange-400 text-xs font-bold mb-1.5 uppercase">🍖 Costo de Ventas (COGS)</p>
                       <p className="text-4xl font-black text-orange-400">S/ {totalCOGS.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-1.5">Costo de productos vendidos</p>
                     </div>
 
                     {/* Margen Bruto */}
                     <div className="bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 rounded-xl border-2 border-emerald-500/50 p-5">
-                      <p className="text-emerald-400 text-xs font-bold mb-1.5 uppercase">ðŸ“Š Margen Bruto</p>
+                      <p className="text-emerald-400 text-xs font-bold mb-1.5 uppercase">📊 Margen Bruto</p>
                       <p className="text-4xl font-black text-emerald-400">{margenBruto.toFixed(1)}%</p>
                       <p className="text-xs text-gray-400 mt-1.5">
                         S/ {(totalRevenue - totalCOGS).toFixed(2)}
@@ -3427,7 +3432,7 @@ export default function AdminPage() {
 
                     {/* Gastos Operativos */}
                     <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 rounded-xl border-2 border-red-500/50 p-5">
-                      <p className="text-red-400 text-xs font-bold mb-1.5 uppercase">ðŸ“‰ Gastos Operativos</p>
+                      <p className="text-red-400 text-xs font-bold mb-1.5 uppercase">📉 Gastos Operativos</p>
                       <p className="text-4xl font-black text-red-400">S/ {gastosOperativos.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-1.5">{filteredPurchases.length} compras/gastos</p>
                     </div>
@@ -3435,7 +3440,7 @@ export default function AdminPage() {
                     {/* Utilidad Operativa */}
                     <div className={`bg-gradient-to-br ${utilidadOperativa >= 0 ? 'from-fuchsia-900/40 to-fuchsia-800/20 border-fuchsia-500/50' : 'from-amber-900/40 to-amber-800/20 border-amber-500/50'} rounded-xl border-2 p-5`}>
                       <p className={`${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'} text-xs font-bold mb-1.5 uppercase`}>
-                        âœ… Utilidad Operativa
+                        ✅ Utilidad Operativa
                       </p>
                       <p className={`text-4xl font-black ${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'}`}>
                         S/ {utilidadOperativa.toFixed(2)}
@@ -3445,7 +3450,7 @@ export default function AdminPage() {
 
                     {/* Margen Neto */}
                     <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl border-2 border-cyan-500/50 p-5">
-                      <p className="text-cyan-400 text-xs font-bold mb-1.5 uppercase">ðŸ“ˆ Margen Neto</p>
+                      <p className="text-cyan-400 text-xs font-bold mb-1.5 uppercase">📈 Margen Neto</p>
                       <p className="text-4xl font-black text-cyan-400">{margenNeto.toFixed(1)}%</p>
                       <p className="text-xs text-gray-400 mt-1.5">
                         {margenNeto >= 30 ? 'Â¡Excelente!' : margenNeto >= 15 ? 'Bueno' : margenNeto >= 0 ? 'Mejorable' : 'Negativo'}
@@ -3456,7 +3461,7 @@ export default function AdminPage() {
                   {/* Info adicional */}
                   <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4 mt-6">
                     <p className="text-cyan-300 text-xs">
-                      <span className="font-bold">ðŸ’¡ InformaciÃ³n:</span> Este dashboard integra datos de ventas (Productos de Venta) y gastos operativos (Compras y Gastos) para darte una visiÃ³n completa de tu negocio.
+                      <span className="font-bold">💡 InformaciÃ³n:</span> Este dashboard integra datos de ventas (Productos de Venta) y gastos operativos (Compras y Gastos) para darte una visiÃ³n completa de tu negocio.
                       El <strong>Margen Bruto</strong> muestra rentabilidad de productos, mientras que el <strong>Margen Neto</strong> considera todos los gastos operativos.
                     </p>
                   </div>
@@ -3504,7 +3509,7 @@ export default function AdminPage() {
                   return (
                     <>
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-4">ðŸ’° Compras y Gastos {getMonthName(inventoryMonthFilter)}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4">💰 Compras y Gastos {getMonthName(inventoryMonthFilter)}</h3>
 
                   {/* Sub-tabs */}
                   <div className="flex gap-2 mb-4 border-b-2 border-fuchsia-500/20">
@@ -3516,7 +3521,7 @@ export default function AdminPage() {
                           : "text-gray-400 hover:text-gray-300"
                       }`}
                     >
-                      ðŸ“‹ Historial de Compras
+                      📋 Historial de Compras
                     </button>
                     <button
                       onClick={() => setPurchasesSubTab("stock")}
@@ -3526,7 +3531,7 @@ export default function AdminPage() {
                           : "text-gray-400 hover:text-gray-300"
                       }`}
                     >
-                      ðŸ“¦ Control de Stock
+                      📦 Control de Stock
                     </button>
                   </div>
 
@@ -3543,7 +3548,7 @@ export default function AdminPage() {
                     {purchasesSubTab === "history" && (
                       <button
                         onClick={() => {
-                          console.log('ðŸ”¥ Click en Nueva Compra');
+                          console.log('🔥 Click en Nueva Compra');
                           setShowInventoryModal(true);
                           setProductSearchTerms([""]);
                         }}
@@ -3676,7 +3681,7 @@ export default function AdminPage() {
 
                       {/* InformaciÃ³n del Proveedor */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">ðŸ“‹ InformaciÃ³n del Proveedor</h4>
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 InformaciÃ³n del Proveedor</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-gray-400">Proveedor:</p>
@@ -3713,7 +3718,7 @@ export default function AdminPage() {
 
                       {/* Productos Comprados */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-cyan-500/30">
-                        <h4 className="text-sm font-bold text-cyan-400 mb-3">ðŸ›’ Productos Comprados</h4>
+                        <h4 className="text-sm font-bold text-cyan-400 mb-3">🛒 Productos Comprados</h4>
                         <div className="space-y-2">
                           {selectedPurchaseDetail.items.map((item: any, idx: number) => (
                             <div key={idx} className="flex justify-between items-center bg-gray-900 rounded px-3 py-2">
@@ -3748,12 +3753,12 @@ export default function AdminPage() {
                   </>
                 )}
 
-                {/* ========== CONTROL DE STOCK (NUEVA SECCIÃ“N) ========== */}
+                {/* ========== CONTROL DE STOCK (NUEVA SECCIÓN) ========== */}
                 {purchasesSubTab === "stock" && (
                   <div className="space-y-4">
                     {/* Encabezado */}
                     <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-black text-cyan-400">ðŸ“¦ Control de Stock</h3>
+                      <h3 className="text-xl font-black text-cyan-400">📦 Control de Stock</h3>
                       <input
                         type="text"
                         placeholder="Buscar producto..."
@@ -3833,10 +3838,10 @@ export default function AdminPage() {
                                     <td className="px-4 py-3 text-sm text-white font-medium">{item.productName}</td>
                                     <td className="px-4 py-3 text-xs text-gray-300">
                                       <span className="px-2 py-1 rounded bg-gray-800 border border-gray-700">
-                                        {item.category === "INSUMO" && "ðŸ¥˜ INSUMO"}
-                                        {item.category === "EMPAQUE" && "ðŸ“¦ EMPAQUE"}
+                                        {item.category === "INSUMO" && "🥘 INSUMO"}
+                                        {item.category === "EMPAQUE" && "📦 EMPAQUE"}
                                         {item.category === "SERVICIO" && "âš¡ SERVICIO"}
-                                        {item.category === "UTENCILIO" && "ðŸ”§ UTENCILIO"}
+                                        {item.category === "UTENCILIO" && "🔧 UTENCILIO"}
                                         {!["INSUMO", "EMPAQUE", "SERVICIO", "UTENCILIO"].includes(item.category) && item.category}
                                       </span>
                                     </td>
@@ -3900,7 +3905,7 @@ export default function AdminPage() {
                                               setStockConsumptions(newConsumptions);
 
                                               // Mostrar confirmaciÃ³n
-                                              alert(`âœ… Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
+                                              alert(`✅ Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
                                             } catch (error) {
                                               console.error("Error al guardar consumo:", error);
                                               alert("âŒ Error al guardar el consumo. Intenta nuevamente.");
@@ -3925,7 +3930,7 @@ export default function AdminPage() {
                     {/* InformaciÃ³n adicional */}
                     <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4">
                       <p className="text-cyan-300 text-xs">
-                        <span className="font-bold">ðŸ’¡ Instrucciones:</span> Ingresa la cantidad consumida en la columna "Consumo Hoy" y presiona "Guardar" para actualizar el stock.
+                        <span className="font-bold">💡 Instrucciones:</span> Ingresa la cantidad consumida en la columna "Consumo Hoy" y presiona "Guardar" para actualizar el stock.
                       </p>
                     </div>
                   </div>
@@ -3944,7 +3949,7 @@ export default function AdminPage() {
 
               const saleProducts = products.filter((p: any) => p.type === "sale");
 
-              // --- Rendimiento: cruzar catÃ¡logo con pedidos entregados ---
+              // --- Rendimiento: cruzar catálogo con pedidos entregados ---
               let deliveredOrders = orders.filter((o: any) =>
                 o.status === "delivered" || o.status === "Entregado"
               );
@@ -3994,7 +3999,7 @@ export default function AdminPage() {
                 });
               });
 
-              // Construir filas de rendimiento cruzando catÃ¡logo + ventas
+              // Construir filas de rendimiento cruzando catálogo + ventas
               const perfRows = saleProducts.map((p: any) => {
                 const key = normalize(p.name || "");
                 const sold = soldMap[key] || { qty: 0, revenue: 0 };
@@ -4014,17 +4019,17 @@ export default function AdminPage() {
               const avgMargin = soldProducts.length > 0 ? soldProducts.reduce((s: number, r: any) => s + r.margin, 0) / soldProducts.length : 0;
 
               const catLabel: Record<string, string> = {
-                fat: "ðŸ— FAT", fit: "ðŸ¥— FIT", bebida: "ðŸ¥¤ Bebida",
+                fat: "🍗 FAT", fit: "🥗 FIT", bebida: "🥤 Bebida",
                 complemento: "âž• Complemento", extra: "âš¡ Extra",
-                "extra-papas": "ðŸŸ Extra Papas", "extra-salsas": "ðŸŒ¶ï¸ Extra Salsas",
+                "extra-papas": "🍟 Extra Papas", "extra-salsas": "🌶️ Extra Salsas",
               };
 
               return (
                 <div className="space-y-8">
-                  {/* â”€â”€ SECCIÃ“N 1: CATÃLOGO â”€â”€ */}
+                  {/* â”€â”€ SECCIÓN 1: CATÃLOGO â”€â”€ */}
                   <div>
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-black text-cyan-400">ðŸ“‹ CatÃ¡logo de Productos</h3>
+                      <h3 className="text-xl font-black text-cyan-400">📋 CatÃ¡logo de Productos</h3>
                       <button
                         onClick={() => {
                           setEditingProduct(null);
@@ -4088,10 +4093,10 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* â”€â”€ SECCIÃ“N 2: RENDIMIENTO DE VENTAS â”€â”€ */}
+                  {/* â”€â”€ SECCIÓN 2: RENDIMIENTO DE VENTAS â”€â”€ */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-black text-amber-400">ðŸ“Š Rendimiento de Ventas (Pedidos Entregados)</h3>
+                      <h3 className="text-xl font-black text-amber-400">📊 Rendimiento de Ventas (Pedidos Entregados)</h3>
                     </div>
 
                     {/* Filtro de fechas */}
@@ -4102,11 +4107,11 @@ export default function AdminPage() {
                           <span className="text-xs text-gray-400">Mostrando:</span>
                           {isSalesDateFiltered ? (
                             <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 text-xs font-bold">
-                              ðŸ“… {new Date(salesDateFrom).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
+                              📅 {new Date(salesDateFrom).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
                             </span>
                           ) : (
                             <span className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-full text-gray-300 text-xs font-bold">
-                              ðŸ“Š HistÃ³rico completo
+                              📊 HistÃ³rico completo
                             </span>
                           )}
                         </div>
@@ -4219,7 +4224,7 @@ export default function AdminPage() {
                           {perfRows.length === 0 ? (
                             <tr>
                               <td colSpan={6} className="px-6 py-10 text-center text-gray-500 text-sm">
-                                Registra productos en el catÃ¡logo para ver el rendimiento.
+                                Registra productos en el catálogo para ver el rendimiento.
                               </td>
                             </tr>
                           ) : (
@@ -4275,7 +4280,7 @@ export default function AdminPage() {
               <div className="bg-gray-900 rounded-xl border-2 border-purple-500 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-2xl font-black text-purple-400">ðŸ§¾ Configurar Receta</h3>
+                    <h3 className="text-2xl font-black text-purple-400">🧾 Configurar Receta</h3>
                     <p className="text-cyan-400 text-lg font-bold mt-1">{editingRecipeProduct.name}</p>
                     <p className="text-gray-400 text-sm mt-2">
                       Define quÃ© empaques/insumos se usan para preparar este producto y en quÃ© cantidades
@@ -4427,7 +4432,7 @@ export default function AdminPage() {
                     onClick={saveRecipe}
                     className="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple"
                   >
-                    âœ“ Guardar Receta
+                    ✓ Guardar Receta
                   </button>
                 </div>
               </div>
@@ -4468,13 +4473,13 @@ export default function AdminPage() {
                       onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
                     >
-                      <option value="fat">ðŸ— FAT (Alitas)</option>
-                      <option value="fit">ðŸ¥— FIT (Ensaladas)</option>
-                      <option value="bebida">ðŸ¥¤ Bebida</option>
+                      <option value="fat">🍗 FAT (Alitas)</option>
+                      <option value="fit">🥗 FIT (Ensaladas)</option>
+                      <option value="bebida">🥤 Bebida</option>
                       <option value="complemento">âž• Complemento</option>
                       <option value="extra">âš¡ Extra</option>
-                      <option value="extra-papas">ðŸŸ Extra Papas</option>
-                      <option value="extra-salsas">ðŸŒ¶ï¸ Extra Salsas</option>
+                      <option value="extra-papas">🍟 Extra Papas</option>
+                      <option value="extra-salsas">🌶️ Extra Salsas</option>
                     </select>
                   </div>
 
@@ -4546,7 +4551,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸ›’ Compras y Gastos
+                🛒 Compras y Gastos
               </button>
               <button
                 onClick={() => setInventorySection("stock")}
@@ -4556,7 +4561,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸ“Š Control de Stock
+                📊 Control de Stock
               </button>
             </div>
 
@@ -4609,7 +4614,7 @@ export default function AdminPage() {
                     />
                     <button
                       onClick={() => {
-                        console.log('ðŸ”¥ Click en Nueva Compra');
+                        console.log('🔥 Click en Nueva Compra');
                         setShowInventoryModal(true);
                         setProductSearchTerms([""]);
                       }}
@@ -4738,7 +4743,7 @@ export default function AdminPage() {
 
                       {/* InformaciÃ³n del Proveedor */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">ðŸ“‹ InformaciÃ³n del Proveedor</h4>
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 InformaciÃ³n del Proveedor</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-gray-400">Proveedor:</p>
@@ -4769,10 +4774,10 @@ export default function AdminPage() {
                           <div>
                             <p className="text-gray-400">MÃ©todo de Pago:</p>
                             <p className="text-white font-bold">
-                              {selectedPurchaseDetail.paymentMethod === 'plin-yape' && 'ðŸ“± Plin / Yape'}
-                              {selectedPurchaseDetail.paymentMethod === 'efectivo' && 'ðŸ’µ Efectivo'}
-                              {selectedPurchaseDetail.paymentMethod === 'transferencia' && 'ðŸ¦ Transferencia'}
-                              {selectedPurchaseDetail.paymentMethod === 'tarjeta' && 'ðŸ’³ Tarjeta'}
+                              {selectedPurchaseDetail.paymentMethod === 'plin-yape' && '📱 Plin / Yape'}
+                              {selectedPurchaseDetail.paymentMethod === 'efectivo' && '💵 Efectivo'}
+                              {selectedPurchaseDetail.paymentMethod === 'transferencia' && '🏦 Transferencia'}
+                              {selectedPurchaseDetail.paymentMethod === 'tarjeta' && '💳 Tarjeta'}
                             </p>
                           </div>
                           <div>
@@ -4784,7 +4789,7 @@ export default function AdminPage() {
 
                       {/* Lista de ArtÃ­culos */}
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">ðŸ“¦ ArtÃ­culos Comprados</h4>
+                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📦 ArtÃ­culos Comprados</h4>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                             <thead>
@@ -4829,7 +4834,7 @@ export default function AdminPage() {
                       {selectedPurchaseDetail.notes && (
                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
                           <p className="text-sm text-gray-400">
-                            <span className="font-bold text-amber-400">ðŸ“ Notas:</span> {selectedPurchaseDetail.notes}
+                            <span className="font-bold text-amber-400">📝 Notas:</span> {selectedPurchaseDetail.notes}
                           </p>
                         </div>
                       )}
@@ -4912,7 +4917,7 @@ export default function AdminPage() {
                           type="text"
                           value={stockSearchTerm}
                           onChange={(e) => setStockSearchTerm(e.target.value)}
-                          placeholder="ðŸ” Buscar producto..."
+                          placeholder="🔍 Buscar producto..."
                           className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-cyan-400 focus:outline-none w-64"
                         />
                       </div>
@@ -4965,7 +4970,7 @@ export default function AdminPage() {
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full">
                 <h3 className="text-xl font-black text-fuchsia-400 mb-4">
-                  {editingCatalogProduct ? 'âœï¸ Editar Producto' : 'ðŸ“¦ Nuevo Producto'}
+                  {editingCatalogProduct ? 'âœï¸ Editar Producto' : '📦 Nuevo Producto'}
                 </h3>
 
                 <div className="space-y-4">
@@ -5058,7 +5063,7 @@ export default function AdminPage() {
           {false && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
               <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
-                <h3 className="text-xl font-black text-fuchsia-400 mb-3">ðŸ“¦ Registrar Nueva Compra</h3>
+                <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
 
                 {/* InformaciÃ³n Compacta en Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
@@ -5112,10 +5117,10 @@ export default function AdminPage() {
                       onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
                       className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                     >
-                      <option value="plin-yape">ðŸ“± Plin / Yape</option>
-                      <option value="efectivo">ðŸ’µ Efectivo</option>
-                      <option value="transferencia">ðŸ¦ Transferencia</option>
-                      <option value="tarjeta">ðŸ’³ Tarjeta</option>
+                      <option value="plin-yape">📱 Plin / Yape</option>
+                      <option value="efectivo">💵 Efectivo</option>
+                      <option value="transferencia">🏦 Transferencia</option>
+                      <option value="tarjeta">💳 Tarjeta</option>
                     </select>
                   </div>
                 </div>
@@ -5123,7 +5128,7 @@ export default function AdminPage() {
                 {/* Lista de ArtÃ­culos */}
                 <div className="mb-3">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="text-sm font-bold text-white">ðŸ“‹ ArtÃ­culos</h4>
+                    <h4 className="text-sm font-bold text-white">📋 ArtÃ­culos</h4>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowNewMaterialForm(!showNewMaterialForm)}
@@ -5190,7 +5195,7 @@ export default function AdminPage() {
                             onClick={async () => {
                               if (newMaterialForm.productName && newMaterialForm.unit) {
                                 try {
-                                  // Crear el material en el catÃ¡logo de productos
+                                  // Crear el material en el catálogo de productos
                                   const response = await fetch("/api/products", {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
@@ -5208,10 +5213,10 @@ export default function AdminPage() {
                                   });
 
                                   if (response.ok) {
-                                    await loadCatalogProducts(); // Recargar catÃ¡logo
+                                    await loadCatalogProducts(); // Recargar catálogo
                                     setShowNewMaterialForm(false);
                                     setNewMaterialForm({ productName: "", unit: "" });
-                                    alert(`âœ… Material "${newMaterialForm.productName}" agregado al catÃ¡logo`);
+                                    alert(`✅ Material "${newMaterialForm.productName}" agregado al catálogo`);
                                   }
                                 } catch (error) {
                                   console.error("Error al crear material:", error);
@@ -5261,7 +5266,7 @@ export default function AdminPage() {
                               type="text"
                               value={item.productName || ""}
                               onChange={(e) => {
-                                console.log('ðŸ”¥ onChange ejecutado:', e.target.value);
+                                console.log('🔥 onChange ejecutado:', e.target.value);
                                 updateInventoryItem(idx, 'productName', e.target.value);
                                 const newSearchTerms = [...productSearchTerms];
                                 newSearchTerms[idx] = e.target.value;
@@ -5269,7 +5274,7 @@ export default function AdminPage() {
                                 setActiveDropdownIndex(idx);
                               }}
                               onFocus={() => {
-                                console.log('ðŸ”¥ onFocus ejecutado, idx:', idx);
+                                console.log('🔥 onFocus ejecutado, idx:', idx);
                                 setActiveDropdownIndex(idx);
                               }}
                               placeholder="Escribir o seleccionar producto *"
@@ -5295,7 +5300,7 @@ export default function AdminPage() {
                                     });
                                   });
 
-                                  // TambiÃ©n agregar materiales del catÃ¡logo con categorÃ­a de inventario
+                                  // TambiÃ©n agregar materiales del catálogo con categorÃ­a de inventario
                                   const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
                                   catalogProducts.forEach((product: any) => {
                                     if (materialCategories.includes(product.category)) {
@@ -5336,7 +5341,7 @@ export default function AdminPage() {
                                       onMouseDown={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log('ðŸ”¥ onMouseDown - Material a seleccionar:', material.productName);
+                                        console.log('🔥 onMouseDown - Material a seleccionar:', material.productName);
 
                                         // Actualizar el nombre del producto y la unidad
                                         const newItems = [...inventoryForm.items];
@@ -5356,7 +5361,7 @@ export default function AdminPage() {
                                         // Cerrar dropdown
                                         setActiveDropdownIndex(null);
 
-                                        console.log('ðŸ”¥ Material guardado:', material.productName);
+                                        console.log('🔥 Material guardado:', material.productName);
                                       }}
                                       className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer border-b border-fuchsia-500/10 last:border-b-0"
                                     >
@@ -5508,7 +5513,7 @@ export default function AdminPage() {
                     onClick={handleCreateInventory}
                     className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
                   >
-                    âœ… Registrar Compra
+                    ✅ Registrar Compra
                   </button>
                 </div>
               </div>
@@ -5531,7 +5536,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸŽŸï¸ Promociones y Cupones
+                🎟️ Promociones y Cupones
               </button>
               <button
                 onClick={() => setMarketingSection("campaigns")}
@@ -5541,7 +5546,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸ“¢ CampaÃ±as de Marketing
+                📢 CampaÃ±as de Marketing
               </button>
               <button
                 onClick={() => setMarketingSection("loyalty")}
@@ -5551,7 +5556,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
-                ðŸ† Programa de FidelizaciÃ³n
+                🏆 Programa de FidelizaciÃ³n
               </button>
             </div>
 
@@ -5806,13 +5811,13 @@ export default function AdminPage() {
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                     <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">ðŸ‘‘</div>
+                      <div className="text-4xl mb-3">👑</div>
                       <h4 className="text-lg font-bold text-white mb-2">Clientes VIP</h4>
                       <p className="text-sm text-gray-400 mb-4">Promociones exclusivas para tus mejores clientes</p>
                       <p className="text-2xl font-black text-fuchsia-400">{customerSegments.vip.length} clientes</p>
                     </div>
                     <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">ðŸ’¤</div>
+                      <div className="text-4xl mb-3">💤</div>
                       <h4 className="text-lg font-bold text-white mb-2">Clientes Inactivos</h4>
                       <p className="text-sm text-gray-400 mb-4">Recupera clientes que dejaron de comprar</p>
                       <p className="text-2xl font-black text-red-400">{customerSegments.inactive.length} clientes</p>
@@ -5882,7 +5887,7 @@ export default function AdminPage() {
                   </div>
                   <div className="mt-8 p-6 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/30 max-w-2xl mx-auto">
                     <p className="text-fuchsia-300 text-sm">
-                      ðŸ’¡ <strong>PrÃ³ximamente:</strong> IntegraciÃ³n automÃ¡tica de puntos y niveles de fidelizaciÃ³n con cada compra
+                      💡 <strong>PrÃ³ximamente:</strong> IntegraciÃ³n automÃ¡tica de puntos y niveles de fidelizaciÃ³n con cada compra
                     </p>
                   </div>
                 </div>
@@ -5910,7 +5915,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">CÃ³digo de CupÃ³n (opcional)</label>
+                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">CÃ³digo de Cupón (opcional)</label>
                       <input
                         type="text"
                         value={promotionForm.code}
@@ -6060,7 +6065,7 @@ export default function AdminPage() {
           {/* FAT */}
           <div className="mb-10">
             <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2">
-              ðŸ¥© Carta FAT
+              🥩 Carta FAT
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
@@ -6104,7 +6109,7 @@ export default function AdminPage() {
           {/* FIT */}
           <div>
             <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2">
-              ðŸ¥— Carta FIT
+              🥗 Carta FIT
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
@@ -6152,7 +6157,7 @@ export default function AdminPage() {
       {showInventoryModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
           <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
-            <h3 className="text-xl font-black text-fuchsia-400 mb-3">ðŸ“¦ Registrar Nueva Compra</h3>
+            <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
 
             {/* InformaciÃ³n Compacta en Grid */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
@@ -6206,10 +6211,10 @@ export default function AdminPage() {
                   onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
                   className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                 >
-                  <option value="plin-yape">ðŸ“± Plin / Yape</option>
-                  <option value="efectivo">ðŸ’µ Efectivo</option>
-                  <option value="transferencia">ðŸ¦ Transferencia</option>
-                  <option value="tarjeta">ðŸ’³ Tarjeta</option>
+                  <option value="plin-yape">📱 Plin / Yape</option>
+                  <option value="efectivo">💵 Efectivo</option>
+                  <option value="transferencia">🏦 Transferencia</option>
+                  <option value="tarjeta">💳 Tarjeta</option>
                 </select>
               </div>
             </div>
@@ -6217,7 +6222,7 @@ export default function AdminPage() {
             {/* Lista de ArtÃ­culos */}
             <div className="mb-3">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-bold text-white">ðŸ“‹ ArtÃ­culos</h4>
+                <h4 className="text-sm font-bold text-white">📋 ArtÃ­culos</h4>
                 <button
                   onClick={addInventoryItem}
                   className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
@@ -6278,10 +6283,10 @@ export default function AdminPage() {
                           className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
                         >
                           <option value="">-- Tipo --</option>
-                          <option value="INSUMO">ðŸ¥˜ INSUMO</option>
-                          <option value="EMPAQUE">ðŸ“¦ EMPAQUE</option>
+                          <option value="INSUMO">🥘 INSUMO</option>
+                          <option value="EMPAQUE">📦 EMPAQUE</option>
                           <option value="SERVICIO">âš¡ SERVICIO</option>
-                          <option value="UTENCILIO">ðŸ”§ UTENCILIO</option>
+                          <option value="UTENCILIO">🔧 UTENCILIO</option>
                         </select>
                       </div>
 
@@ -6406,7 +6411,7 @@ export default function AdminPage() {
                 onClick={handleCreateInventory}
                 className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
               >
-                âœ… Registrar Compra
+                ✅ Registrar Compra
               </button>
             </div>
           </div>
@@ -6471,10 +6476,10 @@ export default function AdminPage() {
                   onChange={(e) => setEditingPurchase({ ...editingPurchase, paymentMethod: e.target.value })}
                   className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
                 >
-                  <option value="plin-yape">ðŸ“± Plin / Yape</option>
-                  <option value="efectivo">ðŸ’µ Efectivo</option>
-                  <option value="transferencia">ðŸ¦ Transferencia</option>
-                  <option value="tarjeta">ðŸ’³ Tarjeta</option>
+                  <option value="plin-yape">📱 Plin / Yape</option>
+                  <option value="efectivo">💵 Efectivo</option>
+                  <option value="transferencia">🏦 Transferencia</option>
+                  <option value="tarjeta">💳 Tarjeta</option>
                 </select>
               </div>
             </div>
@@ -6482,7 +6487,7 @@ export default function AdminPage() {
             {/* Lista de ArtÃ­culos */}
             <div className="mb-3">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-bold text-white">ðŸ“‹ ArtÃ­culos</h4>
+                <h4 className="text-sm font-bold text-white">📋 ArtÃ­culos</h4>
               </div>
 
               {/* Encabezados de columnas */}
@@ -6545,10 +6550,10 @@ export default function AdminPage() {
                           className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
                         >
                           <option value="">-- Tipo --</option>
-                          <option value="INSUMO">ðŸ¥˜ INSUMO</option>
-                          <option value="EMPAQUE">ðŸ“¦ EMPAQUE</option>
+                          <option value="INSUMO">🥘 INSUMO</option>
+                          <option value="EMPAQUE">📦 EMPAQUE</option>
                           <option value="SERVICIO">âš¡ SERVICIO</option>
-                          <option value="UTENCILIO">ðŸ”§ UTENCILIO</option>
+                          <option value="UTENCILIO">🔧 UTENCILIO</option>
                         </select>
                       </div>
 
@@ -6690,7 +6695,7 @@ export default function AdminPage() {
                 }}
                 className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all transform hover:scale-105"
               >
-                âœ… Guardar Cambios
+                ✅ Guardar Cambios
               </button>
             </div>
           </div>
