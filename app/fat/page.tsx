@@ -130,7 +130,7 @@ const salsas: Salsa[] = [
   },
   {
     id: "teriyaki",
-    name: "Teriyaki",
+    name: "Oriental Teriyaki",
     description: "Salsa asiática, dulce y salado en equilibrio. Con notas ahumadas que evocan los sabores orientales"
   },
   {

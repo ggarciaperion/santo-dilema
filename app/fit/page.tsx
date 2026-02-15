@@ -99,7 +99,7 @@ const salsas: { id: string; name: string }[] = [
   { id: "buffalo-picante", name: "Buffalo picante" },
   { id: "honey-mustard", name: "Honey mustard" },
   { id: "macerichada", name: "Macerichada" },
-  { id: "teriyaki", name: "Teriyaki" },
+  { id: "teriyaki", name: "Oriental Teriyaki" },
   { id: "parmesano-ajo", name: "Parmesano & Ajo" },
 ];
 

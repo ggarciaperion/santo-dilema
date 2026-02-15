@@ -13,7 +13,7 @@ const salsas: { id: string; name: string }[] = [
   { id: "parmesano-ajo", name: "Crispy Celestial" },
   { id: "anticuchos", name: "Parrillera" },
   { id: "honey-mustard", name: "Honey mustard" },
-  { id: "teriyaki", name: "Teriyaki" },
+  { id: "teriyaki", name: "Oriental Teriyaki" },
   { id: "macerichada", name: "Sweet & Sour" },
 ];
 
