@@ -645,9 +645,9 @@ export default function FatPage() {
       quantity: qty,
       salsas: orderSalsas,
       complementIds: complementsInCart[product.id] || [],
-      discountApplied: false,
+      discountApplied: product.id === 'pequeno-dilema' && orderSalsas.includes('teriyaki'),
       originalPrice: product.price,
-      finalPrice: product.price
+      finalPrice: (product.id === 'pequeno-dilema' && orderSalsas.includes('teriyaki')) ? 15.00 : product.price
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
@@ -1086,7 +1086,13 @@ export default function FatPage() {
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
                       {(() => {
-                        return (
+                        const hasTeriyakiPromo = product.id === 'pequeno-dilema' && (selectedSalsas[product.id] || []).includes('teriyaki');
+                        return hasTeriyakiPromo ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-gray-500 text-xs md:text-sm line-through">S/ 18.50</span>
+                            <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 15.00</span>
+                          </div>
+                        ) : (
                           <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
                             S/ {product.price.toFixed(2)}
                           </span>
@@ -1537,7 +1543,7 @@ export default function FatPage() {
                             {/* Precio del menú */}
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                              <span className="text-amber-400/80">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
                             </div>
 
                             {/* Salsas seleccionadas - solo para ordenes de fat */}
@@ -1828,7 +1834,7 @@ export default function FatPage() {
                     <div className="space-y-1">
                       <div className={`flex justify-between items-center ${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} text-xs`}>
                         <span>• {product.name} x{order.quantity}</span>
-                        <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                        <span className="text-amber-400/80">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
                       </div>
 
                       {/* Salsas (solo para órdenes fat) */}

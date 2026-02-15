@@ -156,10 +156,14 @@ export async function POST(request: Request) {
     // Expandir completedOrders con datos completos de productos
     const expandedOrders = completedOrders.map((order: any) => {
       const product = allProducts.find(p => p.id === order.productId);
+      // Respetar finalPrice si viene del frontend (ej: promo teriyaki S/15)
+      const effectivePrice = order.finalPrice ?? product?.price ?? 0;
       return {
         ...order,
         name: product?.name || 'Producto desconocido',
-        price: product?.price || 0,
+        price: effectivePrice,
+        finalPrice: effectivePrice,
+        originalPrice: order.originalPrice ?? product?.price ?? 0,
         category: product?.category || 'unknown',
         productId: order.productId
       };
