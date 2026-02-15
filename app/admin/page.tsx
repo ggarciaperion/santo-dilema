@@ -855,6 +855,56 @@ export default function AdminPage() {
     setShowDateModal(false);
   };
 
+  // Exportar todos los pedidos a CSV
+  const exportOrdersToCSV = () => {
+    const allOrders = orders;
+    if (allOrders.length === 0) return;
+
+    const headers = [
+      "ID Pedido", "Fecha", "Nombre", "DNI", "Teléfono", "Dirección",
+      "Productos", "Total (S/)", "Descuento Combo (S/)", "Descuento Cupón (S/)",
+      "Costo Delivery (S/)", "Zona Delivery", "Método de Pago", "Estado", "Cupón"
+    ];
+
+    const rows = allOrders.map((order: any) => {
+      const fecha = new Date(order.createdAt).toLocaleString('es-PE', { timeZone: 'America/Lima' });
+      const productos = (order.cart || [])
+        .map((item: any) => `${item.name} x${item.quantity}`)
+        .join(' | ');
+      return [
+        order.id,
+        fecha,
+        order.name,
+        order.dni,
+        order.phone,
+        order.address,
+        productos,
+        (order.totalPrice || 0).toFixed(2),
+        (order.comboDiscount || 0).toFixed(2),
+        (order.couponDiscount || 0).toFixed(2),
+        (order.deliveryCost || 0).toFixed(2),
+        order.deliveryOption === 'centro' ? 'Chancay centro' : order.deliveryOption === 'alrededores' ? 'Chancay alrededores' : '',
+        order.paymentMethod || '',
+        order.status || '',
+        order.couponCode || '',
+      ];
+    });
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const now = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
+    link.href = url;
+    link.download = `pedidos-santo-dilema-${now}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Filtrar pedidos según el filtro de fecha
   let dateFilteredOrders = orders;
 
@@ -2047,6 +2097,17 @@ export default function AdminPage() {
       {/* Barra de herramientas */}
       <section className="container mx-auto px-4 pb-6">
         <div className="flex gap-2 items-center justify-end">
+          {/* Botón exportar CSV */}
+          <button
+            onClick={exportOrdersToCSV}
+            className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-green-400 hover:text-green-300 hover:border-green-700 transition-all"
+            title="Exportar TODOS los pedidos a CSV"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </button>
+
           {/* Botón de calendario */}
           <button
             onClick={() => setShowDateModal(true)}
