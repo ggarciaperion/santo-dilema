@@ -1203,15 +1203,22 @@ export default function FatPage() {
                               const canAddMore = count < maxSalsaCount && canSelect;
                               const showAddButton = canAddMore;
 
+                              const isTeriyakiPromo = product.id === 'pequeno-dilema' && salsa.id === 'teriyaki';
+
                               return (
                                 <div
                                   key={salsa.id}
-                                  className="bg-gray-800/30 rounded p-1.5 md:p-2 border border-amber-500/10"
+                                  className={`rounded p-1.5 md:p-2 border ${
+                                    isTeriyakiPromo
+                                      ? 'bg-amber-900/20 border-amber-500/40 teriyaki-promo-highlight'
+                                      : 'bg-gray-800/30 border-amber-500/10'
+                                  }`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex-1">
-                                      <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
+                                      <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : isTeriyakiPromo ? 'text-amber-300 font-bold' : 'text-white'}`}>
                                         {salsa.name}
+                                        {isTeriyakiPromo && <span className="ml-1.5 text-[9px] bg-amber-500 text-black px-1 py-0.5 rounded font-black">S/ 15</span>}
                                       </div>
                                       <p className="text-[9px] md:text-[10px] text-gray-400 italic mt-0.5">
                                         {salsa.description}

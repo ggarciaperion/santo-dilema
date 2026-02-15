@@ -740,7 +740,8 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-fit shadow-xl shadow-cyan-500/30 snap-center md:snap-none border-2 md:border-0 border-cyan-400
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl shadow-cyan-500/30 snap-center md:snap-none border-2 md:border-2 border-cyan-400
+                    ${product.id === 'ensalada-caesar' && !isSoldOut ? 'promo-border-pulse' : 'neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
