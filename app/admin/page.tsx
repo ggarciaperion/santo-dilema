@@ -3876,7 +3876,9 @@ export default function AdminPage() {
 
                                   const key = `${item.productName}-${item.unit}`;
                                   const existing = stockMap.get(key);
-                                  const itemStock = (item.quantity || 0) * (item.volume || 1);
+                                  const itemStock = item.stockUnits !== undefined
+                                    ? item.stockUnits
+                                    : (item.quantity || 0) * (item.volume || 1);
 
                                   if (existing) {
                                     existing.totalStock += itemStock;
@@ -4950,8 +4952,10 @@ export default function AdminPage() {
                       if (item.category === "SERVICIO") return;
 
                       const key = `${item.productName}-${item.unit}`;
-                      // Calcular stock: cantidad × volumen
-                      const stockQuantity = item.quantity * (item.volume || 1);
+                      // Calcular stock: usar stockUnits si existe (post-descuento), sino quantity × volume
+                      const stockQuantity = item.stockUnits !== undefined
+                        ? item.stockUnits
+                        : item.quantity * (item.volume || 1);
 
                       if (stockMap.has(key)) {
                         const existing = stockMap.get(key)!;

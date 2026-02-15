@@ -355,13 +355,18 @@ export const storage = {
         const item = purchase.items[j];
 
         if (item.productName === productName && item.unit === unit) {
-          const currentStock = (item.quantity || 0) * (item.volume || 1);
+          // Usar stockUnits si existe (stock real en unidades), sino calcular desde quantity*volume
+          const currentStock = item.stockUnits !== undefined
+            ? item.stockUnits
+            : (item.quantity || 0) * (item.volume || 1);
 
           if (currentStock > 0) {
             const deduction = Math.min(remainingToDeduct, currentStock);
-
-            // Calcular nuevo quantity manteniendo el volume
             const newTotalStock = currentStock - deduction;
+
+            // Guardar en stockUnits para evitar pérdida por Math.floor
+            item.stockUnits = newTotalStock;
+            // Actualizar quantity para compatibilidad visual (redondeado hacia abajo)
             item.quantity = Math.floor(newTotalStock / (item.volume || 1));
 
             remainingToDeduct -= deduction;
