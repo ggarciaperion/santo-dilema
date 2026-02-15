@@ -50,7 +50,8 @@ const products: Product[] = [
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
     description: "Para los que se cuidan sin aburrirse. Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Aderezo de yogurt griego que no te esperas.",
-    price: 23.50,
+    price: 20.00,
+    originalPrice: 23.50,
     image: "/3.png",
     category: "fit",
   },
@@ -802,9 +803,20 @@ export default function FitPage() {
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
                       <div className="flex flex-col">
-                        <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
-                          S/ {product.price.toFixed(2)}
-                        </span>
+                        {(product as any).originalPrice ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-gray-500 text-xs md:text-sm line-through">
+                              S/ {(product as any).originalPrice.toFixed(2)}
+                            </span>
+                            <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                              S/ {product.price.toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                            S/ {product.price.toFixed(2)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button

@@ -154,7 +154,7 @@ const fitProducts = [
   {
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
-    price: 22.90,
+    price: 20.00,
     image: "/protein-fit-bowl.png",
   },
   {

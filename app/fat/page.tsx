@@ -83,7 +83,7 @@ const fitProducts: Product[] = [
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
     description: "Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Con aderezo de yogurt griego.",
-    price: 23.50,
+    price: 20.00,
     image: "/protein-fit-bowl.png",
     category: "fit",
   },

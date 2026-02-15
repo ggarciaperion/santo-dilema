@@ -6200,7 +6200,7 @@ export default function AdminPage() {
               {[
                 { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.50" },
                 { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 22.50" },
-                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 23.50" },
+                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 20.00" },
                 { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 23.50" },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
