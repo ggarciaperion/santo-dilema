@@ -201,7 +201,7 @@ export default function CheckoutPage() {
   const [couponValidating, setCouponValidating] = useState(false);
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
-  const [isOpen, setIsOpen] = useState(isBusinessOpen);
+  const [isOpen, setIsOpen] = useState(isBusinessOpen());
   const [deliveryOption, setDeliveryOption] = useState<'centro' | 'alrededores' | null>(null);
 
   // Reproducir sonido cuando el pedido se confirma
