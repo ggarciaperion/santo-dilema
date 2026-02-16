@@ -785,6 +785,13 @@ export default function FitPage() {
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
+                    {product.id === 'ensalada-caesar' && !isSoldOut && (
+                      <div className="absolute top-2 left-0 right-0 flex justify-center z-20">
+                        <span className="ultima-unidades-badge text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-black" style={{ background: 'linear-gradient(90deg, #f59e0b, #ef4444, #f59e0b)', backgroundSize: '200% 100%' }}>
+                          🔥 Últimas unidades
+                        </span>
+                      </div>
+                    )}
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
                         <div

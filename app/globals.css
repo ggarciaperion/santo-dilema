@@ -339,6 +339,23 @@ body {
   }
 }
 
+@keyframes ultimaUnidades {
+  0%, 100% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.7), 0 0 12px rgba(239, 68, 68, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    background-position: 100% 50%;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.9), 0 0 28px rgba(245, 158, 11, 0.6);
+    transform: scale(1.07);
+  }
+}
+
+.ultima-unidades-badge {
+  animation: ultimaUnidades 1.4s ease-in-out infinite;
+}
+
 @keyframes teriyakiGlow {
   0%, 100% {
     box-shadow: 0 0 4px rgba(245, 158, 11, 0.3),
