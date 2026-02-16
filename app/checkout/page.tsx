@@ -202,6 +202,7 @@ export default function CheckoutPage() {
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
   const [isOpen, setIsOpen] = useState(isBusinessOpen());
+  const [isTestEnv, setIsTestEnv] = useState(false);
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -212,6 +213,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
+    setIsTestEnv(window.location.hostname === 'santo-dilema-iota.vercel.app');
     return () => clearInterval(interval);
   }, []);
 
@@ -1337,13 +1339,26 @@ export default function CheckoutPage() {
 
             {/* QR Code */}
             <div className="flex justify-center mb-3">
-              <div className="bg-white rounded-lg p-2" style={{ width: '140px', height: '140px' }}>
-                <img
-                  src="/QRQR.jpeg"
-                  alt="QR Pago"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              {isTestEnv ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="bg-white rounded-lg p-2" style={{ width: '160px', height: '160px' }}>
+                    <img
+                      src={`https://chart.googleapis.com/chart?chs=156x156&cht=qr&chl=${encodeURIComponent(`https://www.yape.com.pe/yape/transfer?phone=906237356&amount=${realTotal.toFixed(2)}&concept=Santo+Dilema`)}&choe=UTF-8`}
+                      alt="QR Yape con monto"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <span className="text-[10px] text-green-400/70 italic">QR con monto prellenado</span>
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg p-2" style={{ width: '140px', height: '140px' }}>
+                  <img
+                    src="/QRQR.jpeg"
+                    alt="QR Pago"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Número para copiar */}
