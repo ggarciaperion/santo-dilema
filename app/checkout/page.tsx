@@ -7,7 +7,6 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
-import QRCode from "qrcode";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -204,7 +203,7 @@ export default function CheckoutPage() {
   const [couponValid, setCouponValid] = useState(false);
   const [isOpen, setIsOpen] = useState(isBusinessOpen());
   const [isTestEnv, setIsTestEnv] = useState(false);
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -221,13 +220,13 @@ export default function CheckoutPage() {
 
   // Generar QR con monto prellenado (solo en test env)
   useEffect(() => {
-    if (isTestEnv && showQrPayment && qrCanvasRef.current) {
+    if (isTestEnv && showQrPayment) {
       const plinUrl = `plin://pay?phone=906237356&amount=${realTotal.toFixed(2)}&description=Santo+Dilema`;
-      QRCode.toCanvas(qrCanvasRef.current, plinUrl, {
-        width: 156,
-        margin: 1,
-        color: { dark: '#000000', light: '#ffffff' },
-      }).catch((err: Error) => console.error('QR error:', err));
+      import('qrcode').then((QRCode) => {
+        QRCode.toDataURL(plinUrl, { width: 156, margin: 1 })
+          .then((url: string) => setQrDataUrl(url))
+          .catch((err: Error) => console.error('QR error:', err));
+      });
     }
   }, [isTestEnv, showQrPayment, realTotal]);
 
@@ -1356,7 +1355,13 @@ export default function CheckoutPage() {
               {isTestEnv ? (
                 <div className="flex flex-col items-center gap-1.5">
                   <div className="bg-white rounded-lg p-2" style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <canvas ref={qrCanvasRef} style={{ display: 'block' }} />
+                    {qrDataUrl ? (
+                      <img src={qrDataUrl} alt="QR Plin con monto" style={{ width: '156px', height: '156px' }} />
+                    ) : (
+                      <div style={{ width: '156px', height: '156px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span className="text-gray-400 text-xs">Cargando QR...</span>
+                      </div>
+                    )}
                   </div>
                   <span className="text-[10px] text-green-400/70 italic">QR con monto prellenado</span>
                 </div>
