@@ -50,8 +50,7 @@ const products: Product[] = [
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
     description: "Para los que se cuidan sin aburrirse. Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Aderezo de yogurt griego que no te esperas.",
-    price: 20.00,
-    originalPrice: 23.50,
+    price: 23.50,
     image: "/3.png",
     category: "fit",
   },
@@ -247,7 +246,7 @@ export default function FitPage() {
 
   // Auto-avanzar carrusel de banner cada 5 segundos
   useEffect(() => {
-    const t = setInterval(() => setBannerSlide(s => (s + 1) % 3), 5000);
+    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
     return () => clearInterval(t);
   }, []);
 
@@ -676,9 +675,6 @@ export default function FitPage() {
             style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
           >
             <div className="w-full flex-shrink-0">
-              <img src="/flyer1502movilfit.png" alt="Promo 15 Feb" className="w-full h-auto block" />
-            </div>
-            <div className="w-full flex-shrink-0">
               <video src="/SANVALENTINMOVIL.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
             </div>
             <div className="w-full flex-shrink-0">
@@ -687,7 +683,7 @@ export default function FitPage() {
           </div>
           {/* Dots */}
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-            {[0, 1, 2].map(i => (
+            {[0, 1].map(i => (
               <button key={i} onClick={() => setBannerSlide(i)}
                 className={`w-2 h-2 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
             ))}
@@ -701,9 +697,6 @@ export default function FitPage() {
             style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
           >
             <div className="w-full flex-shrink-0">
-              <img src="/flyer1502webfit.png" alt="Promo 15 Feb" className="w-full h-auto block" />
-            </div>
-            <div className="w-full flex-shrink-0">
               <video src="/SANVALENTINWEB.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
             </div>
             <div className="w-full flex-shrink-0">
@@ -712,7 +705,7 @@ export default function FitPage() {
           </div>
           {/* Dots */}
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
-            {[0, 1, 2].map(i => (
+            {[0, 1].map(i => (
               <button key={i} onClick={() => setBannerSlide(i)}
                 className={`w-2.5 h-2.5 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
             ))}
@@ -741,7 +734,7 @@ export default function FitPage() {
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl shadow-cyan-500/30 snap-center md:snap-none border-2 md:border-2 border-cyan-400
-                    ${product.id === 'ensalada-caesar' && !isSoldOut ? 'promo-border-pulse' : 'neon-border-fit'}
+                    neon-border-fit
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
@@ -785,13 +778,6 @@ export default function FitPage() {
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
-                    {product.id === 'ensalada-caesar' && !isSoldOut && (
-                      <div className="absolute top-2 left-0 right-0 flex justify-center z-20">
-                        <span className="ultima-unidades-badge text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-black" style={{ background: 'linear-gradient(90deg, #f59e0b, #ef4444, #f59e0b)', backgroundSize: '200% 100%' }}>
-                          🔥 Últimas unidades
-                        </span>
-                      </div>
-                    )}
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
                         <div
@@ -817,20 +803,9 @@ export default function FitPage() {
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
                       <div className="flex flex-col">
-                        {(product as any).originalPrice ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-gray-500 text-xs md:text-sm line-through">
-                              S/ {(product as any).originalPrice.toFixed(2)}
-                            </span>
-                            <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
-                              S/ {product.price.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
-                            S/ {product.price.toFixed(2)}
-                          </span>
-                        )}
+                        <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                          S/ {product.price.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
