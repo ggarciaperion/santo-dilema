@@ -181,7 +181,6 @@ export default function CheckoutPage() {
   const [isSearchingCustomer, setIsSearchingCustomer] = useState(false);
   const [customerFound, setCustomerFound] = useState(false);
   const [showDniSearch, setShowDniSearch] = useState(true);
-  const [showDeliveryInfoModal, setShowDeliveryInfoModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPreLaunchModal, setShowPreLaunchModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -398,7 +397,7 @@ export default function CheckoutPage() {
       setShowPreLaunchModal(true);
       return;
     }
-    setShowDeliveryInfoModal(true);
+    setShowPaymentModal(true);
   };
 
   const confirmOrder = async (overridePaymentMethod?: string) => {
@@ -1058,65 +1057,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-
-      {/* Modal de Info de Delivery */}
-      {showDeliveryInfoModal && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowDeliveryInfoModal(false);
-          }}
-        >
-          <div
-            className="bg-gray-900 rounded-2xl border border-fuchsia-500/30 max-w-xs w-full p-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-center mb-3">
-              <Image
-                src="/logoprincipal.png"
-                alt="Santo Dilema"
-                width={150}
-                height={40}
-                className="h-8 w-auto"
-              />
-            </div>
-
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="text-2xl">🛵</span>
-              <h3 className="text-base font-bold text-white">Info de Delivery</h3>
-            </div>
-
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 mb-3">
-              <p className="text-amber-400 font-bold text-xs text-center mb-3">
-                ⚠️ El precio del pedido no incluye delivery
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center bg-gray-800/50 rounded-lg px-3 py-2">
-                  <span className="text-gray-300 text-xs">📍 Chancay Centro</span>
-                  <span className="text-fuchsia-300 font-black text-sm">S/ 4.00</span>
-                </div>
-                <div className="flex justify-between items-start bg-gray-800/50 rounded-lg px-3 py-2">
-                  <span className="text-gray-300 text-xs">📍 Chancay Alrededores</span>
-                  <span className="text-fuchsia-300 font-black text-sm">S/ 5 - S/ 9</span>
-                </div>
-              </div>
-              <p className="text-gray-500 text-[10px] text-center mt-3 leading-tight">
-                El motorizado coordinará contigo el costo exacto al momento de la entrega.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                setShowDeliveryInfoModal(false);
-                setShowPaymentModal(true);
-              }}
-              className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-3 rounded-xl text-sm transition-all neon-border-purple"
-            >
-              Entendido, continuar →
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Modal de Selección de Método de Pago */}
       {showPaymentModal && !showQrPayment && !showContraEntregaModal && (
