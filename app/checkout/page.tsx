@@ -142,13 +142,13 @@ const fitProducts = [
   {
     id: "ensalada-clasica",
     name: "CLÁSICA FRESH BOWL",
-    price: 18.90,
+    price: 18.50,
     image: "/clasica-fresh-bowl.png",
   },
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    price: 24.90,
+    price: 22.50,
     image: "/cesar-power-bowl.png",
   },
   {
@@ -160,8 +160,8 @@ const fitProducts = [
   {
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
-    price: 21.90,
-    image: "/tuna-fresh-bowl.png",
+    price: 23.50,
+    image: "/4.png",
   },
 ];
 
@@ -992,17 +992,6 @@ export default function CheckoutPage() {
                 )}
               </>
             )}
-          </div>
-
-          {/* Nota de Delivery */}
-          <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-3 mb-2 md:mb-3">
-            <div className="flex items-center gap-2.5 bg-sky-950/60 border border-sky-500/30 rounded-xl px-3 py-2.5 md:py-3">
-              <span className="text-xl md:text-2xl flex-shrink-0">🛵</span>
-              <div>
-                <p className="text-sky-300 font-bold text-[11px] md:text-xs leading-tight">El precio total no incluye el costo de delivery</p>
-                <p className="text-sky-400/70 text-[10px] md:text-[11px] mt-0.5 leading-tight">El motorizado coordinará contigo el costo al momento de la entrega.</p>
-              </div>
-            </div>
           </div>
 
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
