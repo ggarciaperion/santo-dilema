@@ -435,10 +435,20 @@ export default function DeliveryPage() {
                               </span>
                             </div>
                             <div className="flex-1">
-                              <h4 className="text-white font-bold">{item.name}</h4>
-                              <p className="text-blue-400 font-black text-sm">
-                                S/ {(item.price * item.quantity).toFixed(2)}
-                              </p>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="text-white font-bold">{item.name}</h4>
+                                {item.discountApplied && <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">🔥 PROMO</span>}
+                              </div>
+                              {item.discountApplied ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-gray-500 line-through text-xs">S/ {((item.originalPrice || item.price) * item.quantity).toFixed(2)}</span>
+                                  <span className="text-blue-400 font-black text-sm">S/ {(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                              ) : (
+                                <p className="text-blue-400 font-black text-sm">
+                                  S/ {(item.price * item.quantity).toFixed(2)}
+                                </p>
+                              )}
                             </div>
                           </div>
 

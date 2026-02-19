@@ -640,12 +640,15 @@ export default function FatPage() {
     // Guardar la orden completada
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
+    const hasPromoSantoPicante = product.id === "pequeno-dilema" && orderSalsas.includes("buffalo-picante");
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: qty,
       salsas: orderSalsas,
       complementIds: complementsInCart[product.id] || [],
-      finalPrice: product.price
+      originalPrice: product.price,
+      finalPrice: hasPromoSantoPicante ? 16 : product.price,
+      discountApplied: hasPromoSantoPicante
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
@@ -1089,9 +1092,17 @@ export default function FatPage() {
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
-                      <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
-                        S/ {product.price.toFixed(2)}
-                      </span>
+                      {product.id === "pequeno-dilema" && currentSalsas.includes("buffalo-picante") ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-gray-500 line-through text-xs md:text-sm">S/ 18.50</span>
+                          <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 16.00</span>
+                          <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">PROMO</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
+                          S/ {product.price.toFixed(2)}
+                        </span>
+                      )}
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
                           onClick={(e) => {
@@ -1190,20 +1201,28 @@ export default function FatPage() {
                               const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
                               const canAddMore = count < maxSalsaCount && canSelect;
                               const showAddButton = canAddMore;
+                              const isPromoSalsa = product.id === "pequeno-dilema" && salsa.id === "buffalo-picante";
 
                               return (
                                 <div
                                   key={salsa.id}
-                                  className="rounded p-1.5 md:p-2 border bg-gray-800/30 border-amber-500/10"
+                                  className={`rounded p-1.5 md:p-2 border ${isPromoSalsa ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]' : 'bg-gray-800/30 border-amber-500/10'}`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex-1">
                                       <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
                                         {salsa.name}
+                                        {isPromoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
                                       </div>
                                       <p className="text-[9px] md:text-[10px] text-gray-400 italic mt-0.5">
                                         {salsa.description}
                                       </p>
+                                      {isPromoSalsa && (
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                          <span className="text-[9px] text-gray-500 line-through">S/ 18.50</span>
+                                          <span className="text-[9px] text-amber-400 font-bold">→ S/ 16.00 con esta salsa</span>
+                                        </div>
+                                      )}
                                     </div>
                                     <div className="flex items-center gap-1 md:gap-1.5 ml-2">
                                       {count > 0 && (

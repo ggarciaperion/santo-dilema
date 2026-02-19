@@ -927,8 +927,14 @@ export default function CheckoutPage() {
                         )}
                       </div>
                     </div>
-                    <div className="text-amber-400 font-bold text-xs md:text-sm gold-glow flex-shrink-0">
-                      <span>S/ {productTotal.toFixed(2)}</span>
+                    <div className="text-right flex-shrink-0">
+                      {order.discountApplied && (
+                        <div className="flex flex-col items-end gap-0.5 mb-0.5">
+                          <span className="text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">🔥 PROMO</span>
+                          <span className="text-gray-500 line-through text-[9px]">S/ {((order.originalPrice ?? productPrice) * order.quantity).toFixed(2)}</span>
+                        </div>
+                      )}
+                      <span className="text-amber-400 font-bold text-xs md:text-sm gold-glow">S/ {productTotal.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
