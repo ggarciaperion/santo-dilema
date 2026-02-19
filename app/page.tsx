@@ -10,6 +10,7 @@ const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showSorteoModal, setShowSorteoModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
 
@@ -18,6 +19,10 @@ export default function Home() {
     const hasSeenWelcome = sessionStorage.getItem("santo-dilema-welcome");
     if (!hasSeenWelcome) {
       setShowWelcomeModal(true);
+    }
+    const hasSeenSorteo = sessionStorage.getItem("santo-dilema-sorteo");
+    if (!hasSeenSorteo) {
+      setShowSorteoModal(true);
     }
   }, []);
 
@@ -45,8 +50,34 @@ export default function Home() {
     sessionStorage.setItem("santo-dilema-welcome", "true");
   };
 
+  const closeSorteoModal = () => {
+    setShowSorteoModal(false);
+    sessionStorage.setItem("santo-dilema-sorteo", "true");
+  };
+
   return (
     <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
+      {/* Modal de Sorteo */}
+      {showSorteoModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="relative max-w-sm w-full md:max-w-lg animate-fade-in">
+            {/* Botón cerrar */}
+            <button
+              onClick={closeSorteoModal}
+              className="absolute -top-3 -right-3 z-10 w-8 h-8 bg-white text-black rounded-full flex items-center justify-center font-black text-base shadow-lg hover:bg-gray-200 transition-all"
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+            <img
+              src="/sorteo.png"
+              alt="Sorteo Santo Dilema"
+              className="w-full h-auto rounded-xl shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Modal de Bienvenida */}
       {showWelcomeModal && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
