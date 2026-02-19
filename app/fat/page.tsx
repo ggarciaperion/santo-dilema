@@ -198,12 +198,23 @@ export default function FatPage() {
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const router = useRouter();
 
+  // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
+  const FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
+  const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
+  const hasComboDiscount =
+    completedOrders.some(o => FAT_IDS.includes(o.productId)) &&
+    completedOrders.some(o => FIT_IDS.includes(o.productId));
+
   const completedTotal = completedOrders.reduce((total, order) => {
-    const unitPrice = order.finalPrice ?? order.originalPrice ?? (() => {
+    const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
       return product ? product.price : 0;
     })();
+    // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
+    const unitPrice = (hasComboDiscount && order.discountApplied)
+      ? (order.originalPrice ?? basePrice)
+      : basePrice;
     let orderTotal = unitPrice * order.quantity;
     order.complementIds.forEach(compId => {
       const complement = availableComplements[compId];
@@ -212,11 +223,6 @@ export default function FatPage() {
     return total + orderTotal;
   }, 0);
 
-  const FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
-  const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
-  const hasComboDiscount =
-    completedOrders.some(o => FAT_IDS.includes(o.productId)) &&
-    completedOrders.some(o => FIT_IDS.includes(o.productId));
   const comboDiscountAmount = hasComboDiscount ? 5 : 0;
   const comboTotal = completedTotal - comboDiscountAmount;
 
@@ -1556,13 +1562,13 @@ export default function FatPage() {
                             {/* Precio del menú */}
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              {order.discountApplied ? (
+                              {order.discountApplied && !hasComboDiscount ? (
                                 <span className="flex items-center gap-1.5">
                                   <span className="text-gray-500 line-through text-[10px]">S/ {((order.originalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
                                   <span className="text-amber-400 font-bold">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
                                 </span>
                               ) : (
-                                <span className="text-amber-400/80">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
+                                <span className="text-amber-400/80">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? product.price) : (order.finalPrice ?? product.price)) * order.quantity).toFixed(2)}</span>
                               )}
                             </div>
 
@@ -1612,7 +1618,10 @@ export default function FatPage() {
                     </div>
                     <div className="text-amber-400 font-bold text-sm md:text-base gold-glow">
                       S/ {(() => {
-                        const unitPrice = order.finalPrice ?? product.price;
+                        const basePrice = order.finalPrice ?? product.price;
+                        const unitPrice = (hasComboDiscount && order.discountApplied)
+                          ? (order.originalPrice ?? product.price)
+                          : basePrice;
                         const productTotal = unitPrice * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
                           return sum + (availableComplements[compId]?.price || 0);
@@ -1624,6 +1633,13 @@ export default function FatPage() {
                 );
               })}
             </div>
+
+            {/* Aviso promos no acumulables */}
+            {hasComboDiscount && completedOrders.some(o => o.discountApplied) && (
+              <p className="text-center text-[10px] md:text-xs text-gray-400 italic mt-3 px-2">
+                * Las promociones no son acumulables. Se aplica el descuento más favorable.
+              </p>
+            )}
 
             {/* Banner de descuento COMBO FAT + FIT */}
             {hasComboDiscount && (

@@ -231,6 +231,14 @@ export default function CheckoutPage() {
     setIsLoadingOrders(false);
   }, []);
 
+  // Detectar combo FAT + FIT para descuento S/ 5.00 (debe estar ANTES de subtotal)
+  const COMBO_FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
+  const COMBO_FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
+  const hasComboDiscount =
+    completedOrders.some(o => COMBO_FAT_IDS.includes(o.productId)) &&
+    completedOrders.some(o => COMBO_FIT_IDS.includes(o.productId));
+  const comboDiscountAmount = hasComboDiscount ? 5 : 0;
+
   // Calcular el total real basado en completedOrders
   const subtotal = completedOrders.reduce((total, order) => {
     // Buscar el producto en los arrays
@@ -240,7 +248,11 @@ export default function CheckoutPage() {
 
     if (!product) return total;
 
-    const productPrice = order.finalPrice ?? product.price;
+    // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
+    const basePrice = order.finalPrice ?? product.price;
+    const productPrice = (hasComboDiscount && order.discountApplied)
+      ? (order.originalPrice ?? product.price)
+      : basePrice;
     const productTotal = productPrice * order.quantity;
 
     // Calcular total de complementos
@@ -250,14 +262,6 @@ export default function CheckoutPage() {
 
     return total + productTotal + complementsTotal;
   }, 0);
-
-  // Detectar combo FAT + FIT para descuento S/ 5.00
-  const COMBO_FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
-  const COMBO_FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
-  const hasComboDiscount =
-    completedOrders.some(o => COMBO_FAT_IDS.includes(o.productId)) &&
-    completedOrders.some(o => COMBO_FIT_IDS.includes(o.productId));
-  const comboDiscountAmount = hasComboDiscount ? 5 : 0;
 
   // Aplicar descuento de cupón si es válido
   const couponDiscountAmount = couponValid ? ((subtotal - comboDiscountAmount) * couponDiscount) / 100 : 0;
@@ -873,7 +877,11 @@ export default function CheckoutPage() {
 
               if (!product) return null;
 
-              const productPrice = order.finalPrice ?? product.price;
+              // Promos no acumulables: si combo activo, ignorar descuento individual
+              const basePrice = order.finalPrice ?? product.price;
+              const productPrice = (hasComboDiscount && order.discountApplied)
+                ? (order.originalPrice ?? product.price)
+                : basePrice;
               const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -928,7 +936,7 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      {order.discountApplied && (
+                      {order.discountApplied && !hasComboDiscount && (
                         <div className="flex flex-col items-end gap-0.5 mb-0.5">
                           <span className="text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">🔥 PROMO</span>
                           <span className="text-gray-500 line-through text-[9px]">S/ {((order.originalPrice ?? productPrice) * order.quantity).toFixed(2)}</span>
@@ -942,6 +950,13 @@ export default function CheckoutPage() {
             })}
           </div>
 
+
+          {/* Aviso promos no acumulables */}
+          {hasComboDiscount && completedOrders.some(o => o.discountApplied) && (
+            <p className="text-center text-[9px] md:text-[10px] text-gray-400 italic mb-2 px-1">
+              * Las promociones no son acumulables. Se aplica el descuento más favorable.
+            </p>
+          )}
 
           {/* Campo de cupón */}
           <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
