@@ -92,7 +92,7 @@ const fitProducts: Product[] = [
     name: "TUNA FRESH BOWL",
     description: "Lechuga romana, atún en trozos, tomate cherry, pepino, choclo, palta y huevo. Aderezo a elección.",
     price: 23.50,
-    image: "/tuna-fresh-bowl.png",
+    image: "/4.png",
     category: "fit",
   },
 ];
