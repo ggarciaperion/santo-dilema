@@ -96,7 +96,7 @@ export default function Home() {
 
             {/* Título de bienvenida */}
             <h2 className="text-lg md:text-2xl font-black text-center mb-3 md:mb-4 text-fuchsia-400 neon-glow-purple">
-              Bienvenido a la primera Dark Kitchen disruptiva de Chancay
+              La primera cocina secreta PREMIUM de CHANCAY 🔥 No tenemos local físico, somos full delivery
             </h2>
 
             {/* Información de horarios */}
