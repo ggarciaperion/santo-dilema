@@ -246,7 +246,7 @@ export default function FitPage() {
 
   // Auto-avanzar carrusel de banner cada 5 segundos
   useEffect(() => {
-    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
+    const t = setInterval(() => setBannerSlide(s => (s + 1) % 3), 5000);
     return () => clearInterval(t);
   }, []);
 
@@ -675,6 +675,9 @@ export default function FitPage() {
             style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
           >
             <div className="w-full flex-shrink-0">
+              <img src="/SPMOVIL.png" alt="Promo SP" className="w-full h-auto block" />
+            </div>
+            <div className="w-full flex-shrink-0">
               <video src="/5solesmovil.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
             </div>
             <div className="w-full flex-shrink-0">
@@ -683,7 +686,7 @@ export default function FitPage() {
           </div>
           {/* Dots */}
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-            {[0, 1].map(i => (
+            {[0, 1, 2].map(i => (
               <button key={i} onClick={() => setBannerSlide(i)}
                 className={`w-2 h-2 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
             ))}
@@ -697,6 +700,9 @@ export default function FitPage() {
             style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
           >
             <div className="w-full flex-shrink-0">
+              <img src="/SPWEB.png" alt="Promo SP" className="w-full h-auto block" />
+            </div>
+            <div className="w-full flex-shrink-0">
               <video src="/5solesweb.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
             </div>
             <div className="w-full flex-shrink-0">
@@ -705,7 +711,7 @@ export default function FitPage() {
           </div>
           {/* Dots */}
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
-            {[0, 1].map(i => (
+            {[0, 1, 2].map(i => (
               <button key={i} onClick={() => setBannerSlide(i)}
                 className={`w-2.5 h-2.5 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
             ))}
