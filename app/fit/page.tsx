@@ -162,7 +162,7 @@ export default function FitPage() {
   const hasComboDiscount =
     completedOrders.some(o => FAT_IDS.includes(o.productId)) &&
     completedOrders.some(o => FIT_IDS.includes(o.productId));
-  const comboDiscountAmount = hasComboDiscount ? completedTotal * 0.14 : 0;
+  const comboDiscountAmount = hasComboDiscount ? 5 : 0;
   const comboTotal = completedTotal - comboDiscountAmount;
 
   const navigateToCheckout = () => {
@@ -1184,7 +1184,7 @@ export default function FitPage() {
               <div className="mt-4 bg-fuchsia-500/10 border-2 border-fuchsia-500/50 rounded-lg p-3 md:p-4">
                 <p className="text-fuchsia-300 text-xs md:text-sm text-center font-semibold flex items-center justify-center gap-2">
                   <span className="text-base md:text-lg">🔥</span>
-                  ¡Combo FAT + FIT activado! <span className="font-black text-fuchsia-200">14% de descuento</span>
+                  ¡Combo FAT + FIT activado! <span className="font-black text-fuchsia-200">S/ 5.00 de descuento</span>
                 </p>
                 <div className="flex justify-center items-center gap-3 mt-1">
                   <span className="text-gray-400 line-through text-xs">S/ {completedTotal.toFixed(2)}</span>
@@ -1223,7 +1223,7 @@ export default function FitPage() {
                         S/ {completedTotal.toFixed(2)}
                       </span>
                       <span className="bg-fuchsia-500 text-white text-[10px] md:text-xs font-black px-1.5 py-0.5 rounded">
-                        COMBO -14%
+                        COMBO -S/ 5
                       </span>
                     </div>
                     <span className="text-amber-400 font-black text-xl md:text-3xl gold-glow">

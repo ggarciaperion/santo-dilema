@@ -2314,8 +2314,8 @@ export default function AdminPage() {
                           const productName = item.name || 'Sin nombre';
                           // Usar precio catálogo (ya no hay promo 30%)
                           const catalogPrice = item.price || 0;
-                          // Aplicar factor del combo 14% y cupón si el pedido los tiene
-                          const comboFactor = 1 - ((order as any).comboDiscount > 0 ? 0.14 : 0);
+                          // El combo ahora es descuento fijo S/ 5, no aplica factor por item
+                          const comboFactor = 1;
                           const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
                           const productPrice = catalogPrice * comboFactor * couponFactor;
                           const quantity = item.quantity || 0;
@@ -2344,7 +2344,7 @@ export default function AdminPage() {
                                     <div className="flex items-center gap-1.5 flex-wrap">
                                       <span className="text-gray-500 line-through text-xs">S/ {(catalogPrice * quantity).toFixed(2)}</span>
                                       <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                      {(order as any).comboDiscount > 0 && <span className="text-[9px] bg-fuchsia-600/30 text-fuchsia-400 px-1 rounded font-bold">COMBO -14%</span>}
+                                      {(order as any).comboDiscount > 0 && <span className="text-[9px] bg-fuchsia-600/30 text-fuchsia-400 px-1 rounded font-bold">COMBO -S/ 5</span>}
                                       {(order as any).couponDiscount > 0 && <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>}
                                     </div>
                                   ) : (
@@ -2451,7 +2451,7 @@ export default function AdminPage() {
                     <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
                     {(order as any).comboDiscount > 0 && (
                       <p className="text-[9px] bg-fuchsia-900/60 text-fuchsia-200 rounded px-1 mt-1 font-bold">
-                        🔥 Combo FAT+FIT -14%
+                        🔥 Combo FAT+FIT -S/ 5
                       </p>
                     )}
                     {(order as any).couponDiscount > 0 && (
