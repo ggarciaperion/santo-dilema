@@ -1556,7 +1556,14 @@ export default function FatPage() {
                             {/* Precio del menú */}
                             <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              <span className="text-amber-400/80">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
+                              {order.discountApplied ? (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="text-gray-500 line-through text-[10px]">S/ {((order.originalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
+                                  <span className="text-amber-400 font-bold">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
+                                </span>
+                              ) : (
+                                <span className="text-amber-400/80">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
+                              )}
                             </div>
 
                             {/* Salsas seleccionadas - solo para ordenes de fat */}
