@@ -39,7 +39,7 @@ const products: Product[] = [
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
     description: "6 alitas crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa no vas a querer quedarte en solo 6.",
-    price: 18.50,
+    price: 20.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
   },
@@ -47,7 +47,7 @@ const products: Product[] = [
     id: "duo-dilema",
     name: "Dúo Dilema",
     description: "12 alitas con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
-    price: 32.50,
+    price: 34.00,
     image: "/duo-dilema.png?v=3",
     category: "fat",
   },
@@ -55,7 +55,7 @@ const products: Product[] = [
     id: "santo-pecado",
     name: "Santo Pecado",
     description: "18 alitas, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
-    price: 45.00,
+    price: 47.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",
   },
@@ -1094,7 +1094,7 @@ export default function FatPage() {
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
                       {product.id === "pequeno-dilema" && currentSalsas.includes("buffalo-picante") ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-gray-500 line-through text-xs md:text-sm">S/ 18.50</span>
+                          <span className="text-gray-500 line-through text-xs md:text-sm">S/ 20.00</span>
                           <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 16.00</span>
                           <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">PROMO</span>
                         </div>
@@ -1219,7 +1219,7 @@ export default function FatPage() {
                                       </p>
                                       {isPromoSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
-                                          <span className="text-[9px] text-gray-500 line-through">S/ 18.50</span>
+                                          <span className="text-[9px] text-gray-500 line-through">S/ 20.00</span>
                                           <span className="text-[9px] text-amber-400 font-bold">→ S/ 16.00 con esta salsa</span>
                                         </div>
                                       )}

@@ -6156,9 +6156,9 @@ export default function AdminPage() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 18.50" },
-                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 32.50" },
-                { id: "santo-pecado", name: "Santo Pecado", price: "S/ 45.00" },
+                { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 20.00" },
+                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 34.00" },
+                { id: "santo-pecado", name: "Santo Pecado", price: "S/ 47.00" },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
