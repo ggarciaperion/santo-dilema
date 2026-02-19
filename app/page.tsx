@@ -59,12 +59,12 @@ export default function Home() {
     <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
       {/* Modal de Sorteo */}
       {showSorteoModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="relative max-w-sm w-full md:max-w-lg animate-fade-in">
-            {/* Botón cerrar */}
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
+          <div className="relative animate-fade-in">
+            {/* Botón cerrar - dentro de la imagen, esquina superior derecha */}
             <button
               onClick={closeSorteoModal}
-              className="absolute -top-3 -right-3 z-10 w-8 h-8 bg-white text-black rounded-full flex items-center justify-center font-black text-base shadow-lg hover:bg-gray-200 transition-all"
+              className="absolute top-2 right-2 z-10 w-8 h-8 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center font-black text-sm shadow-lg transition-all"
               aria-label="Cerrar"
             >
               ✕
@@ -72,7 +72,7 @@ export default function Home() {
             <img
               src="/sorteo.png"
               alt="Sorteo Santo Dilema"
-              className="w-full h-auto rounded-xl shadow-2xl"
+              className="block w-auto h-auto max-w-[min(90vw,480px)] max-h-[85vh] rounded-xl shadow-2xl object-contain"
             />
           </div>
         </div>
