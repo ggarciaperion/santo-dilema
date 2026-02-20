@@ -178,6 +178,7 @@ export default function CheckoutPage() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showMobileFormModal, setShowMobileFormModal] = useState(false);
+  const [mobileFormCompleted, setMobileFormCompleted] = useState(false);
   const [showPreLaunchModal, setShowPreLaunchModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [showQrPayment, setShowQrPayment] = useState(false);
@@ -685,7 +686,7 @@ export default function CheckoutPage() {
 
             {/* Vista móvil - Botón o estado completado */}
             <div className="md:hidden">
-              {isFormValid() ? (
+              {mobileFormCompleted ? (
                 <div className="bg-green-500/10 border-2 border-green-500/30 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -701,9 +702,20 @@ export default function CheckoutPage() {
                       type="button"
                       onClick={() => setShowMobileFormModal(true)}
                       className="w-10 h-10 bg-fuchsia-500/20 hover:bg-fuchsia-500/30 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                      title="Editar datos"
                     >
                       <span className="text-fuchsia-400 text-lg">✏️</span>
                     </button>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-green-500/20">
+                    <div className="space-y-1 text-xs">
+                      <p className="text-gray-400">
+                        <span className="text-gray-500">📱</span> {formData.phone}
+                      </p>
+                      <p className="text-gray-400">
+                        <span className="text-gray-500">📍</span> {formData.address}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -1147,6 +1159,7 @@ export default function CheckoutPage() {
                 e.preventDefault();
                 // Validar que todos los campos estén completos antes de cerrar
                 if (formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "") {
+                  setMobileFormCompleted(true);
                   setShowMobileFormModal(false);
                 }
               }}
