@@ -271,7 +271,7 @@ export default function CheckoutPage() {
       case 'chancay-centro': return 4;
       case 'puerto': return 5;
       case 'peralvillo': return 7;
-      case 'la-balanza': return 0;
+      case 'la-balanza': return 5;
       case 'otros': return 0;
       default: return 0;
     }
@@ -1009,7 +1009,7 @@ export default function CheckoutPage() {
                     }`}
                   >
                     <span className="text-xs md:text-sm">📍 La Balanza</span>
-                    <span className="text-xs md:text-sm text-gray-400">A coordinar</span>
+                    <span className="text-xs md:text-sm font-bold">S/ 5.00</span>
                   </button>
 
                   <div>
@@ -1018,14 +1018,16 @@ export default function CheckoutPage() {
                       onClick={() => {
                         setDeliveryOption('otros');
                       }}
-                      className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
+                      className={`w-full flex items-start px-3 py-2 rounded-lg transition-all ${
                         deliveryOption === 'otros'
                           ? 'bg-sky-600 text-white'
                           : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
                       }`}
                     >
-                      <span className="text-xs md:text-sm">📍 Otros</span>
-                      <span className="text-xs md:text-sm text-gray-400">A coordinar</span>
+                      <div className="flex-1 text-left">
+                        <div className="text-xs md:text-sm">📍 Otros</div>
+                        <div className="text-[10px] md:text-xs text-gray-400 mt-0.5">Se coordina con el motorizado al momento de la entrega</div>
+                      </div>
                     </button>
                     {deliveryOption === 'otros' && (
                       <input
