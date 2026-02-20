@@ -46,10 +46,8 @@ const availableComplements = generateAvailableComplements();
 interface Order {
   id: string;
   name: string;
-  dni?: string;
   phone: string;
   address: string;
-  email?: string;
   notes?: string;
   cart?: any[];
   totalItems?: number;
@@ -861,7 +859,7 @@ export default function AdminPage() {
     if (allOrders.length === 0) return;
 
     const headers = [
-      "ID Pedido", "Fecha", "Nombre", "DNI", "Teléfono", "Dirección",
+      "ID Pedido", "Fecha", "Nombre", "Teléfono", "Dirección",
       "Productos", "Total (S/)", "Descuento Combo (S/)", "Descuento Cupón (S/)",
       "Costo Delivery (S/)", "Zona Delivery", "Método de Pago", "Estado", "Cupón"
     ];
@@ -875,7 +873,6 @@ export default function AdminPage() {
         order.id,
         fecha,
         order.name,
-        order.dni,
         order.phone,
         order.address,
         productos,
@@ -1275,8 +1272,8 @@ export default function AdminPage() {
       : orders;
 
     ordersToProcess.forEach((order: any) => {
-      const dni = order.dni;
-      if (!dni) return;
+      const phone = order.phone;
+      if (!phone) return;
 
       // Solo contabilizar pedidos entregados
       const isDelivered =
@@ -1289,13 +1286,11 @@ export default function AdminPage() {
         return;
       }
 
-      if (!customersMap.has(dni)) {
-        customersMap.set(dni, {
-          dni: dni,
+      if (!customersMap.has(phone)) {
+        customersMap.set(phone, {
+          phone: phone,
           name: order.name,
-          phone: order.phone,
           address: order.address,
-          email: order.email || "",
           orders: [],
           totalOrders: 0,
           totalSpent: 0,
@@ -1303,7 +1298,7 @@ export default function AdminPage() {
         });
       }
 
-      const customer = customersMap.get(dni);
+      const customer = customersMap.get(phone);
       customer.orders.push(order);
       customer.totalOrders += 1;
       customer.totalSpent += order.totalPrice || 0;
@@ -1312,9 +1307,7 @@ export default function AdminPage() {
       if (new Date(order.createdAt) > new Date(customer.lastOrderDate)) {
         customer.lastOrderDate = order.createdAt;
         customer.name = order.name;
-        customer.phone = order.phone;
         customer.address = order.address;
-        customer.email = order.email || "";
       }
     });
 
@@ -1409,8 +1402,6 @@ export default function AdminPage() {
         return lastOrder < fifteenDaysAgo;
       }),
 
-      // EMAIL PENDIENTE: Clientes sin email registrado
-      email_pending: allCustomers.filter((c: any) => !c.email || c.email.trim() === ""),
     };
   };
 
@@ -1422,10 +1413,8 @@ export default function AdminPage() {
     if (customerSearchTerm === "") return true;
     const searchLower = customerSearchTerm.toLowerCase();
     return (
-      customer.dni?.toLowerCase().includes(searchLower) ||
       customer.name?.toLowerCase().includes(searchLower) ||
       customer.phone?.includes(customerSearchTerm) ||
-      customer.email?.toLowerCase().includes(searchLower) ||
       customer.address?.toLowerCase().includes(searchLower)
     );
   });
@@ -2688,16 +2677,6 @@ export default function AdminPage() {
                 >
                   💤 Inactivos ({customerSegments.inactive.length})
                 </button>
-                <button
-                  onClick={() => setCustomerSegment("email_pending")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "email_pending"
-                      ? "bg-orange-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  📧 Email Pendiente ({customerSegments.email_pending.length})
-                </button>
               </div>
             </div>
           </section>
@@ -2730,7 +2709,7 @@ export default function AdminPage() {
                     <div className="flex items-start justify-between p-4 border-b border-fuchsia-500/30">
                       <div>
                         <h2 className="text-xl font-black text-white">{selectedCustomer.name}</h2>
-                        <p className="text-gray-400 text-xs mt-0.5">DNI {selectedCustomer.dni} · {selectedCustomer.phone}{selectedCustomer.email ? ` · ${selectedCustomer.email}` : ''}</p>
+                        <p className="text-gray-400 text-xs mt-0.5">{selectedCustomer.phone}</p>
                         <p className="text-gray-500 text-xs mt-0.5">{selectedCustomer.address}</p>
                       </div>
                       <button onClick={() => setSelectedCustomer(null)} className="text-gray-400 hover:text-white text-xl leading-none ml-4">✕</button>
@@ -2821,7 +2800,7 @@ export default function AdminPage() {
                       type="text"
                       value={customerSearchTerm}
                       onChange={(e) => setCustomerSearchTerm(e.target.value)}
-                      placeholder="Buscar cliente por DNI, nombre, teléfono, email..."
+                      placeholder="Buscar cliente por nombre, teléfono o dirección..."
                       className="w-full px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
                     />
                     <svg
@@ -2856,7 +2835,7 @@ export default function AdminPage() {
                       setCustomerSortDir(d => d === "asc" ? "desc" : "asc");
                     } else {
                       setCustomerSortKey(key);
-                      setCustomerSortDir(key === "name" || key === "dni" ? "asc" : "desc");
+                      setCustomerSortDir(key === "name" || key === "phone" ? "asc" : "desc");
                     }
                   };
                   const SortIcon = ({ col }: { col: string }) => {
@@ -2865,9 +2844,9 @@ export default function AdminPage() {
                   };
                   const sortedCustomers = [...customers].sort((a: any, b: any) => {
                     let aVal: any, bVal: any;
-                    if (customerSortKey === "dni") { aVal = a.dni || ""; bVal = b.dni || ""; }
+                    if (customerSortKey === "phone") { aVal = a.phone || ""; bVal = b.phone || ""; }
                     else if (customerSortKey === "name") { aVal = a.name || ""; bVal = b.name || ""; }
-                    else if (customerSortKey === "phone") { aVal = a.phone || ""; bVal = b.phone || ""; }
+                    else if (customerSortKey === "address") { aVal = a.address || ""; bVal = b.address || ""; }
                     else if (customerSortKey === "totalOrders") { aVal = a.totalOrders; bVal = b.totalOrders; }
                     else if (customerSortKey === "totalSpent") { aVal = a.totalSpent; bVal = b.totalSpent; }
                     else if (customerSortKey === "lastOrderDate") { aVal = new Date(a.lastOrderDate).getTime(); bVal = new Date(b.lastOrderDate).getTime(); }
@@ -2883,14 +2862,14 @@ export default function AdminPage() {
                       <table className="w-full">
                         <thead className="bg-fuchsia-500/10 border-b-2 border-fuchsia-500/30">
                           <tr>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("dni")}>
-                              DNI <SortIcon col="dni" />
+                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("phone")}>
+                              Teléfono <SortIcon col="phone" />
                             </th>
                             <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("name")}>
                               Nombre <SortIcon col="name" />
                             </th>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden md:table-cell" onClick={() => handleSort("phone")}>
-                              Teléfono <SortIcon col="phone" />
+                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden md:table-cell" onClick={() => handleSort("address")}>
+                              Dirección <SortIcon col="address" />
                             </th>
                             <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalOrders")}>
                               Pedidos <SortIcon col="totalOrders" />
@@ -2909,13 +2888,13 @@ export default function AdminPage() {
                             const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
                             return (
                               <tr
-                                key={customer.dni}
+                                key={customer.phone}
                                 onClick={() => setSelectedCustomer(customer)}
                                 className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 cursor-pointer transition-all ${idx % 2 === 0 ? "bg-black/20" : ""}`}
                               >
-                                <td className="p-3 text-fuchsia-400 font-bold text-sm">{customer.dni}</td>
+                                <td className="p-3 text-fuchsia-400 font-bold text-sm">{customer.phone}</td>
                                 <td className="p-3 text-white text-sm">{customer.name}</td>
-                                <td className="p-3 text-gray-300 text-sm hidden md:table-cell">{customer.phone}</td>
+                                <td className="p-3 text-gray-300 text-sm hidden md:table-cell">{customer.address}</td>
                                 <td className="p-3 text-center">
                                   <span className="inline-block px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400 font-bold text-sm">
                                     {customer.totalOrders}
@@ -5696,7 +5675,7 @@ export default function AdminPage() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-fuchsia-500/30">
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">DNI</th>
+                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Teléfono</th>
                             <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Cliente</th>
                             <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Código</th>
                             <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Estado</th>
@@ -5708,7 +5687,7 @@ export default function AdminPage() {
                         <tbody>
                           {coupons.map((coupon, index) => (
                             <tr key={coupon.id} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
-                              <td className="py-3 px-4 text-white text-sm font-mono">{coupon.dni}</td>
+                              <td className="py-3 px-4 text-white text-sm font-mono">{coupon.phone}</td>
                               <td className="py-3 px-4 text-white text-sm">{coupon.customerName}</td>
                               <td className="py-3 px-4">
                                 <code className="text-fuchsia-400 text-xs font-bold bg-black/50 px-2 py-1 rounded">
