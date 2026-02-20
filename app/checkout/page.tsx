@@ -1057,6 +1057,7 @@ export default function CheckoutPage() {
                     onClick={() => {
                       setDeliveryOption('chancay-centro');
                       setDeliveryCustomLocation('');
+                      setShowDeliveryOptions(false);
                     }}
                     className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
                       deliveryOption === 'chancay-centro'
@@ -1073,6 +1074,7 @@ export default function CheckoutPage() {
                     onClick={() => {
                       setDeliveryOption('puerto');
                       setDeliveryCustomLocation('');
+                      setShowDeliveryOptions(false);
                     }}
                     className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
                       deliveryOption === 'puerto'
@@ -1089,6 +1091,7 @@ export default function CheckoutPage() {
                     onClick={() => {
                       setDeliveryOption('peralvillo');
                       setDeliveryCustomLocation('');
+                      setShowDeliveryOptions(false);
                     }}
                     className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
                       deliveryOption === 'peralvillo'
@@ -1105,6 +1108,7 @@ export default function CheckoutPage() {
                     onClick={() => {
                       setDeliveryOption('la-balanza');
                       setDeliveryCustomLocation('');
+                      setShowDeliveryOptions(false);
                     }}
                     className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
                       deliveryOption === 'la-balanza'
@@ -1119,7 +1123,9 @@ export default function CheckoutPage() {
                   <div>
                     <button
                       type="button"
-                      onClick={() => setDeliveryOption('otros')}
+                      onClick={() => {
+                        setDeliveryOption('otros');
+                      }}
                       className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
                         deliveryOption === 'otros'
                           ? 'bg-sky-600 text-white'
