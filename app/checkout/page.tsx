@@ -171,16 +171,11 @@ export default function CheckoutPage() {
   const { clearCart } = useCart();
   const [formData, setFormData] = useState({
     name: "",
-    dni: "",
     phone: "",
     address: "",
-    email: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [isSearchingCustomer, setIsSearchingCustomer] = useState(false);
-  const [customerFound, setCustomerFound] = useState(false);
-  const [showDniSearch, setShowDniSearch] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPreLaunchModal, setShowPreLaunchModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -288,7 +283,6 @@ export default function CheckoutPage() {
   const isFormValid = () => {
     const basicValidation = (
       formData.name.trim() !== "" &&
-      formData.dni.length === 8 &&
       formData.phone.length === 9 &&
       formData.address.trim() !== ""
     );
@@ -313,8 +307,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!formData.dni || formData.dni.length !== 8) {
-      setCouponMessage("Completa tu DNI primero");
+    if (!formData.phone || formData.phone.length !== 9) {
+      setCouponMessage("Completa tu teléfono primero");
       return;
     }
 
@@ -328,7 +322,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           action: "validate",
           code: couponCode.trim().toUpperCase(),
-          dni: formData.dni,
+          phone: formData.phone,
         }),
       });
 
@@ -359,57 +353,16 @@ export default function CheckoutPage() {
     }
   }, [isLoadingOrders, completedOrders.length, orderPlaced, router]);
 
-  const handleNumberInput = (field: 'dni' | 'phone', value: string) => {
+  const handlePhoneInput = (value: string) => {
     // Solo permite números, sin espacios
     const numbersOnly = value.replace(/\D/g, '');
-    setFormData({ ...formData, [field]: numbersOnly });
+    setFormData({ ...formData, phone: numbersOnly });
   };
 
   const handleNameInput = (value: string) => {
     // Solo permite letras y espacios, convierte a mayúsculas
     const lettersOnly = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').toUpperCase();
     setFormData({ ...formData, name: lettersOnly });
-  };
-
-  const searchCustomerByDni = async (dni: string) => {
-    if (dni.length !== 8) return;
-
-    setIsSearchingCustomer(true);
-    try {
-      const response = await fetch(`/api/customers?dni=${dni}`);
-      const data = await response.json();
-
-      if (data.found) {
-        setFormData(data.customer);
-        setCustomerFound(true);
-        setShowDniSearch(false);
-      } else {
-        setCustomerFound(false);
-        setShowDniSearch(false);
-      }
-    } catch (error) {
-      console.error("Error al buscar cliente:", error);
-      setShowDniSearch(false);
-    } finally {
-      setIsSearchingCustomer(false);
-    }
-  };
-
-  const handleDniSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    searchCustomerByDni(formData.dni);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      dni: "",
-      phone: "",
-      address: "",
-      email: "",
-    });
-    setCustomerFound(false);
-    setShowDniSearch(true);
   };
 
   const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
@@ -440,10 +393,8 @@ export default function CheckoutPage() {
 
       // Agregar datos del formulario
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('dni', formData.dni);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('address', formData.address);
-      formDataToSend.append('email', formData.email);
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
       formDataToSend.append('totalItems', completedOrders.length.toString());
       formDataToSend.append('totalPrice', realTotal.toString());
@@ -489,7 +440,7 @@ export default function CheckoutPage() {
               body: JSON.stringify({
                 action: "mark-used",
                 code: couponCode,
-                dni: formData.dni,
+                phone: formData.phone,
               }),
             });
             console.log("✓ Cupón marcado como usado");
@@ -731,76 +682,9 @@ export default function CheckoutPage() {
               Finalizar Pedido
             </h1>
 
-            {showDniSearch ? (
-              /* DNI Search Form */
-              <form onSubmit={handleDniSearchSubmit} className="space-y-1.5 md:space-y-2">
-                <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg p-2 md:p-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-sm md:text-xl">🚀</span>
-                    <h3 className="text-xs md:text-sm font-bold text-fuchsia-400">Compra más rápido</h3>
-                  </div>
-                  <p className="text-[9px] md:text-[10px] text-gray-300 mb-1.5">
-                    Si ya compraste antes, ingresa tu DNI para autocompletar tus datos
-                  </p>
-
-                  <div>
-                    <label className="block text-[11px] md:text-[11px] font-bold text-fuchsia-400 mb-0.5">
-                      Ingresa tu DNI
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        required
-                        value={formData.dni}
-                        onChange={(e) => handleNumberInput('dni', e.target.value)}
-                        maxLength={8}
-                        className="flex-1 px-3 py-1.5 md:py-2 rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                        style={{ fontSize: '16px' }}
-                      />
-                      <button
-                        type="submit"
-                        disabled={isSearchingCustomer || formData.dni.length !== 8}
-                        className="px-3 md:px-4 py-1.5 md:py-2 bg-fuchsia-600 hover:bg-fuchsia-500 active:scale-95 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isSearchingCustomer ? "..." : "Buscar"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowDniSearch(false)}
-                    className="text-[11px] md:text-xs text-fuchsia-400 hover:text-fuchsia-300 underline transition-colors active:scale-95"
-                  >
-                    ¿Primera compra? Ingresa tus datos aquí
-                  </button>
-                </div>
-              </form>
-            ) : (
-              /* Full Form */
-              <form id="checkout-form" onSubmit={handleSubmit} className="space-y-1.5 md:space-y-2">
-                {customerFound && (
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-1.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm">✓</span>
-                        <p className="text-[10px] text-green-400 font-bold">¡Te encontramos! Verifica tus datos</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={resetForm}
-                        className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 underline"
-                      >
-                        Cambiar DNI
-                      </button>
-                    </div>
-                  </div>
-                )}
-
+            <form id="checkout-form" onSubmit={handleSubmit} className="space-y-2 md:space-y-2.5">
                 <div>
-                  <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
+                  <label className="block text-xs md:text-sm font-bold text-fuchsia-400 mb-1">
                     Nombre completo *
                   </label>
                   <input
@@ -808,59 +692,31 @@ export default function CheckoutPage() {
                     required
                     value={formData.name}
                     onChange={(e) => handleNameInput(e.target.value)}
-                    className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
+                    placeholder="Ingresa tu nombre completo"
+                    className="w-full px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-1.5">
-                  <div>
-                    <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
-                      DNI *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        required
-                        value={formData.dni}
-                        onChange={(e) => handleNumberInput('dni', e.target.value)}
-                        maxLength={8}
-                        disabled={customerFound}
-                        className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed pr-8"
-                      />
-                      {!customerFound && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (formData.dni.length === 8) {
-                              searchCustomerByDni(formData.dni);
-                            }
-                          }}
-                          disabled={formData.dni.length !== 8}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed text-xs"
-                          title="Buscar DNI"
-                        >
-                          🔍
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
-                      Teléfono *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => handleNumberInput('phone', e.target.value)}
-                      maxLength={9}
-                      className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-bold text-fuchsia-400 mb-1">
+                    Teléfono *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => handlePhoneInput(e.target.value)}
+                    maxLength={9}
+                    placeholder="987654321"
+                    className="w-full px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
+                  />
+                  <p className="text-[9px] md:text-[10px] text-gray-400 mt-1">
+                    Te contactaremos por WhatsApp para coordinar la entrega
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
+                  <label className="block text-xs md:text-sm font-bold text-fuchsia-400 mb-1">
                     Dirección de entrega *
                   </label>
                   <textarea
@@ -869,29 +725,12 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
                     }
-                    className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                    rows={1}
+                    placeholder="Ej: Av. Principal 123, Chancay"
+                    className="w-full px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500 resize-none"
+                    rows={2}
                   />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-fuchsia-400 mb-0.5">
-                    Correo (opcional)
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="w-full px-2.5 py-1 text-sm rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple"
-                  />
-                  <p className="text-[9px] text-fuchsia-300/60 mt-0.5">
-                    Recibe ofertas y promociones limitadas
-                  </p>
                 </div>
               </form>
-            )}
           </div>
         </div>
 
