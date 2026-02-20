@@ -15,7 +15,7 @@ const PROMO_SAUCE_IDS = [
 interface Coupon {
   id: string;
   code: string;
-  dni: string;
+  phone: string;
   customerName: string;
   discount: number;
   status: "pending" | "used";
@@ -43,13 +43,13 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get("action");
-    const dni = searchParams.get("dni");
+    const phone = searchParams.get("phone");
 
-    // Verificar elegibilidad para un DNI
-    if (action === "check-eligibility" && dni) {
+    // Verificar elegibilidad para un teléfono
+    if (action === "check-eligibility" && phone) {
       const coupons = await storage.getCoupons();
       const totalCoupons = coupons.length;
-      const userCoupon = coupons.find((c: Coupon) => c.dni === dni);
+      const userCoupon = coupons.find((c: Coupon) => c.phone === phone);
       const hasPromo = !!userCoupon;
 
       return NextResponse.json({
@@ -77,11 +77,11 @@ export async function POST(request: Request) {
 
     // Validar cupón para usar
     if (action === "validate") {
-      const { code, dni } = body;
+      const { code, phone } = body;
 
-      if (!code || !dni) {
+      if (!code || !phone) {
         return NextResponse.json(
-          { error: "Código y DNI requeridos" },
+          { error: "Código y teléfono requeridos" },
           { status: 400 }
         );
       }
@@ -96,9 +96,9 @@ export async function POST(request: Request) {
         );
       }
 
-      if (coupon.dni !== dni) {
+      if (coupon.phone !== phone) {
         return NextResponse.json(
-          { error: "Este cupón no pertenece a tu DNI" },
+          { error: "Este cupón no pertenece a tu teléfono" },
           { status: 403 }
         );
       }
@@ -135,9 +135,9 @@ export async function POST(request: Request) {
 
     // Generar cupón
     if (action === "generate") {
-      const { dni, customerName, orderId, salsas } = body;
+      const { phone, customerName, orderId, salsas } = body;
 
-      if (!dni || !customerName || !orderId || !salsas) {
+      if (!phone || !customerName || !orderId || !salsas) {
         return NextResponse.json(
           { error: "Datos incompletos" },
           { status: 400 }
@@ -162,10 +162,10 @@ export async function POST(request: Request) {
         );
       }
 
-      // Verificar un cupón por DNI
-      if (coupons.some((c: Coupon) => c.dni === dni)) {
+      // Verificar un cupón por teléfono
+      if (coupons.some((c: Coupon) => c.phone === phone)) {
         return NextResponse.json(
-          { error: "Ya existe un cupón para este DNI" },
+          { error: "Ya existe un cupón para este teléfono" },
           { status: 400 }
         );
       }
@@ -174,7 +174,7 @@ export async function POST(request: Request) {
       const coupon: Coupon = {
         id: `coupon-${Date.now()}`,
         code: generateCouponCode(),
-        dni,
+        phone,
         customerName,
         discount: 13,
         status: "pending",
@@ -197,17 +197,17 @@ export async function POST(request: Request) {
 
     // Marcar cupón como usado
     if (action === "mark-used") {
-      const { code, dni } = body;
+      const { code, phone } = body;
 
-      if (!code || !dni) {
+      if (!code || !phone) {
         return NextResponse.json(
-          { error: "Código y DNI requeridos" },
+          { error: "Código y teléfono requeridos" },
           { status: 400 }
         );
       }
 
       const coupons = await storage.getCoupons();
-      const couponIndex = coupons.findIndex((c: Coupon) => c.code === code && c.dni === dni);
+      const couponIndex = coupons.findIndex((c: Coupon) => c.code === code && c.phone === phone);
 
       if (couponIndex === -1) {
         return NextResponse.json(

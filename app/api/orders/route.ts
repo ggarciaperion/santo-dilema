@@ -80,10 +80,8 @@ export async function POST(request: Request) {
 
     // Extraer campos del FormData
     const name = formData.get('name') as string;
-    const dni = formData.get('dni') as string;
     const phone = formData.get('phone') as string;
     const address = formData.get('address') as string;
-    const email = formData.get('email') as string;
     const cart = JSON.parse(formData.get('cart') as string);
     const completedOrders = JSON.parse(formData.get('completedOrders') as string || '[]');
     const totalItems = parseInt(formData.get('totalItems') as string);
@@ -174,10 +172,8 @@ export async function POST(request: Request) {
     const newOrder = {
       id: orderId,
       name,
-      dni,
       phone,
       address,
-      email,
       cart,
       completedOrders: expandedOrders,
       totalItems,
