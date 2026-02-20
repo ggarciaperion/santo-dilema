@@ -17,6 +17,7 @@ interface Product {
   image: string;
   category: "fit" | "fat" | "bebida";
   soldOut?: boolean;
+  oldPrice?: number;
 }
 
 interface CompletedOrder {
@@ -42,9 +43,10 @@ const products: Product[] = [
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
     description: "El clásico que no falla — acá lo hacemos mejor. Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. César cremosa de la casa incluida.",
-    price: 22.50,
+    price: 18.00,
     image: "/2.png",
     category: "fit",
+    oldPrice: 22.50,
   },
   {
     id: "ensalada-caesar",
@@ -58,9 +60,10 @@ const products: Product[] = [
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
     description: "El mar en un bowl. Atún en trozos, lechuga romana, tomate cherry, pepino, maíz americano, palta y huevo. Con aderezo cremoso especial de la casa.",
-    price: 23.50,
+    price: 18.50,
     image: "/4.png",
     category: "fit",
+    oldPrice: 23.50,
   },
 ];
 
@@ -745,15 +748,20 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl shadow-cyan-500/30 snap-center md:snap-none border-2 md:border-2 border-cyan-400
-                    neon-border-fit
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none
+                    ${product.oldPrice
+                      ? 'border-4 border-amber-400 shadow-amber-400/50 shadow-2xl'
+                      : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'
+                    }
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
                       : 'w-[240px] md:w-[240px] lg:w-[260px]'
                     }
                     ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
-                      ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
+                      ? product.oldPrice
+                        ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-amber-400/70 z-10'
+                        : 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
                       : !isExpanded && !expandedCard ? 'md:shadow-none scale-100 translate-y-0' : ''
                     }
                     ${(orderQuantity[product.id] || 0) > 0 && !isExpanded && !isSoldOut ? 'cursor-pointer' : ''}
@@ -815,9 +823,20 @@ export default function FitPage() {
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
                       <div className="flex flex-col">
-                        <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
-                          S/ {product.price.toFixed(2)}
-                        </span>
+                        {product.oldPrice ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs md:text-sm font-bold text-gray-500 line-through">
+                              S/ {product.oldPrice.toFixed(2)}
+                            </span>
+                            <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                              S/ {product.price.toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                            S/ {product.price.toFixed(2)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
