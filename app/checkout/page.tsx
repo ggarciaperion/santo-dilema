@@ -678,7 +678,7 @@ export default function CheckoutPage() {
       {/* Checkout Layout - Full Screen */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Side - Form */}
-        <div className="flex-1 bg-black p-2 md:p-4 flex items-start md:items-center justify-center overflow-y-auto">
+        <div className="flex-none md:flex-1 bg-black p-2 md:p-4 flex items-start md:items-center justify-center overflow-y-auto">
           <div className="max-w-xl w-full">
             <h1 className="text-base md:text-xl font-black text-fuchsia-400 mb-1.5 md:mb-3 neon-glow-purple">
               Finalizar Pedido
@@ -786,7 +786,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Right Side - Order Summary */}
-        <div className="w-full md:w-[400px] bg-gray-900 border-t-2 md:border-t-0 md:border-l-2 border-fuchsia-500/30 p-3 md:p-4 flex flex-col max-h-[50vh] md:max-h-none">
+        <div className="w-full md:w-[400px] bg-gray-900 border-t-2 md:border-t-0 md:border-l-2 border-fuchsia-500/30 p-3 md:p-4 flex flex-col flex-1 md:max-h-none">
           <h3 className="text-base md:text-lg font-black text-fuchsia-400 mb-2 md:mb-2 neon-glow-purple">
             Resumen del Pedido
           </h3>
