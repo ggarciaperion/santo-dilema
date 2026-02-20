@@ -144,6 +144,7 @@ export default function FitPage() {
   const [bannerSlide, setBannerSlide] = useState(0);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
+  const [showPromoModal, setShowPromoModal] = useState(true);
   const router = useRouter();
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
@@ -1413,6 +1414,31 @@ export default function FitPage() {
           </div>
         );
       })()}
+
+      {/* Modal de Promoción FIT */}
+      {showPromoModal && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[200] p-4"
+          onClick={() => setShowPromoModal(false)}
+        >
+          <div
+            className="relative max-w-2xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowPromoModal(false)}
+              className="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-10 h-10 md:w-12 md:h-12 bg-fuchsia-600 hover:bg-fuchsia-500 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg z-10"
+            >
+              <span className="text-white text-2xl md:text-3xl font-bold leading-none">×</span>
+            </button>
+            <img
+              src="/promofit.png"
+              alt="Promoción FIT"
+              className="w-full h-auto rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
 
       <WhatsAppButton />
     </div>
