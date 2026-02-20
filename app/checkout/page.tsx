@@ -1145,7 +1145,10 @@ export default function CheckoutPage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                setShowMobileFormModal(false);
+                // Validar que todos los campos estén completos antes de cerrar
+                if (formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "") {
+                  setShowMobileFormModal(false);
+                }
               }}
               className="space-y-4"
             >
@@ -1199,10 +1202,17 @@ export default function CheckoutPage() {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50"
+                disabled={!(formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "")}
+                className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
               >
                 Guardar datos
               </button>
+
+              {formData.phone.length > 0 && formData.phone.length < 9 && (
+                <p className="text-red-400 text-xs text-center -mt-2">
+                  El teléfono debe tener 9 dígitos
+                </p>
+              )}
             </form>
           </div>
         </div>
