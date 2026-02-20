@@ -753,7 +753,9 @@ export default function CheckoutPage() {
                     Teléfono *
                   </label>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     required
                     value={formData.phone}
                     onChange={(e) => handlePhoneInput(e.target.value)}
@@ -1184,7 +1186,9 @@ export default function CheckoutPage() {
                   Teléfono *
                 </label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   required
                   value={formData.phone}
                   onChange={(e) => handlePhoneInput(e.target.value)}
