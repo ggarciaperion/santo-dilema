@@ -177,6 +177,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showMobileFormModal, setShowMobileFormModal] = useState(false);
   const [showPreLaunchModal, setShowPreLaunchModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [showQrPayment, setShowQrPayment] = useState(false);
@@ -682,7 +683,45 @@ export default function CheckoutPage() {
               Finalizar Pedido
             </h1>
 
-            <form id="checkout-form" onSubmit={handleSubmit} className="space-y-2 md:space-y-2.5">
+            {/* Vista móvil - Botón o estado completado */}
+            <div className="md:hidden">
+              {isFormValid() ? (
+                <div className="bg-green-500/10 border-2 border-green-500/30 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+                        <span className="text-green-400 text-2xl">✓</span>
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm">Datos de entrega completados</p>
+                        <p className="text-green-400 text-xs mt-0.5">{formData.name}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowMobileFormModal(true)}
+                      className="w-10 h-10 bg-fuchsia-500/20 hover:bg-fuchsia-500/30 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                    >
+                      <span className="text-fuchsia-400 text-lg">✏️</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowMobileFormModal(true)}
+                  className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-xl">📝</span>
+                    <span>Ingresa tus datos para la entrega</span>
+                  </div>
+                </button>
+              )}
+            </div>
+
+            {/* Vista desktop - Formulario directo */}
+            <form id="checkout-form" onSubmit={handleSubmit} className="space-y-2 md:space-y-2.5 hidden md:block">
                 <div>
                   <label className="block text-xs md:text-sm font-bold text-fuchsia-400 mb-1">
                     Nombre completo *
@@ -1076,6 +1115,98 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Formulario Móvil */}
+      {showMobileFormModal && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-end md:items-center justify-center z-[100]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowMobileFormModal(false);
+            }
+          }}
+        >
+          <div
+            className="bg-gray-900 rounded-t-3xl md:rounded-2xl border-t-2 md:border border-fuchsia-500/30 w-full md:max-w-md p-6 pb-8 animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-black text-fuchsia-400 neon-glow-purple">
+                Datos de Entrega
+              </h3>
+              <button
+                onClick={() => setShowMobileFormModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-all active:scale-95"
+              >
+                <span className="text-gray-400 text-xl leading-none">×</span>
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setShowMobileFormModal(false);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-bold text-fuchsia-400 mb-1.5">
+                  Nombre completo *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => handleNameInput(e.target.value)}
+                  placeholder="Ingresa tu nombre completo"
+                  className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-fuchsia-400 mb-1.5">
+                  Teléfono *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => handlePhoneInput(e.target.value)}
+                  maxLength={9}
+                  placeholder="987654321"
+                  className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">
+                  Te contactaremos por WhatsApp para coordinar la entrega
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-fuchsia-400 mb-1.5">
+                  Dirección de entrega *
+                </label>
+                <textarea
+                  required
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  placeholder="Ej: Av. Principal 123, Chancay"
+                  className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500 resize-none"
+                  rows={3}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50"
+              >
+                Guardar datos
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Selección de Método de Pago */}
       {showPaymentModal && !showQrPayment && !showContraEntregaModal && (
