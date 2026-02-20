@@ -96,7 +96,7 @@ export default function Home() {
 
             {/* Título de bienvenida */}
             <h2 className="text-lg md:text-2xl font-black text-center mb-3 md:mb-4 text-fuchsia-400 neon-glow-purple">
-              La primera cocina secreta PREMIUM de CHANCAY 🔥 No tenemos local físico, somos full delivery
+              Somos un restaurante sin local fisico, 100% delivery en Chancay
             </h2>
 
             {/* Información de horarios */}
