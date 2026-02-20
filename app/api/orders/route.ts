@@ -93,6 +93,7 @@ export async function POST(request: Request) {
     const couponCode = formData.get('couponCode') as string || '';
     const deliveryOption = formData.get('deliveryOption') as string || '';
     const deliveryCost = parseFloat(formData.get('deliveryCost') as string) || 0;
+    const deliveryCustomLocation = formData.get('deliveryCustomLocation') as string || '';
     const paymentMethod = formData.get('paymentMethod') as string;
     const cantoCancelo = formData.get('cantoCancelo') as string | null;
     const timestamp = formData.get('timestamp') as string;
@@ -185,6 +186,7 @@ export async function POST(request: Request) {
       couponDiscount: couponDiscount > 0 ? couponDiscount : undefined,
       deliveryOption: deliveryOption || undefined,
       deliveryCost: deliveryCost > 0 ? deliveryCost : undefined,
+      deliveryCustomLocation: deliveryCustomLocation || undefined,
       couponCode: couponCode || undefined,
       paymentMethod,
       cantoCancelo: cantoCancelo || undefined,
