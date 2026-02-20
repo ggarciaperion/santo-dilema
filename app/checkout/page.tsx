@@ -719,16 +719,19 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowMobileFormModal(true)}
-                  className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-xl">📝</span>
-                    <span>Ingresa tus datos para la entrega</span>
-                  </div>
-                </button>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowMobileFormModal(true)}
+                    className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-3 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-xl">📝</span>
+                      <span>Ingresa tus datos para la entrega</span>
+                    </div>
+                  </button>
+                  <p className="text-[10px] text-gray-500 text-center mt-1">* Obligatorio</p>
+                </div>
               )}
             </div>
 
