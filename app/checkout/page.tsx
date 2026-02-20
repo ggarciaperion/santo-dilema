@@ -204,6 +204,11 @@ export default function CheckoutPage() {
   const [isOpen, setIsOpen] = useState(isBusinessOpen());
   const [isTestEnv, setIsTestEnv] = useState(false);
 
+  // Estados para delivery (solo ambiente de prueba)
+  const [deliveryOption, setDeliveryOption] = useState<string>("");
+  const [deliveryCustomLocation, setDeliveryCustomLocation] = useState<string>("");
+  const [showDeliveryOptions, setShowDeliveryOptions] = useState(false);
+
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
     if (orderPlaced) {
@@ -263,18 +268,37 @@ export default function CheckoutPage() {
     return total + productTotal + complementsTotal;
   }, 0);
 
+  // Calcular costo de delivery (solo ambiente de prueba)
+  const deliveryCost = isTestEnv ? (() => {
+    switch (deliveryOption) {
+      case 'chancay-centro': return 4;
+      case 'puerto': return 5;
+      case 'peralvillo': return 7;
+      case 'la-balanza': return 0;
+      case 'otros': return 0;
+      default: return 0;
+    }
+  })() : 0;
+
   // Aplicar descuento de cupón si es válido
   const couponDiscountAmount = couponValid ? ((subtotal - comboDiscountAmount) * couponDiscount) / 100 : 0;
-  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount;
+  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount + deliveryCost;
 
   // Validar si el formulario está completo
   const isFormValid = () => {
-    return (
+    const basicValidation = (
       formData.name.trim() !== "" &&
       formData.dni.length === 8 &&
       formData.phone.length === 9 &&
       formData.address.trim() !== ""
     );
+
+    // En ambiente de prueba, también validar que se haya seleccionado delivery
+    if (isTestEnv) {
+      return basicValidation && deliveryOption !== "";
+    }
+
+    return basicValidation;
   };
 
   // Validar cupón
@@ -429,6 +453,14 @@ export default function CheckoutPage() {
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
       if (cantoCancelo) {
         formDataToSend.append('cantoCancelo', cantoCancelo);
+      }
+      // Agregar delivery (solo en ambiente de prueba)
+      if (isTestEnv && deliveryOption) {
+        formDataToSend.append('deliveryOption', deliveryOption);
+        formDataToSend.append('deliveryCost', deliveryCost.toString());
+        if (deliveryOption === 'otros' && deliveryCustomLocation) {
+          formDataToSend.append('deliveryCustomLocation', deliveryCustomLocation);
+        }
       }
       formDataToSend.append('timestamp', new Date().toISOString());
 
@@ -994,6 +1026,130 @@ export default function CheckoutPage() {
             )}
           </div>
 
+          {/* Sección de Delivery (solo ambiente de prueba) */}
+          {isTestEnv && (
+            <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
+              <button
+                type="button"
+                onClick={() => setShowDeliveryOptions(!showDeliveryOptions)}
+                className="w-full flex items-center justify-between bg-sky-900/30 border border-sky-500/40 rounded-lg px-3 py-2.5 hover:bg-sky-900/50 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🛵</span>
+                  <span className="text-white font-bold text-xs md:text-sm">Delivery</span>
+                  {deliveryOption && (
+                    <span className="text-sky-300 text-[10px] md:text-xs">
+                      ({deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
+                        deliveryOption === 'puerto' ? 'Puerto' :
+                        deliveryOption === 'peralvillo' ? 'Peralvillo' :
+                        deliveryOption === 'la-balanza' ? 'La Balanza' :
+                        deliveryCustomLocation || 'Otros'})
+                    </span>
+                  )}
+                </div>
+                <span className={`text-white transition-transform ${showDeliveryOptions ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+
+              {showDeliveryOptions && (
+                <div className="mt-2 space-y-1.5 bg-black/30 rounded-lg p-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeliveryOption('chancay-centro');
+                      setDeliveryCustomLocation('');
+                    }}
+                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
+                      deliveryOption === 'chancay-centro'
+                        ? 'bg-sky-600 text-white'
+                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className="text-xs md:text-sm">📍 Chancay Centro</span>
+                    <span className="text-xs md:text-sm font-bold">S/ 4.00</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeliveryOption('puerto');
+                      setDeliveryCustomLocation('');
+                    }}
+                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
+                      deliveryOption === 'puerto'
+                        ? 'bg-sky-600 text-white'
+                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className="text-xs md:text-sm">📍 Puerto</span>
+                    <span className="text-xs md:text-sm font-bold">S/ 5.00</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeliveryOption('peralvillo');
+                      setDeliveryCustomLocation('');
+                    }}
+                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
+                      deliveryOption === 'peralvillo'
+                        ? 'bg-sky-600 text-white'
+                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className="text-xs md:text-sm">📍 Peralvillo</span>
+                    <span className="text-xs md:text-sm font-bold">S/ 7.00</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeliveryOption('la-balanza');
+                      setDeliveryCustomLocation('');
+                    }}
+                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
+                      deliveryOption === 'la-balanza'
+                        ? 'bg-sky-600 text-white'
+                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className="text-xs md:text-sm">📍 La Balanza</span>
+                    <span className="text-xs md:text-sm text-gray-400">A coordinar</span>
+                  </button>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryOption('otros')}
+                      className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
+                        deliveryOption === 'otros'
+                          ? 'bg-sky-600 text-white'
+                          : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
+                      }`}
+                    >
+                      <span className="text-xs md:text-sm">📍 Otros</span>
+                      <span className="text-xs md:text-sm text-gray-400">A coordinar</span>
+                    </button>
+                    {deliveryOption === 'otros' && (
+                      <input
+                        type="text"
+                        value={deliveryCustomLocation}
+                        onChange={(e) => setDeliveryCustomLocation(e.target.value)}
+                        placeholder="Especifica tu ubicación..."
+                        className="w-full mt-1.5 bg-black/50 border border-sky-500/30 rounded-lg px-3 py-2 text-white text-xs md:text-sm placeholder-gray-500 focus:outline-none focus:border-sky-400"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!deliveryOption && (
+                <p className="text-red-400 text-[9px] md:text-[10px] mt-1 ml-1">
+                  ⚠️ Debes seleccionar una opción de delivery
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
             {/* Subtotal y descuentos */}
             {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
@@ -1017,7 +1173,25 @@ export default function CheckoutPage() {
               </>
             )}
 
-
+            {/* Delivery (solo ambiente de prueba) */}
+            {isTestEnv && deliveryOption && deliveryCost > 0 && (
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
+                <span className="text-sky-400 text-xs md:text-sm font-semibold">+S/ {deliveryCost.toFixed(2)}</span>
+              </div>
+            )}
+            {isTestEnv && deliveryOption === 'otros' && (
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
+                <span className="text-gray-500 text-[10px] md:text-xs">A coordinar</span>
+              </div>
+            )}
+            {isTestEnv && deliveryOption === 'la-balanza' && (
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
+                <span className="text-gray-500 text-[10px] md:text-xs">A coordinar</span>
+              </div>
+            )}
 
             <div className="flex justify-between items-center mb-2 md:mb-3">
               <span className="text-white font-bold text-sm md:text-base">Total:</span>
