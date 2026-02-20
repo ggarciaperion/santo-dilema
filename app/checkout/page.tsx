@@ -201,7 +201,7 @@ export default function CheckoutPage() {
   const [isOpen, setIsOpen] = useState(isBusinessOpen());
   const [isTestEnv, setIsTestEnv] = useState(false);
 
-  // Estados para delivery (solo ambiente de prueba)
+  // Estados para delivery
   const [deliveryOption, setDeliveryOption] = useState<string>("");
   const [deliveryCustomLocation, setDeliveryCustomLocation] = useState<string>("");
   const [showDeliveryOptions, setShowDeliveryOptions] = useState(false);
@@ -265,8 +265,8 @@ export default function CheckoutPage() {
     return total + productTotal + complementsTotal;
   }, 0);
 
-  // Calcular costo de delivery (solo ambiente de prueba)
-  const deliveryCost = isTestEnv ? (() => {
+  // Calcular costo de delivery
+  const deliveryCost = (() => {
     switch (deliveryOption) {
       case 'chancay-centro': return 4;
       case 'puerto': return 5;
@@ -275,7 +275,7 @@ export default function CheckoutPage() {
       case 'otros': return 0;
       default: return 0;
     }
-  })() : 0;
+  })();
 
   // Aplicar descuento de cupón si es válido
   const couponDiscountAmount = couponValid ? ((subtotal - comboDiscountAmount) * couponDiscount) / 100 : 0;
@@ -283,18 +283,12 @@ export default function CheckoutPage() {
 
   // Validar si el formulario está completo
   const isFormValid = () => {
-    const basicValidation = (
+    return (
       formData.name.trim() !== "" &&
       formData.phone.length === 9 &&
-      formData.address.trim() !== ""
+      formData.address.trim() !== "" &&
+      deliveryOption !== ""
     );
-
-    // En ambiente de prueba, también validar que se haya seleccionado delivery
-    if (isTestEnv) {
-      return basicValidation && deliveryOption !== "";
-    }
-
-    return basicValidation;
   };
 
   // Validar cupón
@@ -407,8 +401,8 @@ export default function CheckoutPage() {
       if (cantoCancelo) {
         formDataToSend.append('cantoCancelo', cantoCancelo);
       }
-      // Agregar delivery (solo en ambiente de prueba)
-      if (isTestEnv && deliveryOption) {
+      // Agregar delivery
+      if (deliveryOption) {
         formDataToSend.append('deliveryOption', deliveryOption);
         formDataToSend.append('deliveryCost', deliveryCost.toString());
         if (deliveryOption === 'otros' && deliveryCustomLocation) {
@@ -921,9 +915,8 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Sección de Delivery (solo ambiente de prueba) */}
-          {isTestEnv && (
-            <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
+          {/* Sección de Delivery */}
+          <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
               <button
                 type="button"
                 onClick={() => setShowDeliveryOptions(!showDeliveryOptions)}
@@ -1051,7 +1044,6 @@ export default function CheckoutPage() {
                 </p>
               )}
             </div>
-          )}
 
           <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
             {/* Subtotal y descuentos */}
@@ -1076,20 +1068,14 @@ export default function CheckoutPage() {
               </>
             )}
 
-            {/* Delivery (solo ambiente de prueba) */}
-            {isTestEnv && deliveryOption && deliveryCost > 0 && (
+            {/* Delivery */}
+            {deliveryOption && deliveryCost > 0 && (
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
                 <span className="text-sky-400 text-xs md:text-sm font-semibold">+S/ {deliveryCost.toFixed(2)}</span>
               </div>
             )}
-            {isTestEnv && deliveryOption === 'otros' && (
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
-                <span className="text-gray-500 text-[10px] md:text-xs">A coordinar</span>
-              </div>
-            )}
-            {isTestEnv && deliveryOption === 'la-balanza' && (
+            {deliveryOption === 'otros' && deliveryCost === 0 && (
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
                 <span className="text-gray-500 text-[10px] md:text-xs">A coordinar</span>
