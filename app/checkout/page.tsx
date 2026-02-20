@@ -148,7 +148,7 @@ const fitProducts = [
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    price: 22.50,
+    price: 18.00,
     image: "/cesar-power-bowl.png",
   },
   {
@@ -160,7 +160,7 @@ const fitProducts = [
   {
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
-    price: 23.50,
+    price: 18.50,
     image: "/4.png",
   },
 ];

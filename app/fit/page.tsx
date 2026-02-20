@@ -750,7 +750,7 @@ export default function FitPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none
                     ${product.oldPrice
-                      ? 'border-4 border-amber-400 shadow-amber-400/50 shadow-2xl'
+                      ? 'border-4 border-amber-400 super-promo-glow'
                       : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'
                     }
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
@@ -759,10 +759,8 @@ export default function FitPage() {
                       : 'w-[240px] md:w-[240px] lg:w-[260px]'
                     }
                     ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
-                      ? product.oldPrice
-                        ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-amber-400/70 z-10'
-                        : 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-cyan-500/50 z-10'
-                      : !isExpanded && !expandedCard ? 'md:shadow-none scale-100 translate-y-0' : ''
+                      ? 'md:scale-105 md:-translate-y-2 z-10'
+                      : !isExpanded && !expandedCard ? 'scale-100 translate-y-0' : ''
                     }
                     ${(orderQuantity[product.id] || 0) > 0 && !isExpanded && !isSoldOut ? 'cursor-pointer' : ''}
                   `}
@@ -822,16 +820,16 @@ export default function FitPage() {
                       {product.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-0.5">
                         {product.oldPrice ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs md:text-sm font-bold text-gray-500 line-through">
+                          <>
+                            <span className="text-xs md:text-sm font-bold text-gray-500 line-through opacity-70">
                               S/ {product.oldPrice.toFixed(2)}
                             </span>
-                            <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
+                            <span className="text-lg md:text-2xl font-black text-amber-400 promo-price-pulse">
                               S/ {product.price.toFixed(2)}
                             </span>
-                          </div>
+                          </>
                         ) : (
                           <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
                             S/ {product.price.toFixed(2)}
