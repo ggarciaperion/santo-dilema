@@ -690,8 +690,16 @@ export default function FitPage() {
             <div className="w-full flex-shrink-0">
               <img src="/SPMOVIL.png" alt="Promo SP" className="w-full h-auto block" />
             </div>
-            <div className="w-full flex-shrink-0">
-              <video src="/5solesmovil.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
+            <div className="w-full flex-shrink-0 bg-gray-900">
+              <video
+                src="/5solesmovil.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                className="w-full h-auto block"
+              />
             </div>
             <div className="w-full flex-shrink-0">
               <img src="/vale21movil.png" alt="Promo Vale 21" className="w-full h-auto block" />
@@ -718,8 +726,16 @@ export default function FitPage() {
             <div className="w-full flex-shrink-0">
               <img src="/SPWEB.png" alt="Promo SP" className="w-full h-auto block" />
             </div>
-            <div className="w-full flex-shrink-0">
-              <video src="/5solesweb.mp4" autoPlay loop muted playsInline preload="metadata" className="w-full h-auto block" />
+            <div className="w-full flex-shrink-0 bg-gray-900">
+              <video
+                src="/5solesweb.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                className="w-full h-auto block"
+              />
             </div>
             <div className="w-full flex-shrink-0">
               <img src="/vale21web.png" alt="Promo Vale 21" className="w-full h-auto block" />
