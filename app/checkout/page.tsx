@@ -1,5 +1,5 @@
 "use client";
-// VERSION: 2.5.4 - Simplificación de método de pago: contraentrega solo efectivo
+// VERSION: 3.0.0 - Complete UI/UX redesign for better visual hierarchy and responsiveness
 
 import Link from "next/link";
 import Image from "next/image";
@@ -445,12 +445,6 @@ export default function CheckoutPage() {
           }
         }
 
-        // Guardar cupón generado si viene en la respuesta
-        if (data.coupon) {
-          setGeneratedCoupon(data.coupon);
-          console.log("🎁 Cupón generado y guardado:", data.coupon.code);
-        }
-
         // Limpiar estados y almacenamiento
         clearCart();
         sessionStorage.removeItem("santo-dilema-orders");
@@ -477,7 +471,7 @@ export default function CheckoutPage() {
   if (isSubmitting && !orderPlaced) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-fuchsia-500 border-t-transparent rounded-full animate-spin opacity-60"></div>
+        <div className="w-12 h-12 border-4 border-fuchsia-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -611,129 +605,92 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="h-[100dvh] bg-black flex flex-col relative">
-      {/* Iconos decorativos de fondo - Mix de FIT y FAT */}
-      <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
-        {/* Del lado FIT */}
-        <svg className="absolute top-20 left-12 w-20 h-20 md:w-24 md:h-24 text-cyan-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
-          <ellipse cx="50" cy="55" rx="28" ry="35" />
-          <ellipse cx="50" cy="55" rx="15" ry="18" />
-        </svg>
-
-        <svg className="absolute top-1/3 left-20 w-22 h-22 md:w-26 md:h-26 text-emerald-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
-          <path d="M50 20 Q35 25, 30 40 Q28 55, 35 65 Q45 75, 50 80"/>
-          <path d="M50 20 Q65 25, 70 40 Q72 55, 65 65 Q55 75, 50 80"/>
-        </svg>
-
-        <svg className="absolute bottom-1/3 left-16 w-18 h-18 md:w-20 md:h-20 text-green-400 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M20 80 Q30 40, 50 20 Q70 40, 80 80" />
-          <path d="M50 20 L50 80"/>
-        </svg>
-
-        {/* Del lado FAT */}
-        <svg className="absolute top-24 right-16 w-22 h-22 md:w-26 md:h-26 text-red-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M25 50 Q30 40, 40 38 L50 37 Q60 38, 65 42 L75 45 Q82 48, 82 55 Q82 62, 75 65 L65 68 Q60 70, 50 70 L40 69 Q30 67, 25 60 Q20 55, 25 50Z"/>
-          <circle cx="35" cy="55" r="2.5" fill="currentColor" opacity="0.4"/>
-        </svg>
-
-        <svg className="absolute top-1/2 right-24 w-20 h-20 md:w-24 md:h-24 text-orange-500 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M50 20 Q45 30, 42 40 Q40 50, 42 60 Q45 68, 50 70 Q55 68, 58 60 Q60 50, 58 40 Q55 30, 50 20Z"/>
-        </svg>
-
-        <svg className="absolute bottom-24 right-20 w-18 h-18 md:w-22 md:h-22 text-orange-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M50 15 L25 80 L75 80 Z"/>
-          <circle cx="42" cy="50" r="4" fill="currentColor" opacity="0.4"/>
-        </svg>
-
-        {/* Iconos centrales púrpura */}
-        <svg className="absolute bottom-1/2 left-1/2 w-16 h-16 md:w-20 md:h-20 text-fuchsia-400 rotate-slow opacity-70" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="50" cy="50" r="30"/>
-          <circle cx="50" cy="50" r="20"/>
-          <circle cx="50" cy="50" r="10"/>
-        </svg>
-      </div>
-
-      {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple overflow-visible relative z-10">
-        <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-center overflow-visible">
-          <Link href="/" className="hover:opacity-80 transition-opacity relative z-10">
+    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex flex-col">
+      {/* Header mejorado */}
+      <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-fuchsia-500/30 shadow-lg shadow-fuchsia-500/10">
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
             <Image
               src="/logoprincipal.png"
               alt="Santo Dilema"
               width={280}
               height={70}
-              className="h-10 md:h-12 w-auto"
+              className="h-9 md:h-11 w-auto"
               priority
             />
           </Link>
         </div>
       </header>
 
-      {/* Checkout Layout - Full Screen */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Left Side - Form */}
-        <div className="flex-none md:flex-1 bg-black p-2 md:p-4 flex items-start md:items-center justify-center overflow-y-auto">
-          <div className="max-w-xl w-full">
-            <h1 className="text-base md:text-xl font-black text-fuchsia-400 mb-1.5 md:mb-3 neon-glow-purple">
-              Finalizar Pedido
-            </h1>
+      {/* Main Content - Desktop: dos columnas, Mobile: stack */}
+      <main className="flex-1 container mx-auto px-3 md:px-6 py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 max-w-7xl mx-auto">
 
-            {/* Vista móvil - Botón o estado completado */}
-            <div className="md:hidden">
-              {mobileFormCompleted ? (
-                <div className="bg-green-500/10 border-2 border-green-500/30 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                        <span className="text-green-400 text-2xl">✓</span>
+          {/* Columna Izquierda - Formulario (8 cols en desktop) */}
+          <div className="lg:col-span-8">
+            <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-fuchsia-500/20 p-4 md:p-6 shadow-xl">
+              <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 mb-6">
+                Finalizar Pedido
+              </h1>
+
+              {/* Vista móvil - Card compacta */}
+              <div className="lg:hidden mb-4">
+                {mobileFormCompleted ? (
+                  <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4 shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 border border-green-500/40">
+                          <span className="text-green-400 text-2xl">✓</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-white font-bold text-sm">Datos completados</p>
+                          <p className="text-green-400 text-xs mt-0.5 truncate">{formData.name}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-white font-bold text-sm">Datos de entrega completados</p>
-                        <p className="text-green-400 text-xs mt-0.5">{formData.name}</p>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowMobileFormModal(true)}
+                        className="w-11 h-11 bg-fuchsia-500/20 hover:bg-fuchsia-500/30 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0 ml-2 border border-fuchsia-500/30"
+                        title="Editar datos"
+                      >
+                        <span className="text-fuchsia-400 text-lg">✏️</span>
+                      </button>
                     </div>
+                    <div className="mt-3 pt-3 border-t border-green-500/20 space-y-1.5 text-xs">
+                      <p className="text-gray-300 flex items-center gap-2">
+                        <span className="text-green-400">📱</span>
+                        <span className="font-mono">{formData.phone}</span>
+                      </p>
+                      <p className="text-gray-300 flex items-start gap-2">
+                        <span className="text-green-400 mt-0.5">📍</span>
+                        <span className="flex-1">{formData.address}</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
                     <button
                       type="button"
                       onClick={() => setShowMobileFormModal(true)}
-                      className="w-10 h-10 bg-fuchsia-500/20 hover:bg-fuchsia-500/30 rounded-lg flex items-center justify-center transition-all active:scale-95"
-                      title="Editar datos"
+                      className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-fuchsia-500/30"
                     >
-                      <span className="text-fuchsia-400 text-lg">✏️</span>
+                      <div className="flex items-center justify-center gap-3">
+                        <span className="text-2xl">📝</span>
+                        <span className="text-base">Ingresa tus datos</span>
+                      </div>
                     </button>
+                    <p className="text-xs text-center">
+                      <span className="text-red-400 font-semibold">* Obligatorio</span>
+                    </p>
                   </div>
-                  <div className="mt-3 pt-3 border-t border-green-500/20">
-                    <div className="space-y-1 text-xs">
-                      <p className="text-gray-400">
-                        <span className="text-gray-500">📱</span> {formData.phone}
-                      </p>
-                      <p className="text-gray-400">
-                        <span className="text-gray-500">📍</span> {formData.address}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setShowMobileFormModal(true)}
-                    className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-3 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-xl">📝</span>
-                      <span>Ingresa tus datos para la entrega</span>
-                    </div>
-                  </button>
-                  <p className="text-[10px] text-gray-500 text-center mt-1">* Obligatorio</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            {/* Vista desktop - Formulario directo */}
-            <form id="checkout-form" onSubmit={handleSubmit} className="space-y-2 md:space-y-2.5 hidden md:block">
+              {/* Vista desktop - Formulario directo */}
+              <form id="checkout-form" onSubmit={handleSubmit} className="hidden lg:block space-y-5">
                 <div>
-                  <label className="block text-xs md:text-sm font-bold text-fuchsia-400 mb-1">
-                    Nombre completo *
+                  <label className="block text-sm font-bold text-fuchsia-400 mb-2">
+                    Nombre completo <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -741,13 +698,13 @@ export default function CheckoutPage() {
                     value={formData.name}
                     onChange={(e) => handleNameInput(e.target.value)}
                     placeholder="Ingresa tu nombre completo"
-                    className="w-full px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
+                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs md:text-sm font-bold text-fuchsia-400 mb-1">
-                    Teléfono *
+                  <label className="block text-sm font-bold text-fuchsia-400 mb-2">
+                    Teléfono <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="tel"
@@ -758,16 +715,17 @@ export default function CheckoutPage() {
                     onChange={(e) => handlePhoneInput(e.target.value)}
                     maxLength={9}
                     placeholder="987654321"
-                    className="w-full px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
+                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 font-mono"
                   />
-                  <p className="text-[9px] md:text-[10px] text-gray-400 mt-1">
-                    Te contactaremos por WhatsApp para coordinar la entrega
+                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                    <span>💬</span>
+                    <span>Te contactaremos por WhatsApp para coordinar la entrega</span>
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs md:text-sm font-bold text-fuchsia-400 mb-1">
-                    Dirección de entrega *
+                  <label className="block text-sm font-bold text-fuchsia-400 mb-2">
+                    Dirección de entrega <span className="text-red-400">*</span>
                   </label>
                   <textarea
                     required
@@ -776,256 +734,286 @@ export default function CheckoutPage() {
                       setFormData({ ...formData, address: e.target.value })
                     }
                     placeholder="Ej: Av. Principal 123, Chancay"
-                    className="w-full px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg bg-gray-900 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500 resize-none"
-                    rows={2}
+                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 resize-none"
+                    rows={3}
                   />
                 </div>
               </form>
+            </div>
           </div>
-        </div>
 
-        {/* Right Side - Order Summary */}
-        <div className="w-full md:w-[400px] bg-gray-900 border-t-2 md:border-t-0 md:border-l-2 border-fuchsia-500/30 p-3 md:p-4 flex flex-col flex-1 md:max-h-none">
-          <h3 className="text-base md:text-lg font-black text-fuchsia-400 mb-2 md:mb-2 neon-glow-purple">
-            Resumen del Pedido
-          </h3>
-          <div className="flex-1 overflow-y-auto space-y-1.5 mb-2 md:mb-3">
-            {completedOrders.map((order, index) => {
-              // Buscar el producto en los arrays estáticos
-              const fatProduct = fatProducts.find((p) => p.id === order.productId);
-              const fitProduct = fitProducts.find((p) => p.id === order.productId);
-              const product = fatProduct || fitProduct;
+          {/* Columna Derecha - Resumen del Pedido (4 cols en desktop) */}
+          <div className="lg:col-span-4">
+            <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-fuchsia-500/20 p-4 md:p-5 shadow-xl sticky top-24">
+              <h2 className="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 mb-4">
+                Resumen del Pedido
+              </h2>
 
-              if (!product) return null;
+              {/* Lista de productos */}
+              <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto custom-scrollbar">
+                {completedOrders.map((order, index) => {
+                  const fatProduct = fatProducts.find((p) => p.id === order.productId);
+                  const fitProduct = fitProducts.find((p) => p.id === order.productId);
+                  const product = fatProduct || fitProduct;
 
-              // Promos no acumulables: si combo activo, ignorar descuento individual
-              const basePrice = order.finalPrice ?? product.price;
-              const productPrice = (hasComboDiscount && order.discountApplied)
-                ? (order.originalPrice ?? product.price)
-                : basePrice;
-              const productTotal = productPrice * order.quantity;
-              const complementsTotal = order.complementIds.reduce((sum, compId) => {
-                return sum + (availableComplements[compId]?.price || 0);
-              }, 0);
-              const orderTotal = productTotal + complementsTotal;
+                  if (!product) return null;
 
-              return (
-                <div
-                  key={`${order.productId}-${index}`}
-                  className="bg-black/50 rounded-lg p-2 border border-fuchsia-500/20"
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-fuchsia-400/30 flex items-center justify-center">
-                      {product.image.startsWith('/') ? (
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-xl md:text-2xl">{product.image}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-bold text-[11px] md:text-xs">
-                        {order.quantity > 1 ? `${order.quantity}x ` : ''}{product.name}
-                      </p>
-                      <div className="text-[9px] md:text-[10px] space-y-0.5 mt-1">
-                        {order.salsas && order.salsas.length > 0 && (
-                          <div className="text-amber-300">
-                            🌶️ {order.salsas
-                              .map((sId) => salsas.find((s) => s.id === sId)?.name)
-                              .filter((name) => name)
-                              .join(", ")}
-                          </div>
-                        )}
-                        {order.complementIds.length > 0 && (
-                          <div className="text-fuchsia-300 space-y-0.5">
-                            {order.complementIds.map((compId, i) => {
-                              const comp = availableComplements[compId];
-                              if (!comp) return null;
-                              const emoji = compId === "pollo-grillado" ? "🍗" : "🍟";
-                              return (
-                                <div key={`${compId}-${i}`} className="flex justify-between">
-                                  <span>{emoji} {comp.name}</span>
-                                  <span className="text-fuchsia-300/60">+S/ {comp.price.toFixed(2)}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                  const basePrice = order.finalPrice ?? product.price;
+                  const productPrice = (hasComboDiscount && order.discountApplied)
+                    ? (order.originalPrice ?? product.price)
+                    : basePrice;
+                  const productTotal = productPrice * order.quantity;
+                  const complementsTotal = order.complementIds.reduce((sum, compId) => {
+                    return sum + (availableComplements[compId]?.price || 0);
+                  }, 0);
+
+                  return (
+                    <div
+                      key={`${order.productId}-${index}`}
+                      className="bg-black/30 rounded-xl p-3 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-all"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 border border-fuchsia-400/20">
+                          {product.image.startsWith('/') ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-2xl">{product.image}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-bold text-sm leading-tight">
+                            {order.quantity > 1 && <span className="text-fuchsia-400">{order.quantity}x </span>}
+                            {product.name}
+                          </p>
+
+                          {order.salsas && order.salsas.length > 0 && (
+                            <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
+                              <span>🌶️</span>
+                              <span className="flex-1">
+                                {order.salsas
+                                  .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                                  .filter((name) => name)
+                                  .join(", ")}
+                              </span>
+                            </div>
+                          )}
+
+                          {order.complementIds.length > 0 && (
+                            <div className="text-xs text-fuchsia-300 space-y-1 mt-1.5">
+                              {order.complementIds.map((compId, i) => {
+                                const comp = availableComplements[compId];
+                                if (!comp) return null;
+                                return (
+                                  <div key={`${compId}-${i}`} className="flex justify-between items-center">
+                                    <span className="opacity-80">+ {comp.name}</span>
+                                    <span className="font-mono text-xs">S/ {comp.price.toFixed(2)}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-right flex-shrink-0">
+                          {order.discountApplied && !hasComboDiscount && (
+                            <div className="flex flex-col items-end gap-1 mb-1">
+                              <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">🔥 PROMO</span>
+                              <span className="text-gray-500 line-through text-[10px] font-mono">
+                                S/ {((order.originalPrice ?? productPrice) * order.quantity).toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                          <span className="text-amber-400 font-black text-sm font-mono">
+                            S/ {productTotal.toFixed(2)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      {order.discountApplied && !hasComboDiscount && (
-                        <div className="flex flex-col items-end gap-0.5 mb-0.5">
-                          <span className="text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">🔥 PROMO</span>
-                          <span className="text-gray-500 line-through text-[9px]">S/ {((order.originalPrice ?? productPrice) * order.quantity).toFixed(2)}</span>
-                        </div>
+                  );
+                })}
+              </div>
+
+              {/* Aviso promos no acumulables */}
+              {hasComboDiscount && completedOrders.some(o => o.discountApplied) && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 mb-4">
+                  <p className="text-center text-xs text-amber-300">
+                    * Las promociones no son acumulables
+                  </p>
+                </div>
+              )}
+
+              {/* Sección de cupón */}
+              <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
+                <p className="text-white font-bold text-sm mb-2">¿Tienes un cupón?</p>
+                {hasComboDiscount ? (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+                    <p className="text-amber-300 text-xs text-center">
+                      ⚠️ No acumulable con descuento combo
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        placeholder="SANTO13-XXXXXX"
+                        disabled={couponValid}
+                        className="flex-1 bg-gray-800/50 border border-fuchsia-500/30 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-500/20 transition-all disabled:opacity-50 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={validateCoupon}
+                        disabled={couponValidating || couponValid}
+                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all disabled:opacity-50 active:scale-95 min-w-[80px]"
+                      >
+                        {couponValidating ? "..." : couponValid ? "✓ OK" : "Aplicar"}
+                      </button>
+                    </div>
+                    {couponMessage && (
+                      <p className={`text-xs ${couponValid ? 'text-green-400' : 'text-red-400'}`}>
+                        {couponMessage}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Sección de Delivery */}
+              <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
+                <p className="text-white font-bold text-sm mb-2">Zona de entrega</p>
+                <button
+                  type="button"
+                  onClick={() => setShowDeliveryModal(true)}
+                  className="w-full flex items-center justify-between bg-sky-900/30 border-2 border-sky-500/30 rounded-xl px-4 py-3 hover:bg-sky-900/50 hover:border-sky-500/50 transition-all active:scale-95 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🛵</span>
+                    <div className="text-left">
+                      <span className="text-white font-semibold text-sm block">
+                        {deliveryOption ? (
+                          deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
+                          deliveryOption === 'puerto' ? 'Puerto' :
+                          deliveryOption === 'peralvillo' ? 'Peralvillo' :
+                          deliveryOption === 'la-balanza' ? 'La Balanza' :
+                          'Otros'
+                        ) : 'Seleccionar zona'}
+                      </span>
+                      {deliveryOption && deliveryCost > 0 && (
+                        <span className="text-sky-300 text-xs font-mono">S/ {deliveryCost.toFixed(2)}</span>
                       )}
-                      <span className="text-amber-400 font-bold text-xs md:text-sm gold-glow">S/ {productTotal.toFixed(2)}</span>
+                      {deliveryOption === 'otros' && (
+                        <span className="text-gray-400 text-xs">A coordinar</span>
+                      )}
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                  <span className="text-sky-400 group-hover:translate-x-1 transition-transform">›</span>
+                </button>
 
-
-          {/* Aviso promos no acumulables */}
-          {hasComboDiscount && completedOrders.some(o => o.discountApplied) && (
-            <p className="text-center text-[9px] md:text-[10px] text-gray-400 italic mb-2 px-1">
-              * Las promociones no son acumulables. Se aplica el descuento más favorable.
-            </p>
-          )}
-
-          {/* Campo de cupón */}
-          <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
-            <p className="text-white font-bold text-[10px] md:text-xs mb-1.5">¿Tienes un cupón?</p>
-            {hasComboDiscount ? (
-              <p className="text-amber-400/80 text-[9px] md:text-[10px] italic">
-                ⚠️ El descuento combo S/ 5.00 no es acumulable con cupones
-              </p>
-            ) : (
-              <>
-                <div className="flex gap-1.5">
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    placeholder="SANTO13-XXXXXX"
-                    disabled={couponValid}
-                    className="flex-1 bg-black/50 border border-fuchsia-500/30 rounded-lg px-2 py-1.5 text-white text-xs md:text-sm placeholder-gray-500 focus:outline-none focus:border-fuchsia-400 disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={validateCoupon}
-                    disabled={couponValidating || couponValid}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all disabled:opacity-50"
-                  >
-                    {couponValidating ? "..." : couponValid ? "✓" : "Aplicar"}
-                  </button>
-                </div>
-                {couponMessage && (
-                  <p className={`text-[9px] md:text-[10px] mt-1 ${couponValid ? 'text-green-400' : 'text-red-400'}`}>
-                    {couponMessage}
+                {!deliveryOption && (
+                  <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                    <span>⚠️</span>
+                    <span>Debes seleccionar una zona de entrega</span>
                   </p>
                 )}
-              </>
-            )}
-          </div>
+              </div>
 
-          {/* Sección de Delivery */}
-          <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
-              <button
-                type="button"
-                onClick={() => setShowDeliveryModal(true)}
-                className="w-full flex items-center justify-between bg-sky-900/30 border border-sky-500/40 rounded-lg px-3 py-2.5 hover:bg-sky-900/50 transition-all active:scale-95"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🛵</span>
-                  <span className="text-white font-bold text-xs md:text-sm">
-                    {deliveryOption ? 'Cambiar zona de entrega' : 'Seleccionar zona de entrega'}
+              {/* Totales */}
+              <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
+                {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
+                  <>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-400">Subtotal:</span>
+                      <span className="text-gray-300 font-mono">S/ {subtotal.toFixed(2)}</span>
+                    </div>
+                    {hasComboDiscount && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-fuchsia-400 font-bold">🔥 Combo FAT+FIT:</span>
+                        <span className="text-fuchsia-400 font-bold font-mono">-S/ {comboDiscountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {couponValid && couponDiscount > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-green-400 font-bold">Cupón -{couponDiscount}%:</span>
+                        <span className="text-green-400 font-bold font-mono">-S/ {couponDiscountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {deliveryOption && deliveryCost > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-sky-400 font-semibold">🛵 Delivery:</span>
+                    <span className="text-sky-400 font-semibold font-mono">+S/ {deliveryCost.toFixed(2)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center pt-2 border-t border-gray-700">
+                  <span className="text-white font-black text-lg">Total:</span>
+                  <span className="text-amber-400 font-black text-2xl font-mono">
+                    S/ {realTotal.toFixed(2)}
                   </span>
                 </div>
-                {deliveryOption && (
-                  <span className="text-sky-300 text-xs md:text-sm font-bold">
-                    {deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
-                      deliveryOption === 'puerto' ? 'Puerto' :
-                      deliveryOption === 'peralvillo' ? 'Peralvillo' :
-                      deliveryOption === 'la-balanza' ? 'La Balanza' :
-                      'Otros'}
-                  </span>
-                )}
-              </button>
+              </div>
 
-              {!deliveryOption && (
-                <p className="text-red-400 text-[9px] md:text-[10px] mt-1 ml-1">
-                  ⚠️ Debes seleccionar una zona de entrega
+              {/* Botones de acción */}
+              <div className="flex gap-3 mt-6">
+                <Link
+                  href={completedOrders.some(o => o.salsas && o.salsas.length > 0) ? "/fat?from=checkout" : "/fit?from=checkout"}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 border border-gray-600"
+                >
+                  <span>←</span>
+                  <span>Volver</span>
+                </Link>
+                <button
+                  type="submit"
+                  form="checkout-form"
+                  disabled={isSubmitting || !isFormValid()}
+                  onClick={(e) => {
+                    // En móvil, no hay form, así que manejamos el click directamente
+                    if (window.innerWidth < 1024) {
+                      e.preventDefault();
+                      if (!isFormValid()) {
+                        alert('Por favor completa todos los campos obligatorios');
+                        return;
+                      }
+                      if (isPreLaunch()) {
+                        setShowPreLaunchModal(true);
+                        return;
+                      }
+                      setShowPaymentModal(true);
+                    }
+                  }}
+                  className="flex-[2] bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-fuchsia-500/30"
+                >
+                  {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
+                </button>
+              </div>
+
+              {!isFormValid() && (
+                <p className="text-red-400 text-xs text-center mt-3 flex items-center justify-center gap-1">
+                  <span>⚠️</span>
+                  <span>Completa todos los campos obligatorios</span>
                 </p>
               )}
-            </div>
 
-          <div className="border-t-2 border-fuchsia-500/50 pt-2 md:pt-2">
-            {/* Subtotal y descuentos */}
-            {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
-              <>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-gray-400 text-xs md:text-sm">Subtotal:</span>
-                  <span className="text-gray-400 text-xs md:text-sm">S/ {subtotal.toFixed(2)}</span>
-                </div>
-                {hasComboDiscount && (
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-fuchsia-400 text-xs md:text-sm font-bold">🔥 Combo FAT+FIT -S/ 5:</span>
-                    <span className="text-fuchsia-400 text-xs md:text-sm font-bold">-S/ {comboDiscountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                {couponValid && couponDiscount > 0 && (
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-green-400 text-xs md:text-sm font-bold">Cupón -{couponDiscount}%:</span>
-                    <span className="text-green-400 text-xs md:text-sm font-bold">-S/ {couponDiscountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Delivery */}
-            {deliveryOption && deliveryCost > 0 && (
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
-                <span className="text-sky-400 text-xs md:text-sm font-semibold">+S/ {deliveryCost.toFixed(2)}</span>
-              </div>
-            )}
-            {deliveryOption === 'otros' && deliveryCost === 0 && (
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sky-400 text-xs md:text-sm font-semibold">🛵 Delivery:</span>
-                <span className="text-gray-500 text-[10px] md:text-xs">A coordinar</span>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center mb-2 md:mb-3">
-              <span className="text-white font-bold text-sm md:text-base">Total:</span>
-              <span className="text-amber-400 font-black text-lg md:text-xl gold-glow">
-                S/ {realTotal.toFixed(2)}
-              </span>
-            </div>
-
-            {/* Botones */}
-            <div className="flex gap-2 mb-2">
-              <Link
-                href={completedOrders.some(o => o.salsas && o.salsas.length > 0) ? "/fat?from=checkout" : "/fit?from=checkout"}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all flex items-center justify-center gap-1 border-2 border-gray-600"
-              >
-                <span>←</span>
-                <span>Volver</span>
-              </Link>
-              <button
-                type="submit"
-                form="checkout-form"
-                disabled={isSubmitting || !isFormValid()}
-                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-95 text-white font-black py-2.5 md:py-3 rounded-lg text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed neon-border-purple md:transform md:hover:scale-105"
-              >
-                {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
-              </button>
-            </div>
-
-            {!isFormValid() && (
-              <p className="text-red-400 text-[9px] md:text-[10px] text-center mb-2">
-                ⚠️ Completa todos los campos obligatorios
+              <p className="text-gray-400 text-[10px] text-center mt-3 leading-relaxed">
+                Al confirmar, nos pondremos en contacto para coordinar la entrega
               </p>
-            )}
-
-            <p className="text-gray-400 text-[9px] md:text-[10px] text-center">
-              Al confirmar tu pedido, nos pondremos en contacto contigo para coordinar la entrega
-            </p>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* Modal de Formulario Móvil */}
+      {/* Modal de Formulario Móvil - MEJORADO */}
       {showMobileFormModal && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-end md:items-center justify-center z-[100]"
+          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end md:items-center justify-center z-[100]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowMobileFormModal(false);
@@ -1033,35 +1021,34 @@ export default function CheckoutPage() {
           }}
         >
           <div
-            className="bg-gray-900 rounded-t-3xl md:rounded-2xl border-t-2 md:border border-fuchsia-500/30 w-full md:max-w-md p-6 pb-8 animate-fade-in"
+            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl md:rounded-2xl border-t-2 md:border-2 border-fuchsia-500/40 w-full md:max-w-md p-6 pb-8 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-black text-fuchsia-400 neon-glow-purple">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400">
                 Datos de Entrega
               </h3>
               <button
                 onClick={() => setShowMobileFormModal(false)}
-                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-all active:scale-95"
+                className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
               >
-                <span className="text-gray-400 text-xl leading-none">×</span>
+                <span className="text-gray-300 text-2xl leading-none">×</span>
               </button>
             </div>
 
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                // Validar que todos los campos estén completos antes de cerrar
                 if (formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "") {
                   setMobileFormCompleted(true);
                   setShowMobileFormModal(false);
                 }
               }}
-              className="space-y-4"
+              className="space-y-5"
             >
               <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-1.5">
-                  Nombre completo *
+                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
+                  Nombre completo <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -1069,13 +1056,13 @@ export default function CheckoutPage() {
                   value={formData.name}
                   onChange={(e) => handleNameInput(e.target.value)}
                   placeholder="Ingresa tu nombre completo"
-                  className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
+                  className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-1.5">
-                  Teléfono *
+                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
+                  Teléfono <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="tel"
@@ -1086,16 +1073,17 @@ export default function CheckoutPage() {
                   onChange={(e) => handlePhoneInput(e.target.value)}
                   maxLength={9}
                   placeholder="987654321"
-                  className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500"
+                  className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 font-mono"
                 />
-                <p className="text-xs text-gray-400 mt-1.5">
-                  Te contactaremos por WhatsApp para coordinar la entrega
+                <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                  <span>💬</span>
+                  <span>Te contactaremos por WhatsApp</span>
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-1.5">
-                  Dirección de entrega *
+                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
+                  Dirección de entrega <span className="text-red-400">*</span>
                 </label>
                 <textarea
                   required
@@ -1104,7 +1092,7 @@ export default function CheckoutPage() {
                     setFormData({ ...formData, address: e.target.value })
                   }
                   placeholder="Ej: Av. Principal 123, Chancay"
-                  className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none transition-colors focus:neon-border-purple placeholder:text-gray-500 resize-none"
+                  className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 resize-none"
                   rows={3}
                 />
               </div>
@@ -1112,7 +1100,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={!(formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "")}
-                className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-lg transition-all active:scale-95 shadow-lg shadow-fuchsia-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-fuchsia-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Guardar datos
               </button>
@@ -1127,10 +1115,10 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Modal de Selección de Delivery */}
+      {/* Modal de Selección de Delivery - MEJORADO */}
       {showDeliveryModal && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-end md:items-center justify-center z-[100]"
+          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end md:items-center justify-center z-[100]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowDeliveryModal(false);
@@ -1138,22 +1126,22 @@ export default function CheckoutPage() {
           }}
         >
           <div
-            className="bg-gray-900 rounded-t-3xl md:rounded-2xl border-t-2 md:border border-sky-500/30 w-full md:max-w-md p-6 pb-8 animate-fade-in max-h-[80vh] overflow-y-auto"
+            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl md:rounded-2xl border-t-2 md:border-2 border-sky-500/40 w-full md:max-w-md p-6 pb-8 shadow-2xl max-h-[85vh] overflow-y-auto custom-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-black text-sky-400">
-                Selecciona tu zona de entrega
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-400">
+                Zona de Entrega
               </h3>
               <button
                 onClick={() => setShowDeliveryModal(false)}
-                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-all active:scale-95"
+                className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
               >
-                <span className="text-gray-400 text-xl leading-none">×</span>
+                <span className="text-gray-300 text-2xl leading-none">×</span>
               </button>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {/* Chancay Centro */}
               <button
                 onClick={() => {
@@ -1161,26 +1149,26 @@ export default function CheckoutPage() {
                   setDeliveryCustomLocation('');
                   setShowDeliveryModal(false);
                 }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
                   deliveryOption === 'chancay-centro'
-                    ? 'border-sky-500/50 bg-sky-900/40'
+                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
                     : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                     deliveryOption === 'chancay-centro' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
                   }`}>
-                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
                       deliveryOption === 'chancay-centro' ? 'opacity-100' : 'opacity-0'
                     }`}></div>
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold text-sm">Chancay Centro</p>
+                    <p className="text-white font-bold text-base">Chancay Centro</p>
                     <p className="text-gray-400 text-xs mt-0.5">Zona céntrica</p>
                   </div>
                 </div>
-                <span className="text-sky-400 font-bold text-sm">S/ 4.00</span>
+                <span className="text-sky-400 font-black text-base font-mono">S/ 4.00</span>
               </button>
 
               {/* Puerto */}
@@ -1190,26 +1178,26 @@ export default function CheckoutPage() {
                   setDeliveryCustomLocation('');
                   setShowDeliveryModal(false);
                 }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
                   deliveryOption === 'puerto'
-                    ? 'border-sky-500/50 bg-sky-900/40'
+                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
                     : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                     deliveryOption === 'puerto' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
                   }`}>
-                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
                       deliveryOption === 'puerto' ? 'opacity-100' : 'opacity-0'
                     }`}></div>
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold text-sm">Puerto</p>
+                    <p className="text-white font-bold text-base">Puerto</p>
                     <p className="text-gray-400 text-xs mt-0.5">Zona del puerto</p>
                   </div>
                 </div>
-                <span className="text-sky-400 font-bold text-sm">S/ 5.00</span>
+                <span className="text-sky-400 font-black text-base font-mono">S/ 5.00</span>
               </button>
 
               {/* Peralvillo */}
@@ -1219,26 +1207,26 @@ export default function CheckoutPage() {
                   setDeliveryCustomLocation('');
                   setShowDeliveryModal(false);
                 }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
                   deliveryOption === 'peralvillo'
-                    ? 'border-sky-500/50 bg-sky-900/40'
+                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
                     : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                     deliveryOption === 'peralvillo' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
                   }`}>
-                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
                       deliveryOption === 'peralvillo' ? 'opacity-100' : 'opacity-0'
                     }`}></div>
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold text-sm">Peralvillo</p>
+                    <p className="text-white font-bold text-base">Peralvillo</p>
                     <p className="text-gray-400 text-xs mt-0.5">Zona Peralvillo</p>
                   </div>
                 </div>
-                <span className="text-sky-400 font-bold text-sm">S/ 7.00</span>
+                <span className="text-sky-400 font-black text-base font-mono">S/ 7.00</span>
               </button>
 
               {/* La Balanza */}
@@ -1248,59 +1236,58 @@ export default function CheckoutPage() {
                   setDeliveryCustomLocation('');
                   setShowDeliveryModal(false);
                 }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
                   deliveryOption === 'la-balanza'
-                    ? 'border-sky-500/50 bg-sky-900/40'
+                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
                     : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                     deliveryOption === 'la-balanza' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
                   }`}>
-                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
                       deliveryOption === 'la-balanza' ? 'opacity-100' : 'opacity-0'
                     }`}></div>
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold text-sm">La Balanza</p>
+                    <p className="text-white font-bold text-base">La Balanza</p>
                     <p className="text-gray-400 text-xs mt-0.5">Zona La Balanza</p>
                   </div>
                 </div>
-                <span className="text-sky-400 font-bold text-sm">S/ 5.00</span>
+                <span className="text-sky-400 font-black text-base font-mono">S/ 5.00</span>
               </button>
 
               {/* Otros */}
               <button
                 onClick={() => {
                   setDeliveryOption('otros');
-                  // No cerramos el modal para que puedan escribir la ubicación
                 }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
                   deliveryOption === 'otros'
-                    ? 'border-sky-500/50 bg-sky-900/40'
+                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
                     : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                     deliveryOption === 'otros' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
                   }`}>
-                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
                       deliveryOption === 'otros' ? 'opacity-100' : 'opacity-0'
                     }`}></div>
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold text-sm">Otros</p>
+                    <p className="text-white font-bold text-base">Otros</p>
                     <p className="text-gray-400 text-xs mt-0.5">Especifica tu ubicación</p>
                   </div>
                 </div>
-                <span className="text-gray-400 text-xs">A coordinar</span>
+                <span className="text-gray-400 text-sm">A coordinar</span>
               </button>
 
-              {/* Campo de ubicación personalizada si seleccionó "Otros" */}
+              {/* Campo de ubicación personalizada */}
               {deliveryOption === 'otros' && (
-                <div className="pt-2">
+                <div className="pt-3 border-t border-sky-500/20">
                   <label className="block text-sm font-bold text-sky-400 mb-2">
                     ¿Dónde te encuentras?
                   </label>
@@ -1308,7 +1295,7 @@ export default function CheckoutPage() {
                     value={deliveryCustomLocation}
                     onChange={(e) => setDeliveryCustomLocation(e.target.value)}
                     placeholder="Ej: Urb. Los Jardines, Mz. A Lote 5"
-                    className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-sky-500/30 text-white focus:border-sky-400 focus:outline-none transition-colors placeholder:text-gray-500 resize-none"
+                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-sky-500/30 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all placeholder:text-gray-500 resize-none"
                     rows={3}
                   />
                   <button
@@ -1318,7 +1305,7 @@ export default function CheckoutPage() {
                       }
                     }}
                     disabled={!deliveryCustomLocation.trim()}
-                    className="w-full mt-3 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-black py-3 rounded-lg transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full mt-3 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Confirmar ubicación
                   </button>
@@ -1329,10 +1316,10 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Modal de Selección de Método de Pago */}
+      {/* Modal de Selección de Método de Pago - MEJORADO */}
       {showPaymentModal && !showQrPayment && !showContraEntregaModal && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowPaymentModal(false);
@@ -1341,40 +1328,40 @@ export default function CheckoutPage() {
           }}
         >
           <div
-            className="bg-gray-900 rounded-2xl border border-fuchsia-500/30 max-w-xs w-full p-5"
+            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl border-2 border-fuchsia-500/40 max-w-sm w-full p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center mb-3">
+            <div className="flex justify-center mb-4">
               <Image
                 src="/logoprincipal.png"
                 alt="Santo Dilema"
-                width={150}
-                height={40}
-                className="h-8 w-auto"
+                width={180}
+                height={50}
+                className="h-10 w-auto"
               />
             </div>
 
-            <h3 className="text-base font-bold text-white text-center mb-0.5">Método de pago</h3>
-            <p className="text-gray-500 text-xs text-center mb-5">
-              Total: <span className="text-amber-400 font-bold">S/ {realTotal.toFixed(2)}</span>
+            <h3 className="text-lg font-black text-white text-center mb-1">Método de pago</h3>
+            <p className="text-gray-400 text-sm text-center mb-6">
+              Total: <span className="text-amber-400 font-black font-mono text-lg">S/ {realTotal.toFixed(2)}</span>
             </p>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <button
                 onClick={() => {
                   setPaymentMethod('anticipado');
                   setShowQrPayment(true);
                 }}
-                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 bg-gray-800/40 active:bg-gray-800/70 transition-all active:scale-95"
+                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-700 bg-gray-800/40 hover:bg-gray-800/70 hover:border-fuchsia-500/50 transition-all active:scale-95"
               >
-                <div className="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0"></div>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl flex-shrink-0">
+                  📱
                 </div>
                 <div className="text-left flex-1">
-                  <p className="text-white font-semibold text-sm">Paga con Yape o Plin</p>
-                  <p className="text-gray-500 text-[11px] mt-0.5">Escanea QR y confirma</p>
+                  <p className="text-white font-bold text-base">Paga con Yape o Plin</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Escanea QR y confirma</p>
                 </div>
-                <span className="text-gray-600 text-sm">📱</span>
+                <span className="text-gray-500">›</span>
               </button>
 
               <button
@@ -1384,16 +1371,16 @@ export default function CheckoutPage() {
                   setSelectedEfectivo(null);
                   setCantoCancelo('');
                 }}
-                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-700 bg-gray-800/40 active:bg-gray-800/70 transition-all active:scale-95"
+                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-700 bg-gray-800/40 hover:bg-gray-800/70 hover:border-fuchsia-500/50 transition-all active:scale-95"
               >
-                <div className="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-fuchsia-500 opacity-0"></div>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl flex-shrink-0">
+                  💵
                 </div>
                 <div className="text-left flex-1">
-                  <p className="text-white font-semibold text-sm">Pago contra entrega</p>
-                  <p className="text-gray-500 text-[11px] mt-0.5">Efectivo o Yape al recibir</p>
+                  <p className="text-white font-bold text-base">Pago contra entrega</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Solo efectivo al recibir</p>
                 </div>
-                <span className="text-gray-600 text-sm">🏍️</span>
+                <span className="text-gray-500">›</span>
               </button>
             </div>
 
@@ -1402,7 +1389,7 @@ export default function CheckoutPage() {
                 setShowPaymentModal(false);
                 setPaymentMethod(null);
               }}
-              className="w-full mt-4 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
+              className="w-full mt-5 text-gray-400 hover:text-gray-200 text-sm transition-colors py-2"
             >
               Cancelar
             </button>
@@ -1410,10 +1397,10 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Modal de Contra Entrega */}
+      {/* Modal de Contra Entrega - MEJORADO */}
       {showContraEntregaModal && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowContraEntregaModal(false);
@@ -1424,172 +1411,174 @@ export default function CheckoutPage() {
           }}
         >
           <div
-            className="bg-gray-900 rounded-2xl border border-fuchsia-500/30 max-w-xs w-full p-5"
+            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl border-2 border-green-500/40 max-w-sm w-full p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center mb-3">
+            <div className="flex justify-center mb-4">
               <Image
                 src="/logoprincipal.png"
                 alt="Santo Dilema"
-                width={150}
-                height={40}
-                className="h-8 w-auto"
+                width={180}
+                height={50}
+                className="h-10 w-auto"
               />
             </div>
 
-            {/* Modal de efectivo directo - sin paso previo */}
-            <>
+            <button
+              onClick={() => {
+                setShowContraEntregaModal(false);
+                setSelectedEfectivo(null);
+                setCantoCancelo('');
+              }}
+              className="text-gray-400 hover:text-gray-200 text-sm transition-colors mb-4 flex items-center gap-1"
+            >
+              <span>←</span>
+              <span>Volver</span>
+            </button>
+
+            <h3 className="text-lg font-black text-white text-center mb-2">Pago contra entrega</h3>
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl px-4 py-3 mb-4">
+              <p className="text-blue-300 text-sm text-center font-bold flex items-center justify-center gap-2">
+                <span className="text-xl">💵</span>
+                <span>Solo pago en efectivo</span>
+              </p>
+            </div>
+            <p className="text-gray-400 text-sm text-center mb-6">
+              Total: <span className="text-amber-400 font-black font-mono text-lg">S/ {realTotal.toFixed(2)}</span>
+            </p>
+
+            <div className="space-y-3 mb-5">
               <button
                 onClick={() => {
-                  setShowContraEntregaModal(false);
-                  setSelectedEfectivo(null);
+                  setSelectedEfectivo('exacto');
                   setCantoCancelo('');
                 }}
-                className="text-gray-500 hover:text-gray-300 text-[11px] transition-colors mb-3"
+                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all active:scale-95 ${
+                  selectedEfectivo === 'exacto'
+                    ? 'border-fuchsia-500 bg-fuchsia-900/30'
+                    : 'border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                }`}
               >
-                ← Volver
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                  selectedEfectivo === 'exacto' ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-600'
+                }`}>
+                  <div className={`w-3 h-3 rounded-full bg-fuchsia-500 transition-opacity ${
+                    selectedEfectivo === 'exacto' ? 'opacity-100' : 'opacity-0'
+                  }`}></div>
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-white font-bold text-base">Monto exacto</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Tengo S/ {realTotal.toFixed(2)} exacto</p>
+                </div>
+                <span className="text-green-400 text-xl">✓</span>
               </button>
 
-              <h3 className="text-base font-bold text-white text-center mb-0.5">Pago contra entrega</h3>
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 mb-3">
-                <p className="text-blue-400 text-xs text-center font-semibold">
-                  💵 Solo pago en efectivo
-                </p>
-              </div>
-              <p className="text-gray-500 text-xs text-center mb-5">
-                Total: <span className="text-amber-400 font-bold">S/ {realTotal.toFixed(2)}</span>
-              </p>
+              <button
+                onClick={() => setSelectedEfectivo('cambio')}
+                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all active:scale-95 ${
+                  selectedEfectivo === 'cambio'
+                    ? 'border-fuchsia-500 bg-fuchsia-900/30'
+                    : 'border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                }`}
+              >
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                  selectedEfectivo === 'cambio' ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-600'
+                }`}>
+                  <div className={`w-3 h-3 rounded-full bg-fuchsia-500 transition-opacity ${
+                    selectedEfectivo === 'cambio' ? 'opacity-100' : 'opacity-0'
+                  }`}></div>
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-white font-bold text-base">Necesito cambio</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Pagaré con billetes</p>
+                </div>
+                <span className="text-amber-400 text-xl">💵</span>
+              </button>
 
-                <div className="space-y-2 mb-4">
-                  <button
-                    onClick={() => {
-                      setSelectedEfectivo('exacto');
-                      setCantoCancelo('');
-                    }}
-                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all active:scale-95 ${
-                      selectedEfectivo === 'exacto'
-                        ? 'border-fuchsia-500/50 bg-gray-800/70'
-                        : 'border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                      selectedEfectivo === 'exacto' ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-600'
-                    }`}>
-                      <div className={`w-2 h-2 rounded-full bg-fuchsia-500 transition-opacity ${
-                        selectedEfectivo === 'exacto' ? 'opacity-100' : 'opacity-0'
-                      }`}></div>
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="text-white font-semibold text-sm">Monto exacto</p>
-                      <p className="text-gray-500 text-[11px] mt-0.5">Tengo S/ {realTotal.toFixed(2)} exacto</p>
-                    </div>
-                    <span className="text-gray-600 text-sm">✓</span>
-                  </button>
-
-                  <button
-                    onClick={() => setSelectedEfectivo('cambio')}
-                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all active:scale-95 ${
-                      selectedEfectivo === 'cambio'
-                        ? 'border-fuchsia-500/50 bg-gray-800/70'
-                        : 'border-gray-700 hover:border-fuchsia-500/50 bg-gray-800/40 hover:bg-gray-800/70'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                      selectedEfectivo === 'cambio' ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-600'
-                    }`}>
-                      <div className={`w-2 h-2 rounded-full bg-fuchsia-500 transition-opacity ${
-                        selectedEfectivo === 'cambio' ? 'opacity-100' : 'opacity-0'
-                      }`}></div>
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="text-white font-semibold text-sm">Necesito cambio</p>
-                      <p className="text-gray-500 text-[11px] mt-0.5">Pagaré con billetes</p>
-                    </div>
-                    <span className="text-gray-600 text-sm">💵</span>
-                  </button>
-
-                  {selectedEfectivo === 'cambio' && (
-                    <div className="mt-1">
-                      <label className="block text-[11px] text-gray-400 mb-1">¿Con cuánto cancelas?</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">S/</span>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={cantoCancelo}
-                          onChange={(e) => {
-                            const solo = e.target.value.replace(/\D/g, '');
-                            setCantoCancelo(solo);
-                          }}
-                          placeholder={Math.ceil(realTotal).toString()}
-                          className="w-full pl-8 pr-3 py-2 rounded-lg bg-gray-800 border border-fuchsia-500/30 text-white text-sm focus:border-fuchsia-500 focus:outline-none transition-colors"
-                          style={{ fontSize: '16px' }}
-                        />
-                      </div>
-                      {cantoCancelo && parseFloat(cantoCancelo) < realTotal && (
-                        <p className="text-red-400 text-[10px] mt-1">El monto debe ser mayor o igual a S/ {realTotal.toFixed(2)}</p>
-                      )}
-                    </div>
+              {selectedEfectivo === 'cambio' && (
+                <div className="pt-2">
+                  <label className="block text-sm font-bold text-fuchsia-400 mb-2">¿Con cuánto cancelas?</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base font-bold">S/</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={cantoCancelo}
+                      onChange={(e) => {
+                        const solo = e.target.value.replace(/\D/g, '');
+                        setCantoCancelo(solo);
+                      }}
+                      placeholder={Math.ceil(realTotal).toString()}
+                      className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white text-base font-mono focus:border-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                      style={{ fontSize: '16px' }}
+                    />
+                  </div>
+                  {cantoCancelo && parseFloat(cantoCancelo) < realTotal && (
+                    <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                      <span>⚠️</span>
+                      <span>El monto debe ser mayor o igual a S/ {realTotal.toFixed(2)}</span>
+                    </p>
                   )}
                 </div>
+              )}
+            </div>
 
-                <button
-                  onClick={() => {
-                    if (selectedEfectivo === 'exacto') {
-                      confirmOrder('contraentrega-efectivo-exacto');
-                    } else if (selectedEfectivo === 'cambio' && cantoCancelo && parseFloat(cantoCancelo) >= realTotal) {
-                      confirmOrder('contraentrega-efectivo-cambio');
-                    }
-                  }}
-                  disabled={
-                    !selectedEfectivo ||
-                    (selectedEfectivo === 'cambio' && (!cantoCancelo || parseFloat(cantoCancelo) < realTotal))
-                  }
-                  className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-bold py-2.5 rounded-lg text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Confirmar
-                </button>
+            <button
+              onClick={() => {
+                if (selectedEfectivo === 'exacto') {
+                  confirmOrder('contraentrega-efectivo-exacto');
+                } else if (selectedEfectivo === 'cambio' && cantoCancelo && parseFloat(cantoCancelo) >= realTotal) {
+                  confirmOrder('contraentrega-efectivo-cambio');
+                }
+              }}
+              disabled={
+                !selectedEfectivo ||
+                (selectedEfectivo === 'cambio' && (!cantoCancelo || parseFloat(cantoCancelo) < realTotal))
+              }
+              className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-lg shadow-fuchsia-500/30"
+            >
+              Confirmar pedido
+            </button>
 
-                <button
-                  onClick={() => {
-                    setShowContraEntregaModal(false);
-                    setShowEfectivoOptions(false);
-                    setSelectedEfectivo(null);
-                    setCantoCancelo('');
-                  }}
-                  className="w-full mt-2 text-gray-500 hover:text-gray-300 text-[11px] transition-colors"
-                >
-                  Cancelar
-                </button>
-              </>
+            <button
+              onClick={() => {
+                setShowContraEntregaModal(false);
+                setShowEfectivoOptions(false);
+                setSelectedEfectivo(null);
+                setCantoCancelo('');
+              }}
+              className="w-full mt-3 text-gray-400 hover:text-gray-200 text-sm transition-colors py-2"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
       )}
 
       {/* Modal Pre-lanzamiento */}
       {showPreLaunchModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 border-2 border-fuchsia-500 neon-border-purple rounded-lg p-6 max-w-sm w-full text-center">
-            <div className="text-5xl mb-4">🚀</div>
-            <h3 className="text-xl font-black text-fuchsia-400 neon-glow-purple mb-2">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 px-4">
+          <div className="bg-gradient-to-b from-gray-900 to-gray-800 border-2 border-fuchsia-500/40 rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <div className="text-6xl mb-5">🚀</div>
+            <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 mb-3">
               ¡Casi es la hora!
             </h3>
-            <p className="text-white text-sm mb-1">
+            <p className="text-white text-base mb-2">
               Abrimos hoy a las
             </p>
-            <p className="text-fuchsia-300 font-black text-2xl mb-1">
+            <p className="text-fuchsia-300 font-black text-3xl mb-2">
               6:30 PM
             </p>
-            <p className="text-fuchsia-400/70 text-xs mb-5">
+            <p className="text-fuchsia-400/70 text-sm mb-6">
               Viernes 13 de Febrero · Hora Perú
             </p>
-            <p className="text-gray-300 text-xs mb-6">
+            <p className="text-gray-300 text-sm mb-8 leading-relaxed">
               Puedes seguir explorando el menú y armar tu pedido. ¡Te esperamos en unos minutos!
             </p>
             <button
               onClick={() => setShowPreLaunchModal(false)}
-              className="w-full bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 rounded-lg transition-all neon-border-purple"
+              className="w-full bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-fuchsia-500/30"
             >
               Entendido →
             </button>
@@ -1597,31 +1586,30 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Modal de Pago con QR */}
+      {/* Modal de Pago con QR - MEJORADO */}
       {showQrPayment && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-2xl border border-green-500/40 max-w-xs w-full p-4">
-            <div className="flex justify-center mb-3">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+          <div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl border-2 border-green-500/40 max-w-sm w-full p-6 shadow-2xl">
+            <div className="flex justify-center mb-4">
               <Image
                 src="/logoprincipal.png"
                 alt="Santo Dilema"
-                width={150}
-                height={40}
-                className="h-8 w-auto"
+                width={180}
+                height={50}
+                className="h-10 w-auto"
               />
             </div>
 
-            {/* Header */}
-            <div className="text-center mb-3">
-              <h3 className="text-base font-bold text-green-400">Escanea y Paga</h3>
-              <p className="text-gray-500 text-xs mt-0.5">
-                S/ <span className="text-amber-400 font-bold">{realTotal.toFixed(2)}</span>
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-black text-green-400">Escanea y Paga</h3>
+              <p className="text-gray-400 text-sm mt-1">
+                Total: <span className="text-amber-400 font-black font-mono text-lg">S/ {realTotal.toFixed(2)}</span>
               </p>
             </div>
 
             {/* QR Code */}
-            <div className="flex justify-center mb-3">
-              <div className="bg-white rounded-lg p-2" style={{ width: '140px', height: '140px' }}>
+            <div className="flex justify-center mb-5">
+              <div className="bg-white rounded-2xl p-3 shadow-xl" style={{ width: '160px', height: '160px' }}>
                 <img
                   src="/QRQR.jpeg"
                   alt="QR Pago"
@@ -1631,11 +1619,11 @@ export default function CheckoutPage() {
             </div>
 
             {/* Número para copiar */}
-            <div className="text-center mb-3">
-              <p className="text-gray-400 text-[10px] mb-1.5">También puedes pagar al siguiente número</p>
+            <div className="text-center mb-5">
+              <p className="text-gray-400 text-xs mb-2">También puedes pagar al número</p>
               <div className="relative">
-                <div className="flex items-center justify-center gap-2 bg-gray-800/50 border border-green-500/20 rounded-lg py-2 px-3">
-                  <span className="text-green-400 font-bold text-sm tracking-wider">906237356</span>
+                <div className="flex items-center justify-center gap-3 bg-gray-800/50 border-2 border-green-500/30 rounded-xl py-3 px-4">
+                  <span className="text-green-400 font-black text-lg tracking-wider font-mono">906237356</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -1643,42 +1631,42 @@ export default function CheckoutPage() {
                       setShowCopiedMessage(true);
                       setTimeout(() => setShowCopiedMessage(false), 1500);
                     }}
-                    className="text-green-400 hover:text-green-300 transition-colors active:scale-95"
+                    className="text-green-400 hover:text-green-300 transition-colors active:scale-95 p-1"
                     title="Copiar número"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </button>
                 </div>
                 {showCopiedMessage && (
-                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs font-bold py-1 px-3 rounded-lg shadow-lg animate-fade-in">
-                    Numero copiado
+                  <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-lg">
+                    ✓ Número copiado
                   </div>
                 )}
               </div>
             </div>
 
-            {/* 3 pasos */}
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5 mb-3">
-              <ol className="text-white text-xs space-y-1.5">
-                <li className="flex gap-2">
-                  <span className="text-green-400 font-bold flex-shrink-0">1.</span>
+            {/* Pasos */}
+            <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-5">
+              <ol className="text-white text-sm space-y-2">
+                <li className="flex gap-3">
+                  <span className="text-green-400 font-black">1.</span>
                   <span>Escanea el QR con Yape o Plin</span>
                 </li>
-                <li className="flex gap-2">
-                  <span className="text-green-400 font-bold flex-shrink-0">2.</span>
+                <li className="flex gap-3">
+                  <span className="text-green-400 font-black">2.</span>
                   <span>Realiza el pago de S/ {realTotal.toFixed(2)}</span>
                 </li>
-                <li className="flex gap-2">
-                  <span className="text-green-400 font-bold flex-shrink-0">3.</span>
+                <li className="flex gap-3">
+                  <span className="text-green-400 font-black">3.</span>
                   <span>Sube tu comprobante abajo</span>
                 </li>
               </ol>
             </div>
 
             {/* Upload comprobante */}
-            <div className="mb-3">
+            <div className="mb-5">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -1690,24 +1678,24 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all active:scale-95"
+                  className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all active:scale-95"
                 >
-                  <span className="text-green-400 text-xs">📎</span>
-                  <span className="text-green-400 text-xs font-bold tracking-wide">SUBIR CAPTURA DE PAGO</span>
+                  <span className="text-green-400 text-xl">📎</span>
+                  <span className="text-green-400 text-sm font-black">SUBIR COMPROBANTE</span>
                 </button>
               ) : (
-                <div className="flex items-center gap-3 py-2 px-3 rounded-lg border border-green-500/30 bg-green-500/10">
-                  <div className="w-7 h-7 rounded-full border-2 border-green-500 bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                <div className="flex items-center gap-4 py-3 px-4 rounded-xl border-2 border-green-500/40 bg-green-500/10">
+                  <div className="w-10 h-10 rounded-full border-2 border-green-500 bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-green-400 text-xs font-bold">Pago subido con éxito</p>
+                    <p className="text-green-400 text-sm font-bold">Comprobante adjuntado</p>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="text-gray-500 hover:text-gray-300 text-[10px] transition-colors mt-0.5"
+                      className="text-gray-400 hover:text-gray-200 text-xs transition-colors mt-0.5"
                     >
                       Cambiar archivo
                     </button>
@@ -1717,14 +1705,14 @@ export default function CheckoutPage() {
             </div>
 
             {/* Botones */}
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowQrPayment(false);
                   setPaymentProof(null);
                   setPaymentMethod(null);
                 }}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-lg text-sm transition-all"
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95"
               >
                 Volver
               </button>
@@ -1737,7 +1725,7 @@ export default function CheckoutPage() {
                   }
                 }}
                 disabled={!paymentProof || isSubmitting}
-                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-black py-2.5 rounded-lg text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-[2] bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-black py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-lg shadow-green-500/30"
               >
                 {isSubmitting ? "Procesando..." : "Confirmar"}
               </button>
@@ -1745,6 +1733,23 @@ export default function CheckoutPage() {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(17, 24, 39, 0.5);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(168, 85, 247, 0.3);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(168, 85, 247, 0.5);
+        }
+      `}</style>
     </div>
   );
 }
