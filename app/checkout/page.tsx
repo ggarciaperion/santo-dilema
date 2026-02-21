@@ -204,7 +204,7 @@ export default function CheckoutPage() {
   // Estados para delivery
   const [deliveryOption, setDeliveryOption] = useState<string>("");
   const [deliveryCustomLocation, setDeliveryCustomLocation] = useState<string>("");
-  const [showDeliveryOptions, setShowDeliveryOptions] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -919,128 +919,29 @@ export default function CheckoutPage() {
           <div className="border-t border-fuchsia-500/30 pt-2 mb-2">
               <button
                 type="button"
-                onClick={() => setShowDeliveryOptions(!showDeliveryOptions)}
-                className="w-full flex items-center justify-between bg-sky-900/30 border border-sky-500/40 rounded-lg px-3 py-2.5 hover:bg-sky-900/50 transition-all"
+                onClick={() => setShowDeliveryModal(true)}
+                className="w-full flex items-center justify-between bg-sky-900/30 border border-sky-500/40 rounded-lg px-3 py-2.5 hover:bg-sky-900/50 transition-all active:scale-95"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🛵</span>
-                  <span className="text-white font-bold text-xs md:text-sm">Delivery</span>
-                  {deliveryOption && (
-                    <span className="text-sky-300 text-[10px] md:text-xs">
-                      ({deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
-                        deliveryOption === 'puerto' ? 'Puerto' :
-                        deliveryOption === 'peralvillo' ? 'Peralvillo' :
-                        deliveryOption === 'la-balanza' ? 'La Balanza' :
-                        deliveryCustomLocation || 'Otros'})
-                    </span>
-                  )}
+                  <span className="text-white font-bold text-xs md:text-sm">
+                    {deliveryOption ? 'Cambiar zona de entrega' : 'Seleccionar zona de entrega'}
+                  </span>
                 </div>
-                <span className={`text-white transition-transform ${showDeliveryOptions ? 'rotate-180' : ''}`}>▼</span>
+                {deliveryOption && (
+                  <span className="text-sky-300 text-xs md:text-sm font-bold">
+                    {deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
+                      deliveryOption === 'puerto' ? 'Puerto' :
+                      deliveryOption === 'peralvillo' ? 'Peralvillo' :
+                      deliveryOption === 'la-balanza' ? 'La Balanza' :
+                      'Otros'}
+                  </span>
+                )}
               </button>
-
-              {showDeliveryOptions && (
-                <div className="mt-2 space-y-1.5 bg-black/30 rounded-lg p-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeliveryOption('chancay-centro');
-                      setDeliveryCustomLocation('');
-                      setShowDeliveryOptions(false);
-                    }}
-                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
-                      deliveryOption === 'chancay-centro'
-                        ? 'bg-sky-600 text-white'
-                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="text-xs md:text-sm">📍 Chancay Centro</span>
-                    <span className="text-xs md:text-sm font-bold">S/ 4.00</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeliveryOption('puerto');
-                      setDeliveryCustomLocation('');
-                      setShowDeliveryOptions(false);
-                    }}
-                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
-                      deliveryOption === 'puerto'
-                        ? 'bg-sky-600 text-white'
-                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="text-xs md:text-sm">📍 Puerto</span>
-                    <span className="text-xs md:text-sm font-bold">S/ 5.00</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeliveryOption('peralvillo');
-                      setDeliveryCustomLocation('');
-                      setShowDeliveryOptions(false);
-                    }}
-                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
-                      deliveryOption === 'peralvillo'
-                        ? 'bg-sky-600 text-white'
-                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="text-xs md:text-sm">📍 Peralvillo</span>
-                    <span className="text-xs md:text-sm font-bold">S/ 7.00</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeliveryOption('la-balanza');
-                      setDeliveryCustomLocation('');
-                      setShowDeliveryOptions(false);
-                    }}
-                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg transition-all ${
-                      deliveryOption === 'la-balanza'
-                        ? 'bg-sky-600 text-white'
-                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="text-xs md:text-sm">📍 La Balanza</span>
-                    <span className="text-xs md:text-sm font-bold">S/ 5.00</span>
-                  </button>
-
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDeliveryOption('otros');
-                      }}
-                      className={`w-full flex items-start px-3 py-2 rounded-lg transition-all ${
-                        deliveryOption === 'otros'
-                          ? 'bg-sky-600 text-white'
-                          : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex-1 text-left">
-                        <div className="text-xs md:text-sm">📍 Otros</div>
-                        <div className="text-[10px] md:text-xs text-gray-400 mt-0.5">Se coordina con el motorizado al momento de la entrega</div>
-                      </div>
-                    </button>
-                    {deliveryOption === 'otros' && (
-                      <input
-                        type="text"
-                        value={deliveryCustomLocation}
-                        onChange={(e) => setDeliveryCustomLocation(e.target.value)}
-                        placeholder="Especifica tu ubicación..."
-                        className="w-full mt-1.5 bg-black/50 border border-sky-500/30 rounded-lg px-3 py-2 text-white text-xs md:text-sm placeholder-gray-500 focus:outline-none focus:border-sky-400"
-                      />
-                    )}
-                  </div>
-                </div>
-              )}
 
               {!deliveryOption && (
                 <p className="text-red-400 text-[9px] md:text-[10px] mt-1 ml-1">
-                  ⚠️ Debes seleccionar una opción de delivery
+                  ⚠️ Debes seleccionar una zona de entrega
                 </p>
               )}
             </div>
@@ -1222,6 +1123,208 @@ export default function CheckoutPage() {
                 </p>
               )}
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Selección de Delivery */}
+      {showDeliveryModal && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-end md:items-center justify-center z-[100]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowDeliveryModal(false);
+            }
+          }}
+        >
+          <div
+            className="bg-gray-900 rounded-t-3xl md:rounded-2xl border-t-2 md:border border-sky-500/30 w-full md:max-w-md p-6 pb-8 animate-fade-in max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-black text-sky-400">
+                Selecciona tu zona de entrega
+              </h3>
+              <button
+                onClick={() => setShowDeliveryModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-all active:scale-95"
+              >
+                <span className="text-gray-400 text-xl leading-none">×</span>
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {/* Chancay Centro */}
+              <button
+                onClick={() => {
+                  setDeliveryOption('chancay-centro');
+                  setDeliveryCustomLocation('');
+                  setShowDeliveryModal(false);
+                }}
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                  deliveryOption === 'chancay-centro'
+                    ? 'border-sky-500/50 bg-sky-900/40'
+                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                    deliveryOption === 'chancay-centro' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                      deliveryOption === 'chancay-centro' ? 'opacity-100' : 'opacity-0'
+                    }`}></div>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">Chancay Centro</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Zona céntrica</p>
+                  </div>
+                </div>
+                <span className="text-sky-400 font-bold text-sm">S/ 4.00</span>
+              </button>
+
+              {/* Puerto */}
+              <button
+                onClick={() => {
+                  setDeliveryOption('puerto');
+                  setDeliveryCustomLocation('');
+                  setShowDeliveryModal(false);
+                }}
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                  deliveryOption === 'puerto'
+                    ? 'border-sky-500/50 bg-sky-900/40'
+                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                    deliveryOption === 'puerto' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                      deliveryOption === 'puerto' ? 'opacity-100' : 'opacity-0'
+                    }`}></div>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">Puerto</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Zona del puerto</p>
+                  </div>
+                </div>
+                <span className="text-sky-400 font-bold text-sm">S/ 5.00</span>
+              </button>
+
+              {/* Peralvillo */}
+              <button
+                onClick={() => {
+                  setDeliveryOption('peralvillo');
+                  setDeliveryCustomLocation('');
+                  setShowDeliveryModal(false);
+                }}
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                  deliveryOption === 'peralvillo'
+                    ? 'border-sky-500/50 bg-sky-900/40'
+                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                    deliveryOption === 'peralvillo' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                      deliveryOption === 'peralvillo' ? 'opacity-100' : 'opacity-0'
+                    }`}></div>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">Peralvillo</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Zona Peralvillo</p>
+                  </div>
+                </div>
+                <span className="text-sky-400 font-bold text-sm">S/ 7.00</span>
+              </button>
+
+              {/* La Balanza */}
+              <button
+                onClick={() => {
+                  setDeliveryOption('la-balanza');
+                  setDeliveryCustomLocation('');
+                  setShowDeliveryModal(false);
+                }}
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                  deliveryOption === 'la-balanza'
+                    ? 'border-sky-500/50 bg-sky-900/40'
+                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                    deliveryOption === 'la-balanza' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                      deliveryOption === 'la-balanza' ? 'opacity-100' : 'opacity-0'
+                    }`}></div>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">La Balanza</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Zona La Balanza</p>
+                  </div>
+                </div>
+                <span className="text-sky-400 font-bold text-sm">S/ 5.00</span>
+              </button>
+
+              {/* Otros */}
+              <button
+                onClick={() => {
+                  setDeliveryOption('otros');
+                  // No cerramos el modal para que puedan escribir la ubicación
+                }}
+                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all active:scale-95 ${
+                  deliveryOption === 'otros'
+                    ? 'border-sky-500/50 bg-sky-900/40'
+                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                    deliveryOption === 'otros' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full bg-sky-500 transition-opacity ${
+                      deliveryOption === 'otros' ? 'opacity-100' : 'opacity-0'
+                    }`}></div>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">Otros</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Especifica tu ubicación</p>
+                  </div>
+                </div>
+                <span className="text-gray-400 text-xs">A coordinar</span>
+              </button>
+
+              {/* Campo de ubicación personalizada si seleccionó "Otros" */}
+              {deliveryOption === 'otros' && (
+                <div className="pt-2">
+                  <label className="block text-sm font-bold text-sky-400 mb-2">
+                    ¿Dónde te encuentras?
+                  </label>
+                  <textarea
+                    value={deliveryCustomLocation}
+                    onChange={(e) => setDeliveryCustomLocation(e.target.value)}
+                    placeholder="Ej: Urb. Los Jardines, Mz. A Lote 5"
+                    className="w-full px-4 py-3 text-base rounded-lg bg-gray-800 border-2 border-sky-500/30 text-white focus:border-sky-400 focus:outline-none transition-colors placeholder:text-gray-500 resize-none"
+                    rows={3}
+                  />
+                  <button
+                    onClick={() => {
+                      if (deliveryCustomLocation.trim()) {
+                        setShowDeliveryModal(false);
+                      }
+                    }}
+                    disabled={!deliveryCustomLocation.trim()}
+                    className="w-full mt-3 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-black py-3 rounded-lg transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Confirmar ubicación
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
