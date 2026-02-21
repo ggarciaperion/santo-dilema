@@ -1440,23 +1440,24 @@ export default function FitPage() {
       {/* Modal de Promoción FIT */}
       {showPromoModal && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[200] p-4"
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[200] p-4 md:p-6 lg:p-8"
           onClick={() => setShowPromoModal(false)}
         >
           <div
-            className="relative max-w-2xl w-full"
+            className="relative w-full max-w-[95vw] md:max-w-[85vw] lg:max-w-3xl max-h-[90vh] md:max-h-[85vh] flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowPromoModal(false)}
-              className="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-10 h-10 md:w-12 md:h-12 bg-fuchsia-600 hover:bg-fuchsia-500 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg z-10"
+              className="absolute -top-2 -right-2 md:top-0 md:right-0 w-10 h-10 md:w-12 md:h-12 bg-fuchsia-600 hover:bg-fuchsia-500 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg z-10 border-2 border-white"
+              title="Cerrar"
             >
               <span className="text-white text-2xl md:text-3xl font-bold leading-none">×</span>
             </button>
             <img
               src="/promofit.png"
               alt="Promoción FIT"
-              className="w-full h-auto rounded-lg shadow-2xl"
+              className="w-full h-auto max-h-[85vh] md:max-h-[80vh] object-contain rounded-lg shadow-2xl"
             />
           </div>
         </div>
