@@ -19,6 +19,13 @@ export async function POST(request: Request) {
     console.log("🔥 Body recibido:", body);
     console.log("🔥 Items recibidos:", body.items);
 
+    // Fix timezone issue: if date is in YYYY-MM-DD format, append Peru time
+    let purchaseDate = body.purchaseDate || new Date().toISOString();
+    if (body.purchaseDate && /^\d{4}-\d{2}-\d{2}$/.test(body.purchaseDate)) {
+      // Append noon time in Peru timezone to avoid day shift
+      purchaseDate = `${body.purchaseDate}T12:00:00-05:00`;
+    }
+
     const newPurchase = {
       id: Date.now().toString(),
       supplier: body.supplier,
@@ -28,7 +35,7 @@ export async function POST(request: Request) {
       items: body.items, // Array de { productName, quantity, unit, unitCost, total }
       totalAmount: body.totalAmount,
       notes: body.notes || "",
-      purchaseDate: body.purchaseDate || new Date().toISOString(),
+      purchaseDate: purchaseDate,
       createdAt: new Date().toISOString(),
     };
 
@@ -52,6 +59,13 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "ID es requerido" }, { status: 400 });
     }
 
+    // Fix timezone issue: if date is in YYYY-MM-DD format, append Peru time
+    let purchaseDate = body.purchaseDate;
+    if (body.purchaseDate && /^\d{4}-\d{2}-\d{2}$/.test(body.purchaseDate)) {
+      // Append noon time in Peru timezone to avoid day shift
+      purchaseDate = `${body.purchaseDate}T12:00:00-05:00`;
+    }
+
     const updatedPurchase = {
       id: body.id,
       supplier: body.supplier,
@@ -61,7 +75,7 @@ export async function PUT(request: Request) {
       items: body.items,
       totalAmount: body.totalAmount,
       notes: body.notes || "",
-      purchaseDate: body.purchaseDate,
+      purchaseDate: purchaseDate,
       createdAt: body.createdAt,
       updatedAt: new Date().toISOString(),
     };
