@@ -1946,40 +1946,40 @@ export default function AdminPage() {
 
       {/* Tabs */}
       <section className="container mx-auto px-4 pt-6">
-        <div className="flex gap-2 border-b-2 border-fuchsia-500/30">
+        <div className="flex gap-2 border-b-2 border-fuchsia-500/30 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
           <button
             onClick={() => setActiveTab("orders")}
-            className={`px-6 py-3 font-bold transition-all ${
+            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
               activeTab === "orders"
                 ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            📦 Gestión de Pedidos
+            📦 <span className="hidden sm:inline">Gestión de </span>Pedidos
           </button>
           <button
             onClick={() => setActiveTab("customers")}
-            className={`px-6 py-3 font-bold transition-all ${
+            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
               activeTab === "customers"
                 ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            👥 Base de Clientes
+            👥 <span className="hidden sm:inline">Base de </span>Clientes
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-6 py-3 font-bold transition-all ${
+            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
               activeTab === "analytics"
                 ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            📊 Analytics & CRM
+            📊 Analytics<span className="hidden sm:inline"> & CRM</span>
           </button>
           <button
             onClick={() => setActiveTab("financial")}
-            className={`px-6 py-3 font-bold transition-all ${
+            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
               activeTab === "financial"
                 ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
                 : "text-gray-400 hover:text-gray-300"
@@ -1989,7 +1989,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("marketing")}
-            className={`px-6 py-3 font-bold transition-all ${
+            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
               activeTab === "marketing"
                 ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
                 : "text-gray-400 hover:text-gray-300"
@@ -1999,7 +1999,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("carta")}
-            className={`px-6 py-3 font-bold transition-all ${
+            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
               activeTab === "carta"
                 ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
                 : "text-gray-400 hover:text-gray-300"
@@ -2014,7 +2014,7 @@ export default function AdminPage() {
         <>
           {/* Stats - Solo pedidos de HOY en hora de Perú */}
           <section className="container mx-auto px-4 py-4">
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
               <button
                 onClick={() => setFilter("all")}
                 className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
@@ -2085,37 +2085,39 @@ export default function AdminPage() {
 
       {/* Barra de herramientas */}
       <section className="container mx-auto px-4 pb-6">
-        <div className="flex gap-2 items-center justify-end">
-          {/* Botón exportar CSV */}
-          <button
-            onClick={exportOrdersToCSV}
-            className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-green-400 hover:text-green-300 hover:border-green-700 transition-all"
-            title="Exportar TODOS los pedidos a CSV"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-          </button>
+        <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-center justify-end">
+          <div className="flex gap-2 justify-end">
+            {/* Botón exportar CSV */}
+            <button
+              onClick={exportOrdersToCSV}
+              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-green-400 hover:text-green-300 hover:border-green-700 transition-all"
+              title="Exportar TODOS los pedidos a CSV"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </button>
 
-          {/* Botón de calendario */}
-          <button
-            onClick={() => setShowDateModal(true)}
-            className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
-            title="Filtrar por fechas"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </button>
+            {/* Botón de calendario */}
+            <button
+              onClick={() => setShowDateModal(true)}
+              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
+              title="Filtrar por fechas"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
 
           {/* Buscador en tiempo real */}
-          <div className="relative">
+          <div className="relative flex-1 md:flex-initial">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar pedido, cliente, dirección, menú..."
-              className="w-full sm:w-80 px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
+              className="w-full md:w-80 px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all text-sm"
             />
             <svg
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
@@ -2232,10 +2234,10 @@ export default function AdminPage() {
                 }`}
               >
                 {/* LAYOUT HORIZONTAL TIPO CINTA */}
-                <div className="flex items-center gap-3 p-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-3 p-3">
 
                   {/* HEADER: ESTADO Y NÚMERO */}
-                  <div className={`flex-shrink-0 px-3 py-2 rounded ${
+                  <div className={`flex-shrink-0 px-3 py-2 rounded md:w-auto ${
                     order.status === 'pending' ? 'bg-yellow-500/20' :
                     order.status === 'pendiente-verificacion' ? 'bg-purple-500/20' :
                     order.status === 'confirmed' ? 'bg-cyan-500/20' :
@@ -2410,7 +2412,7 @@ export default function AdminPage() {
                   </div>
 
                   {/* SECCIÓN 2: CLIENTE */}
-                  <div className="flex-shrink-0 w-48 bg-gray-800 rounded px-3 py-2">
+                  <div className="flex-shrink-0 w-full md:w-48 bg-gray-800 rounded px-3 py-2">
                     <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">👤 Cliente</h4>
                     <p className="text-xs font-bold text-white mb-1 truncate">{order.name}</p>
                     <p className="text-xs font-bold text-white flex items-center gap-1 mb-1">
@@ -2434,7 +2436,7 @@ export default function AdminPage() {
                   </div>
 
                   {/* SECCIÓN 3: TOTAL */}
-                  <div className="flex-shrink-0 bg-gradient-to-br from-cyan-600 to-blue-600 rounded px-3 py-2 text-center min-w-[100px]">
+                  <div className="flex-shrink-0 bg-gradient-to-br from-cyan-600 to-blue-600 rounded px-3 py-2 text-center w-full md:w-auto md:min-w-[100px]">
                     <p className="text-[10px] text-cyan-100 font-bold uppercase mb-0.5">Total</p>
                     <p className="text-xl font-black text-white">
                       S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
@@ -2463,7 +2465,7 @@ export default function AdminPage() {
                   </div>
 
                   {/* SECCIÓN 4: PAGO */}
-                  <div className={`flex-shrink-0 rounded px-3 py-2 min-w-[110px] ${
+                  <div className={`flex-shrink-0 rounded px-3 py-2 w-full md:w-auto md:min-w-[110px] ${
                     order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
                     order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
                     'bg-gradient-to-br from-orange-600 to-red-600'
@@ -2516,25 +2518,25 @@ export default function AdminPage() {
 
                   {/* NOTA SI EXISTE */}
                   {order.notes && (
-                    <div className="flex-shrink-0 bg-yellow-500/20 border border-yellow-500 rounded px-2 py-2 max-w-[150px]">
+                    <div className="flex-shrink-0 bg-yellow-500/20 border border-yellow-500 rounded px-2 py-2 w-full md:max-w-[150px]">
                       <p className="text-[10px] text-yellow-400 font-bold uppercase mb-1">⚠️ NOTA</p>
                       <p className="text-xs font-medium text-yellow-100 line-clamp-2">{order.notes}</p>
                     </div>
                   )}
 
                   {/* BOTONES DE ACCIÓN */}
-                  <div className="flex-shrink-0 flex gap-2">
+                  <div className="flex-shrink-0 flex gap-2 w-full md:w-auto">
                     {order.status === "pendiente-verificacion" && (
                       <>
                         <button
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                          className="flex-1 md:flex-initial bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
                           ✓ Verificar y Confirmar
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
                           ✕
                         </button>
@@ -2544,13 +2546,13 @@ export default function AdminPage() {
                       <>
                         <button
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                          className="flex-1 md:flex-initial bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
                           ✓ Confirmar
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
                           ✕
                         </button>
@@ -2560,13 +2562,13 @@ export default function AdminPage() {
                       <>
                         <button
                           onClick={() => updateOrderStatus(order.id, "en-camino")}
-                          className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                          className="flex-1 md:flex-initial bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
                           🚚 En Camino
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
                           ✕
                         </button>
@@ -2576,13 +2578,13 @@ export default function AdminPage() {
                       <>
                         <button
                           onClick={() => updateOrderStatus(order.id, "delivered")}
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                          className="flex-1 md:flex-initial bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
                         >
                           ✓ Entregado
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
                         >
                           ✕ Cancelar
                         </button>
