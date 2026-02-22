@@ -10,18 +10,11 @@ const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showWheelModal, setShowWheelModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
 
   useEffect(() => {
-    // Verificar si ya se mostró el modal en esta sesión
-    const hasSeenWelcome = sessionStorage.getItem("santo-dilema-welcome");
-    if (!hasSeenWelcome) {
-      setShowWelcomeModal(true);
-    }
-
     // Mostrar ruleta después de 3 segundos
     // En ambiente de prueba (iota.vercel.app) siempre mostrar
     // En producción solo mostrar si no ha sido vista antes
@@ -58,102 +51,8 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const closeWelcomeModal = () => {
-    setShowWelcomeModal(false);
-    sessionStorage.setItem("santo-dilema-welcome", "true");
-  };
-
   return (
     <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
-
-      {/* Modal de Bienvenida */}
-      {showWelcomeModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-gray-900 border-2 border-fuchsia-500 neon-border-purple rounded-lg max-w-md w-full p-5 md:p-8 relative animate-fade-in my-auto">
-            {/* Logo */}
-            <div className="flex justify-center mb-4 md:mb-6">
-              <Image
-                src="/logoprincipal.png"
-                alt="Santo Dilema"
-                width={250}
-                height={70}
-                className="h-11 md:h-16 w-auto"
-                priority
-              />
-            </div>
-
-            {/* Título de bienvenida */}
-            <h2 className="text-lg md:text-2xl font-black text-center mb-3 md:mb-4 text-fuchsia-400 neon-glow-purple">
-              Somos un restaurante sin local fisico, 100% delivery en Chancay
-            </h2>
-
-            {/* Información de horarios */}
-            <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
-              <div className="bg-black/50 border border-fuchsia-500/30 rounded-lg p-4">
-                <p className="text-center text-white font-bold mb-2">
-                  📅 Horario de Atención
-                </p>
-                <p className="text-center text-fuchsia-300">
-                  Jueves a Domingo
-                </p>
-                <p className="text-center text-fuchsia-300 font-bold text-lg">
-                  6:00 PM - 11:00 PM
-                </p>
-              </div>
-
-              <div className="bg-black/50 border border-fuchsia-500/30 rounded-lg p-4">
-                <p className="text-center text-white font-bold mb-2">
-                  🚚 Zonas de Delivery
-                </p>
-                <p className="text-center text-cyan-300">
-                  ✓ Chancay centro y alrededores
-                </p>
-                <p className="text-center text-amber-300 text-sm mt-1">
-                  Huaral y Aucallama: previa coordinación
-                </p>
-              </div>
-
-              {isPreLaunch && (
-                <div className="bg-black/50 border-2 border-fuchsia-500/60 rounded-lg p-4">
-                  <p className="text-center text-white font-bold mb-1">
-                    🔥 Apertura hoy
-                  </p>
-                  <p className="text-center text-fuchsia-300 text-sm mb-1">
-                    Viernes 13 de Febrero · 6:30 PM
-                  </p>
-                  <p className="text-center text-fuchsia-200/70 text-xs italic mb-3">
-                    Porque queremos darte lo mejor, estamos ultimando cada detalle para ti.
-                  </p>
-                  <div className="flex justify-center gap-3">
-                    {[
-                      { value: countdown.hours, label: 'horas' },
-                      { value: countdown.minutes, label: 'min' },
-                      { value: countdown.seconds, label: 'seg' },
-                    ].map(({ value, label }) => (
-                      <div key={label} className="text-center">
-                        <div className="bg-fuchsia-500/20 border border-fuchsia-500/50 rounded-lg px-3 py-2 min-w-[52px]">
-                          <span className="text-2xl font-black text-fuchsia-300 neon-glow-purple tabular-nums">
-                            {String(value).padStart(2, '0')}
-                          </span>
-                        </div>
-                        <p className="text-fuchsia-400/70 text-[10px] mt-1">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Botón de cerrar */}
-            <button
-              onClick={closeWelcomeModal}
-              className="w-full bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-6 rounded-lg transition-all neon-border-purple"
-            >
-              ¡ENTENDIDO, VAMOS! →
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Contenido principal */}
       {/* Fondo con textura oscura */}
