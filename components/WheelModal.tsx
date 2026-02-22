@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface WheelModalProps {
   isOpen: boolean;
@@ -368,7 +369,15 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
           {/* STEP 1: TELÉFONO */}
           {step === 'phone' && (
             <div className="text-center relative z-10">
-              <div className="text-7xl mb-4 animate-bounce">🎰</div>
+              <div className="mb-4 animate-bounce flex justify-center">
+                <Image
+                  src="/ruleta.png"
+                  alt="Ruleta"
+                  width={120}
+                  height={120}
+                  className="object-contain"
+                />
+              </div>
               <h2 className="text-4xl font-black mb-2 text-white">
                 ¡GIRA Y GANA!
               </h2>
@@ -469,7 +478,13 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
 
                   {/* Centro */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full shadow-lg flex items-center justify-center border-4 border-white/30 bg-slate-900">
-                    <span className="text-3xl">🎰</span>
+                    <Image
+                      src="/ruleta.png"
+                      alt="Ruleta"
+                      width={50}
+                      height={50}
+                      className="object-contain"
+                    />
                   </div>
                 </div>
               </div>
