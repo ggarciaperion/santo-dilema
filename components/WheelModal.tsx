@@ -8,11 +8,11 @@ interface WheelModalProps {
 }
 
 const PRIZES = [
-  { id: 0, label: '20% OFF', color: '#FF1744', glow: '#FF1744', probability: 0.25 },
-  { id: 1, label: '30% OFF', color: '#00E5FF', glow: '#00E5FF', probability: 0.20 },
-  { id: 2, label: '40% OFF', color: '#FFEA00', glow: '#FFEA00', probability: 0.15 },
-  { id: 3, label: '2x1 en toda la carta', color: '#B388FF', glow: '#B388FF', probability: 0.15 },
-  { id: 4, label: 'Delivery Gratis', color: '#FF4081', glow: '#FF4081', probability: 0.25 },
+  { id: 0, label: '20% OFF', color: '#1e3a8a', glow: '#3b82f6', probability: 0.25 },      // Azul elegante
+  { id: 1, label: '30% OFF', color: '#713f12', glow: '#f59e0b', probability: 0.20 },      // Dorado
+  { id: 2, label: '40% OFF', color: '#1e293b', glow: '#64748b', probability: 0.15 },      // Gris oscuro elegante
+  { id: 3, label: '2x1 en toda la carta', color: '#581c87', glow: '#a855f7', probability: 0.15 }, // Morado profundo
+  { id: 4, label: 'Delivery Gratis', color: '#065f46', glow: '#10b981', probability: 0.25 },      // Verde esmeralda
 ];
 
 // Componente de confetti
@@ -38,7 +38,7 @@ function Confetti() {
             animationDuration: `${particle.duration}s`,
             transform: `rotate(${particle.rotate}deg)`,
             background: `linear-gradient(45deg, ${
-              ['#FF1744', '#00E5FF', '#FFEA00', '#B388FF', '#FF4081'][Math.floor(Math.random() * 5)]
+              ['#3b82f6', '#f59e0b', '#64748b', '#a855f7', '#10b981'][Math.floor(Math.random() * 5)]
             }, transparent)`,
           }}
         />
@@ -49,7 +49,7 @@ function Confetti() {
 
 // Componente de explosión con destellos
 function Explosion() {
-  const colors = ['#FF1744', '#00E5FF', '#FFEA00', '#B388FF', '#FF4081', '#FFFFFF'];
+  const colors = ['#3b82f6', '#f59e0b', '#64748b', '#a855f7', '#10b981', '#FFFFFF'];
 
   // Crear diferentes tipos de partículas
   const sparkles = Array.from({ length: 30 }, (_, i) => ({
@@ -96,8 +96,8 @@ function Explosion() {
 
       {/* Ondas expansivas */}
       <div className="absolute w-20 h-20 rounded-full border-8 border-white animate-explosion-ring" style={{ animationDelay: '0s' }}></div>
-      <div className="absolute w-20 h-20 rounded-full border-8 border-fuchsia-400 animate-explosion-ring" style={{ animationDelay: '0.1s' }}></div>
-      <div className="absolute w-20 h-20 rounded-full border-8 border-cyan-400 animate-explosion-ring" style={{ animationDelay: '0.2s' }}></div>
+      <div className="absolute w-20 h-20 rounded-full border-8 border-blue-400 animate-explosion-ring" style={{ animationDelay: '0.1s' }}></div>
+      <div className="absolute w-20 h-20 rounded-full border-8 border-amber-400 animate-explosion-ring" style={{ animationDelay: '0.2s' }}></div>
 
       {/* Partículas */}
       {allParticles.map((particle) => {
@@ -299,7 +299,7 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
         .gradient-animated {
           background: linear-gradient(
             45deg,
-            #FF1744, #00E5FF, #FFEA00, #B388FF, #FF4081
+            #3b82f6, #f59e0b, #a855f7, #10b981
           );
           background-size: 200% 200%;
           animation: gradient-shift 3s ease infinite;
@@ -354,13 +354,13 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
 
           {/* Efecto de fondo animado */}
           <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-fuchsia-500 via-cyan-500 to-yellow-500 blur-3xl animate-spin-slow"></div>
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500 via-purple-500 to-amber-500 blur-3xl animate-spin-slow"></div>
           </div>
 
           {/* Botón cerrar NEÓN */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-fuchsia-400 hover:text-fuchsia-300 text-2xl font-bold z-10 transition-all hover:scale-110 neon-text"
+            className="absolute top-4 right-4 text-blue-400 hover:text-blue-300 text-2xl font-bold z-10 transition-all hover:scale-110 neon-text"
           >
             ✕
           </button>
@@ -372,13 +372,13 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
               <h2 className="text-4xl font-black mb-2 gradient-animated bg-clip-text text-transparent">
                 ¡GIRA Y GANA!
               </h2>
-              <p className="text-cyan-300 mb-8 text-lg neon-text">
+              <p className="text-blue-300 mb-8 text-lg neon-text">
                 Ingresa tu WhatsApp para participar
               </p>
 
               <div className="mb-6">
                 <div className="flex gap-2">
-                  <span className="px-4 py-4 glass-morphism rounded-xl font-black text-fuchsia-400 neon-border text-lg">
+                  <span className="px-4 py-4 glass-morphism rounded-xl font-black text-amber-400 neon-border text-lg">
                     +51
                   </span>
                   <input
@@ -386,7 +386,7 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="999 888 777"
-                    className="flex-1 px-6 py-4 rounded-xl glass-morphism text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-fuchsia-500 neon-border placeholder-gray-500 transition-all"
+                    className="flex-1 px-6 py-4 rounded-xl glass-morphism text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 neon-border placeholder-gray-500 transition-all"
                     maxLength={9}
                   />
                 </div>
@@ -419,14 +419,14 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
               {/* Ruleta con efecto NEÓN */}
               <div className="relative w-72 h-72 mx-auto mb-8">
                 {/* Aros de neón alrededor */}
-                <div className="absolute inset-0 rounded-full border-4 border-fuchsia-500 opacity-50 animate-ping"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-cyan-500 opacity-30 animate-pulse"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-blue-500 opacity-40 animate-ping"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-blue-400 opacity-25 animate-pulse"></div>
 
                 {/* Indicador (flecha NEÓN) */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 z-30">
                   <div className="relative">
-                    <div className="w-0 h-0 border-l-[25px] border-l-transparent border-r-[25px] border-r-transparent border-t-[40px] border-t-fuchsia-500 neon-text"></div>
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-fuchsia-400 rounded-full animate-pulse"></div>
+                    <div className="w-0 h-0 border-l-[25px] border-l-transparent border-r-[25px] border-r-transparent border-t-[40px] border-t-amber-500 neon-text"></div>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
                   </div>
                 </div>
 
@@ -436,12 +436,19 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                   style={{
                     transform: `rotate(${rotation}deg)`,
                     transition: spinning ? 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
-                    boxShadow: spinning ? '0 0 60px rgba(255, 23, 68, 0.8)' : '0 0 30px rgba(255, 23, 68, 0.5)'
+                    boxShadow: spinning ? '0 0 60px rgba(59, 130, 246, 0.6)' : '0 0 30px rgba(59, 130, 246, 0.4)',
+                    background: '#1e293b' // Fondo sólido para eliminar espacios negros
                   }}
                 >
                   {/* Segmentos */}
                   {PRIZES.map((prize, index) => {
                     const angle = (360 / PRIZES.length) * index;
+                    const segmentAngle = 360 / PRIZES.length;
+                    // Calculamos los puntos del polígono para que cubra exactamente el ángulo del segmento
+                    const halfAngle = (segmentAngle / 2) + 1; // +1 grado para evitar gaps
+                    const leftX = 50 - Math.tan((halfAngle * Math.PI) / 180) * 100;
+                    const rightX = 50 + Math.tan((halfAngle * Math.PI) / 180) * 100;
+
                     return (
                       <div
                         key={prize.id}
@@ -452,9 +459,9 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                           className="absolute top-0 left-1/2 w-1/2 h-1/2 -translate-x-1/2"
                           style={{
                             background: `linear-gradient(135deg, ${prize.color}, ${prize.glow}80)`,
-                            clipPath: 'polygon(0% 0%, 100% 0%, 50% 100%)',
+                            clipPath: `polygon(${leftX}% 0%, ${rightX}% 0%, 50% 100%)`,
                             transformOrigin: 'bottom center',
-                            boxShadow: `0 0 20px ${prize.glow}`
+                            boxShadow: `0 0 15px ${prize.glow}40`
                           }}
                         >
                           <div
@@ -471,8 +478,8 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                   })}
 
                   {/* Centro NEÓN */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full shadow-lg flex items-center justify-center border-4 border-fuchsia-500 neon-border" style={{
-                    background: 'radial-gradient(circle, #1a1a2e 0%, #0f0f1e 100%)'
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full shadow-lg flex items-center justify-center border-4 border-blue-500 neon-border" style={{
+                    background: 'radial-gradient(circle, #1e293b 0%, #0f172a 100%)'
                   }}>
                     <span className="text-3xl animate-spin-slow">🎰</span>
                   </div>
@@ -517,7 +524,7 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                 <p className="text-xs text-gray-400 mb-1">
                   El código completo se envió a:
                 </p>
-                <p className="text-lg font-bold text-cyan-400 neon-text">
+                <p className="text-lg font-bold text-blue-400 neon-text">
                   WhatsApp: +51 {phone}
                 </p>
               </div>
