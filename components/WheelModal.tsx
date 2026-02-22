@@ -9,11 +9,14 @@ interface WheelModalProps {
 }
 
 const PRIZES = [
-  { id: 0, label: '20% OFF', color: '#2563eb', glow: '#3b82f6', probability: 0.25 },           // Azul
-  { id: 1, label: '30% OFF', color: '#dc2626', glow: '#ef4444', probability: 0.20 },           // Rojo
-  { id: 2, label: '40% OFF', color: '#059669', glow: '#10b981', probability: 0.15 },           // Verde
-  { id: 3, label: '2x1 en toda la carta', color: '#7c3aed', glow: '#a855f7', probability: 0.15 }, // Morado
-  { id: 4, label: 'Delivery Gratis', color: '#f59e0b', glow: '#fbbf24', probability: 0.25 },   // Amarillo/Dorado
+  { id: 0, label: 'Delivery Gratis 🏍️', color: '#f59e0b', glow: '#fbbf24', probability: 0.125 },   // Amarillo/Dorado
+  { id: 1, label: '20% OFF', color: '#2563eb', glow: '#3b82f6', probability: 0.125 },              // Azul
+  { id: 2, label: 'Delivery Gratis 🏍️', color: '#f59e0b', glow: '#fbbf24', probability: 0.125 },   // Amarillo/Dorado
+  { id: 3, label: '30% OFF', color: '#dc2626', glow: '#ef4444', probability: 0.125 },              // Rojo
+  { id: 4, label: 'Delivery Gratis 🏍️', color: '#f59e0b', glow: '#fbbf24', probability: 0.125 },   // Amarillo/Dorado
+  { id: 5, label: '20% OFF', color: '#2563eb', glow: '#3b82f6', probability: 0.125 },              // Azul
+  { id: 6, label: '40% OFF', color: '#059669', glow: '#10b981', probability: 0.125 },              // Verde
+  { id: 7, label: '2x1 en toda la carta', color: '#7c3aed', glow: '#a855f7', probability: 0.125 }, // Morado
 ];
 
 // Componente de confetti

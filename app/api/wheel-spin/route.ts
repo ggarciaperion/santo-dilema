@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
-// Configuración de premios de la ruleta
+// Configuración de premios de la ruleta (8 slices)
 const PRIZES = [
-  { id: 'discount-20', type: 'discount', value: 20, label: '20% OFF', probability: 0.25 },
-  { id: 'discount-30', type: 'discount', value: 30, label: '30% OFF', probability: 0.20 },
-  { id: 'discount-40', type: 'discount', value: 40, label: '40% OFF', probability: 0.15 },
-  { id: '2x1-all', type: '2x1', value: 0, label: '2x1 en toda la carta', probability: 0.15 },
-  { id: 'delivery-free', type: 'delivery', value: 0, label: 'Delivery Gratis', probability: 0.25 },
+  { id: 'delivery-free-1', type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️', probability: 0.125 },
+  { id: 'discount-20-1', type: 'discount', value: 20, label: '20% OFF', probability: 0.125 },
+  { id: 'delivery-free-2', type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️', probability: 0.125 },
+  { id: 'discount-30', type: 'discount', value: 30, label: '30% OFF', probability: 0.125 },
+  { id: 'delivery-free-3', type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️', probability: 0.125 },
+  { id: 'discount-20-2', type: 'discount', value: 20, label: '20% OFF', probability: 0.125 },
+  { id: 'discount-40', type: 'discount', value: 40, label: '40% OFF', probability: 0.125 },
+  { id: '2x1-all', type: '2x1', value: 0, label: '2x1 en toda la carta', probability: 0.125 },
 ];
 
 function selectRandomPrize() {
