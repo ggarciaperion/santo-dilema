@@ -27,12 +27,18 @@ export default function Home() {
       setShowSorteoModal(true);
     }
 
-    // Mostrar ruleta después de 3 segundos (solo si no ha sido vista antes)
+    // Mostrar ruleta después de 3 segundos
+    // En ambiente de prueba (iota.vercel.app) siempre mostrar
+    // En producción solo mostrar si no ha sido vista antes
+    const isTestEnvironment = window.location.hostname.includes('santo-dilema-iota.vercel.app');
     const hasSeenWheel = localStorage.getItem("santo-dilema-wheel-shown");
-    if (!hasSeenWheel) {
+
+    if (isTestEnvironment || !hasSeenWheel) {
       const timer = setTimeout(() => {
         setShowWheelModal(true);
-        localStorage.setItem("santo-dilema-wheel-shown", "true");
+        if (!isTestEnvironment) {
+          localStorage.setItem("santo-dilema-wheel-shown", "true");
+        }
       }, 3000);
       return () => clearTimeout(timer);
     }
