@@ -3,11 +3,11 @@ import { storage } from "@/lib/storage";
 
 // Configuración de premios de la ruleta
 const PRIZES = [
-  { id: 'discount-10', type: 'discount', value: 10, label: '10% OFF', probability: 0.25 },
-  { id: 'discount-15', type: 'discount', value: 15, label: '15% OFF', probability: 0.15 },
-  { id: 'delivery-free', type: 'delivery', value: 0, label: 'Delivery Gratis', probability: 0.20 },
-  { id: '2x1-combo', type: '2x1', value: 0, label: '2x1 en Combos', probability: 0.10 },
-  { id: 'discount-5', type: 'discount', value: 5, label: '5% OFF', probability: 0.30 },
+  { id: 'discount-20', type: 'discount', value: 20, label: '20% OFF', probability: 0.25 },
+  { id: 'discount-30', type: 'discount', value: 30, label: '30% OFF', probability: 0.20 },
+  { id: 'discount-40', type: 'discount', value: 40, label: '40% OFF', probability: 0.15 },
+  { id: '2x1-all', type: '2x1', value: 0, label: '2x1 en toda la carta', probability: 0.15 },
+  { id: 'delivery-free', type: 'delivery', value: 0, label: 'Delivery Gratis', probability: 0.25 },
 ];
 
 function selectRandomPrize() {

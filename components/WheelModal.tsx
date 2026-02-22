@@ -8,11 +8,11 @@ interface WheelModalProps {
 }
 
 const PRIZES = [
-  { id: 0, label: '10% OFF', color: '#FF1744', glow: '#FF1744', probability: 0.25 },
-  { id: 1, label: '15% OFF', color: '#00E5FF', glow: '#00E5FF', probability: 0.15 },
-  { id: 2, label: 'Delivery Gratis', color: '#FFEA00', glow: '#FFEA00', probability: 0.20 },
-  { id: 3, label: '2x1 Combos', color: '#B388FF', glow: '#B388FF', probability: 0.10 },
-  { id: 4, label: '5% OFF', color: '#FF4081', glow: '#FF4081', probability: 0.30 },
+  { id: 0, label: '20% OFF', color: '#FF1744', glow: '#FF1744', probability: 0.25 },
+  { id: 1, label: '30% OFF', color: '#00E5FF', glow: '#00E5FF', probability: 0.20 },
+  { id: 2, label: '40% OFF', color: '#FFEA00', glow: '#FFEA00', probability: 0.15 },
+  { id: 3, label: '2x1 en toda la carta', color: '#B388FF', glow: '#B388FF', probability: 0.15 },
+  { id: 4, label: 'Delivery Gratis', color: '#FF4081', glow: '#FF4081', probability: 0.25 },
 ];
 
 // Componente de confetti
@@ -47,6 +47,103 @@ function Confetti() {
   );
 }
 
+// Componente de explosión con destellos
+function Explosion() {
+  const colors = ['#FF1744', '#00E5FF', '#FFEA00', '#B388FF', '#FF4081', '#FFFFFF'];
+
+  // Crear diferentes tipos de partículas
+  const sparkles = Array.from({ length: 30 }, (_, i) => ({
+    id: `sparkle-${i}`,
+    type: 'sparkle',
+    angle: (360 / 30) * i,
+    distance: 100 + Math.random() * 150,
+    delay: Math.random() * 0.2,
+    duration: 1 + Math.random() * 0.5,
+    size: 4 + Math.random() * 8,
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }));
+
+  const stars = Array.from({ length: 20 }, (_, i) => ({
+    id: `star-${i}`,
+    type: 'star',
+    angle: (360 / 20) * i + 9,
+    distance: 80 + Math.random() * 120,
+    delay: Math.random() * 0.3,
+    duration: 1.2 + Math.random() * 0.6,
+    size: 8 + Math.random() * 12,
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }));
+
+  const circles = Array.from({ length: 15 }, (_, i) => ({
+    id: `circle-${i}`,
+    type: 'circle',
+    angle: (360 / 15) * i + 4.5,
+    distance: 60 + Math.random() * 100,
+    delay: Math.random() * 0.15,
+    duration: 0.8 + Math.random() * 0.4,
+    size: 6 + Math.random() * 10,
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }));
+
+  const allParticles = [...sparkles, ...stars, ...circles];
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
+      {/* Flash central */}
+      <div className="absolute animate-explosion-flash">
+        <div className="w-40 h-40 rounded-full bg-white opacity-90 blur-3xl"></div>
+      </div>
+
+      {/* Ondas expansivas */}
+      <div className="absolute w-20 h-20 rounded-full border-8 border-white animate-explosion-ring" style={{ animationDelay: '0s' }}></div>
+      <div className="absolute w-20 h-20 rounded-full border-8 border-fuchsia-400 animate-explosion-ring" style={{ animationDelay: '0.1s' }}></div>
+      <div className="absolute w-20 h-20 rounded-full border-8 border-cyan-400 animate-explosion-ring" style={{ animationDelay: '0.2s' }}></div>
+
+      {/* Partículas */}
+      {allParticles.map((particle) => {
+        const rad = (particle.angle * Math.PI) / 180;
+        const x = Math.cos(rad) * particle.distance;
+        const y = Math.sin(rad) * particle.distance;
+
+        return (
+          <div
+            key={particle.id}
+            className="absolute animate-explosion-particle"
+            style={{
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              animationDelay: `${particle.delay}s`,
+              animationDuration: `${particle.duration}s`,
+              '--tx': `${x}px`,
+              '--ty': `${y}px`,
+            } as React.CSSProperties}
+          >
+            {particle.type === 'star' ? (
+              <div className="relative w-full h-full" style={{ color: particle.color }}>
+                <div className="absolute inset-0" style={{
+                  background: `radial-gradient(circle, ${particle.color} 0%, transparent 70%)`,
+                  clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+                }}></div>
+              </div>
+            ) : particle.type === 'sparkle' ? (
+              <div className="relative w-full h-full" style={{
+                background: particle.color,
+                boxShadow: `0 0 ${particle.size * 2}px ${particle.color}, 0 0 ${particle.size * 4}px ${particle.color}`,
+                clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+              }}></div>
+            ) : (
+              <div className="w-full h-full rounded-full" style={{
+                background: particle.color,
+                boxShadow: `0 0 ${particle.size}px ${particle.color}`,
+              }}></div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
   const [phone, setPhone] = useState('');
   const [step, setStep] = useState<'phone' | 'spin' | 'result'>('phone');
@@ -56,6 +153,7 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
   const [couponPreview, setCouponPreview] = useState('');
   const [error, setError] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showExplosion, setShowExplosion] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -66,6 +164,7 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
       setError('');
       setRotation(0);
       setShowConfetti(false);
+      setShowExplosion(false);
     }
   }, [isOpen]);
 
@@ -118,10 +217,13 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
         setTimeout(() => {
           setPrize(data.prize);
           setCouponPreview(data.couponPreview);
+          setShowExplosion(true);
           setShowConfetti(true);
           setStep('result');
           setSpinning(false);
 
+          // Detener explosión después de 2 segundos
+          setTimeout(() => setShowExplosion(false), 2000);
           // Detener confetti después de 5 segundos
           setTimeout(() => setShowConfetti(false), 5000);
         }, 5000);
@@ -208,8 +310,43 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+
+        @keyframes explosion-flash {
+          0% { transform: scale(0); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.8; }
+          100% { transform: scale(2); opacity: 0; }
+        }
+
+        @keyframes explosion-ring {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(15); opacity: 0; }
+        }
+
+        @keyframes explosion-particle {
+          0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(var(--tx), var(--ty)) scale(0);
+            opacity: 0;
+          }
+        }
+
+        .animate-explosion-flash {
+          animation: explosion-flash 0.6s ease-out forwards;
+        }
+
+        .animate-explosion-ring {
+          animation: explosion-ring 1s ease-out forwards;
+        }
+
+        .animate-explosion-particle {
+          animation: explosion-particle linear forwards;
+        }
       `}</style>
 
+      {showExplosion && <Explosion />}
       {showConfetti && <Confetti />}
 
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
@@ -321,10 +458,12 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                           }}
                         >
                           <div
-                            className="absolute top-12 left-1/2 -translate-x-1/2 text-white font-black text-sm whitespace-nowrap neon-text"
-                            style={{ transform: 'rotate(0deg)' }}
+                            className="absolute top-8 left-1/2 -translate-x-1/2 text-white font-black text-xs neon-text flex flex-col items-center gap-0.5 leading-tight"
+                            style={{ transform: 'rotate(0deg)', maxWidth: '80px' }}
                           >
-                            {prize.label}
+                            {prize.label.split(' ').map((word, i) => (
+                              <div key={i} className="text-center">{word}</div>
+                            ))}
                           </div>
                         </div>
                       </div>
