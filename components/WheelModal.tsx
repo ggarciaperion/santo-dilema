@@ -351,7 +351,9 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
       {showConfetti && <Confetti />}
 
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
-        <div className="glass-morphism rounded-3xl shadow-2xl max-w-lg w-full p-8 relative overflow-hidden">
+        <div className="glass-morphism rounded-3xl shadow-2xl max-w-lg w-full p-8 relative overflow-hidden border-4 border-fuchsia-500" style={{
+          boxShadow: '0 0 20px rgba(232, 121, 249, 0.6), 0 0 40px rgba(232, 121, 249, 0.4), 0 0 60px rgba(232, 121, 249, 0.2)'
+        }}>
 
           {/* Efecto de fondo sutil */}
           <div className="absolute inset-0 opacity-5 pointer-events-none">
@@ -404,12 +406,20 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                 )}
               </div>
 
-              <button
-                onClick={validatePhone}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-xl text-xl hover:scale-105 transition-all duration-300 shadow-lg"
-              >
-                CONTINUAR
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-black py-5 rounded-xl text-xl hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                  No participar
+                </button>
+                <button
+                  onClick={validatePhone}
+                  className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-black py-5 rounded-xl text-xl hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                  Participar
+                </button>
+              </div>
 
               <p className="text-xs text-gray-400 mt-4 opacity-70">
                 * Solo puedes girar una vez
