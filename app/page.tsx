@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import WheelModal from "@/components/WheelModal";
 
 // Fecha de lanzamiento: 13 Feb 2026 a las 18:30 hora Perú (UTC-5)
 const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
@@ -11,6 +12,7 @@ export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showSorteoModal, setShowSorteoModal] = useState(false);
+  const [showWheelModal, setShowWheelModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
 
@@ -23,6 +25,16 @@ export default function Home() {
     const hasSeenSorteo = sessionStorage.getItem("santo-dilema-sorteo");
     if (!hasSeenSorteo) {
       setShowSorteoModal(true);
+    }
+
+    // Mostrar ruleta después de 3 segundos (solo si no ha sido vista antes)
+    const hasSeenWheel = localStorage.getItem("santo-dilema-wheel-shown");
+    if (!hasSeenWheel) {
+      const timer = setTimeout(() => {
+        setShowWheelModal(true);
+        localStorage.setItem("santo-dilema-wheel-shown", "true");
+      }, 3000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -551,6 +563,9 @@ export default function Home() {
           }`}></div>
         </div>
       </div>
+
+      {/* Modal de Ruleta */}
+      <WheelModal isOpen={showWheelModal} onClose={() => setShowWheelModal(false)} />
     </main>
   );
 }

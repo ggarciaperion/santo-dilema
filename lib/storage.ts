@@ -24,6 +24,7 @@ let couponsFilePath: string = '';
 let promo30FilePath: string = '';
 let promoFit30FilePath: string = '';
 let menuStockFilePath: string = '';
+let wheelSpinsFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -39,6 +40,7 @@ if (!isProduction) {
   promo30FilePath = path.join(dataDir, 'promo30.json');
   promoFit30FilePath = path.join(dataDir, 'promofit30.json');
   menuStockFilePath = path.join(dataDir, 'menu-stock.json');
+  wheelSpinsFilePath = path.join(dataDir, 'wheel-spins.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -73,6 +75,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(menuStockFilePath)) {
       fs.writeFileSync(menuStockFilePath, JSON.stringify({}, null, 2));
+    }
+    if (!fs.existsSync(wheelSpinsFilePath)) {
+      fs.writeFileSync(wheelSpinsFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -750,5 +755,49 @@ export const storage = {
       ensureDataDirectory();
       fs.writeFileSync(menuStockFilePath, JSON.stringify(data, null, 2));
     }
+  },
+
+  // ========== WHEEL SPINS (RULETA) ==========
+
+  async getWheelSpins(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<any[]>('wheelSpins');
+      return data || [];
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(wheelSpinsFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  async saveWheelSpin(spin: any): Promise<any> {
+    const spins = await this.getWheelSpins();
+    spins.unshift(spin);
+
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('wheelSpins', spins);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(wheelSpinsFilePath, JSON.stringify(spins, null, 2));
+    }
+
+    return spin;
+  },
+
+  async saveCoupon(coupon: any): Promise<any> {
+    const coupons = await this.getCoupons();
+    coupons.unshift(coupon);
+
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('coupons', coupons);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(couponsFilePath, JSON.stringify(coupons, null, 2));
+    }
+
+    return coupon;
   },
 };
