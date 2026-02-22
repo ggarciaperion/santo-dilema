@@ -8,11 +8,11 @@ interface WheelModalProps {
 }
 
 const PRIZES = [
-  { id: 0, label: '20% OFF', color: '#1e3a8a', glow: '#3b82f6', probability: 0.25 },      // Azul elegante
-  { id: 1, label: '30% OFF', color: '#713f12', glow: '#f59e0b', probability: 0.20 },      // Dorado
-  { id: 2, label: '40% OFF', color: '#1e293b', glow: '#64748b', probability: 0.15 },      // Gris oscuro elegante
-  { id: 3, label: '2x1 en toda la carta', color: '#581c87', glow: '#a855f7', probability: 0.15 }, // Morado profundo
-  { id: 4, label: 'Delivery Gratis', color: '#065f46', glow: '#10b981', probability: 0.25 },      // Verde esmeralda
+  { id: 0, label: '20% OFF', color: '#2563eb', glow: '#3b82f6', probability: 0.25 },           // Azul
+  { id: 1, label: '30% OFF', color: '#dc2626', glow: '#ef4444', probability: 0.20 },           // Rojo
+  { id: 2, label: '40% OFF', color: '#059669', glow: '#10b981', probability: 0.15 },           // Verde
+  { id: 3, label: '2x1 en toda la carta', color: '#7c3aed', glow: '#a855f7', probability: 0.15 }, // Morado
+  { id: 4, label: 'Delivery Gratis', color: '#f59e0b', glow: '#fbbf24', probability: 0.25 },   // Amarillo/Dorado
 ];
 
 // Componente de confetti
@@ -38,7 +38,7 @@ function Confetti() {
             animationDuration: `${particle.duration}s`,
             transform: `rotate(${particle.rotate}deg)`,
             background: `linear-gradient(45deg, ${
-              ['#3b82f6', '#f59e0b', '#64748b', '#a855f7', '#10b981'][Math.floor(Math.random() * 5)]
+              ['#2563eb', '#dc2626', '#059669', '#7c3aed', '#f59e0b'][Math.floor(Math.random() * 5)]
             }, transparent)`,
           }}
         />
@@ -49,7 +49,7 @@ function Confetti() {
 
 // Componente de explosión con destellos
 function Explosion() {
-  const colors = ['#3b82f6', '#f59e0b', '#64748b', '#a855f7', '#10b981', '#FFFFFF'];
+  const colors = ['#2563eb', '#dc2626', '#059669', '#7c3aed', '#f59e0b', '#FFFFFF'];
 
   // Crear diferentes tipos de partículas
   const sparkles = Array.from({ length: 30 }, (_, i) => ({
@@ -352,15 +352,15 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
         <div className="glass-morphism rounded-3xl shadow-2xl max-w-lg w-full p-8 relative overflow-hidden">
 
-          {/* Efecto de fondo animado */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500 via-purple-500 to-amber-500 blur-3xl animate-spin-slow"></div>
+          {/* Efecto de fondo sutil */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 blur-3xl"></div>
           </div>
 
           {/* Botón cerrar NEÓN */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-blue-400 hover:text-blue-300 text-2xl font-bold z-10 transition-all hover:scale-110 neon-text"
+            className="absolute top-4 right-4 text-blue-400 hover:text-blue-300 text-2xl font-bold z-10 transition-all hover:scale-110"
           >
             ✕
           </button>
@@ -369,16 +369,16 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
           {step === 'phone' && (
             <div className="text-center relative z-10">
               <div className="text-7xl mb-4 animate-bounce">🎰</div>
-              <h2 className="text-4xl font-black mb-2 gradient-animated bg-clip-text text-transparent">
+              <h2 className="text-4xl font-black mb-2 text-white">
                 ¡GIRA Y GANA!
               </h2>
-              <p className="text-blue-300 mb-8 text-lg neon-text">
+              <p className="text-blue-300 mb-8 text-lg">
                 Ingresa tu WhatsApp para participar
               </p>
 
               <div className="mb-6">
                 <div className="flex gap-2">
-                  <span className="px-4 py-4 glass-morphism rounded-xl font-black text-amber-400 neon-border text-lg">
+                  <span className="px-4 py-4 glass-morphism rounded-xl font-black text-amber-400 border border-white/20 text-lg">
                     +51
                   </span>
                   <input
@@ -386,21 +386,20 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="999 888 777"
-                    className="flex-1 px-6 py-4 rounded-xl glass-morphism text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 neon-border placeholder-gray-500 transition-all"
+                    className="flex-1 px-6 py-4 rounded-xl glass-morphism text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 border border-white/20 placeholder-gray-500 transition-all"
                     maxLength={9}
                   />
                 </div>
                 {error && (
-                  <p className="text-red-400 text-sm mt-3 font-bold neon-text animate-pulse">{error}</p>
+                  <p className="text-red-400 text-sm mt-3 font-bold">{error}</p>
                 )}
               </div>
 
               <button
                 onClick={validatePhone}
-                className="w-full gradient-animated text-white font-black py-5 rounded-xl text-xl hover:scale-105 transition-all duration-300 shadow-lg neon-border relative overflow-hidden group"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-xl text-xl hover:scale-105 transition-all duration-300 shadow-lg"
               >
-                <span className="relative z-10">CONTINUAR</span>
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                CONTINUAR
               </button>
 
               <p className="text-xs text-gray-400 mt-4 opacity-70">
@@ -412,31 +411,23 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
           {/* STEP 2: RULETA */}
           {step === 'spin' && (
             <div className="text-center relative z-10">
-              <h2 className="text-3xl font-black mb-8 gradient-animated bg-clip-text text-transparent">
+              <h2 className="text-3xl font-black mb-8 text-white">
                 {spinning ? '¡GIRANDO!' : '¡HAZ CLICK PARA GIRAR!'}
               </h2>
 
-              {/* Ruleta con efecto NEÓN */}
+              {/* Ruleta minimalista */}
               <div className="relative w-72 h-72 mx-auto mb-8">
-                {/* Aros de neón alrededor */}
-                <div className="absolute inset-0 rounded-full border-4 border-blue-500 opacity-40 animate-ping"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-blue-400 opacity-25 animate-pulse"></div>
-
-                {/* Indicador (flecha NEÓN) */}
+                {/* Indicador (flecha simple) */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 z-30">
-                  <div className="relative">
-                    <div className="w-0 h-0 border-l-[25px] border-l-transparent border-r-[25px] border-r-transparent border-t-[40px] border-t-amber-500 neon-text"></div>
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                  </div>
+                  <div className="w-0 h-0 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-t-[35px] border-t-white shadow-lg"></div>
                 </div>
 
                 {/* Círculo de la ruleta */}
                 <div
-                  className="w-full h-full rounded-full shadow-2xl relative overflow-hidden border-8 border-white/20 neon-border"
+                  className="w-full h-full rounded-full shadow-2xl relative overflow-hidden border-4 border-white/30"
                   style={{
                     transform: `rotate(${rotation}deg)`,
                     transition: spinning ? 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
-                    boxShadow: spinning ? '0 0 60px rgba(59, 130, 246, 0.6)' : '0 0 30px rgba(59, 130, 246, 0.4)',
                     background: '#1e293b' // Fondo sólido para eliminar espacios negros
                   }}
                 >
@@ -458,14 +449,13 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                         <div
                           className="absolute top-0 left-1/2 w-1/2 h-1/2 -translate-x-1/2"
                           style={{
-                            background: `linear-gradient(135deg, ${prize.color}, ${prize.glow}80)`,
+                            background: prize.color,
                             clipPath: `polygon(${leftX}% 0%, ${rightX}% 0%, 50% 100%)`,
-                            transformOrigin: 'bottom center',
-                            boxShadow: `0 0 15px ${prize.glow}40`
+                            transformOrigin: 'bottom center'
                           }}
                         >
                           <div
-                            className="absolute top-8 left-1/2 -translate-x-1/2 text-white font-black text-xs neon-text flex flex-col items-center gap-0.5 leading-tight"
+                            className="absolute top-8 left-1/2 -translate-x-1/2 text-white font-bold text-xs flex flex-col items-center gap-0.5 leading-tight"
                             style={{ transform: 'rotate(0deg)', maxWidth: '80px' }}
                           >
                             {prize.label.split(' ').map((word, i) => (
@@ -477,11 +467,9 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                     );
                   })}
 
-                  {/* Centro NEÓN */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full shadow-lg flex items-center justify-center border-4 border-blue-500 neon-border" style={{
-                    background: 'radial-gradient(circle, #1e293b 0%, #0f172a 100%)'
-                  }}>
-                    <span className="text-3xl animate-spin-slow">🎰</span>
+                  {/* Centro */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full shadow-lg flex items-center justify-center border-4 border-white/30 bg-slate-900">
+                    <span className="text-3xl">🎰</span>
                   </div>
                 </div>
               </div>
@@ -491,8 +479,8 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                 disabled={spinning}
                 className={`w-full font-black py-5 rounded-xl text-xl transition-all duration-300 shadow-lg ${
                   spinning
-                    ? 'bg-gray-700 cursor-not-allowed opacity-50'
-                    : 'gradient-animated neon-border hover:scale-105 text-white'
+                    ? 'bg-gray-700 cursor-not-allowed opacity-50 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 hover:scale-105 text-white'
                 }`}
               >
                 {spinning ? 'GIRANDO...' : '¡GIRAR RULETA!'}
@@ -504,43 +492,39 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
           {step === 'result' && prize && (
             <div className="text-center relative z-10 animate-in zoom-in duration-500">
               <div className="text-8xl mb-6 animate-bounce">🎉</div>
-              <h2 className="text-4xl font-black mb-4 gradient-animated bg-clip-text text-transparent animate-pulse">
+              <h2 className="text-4xl font-black mb-4 text-white">
                 ¡FELICIDADES!
               </h2>
               <div className="relative inline-block mb-8">
-                <p className="text-3xl font-black neon-text" style={{ color: PRIZES.find(p => p.label === prize.label)?.glow }}>
+                <p className="text-3xl font-black text-white">
                   {prize.label}
                 </p>
-                <div className="absolute inset-0 blur-xl opacity-50" style={{ background: PRIZES.find(p => p.label === prize.label)?.glow }}></div>
               </div>
 
-              <div className="glass-morphism rounded-2xl p-8 mb-6 neon-border relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 animate-pulse" style={{ background: `linear-gradient(45deg, ${PRIZES.find(p => p.label === prize.label)?.glow}, transparent)` }}></div>
+              <div className="glass-morphism rounded-2xl p-8 mb-6 border border-white/20 relative overflow-hidden">
                 <p className="text-sm text-gray-300 mb-3">Tu código termina en:</p>
-                <div className="text-7xl font-black mb-4 gradient-animated bg-clip-text text-transparent relative">
+                <div className="text-7xl font-black mb-4 text-white relative">
                   **{couponPreview}
-                  <div className="absolute inset-0 blur-2xl opacity-30" style={{ background: PRIZES.find(p => p.label === prize.label)?.glow }}></div>
                 </div>
                 <p className="text-xs text-gray-400 mb-1">
                   El código completo se envió a:
                 </p>
-                <p className="text-lg font-bold text-blue-400 neon-text">
+                <p className="text-lg font-bold text-blue-400">
                   WhatsApp: +51 {phone}
                 </p>
               </div>
 
-              <div className="bg-yellow-500/10 border-2 border-yellow-500 rounded-xl p-4 mb-6 neon-border">
-                <p className="text-sm text-yellow-300 font-bold neon-text">
+              <div className="bg-yellow-500/10 border-2 border-yellow-500 rounded-xl p-4 mb-6">
+                <p className="text-sm text-yellow-300 font-bold">
                   📱 Revisa tu WhatsApp para el código completo
                 </p>
               </div>
 
               <button
                 onClick={onClose}
-                className="w-full gradient-animated text-white font-black py-5 rounded-xl text-xl hover:scale-105 transition-all duration-300 shadow-lg neon-border relative overflow-hidden group"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-xl text-xl hover:scale-105 transition-all duration-300 shadow-lg"
               >
-                <span className="relative z-10">¡IR A PEDIR AHORA!</span>
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                ¡IR A PEDIR AHORA!
               </button>
             </div>
           )}
