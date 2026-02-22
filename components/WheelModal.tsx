@@ -477,12 +477,30 @@ export default function WheelModal({ isOpen, onClose }: WheelModalProps) {
                           }}
                         >
                           <div
-                            className="absolute top-8 left-1/2 -translate-x-1/2 text-white font-bold text-xs flex flex-col items-center gap-0.5 leading-tight"
-                            style={{ transform: 'rotate(0deg)', maxWidth: '80px' }}
+                            className="absolute left-1/2 -translate-x-1/2 text-white font-bold flex flex-col items-center justify-center leading-none"
+                            style={{
+                              top: '25%',
+                              transform: 'rotate(0deg) translateX(-50%)',
+                              fontSize: '9px',
+                              maxWidth: '60px',
+                              textAlign: 'center'
+                            }}
                           >
-                            {prize.label.split(' ').map((word, i) => (
-                              <div key={i} className="text-center">{word}</div>
-                            ))}
+                            {prize.label.includes('Delivery') ? (
+                              <>
+                                <div>Delivery</div>
+                                <div>Gratis</div>
+                                <div className="text-lg">🏍️</div>
+                              </>
+                            ) : prize.label.includes('2x1') ? (
+                              <>
+                                <div>2x1</div>
+                                <div>toda</div>
+                                <div>la carta</div>
+                              </>
+                            ) : (
+                              <div className="text-sm font-black">{prize.label}</div>
+                            )}
                           </div>
                         </div>
                       </div>
