@@ -13,18 +13,107 @@ const PRIZES = [
   { id: '2x1-all', type: '2x1', value: 0, label: '2x1 en toda la carta', probability: 0.125 },
 ];
 
-function selectRandomPrize() {
+// Límites diarios de premios
+const DAILY_LIMITS = {
+  '2x1': { max: 1, timeRange: { start: 20, end: 21 } }, // 8-9pm (solo 1 vez)
+  'discount-40': { max: 2, timeRange: null }, // 6-11pm (2 veces)
+  'discount-30': { max: 2, timeRange: null }, // 6-11pm (2 veces)
+  'discount-20': { max: 5, timeRange: null }, // 6-11pm (5 veces)
+  // delivery: ilimitado
+};
+
+// Función para contar premios otorgados hoy por tipo
+async function getTodayPrizeCounts() {
+  const spins = await storage.getWheelSpins();
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+  const todaySpins = spins.filter(spin => {
+    const spinDate = new Date(spin.spinDate).toISOString().split('T')[0];
+    return spinDate === today;
+  });
+
+  const counts = {
+    '2x1': 0,
+    'discount-40': 0,
+    'discount-30': 0,
+    'discount-20': 0,
+  };
+
+  todaySpins.forEach(spin => {
+    if (spin.prizeType === '2x1') {
+      counts['2x1']++;
+    } else if (spin.prizeType === 'discount') {
+      if (spin.prizeValue === 40) counts['discount-40']++;
+      else if (spin.prizeValue === 30) counts['discount-30']++;
+      else if (spin.prizeValue === 20) counts['discount-20']++;
+    }
+  });
+
+  return counts;
+}
+
+// Función para verificar si estamos en el rango de horario para 2x1
+function isIn2x1TimeRange(): boolean {
+  const now = new Date();
+  // Convertir a hora de Perú (UTC-5)
+  const peruTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+  const hour = peruTime.getHours();
+
+  return hour >= 20 && hour < 21; // 8pm - 9pm
+}
+
+async function selectRandomPrize() {
+  const counts = await getTodayPrizeCounts();
+  const is2x1Time = isIn2x1TimeRange();
+
+  // Crear lista de premios disponibles según límites
+  const availablePrizes = PRIZES.filter(prize => {
+    // 2x1: solo en horario 8-9pm y si no se alcanzó el límite
+    if (prize.type === '2x1') {
+      return is2x1Time && counts['2x1'] < DAILY_LIMITS['2x1'].max;
+    }
+
+    // Descuento 40%: máximo 2 por día
+    if (prize.type === 'discount' && prize.value === 40) {
+      return counts['discount-40'] < DAILY_LIMITS['discount-40'].max;
+    }
+
+    // Descuento 30%: máximo 2 por día
+    if (prize.type === 'discount' && prize.value === 30) {
+      return counts['discount-30'] < DAILY_LIMITS['discount-30'].max;
+    }
+
+    // Descuento 20%: máximo 5 por día
+    if (prize.type === 'discount' && prize.value === 20) {
+      return counts['discount-20'] < DAILY_LIMITS['discount-20'].max;
+    }
+
+    // Delivery gratis: siempre disponible
+    if (prize.type === 'delivery') {
+      return true;
+    }
+
+    return false;
+  });
+
+  // Si no hay premios disponibles (todos los límites alcanzados), dar delivery gratis
+  if (availablePrizes.length === 0) {
+    return PRIZES.find(p => p.type === 'delivery') || PRIZES[0];
+  }
+
+  // Seleccionar aleatoriamente entre los premios disponibles
   const random = Math.random();
+  const normalizedProbability = 1 / availablePrizes.length;
   let cumulative = 0;
 
-  for (const prize of PRIZES) {
-    cumulative += prize.probability;
+  for (const prize of availablePrizes) {
+    cumulative += normalizedProbability;
     if (random <= cumulative) {
       return prize;
     }
   }
 
-  return PRIZES[0]; // Fallback
+  return availablePrizes[0]; // Fallback
 }
 
 function generateCouponCode(prizeType: string, value: number): string {
@@ -90,7 +179,7 @@ export async function POST(request: Request) {
     }
 
     // Seleccionar premio aleatorio
-    const prize = selectRandomPrize();
+    const prize = await selectRandomPrize();
     const couponCode = generateCouponCode(prize.type, prize.value);
 
     // Guardar el giro
