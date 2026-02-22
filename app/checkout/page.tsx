@@ -242,6 +242,12 @@ export default function CheckoutPage() {
     completedOrders.some(o => COMBO_FIT_IDS.includes(o.productId));
   const comboDiscountAmount = hasComboDiscount ? 5 : 0;
 
+  // Detectar si hay productos con descuentos individuales (ej: promo S/ 16)
+  const hasIndividualDiscount = completedOrders.some(o => o.discountApplied === true);
+
+  // Verificar si hay alguna promoción activa (combo o individual)
+  const hasAnyActivePromotion = hasComboDiscount || hasIndividualDiscount;
+
   // Calcular el total real basado en completedOrders
   const subtotal = completedOrders.reduce((total, order) => {
     // Buscar el producto en los arrays
@@ -304,7 +310,7 @@ export default function CheckoutPage() {
 
   // Validar cupón
   const validateCoupon = async () => {
-    if (hasComboDiscount) {
+    if (hasAnyActivePromotion) {
       setCouponMessage("Los descuentos no son acumulables");
       return;
     }
@@ -868,10 +874,10 @@ export default function CheckoutPage() {
               {/* Sección de cupón */}
               <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
                 <p className="text-white font-bold text-sm mb-2">¿Tienes un cupón?</p>
-                {hasComboDiscount ? (
+                {hasAnyActivePromotion ? (
                   <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
                     <p className="text-amber-300 text-xs text-center">
-                      ⚠️ No acumulable con descuento combo
+                      ⚠️ No acumulable con otras promociones
                     </p>
                   </div>
                 ) : (
