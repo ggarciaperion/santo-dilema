@@ -198,6 +198,7 @@ export default function CheckoutPage() {
   const [couponValidating, setCouponValidating] = useState(false);
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
+  const [couponHasDeliveryFree, setCouponHasDeliveryFree] = useState(false);
   const [isOpen, setIsOpen] = useState(isBusinessOpen());
   const [isTestEnv, setIsTestEnv] = useState(false);
 
@@ -279,10 +280,20 @@ export default function CheckoutPage() {
 
   // Aplicar descuento de cupón si es válido
   const couponDiscountAmount = couponValid ? ((subtotal - comboDiscountAmount) * couponDiscount) / 100 : 0;
-  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount + deliveryCost;
+  // Si el cupón tiene delivery gratis, el costo del delivery es 0
+  const finalDeliveryCost = couponHasDeliveryFree ? 0 : deliveryCost;
+  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount + finalDeliveryCost;
 
   // Validar si el formulario está completo
   const isFormValid = () => {
+    // Si el cupón tiene delivery gratis, no es necesario seleccionar zona de entrega
+    if (couponHasDeliveryFree) {
+      return (
+        formData.name.trim() !== "" &&
+        formData.phone.length === 9 &&
+        formData.address.trim() !== ""
+      );
+    }
     return (
       formData.name.trim() !== "" &&
       formData.phone.length === 9 &&
@@ -327,15 +338,23 @@ export default function CheckoutPage() {
       if (response.ok && data.valid) {
         setCouponValid(true);
         setCouponDiscount(data.discount);
-        setCouponMessage(`✓ Cupón aplicado: ${data.discount}% de descuento`);
+        setCouponHasDeliveryFree(data.deliveryFree || false);
+
+        if (data.deliveryFree) {
+          setCouponMessage(`✓ Cupón aplicado: Delivery Gratis`);
+        } else {
+          setCouponMessage(`✓ Cupón aplicado: ${data.discount}% de descuento`);
+        }
       } else {
         setCouponValid(false);
         setCouponDiscount(0);
+        setCouponHasDeliveryFree(false);
         setCouponMessage(data.error || "Cupón no válido");
       }
     } catch (error) {
       setCouponValid(false);
       setCouponDiscount(0);
+      setCouponHasDeliveryFree(false);
       setCouponMessage("Error al validar cupón");
     } finally {
       setCouponValidating(false);
@@ -887,39 +906,57 @@ export default function CheckoutPage() {
               {/* Sección de Delivery */}
               <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
                 <p className="text-white font-bold text-sm mb-2">Zona de entrega</p>
-                <button
-                  type="button"
-                  onClick={() => setShowDeliveryModal(true)}
-                  className="w-full flex items-center justify-between bg-sky-900/30 border-2 border-sky-500/30 rounded-xl px-4 py-3 hover:bg-sky-900/50 hover:border-sky-500/50 transition-all active:scale-95 group"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🛵</span>
-                    <div className="text-left">
-                      <span className="text-white font-semibold text-sm block">
-                        {deliveryOption ? (
-                          deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
-                          deliveryOption === 'puerto' ? 'Puerto' :
-                          deliveryOption === 'peralvillo' ? 'Peralvillo' :
-                          deliveryOption === 'la-balanza' ? 'La Balanza' :
-                          'Otros'
-                        ) : 'Seleccionar zona'}
-                      </span>
-                      {deliveryOption && deliveryCost > 0 && (
-                        <span className="text-sky-300 text-xs font-mono">S/ {deliveryCost.toFixed(2)}</span>
-                      )}
-                      {deliveryOption === 'otros' && (
-                        <span className="text-gray-400 text-xs">A coordinar</span>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-sky-400 group-hover:translate-x-1 transition-transform">›</span>
-                </button>
 
-                {!deliveryOption && (
-                  <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
-                    <span>⚠️</span>
-                    <span>Debes seleccionar una zona de entrega</span>
-                  </p>
+                {couponHasDeliveryFree ? (
+                  // Cupón con delivery gratis - mostrar mensaje en lugar del selector
+                  <div className="w-full flex items-center justify-between bg-green-900/30 border-2 border-green-500/40 rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🏍️</span>
+                      <div className="text-left">
+                        <span className="text-green-400 font-bold text-sm block">Delivery Gratis</span>
+                        <span className="text-green-300 text-xs">Incluido en tu cupón</span>
+                      </div>
+                    </div>
+                    <span className="text-green-400 text-xl">✓</span>
+                  </div>
+                ) : (
+                  // Selector normal de zona de entrega
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeliveryModal(true)}
+                      className="w-full flex items-center justify-between bg-sky-900/30 border-2 border-sky-500/30 rounded-xl px-4 py-3 hover:bg-sky-900/50 hover:border-sky-500/50 transition-all active:scale-95 group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🛵</span>
+                        <div className="text-left">
+                          <span className="text-white font-semibold text-sm block">
+                            {deliveryOption ? (
+                              deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
+                              deliveryOption === 'puerto' ? 'Puerto' :
+                              deliveryOption === 'peralvillo' ? 'Peralvillo' :
+                              deliveryOption === 'la-balanza' ? 'La Balanza' :
+                              'Otros'
+                            ) : 'Seleccionar zona'}
+                          </span>
+                          {deliveryOption && deliveryCost > 0 && (
+                            <span className="text-sky-300 text-xs font-mono">S/ {deliveryCost.toFixed(2)}</span>
+                          )}
+                          {deliveryOption === 'otros' && (
+                            <span className="text-gray-400 text-xs">A coordinar</span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-sky-400 group-hover:translate-x-1 transition-transform">›</span>
+                    </button>
+
+                    {!deliveryOption && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠️</span>
+                        <span>Debes seleccionar una zona de entrega</span>
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -946,10 +983,14 @@ export default function CheckoutPage() {
                   </>
                 )}
 
-                {deliveryOption && deliveryCost > 0 && (
+                {(deliveryOption || couponHasDeliveryFree) && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-sky-400 font-semibold">🛵 Delivery:</span>
-                    <span className="text-sky-400 font-semibold font-mono">+S/ {deliveryCost.toFixed(2)}</span>
+                    <span className={couponHasDeliveryFree ? "text-green-400 font-semibold" : "text-sky-400 font-semibold"}>
+                      {couponHasDeliveryFree ? "🏍️ Delivery:" : "🛵 Delivery:"}
+                    </span>
+                    <span className={couponHasDeliveryFree ? "text-green-400 font-semibold font-mono" : "text-sky-400 font-semibold font-mono"}>
+                      {couponHasDeliveryFree ? "GRATIS" : `+S/ ${deliveryCost.toFixed(2)}`}
+                    </span>
                   </div>
                 )}
 
