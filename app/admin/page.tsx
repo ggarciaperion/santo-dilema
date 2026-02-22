@@ -3680,7 +3680,7 @@ export default function AdminPage() {
                                   {item.productName || '-'}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-center text-xs text-white">
-                                  {item.quantity}
+                                  {item.originalQuantity || item.quantity}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-center text-xs text-gray-300">
                                   {item.unit}
@@ -3789,7 +3789,7 @@ export default function AdminPage() {
                               <div className="flex-1">
                                 <p className="text-white font-bold text-sm">{item.productName}</p>
                                 <p className="text-xs text-gray-400">
-                                  {item.quantity} {item.unit} x S/ {item.unitCost.toFixed(2)}
+                                  {item.originalQuantity || item.quantity} {item.unit} x S/ {item.unitCost.toFixed(2)}
                                 </p>
                               </div>
                               <p className="text-fuchsia-400 font-bold">S/ {item.total.toFixed(2)}</p>
@@ -4744,7 +4744,7 @@ export default function AdminPage() {
                                   {item.productName || '-'}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-center text-xs text-white">
-                                  {item.quantity}
+                                  {item.originalQuantity || item.quantity}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-center text-xs text-gray-300">
                                   {item.unit}
@@ -4871,7 +4871,7 @@ export default function AdminPage() {
                               {selectedPurchaseDetail.items.map((item: any, idx: number) => (
                                 <tr key={idx}>
                                   <td className="border border-gray-700 px-2 py-2 text-xs text-white">{item.productName}</td>
-                                  <td className="border border-gray-700 px-2 py-2 text-xs text-center text-white">{item.quantity}</td>
+                                  <td className="border border-gray-700 px-2 py-2 text-xs text-center text-white">{item.originalQuantity || item.quantity}</td>
                                   <td className="border border-gray-700 px-2 py-2 text-xs text-center text-gray-300">{item.unit}</td>
                                   <td className="border border-gray-700 px-2 py-2 text-xs text-right text-fuchsia-400 font-bold">
                                     S/ {item.unitCost.toFixed(2)}

@@ -355,6 +355,11 @@ export const storage = {
         const item = purchase.items[j];
 
         if (item.productName === productName && item.unit === unit) {
+          // GUARDAR CANTIDAD ORIGINAL si no existe (para historial de compras)
+          if (item.originalQuantity === undefined) {
+            item.originalQuantity = item.quantity;
+          }
+
           // Usar stockUnits si existe (stock real en unidades), sino calcular desde quantity*volume
           const currentStock = item.stockUnits !== undefined
             ? item.stockUnits
@@ -366,8 +371,7 @@ export const storage = {
 
             // Guardar en stockUnits para evitar pérdida por Math.floor
             item.stockUnits = newTotalStock;
-            // Actualizar quantity para compatibilidad visual (redondeado hacia abajo)
-            item.quantity = Math.floor(newTotalStock / (item.volume || 1));
+            // ❌ NO MODIFICAR item.quantity - debe mantener la cantidad original comprada para el historial
 
             remainingToDeduct -= deduction;
           }
