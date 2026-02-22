@@ -11,7 +11,6 @@ const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [showSorteoModal, setShowSorteoModal] = useState(false);
   const [showWheelModal, setShowWheelModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
@@ -21,10 +20,6 @@ export default function Home() {
     const hasSeenWelcome = sessionStorage.getItem("santo-dilema-welcome");
     if (!hasSeenWelcome) {
       setShowWelcomeModal(true);
-    }
-    const hasSeenSorteo = sessionStorage.getItem("santo-dilema-sorteo");
-    if (!hasSeenSorteo) {
-      setShowSorteoModal(true);
     }
 
     // Mostrar ruleta después de 3 segundos
@@ -68,33 +63,8 @@ export default function Home() {
     sessionStorage.setItem("santo-dilema-welcome", "true");
   };
 
-  const closeSorteoModal = () => {
-    setShowSorteoModal(false);
-    sessionStorage.setItem("santo-dilema-sorteo", "true");
-  };
-
   return (
     <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
-      {/* Modal de Sorteo */}
-      {showSorteoModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
-          <div className="relative animate-fade-in">
-            {/* Botón cerrar - dentro de la imagen, esquina superior derecha */}
-            <button
-              onClick={closeSorteoModal}
-              className="absolute top-2 right-2 z-10 w-8 h-8 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center font-black text-sm shadow-lg transition-all"
-              aria-label="Cerrar"
-            >
-              ✕
-            </button>
-            <img
-              src="/sorteo.png"
-              alt="Sorteo Santo Dilema"
-              className="block w-auto h-auto max-w-[min(90vw,480px)] max-h-[85vh] rounded-xl shadow-2xl object-contain"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Modal de Bienvenida */}
       {showWelcomeModal && (
