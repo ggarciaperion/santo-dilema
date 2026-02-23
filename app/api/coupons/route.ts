@@ -18,6 +18,8 @@ interface Coupon {
   phone: string;
   customerName: string;
   discount: number;
+  deliveryFree?: boolean;
+  is2x1?: boolean;
   status: "pending" | "used";
   createdAt: string;
   usedAt?: string;
@@ -129,6 +131,8 @@ export async function POST(request: Request) {
       return NextResponse.json({
         valid: true,
         discount: coupon.discount,
+        deliveryFree: coupon.deliveryFree || false,
+        is2x1: coupon.is2x1 || false,
         code: coupon.code,
       });
     }
@@ -190,6 +194,52 @@ export async function POST(request: Request) {
         coupon: {
           code: coupon.code,
           discount: coupon.discount,
+          expiresAt: coupon.expiresAt,
+        },
+      });
+    }
+
+    // Crear cupón manual (para uso interno)
+    if (action === "create-manual") {
+      const { phone, customerName, discount, deliveryFree, is2x1, expiresAt } = body;
+
+      if (!phone) {
+        return NextResponse.json(
+          { error: "Teléfono requerido" },
+          { status: 400 }
+        );
+      }
+
+      // Generar código personalizado
+      const prefix = deliveryFree ? 'DELIVERY' : is2x1 ? 'SANTO2X1' : `SANTO${discount || 0}`;
+      const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const code = `${prefix}-${random}`;
+
+      // Crear cupón manual
+      const coupon: Coupon = {
+        id: `manual-${Date.now()}`,
+        code,
+        phone,
+        customerName: customerName || 'Cupón Interno',
+        discount: discount || 0,
+        deliveryFree: deliveryFree || false,
+        is2x1: is2x1 || false,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        expiresAt: expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        orderId: 'MANUAL',
+      };
+
+      await storage.saveCoupon(coupon);
+
+      return NextResponse.json({
+        success: true,
+        coupon: {
+          code: coupon.code,
+          phone: coupon.phone,
+          discount: coupon.discount,
+          deliveryFree: coupon.deliveryFree,
+          is2x1: coupon.is2x1,
           expiresAt: coupon.expiresAt,
         },
       });
