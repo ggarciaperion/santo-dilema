@@ -377,14 +377,18 @@ export default function FitPage() {
 
   const handleCompleteOrder = (product: Product) => {
     const qty = orderQuantity[product.id] || 1;
-    const orig = product.price;
+    // Si el producto tiene oldPrice, ese es el precio original (sin promo)
+    const orig = product.oldPrice || product.price;
+    const final = product.price;
+    const hasPromo = !!product.oldPrice;
+
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: qty,
       complementIds: complementsInCart[product.id] || [],
-      discountApplied: false,
+      discountApplied: hasPromo,
       originalPrice: orig,
-      finalPrice: orig
+      finalPrice: final
     };
     if (isEditingOrder && editingOrderIndex !== null) {
       setCompletedOrders((prev) => prev.map((order, idx) => idx === editingOrderIndex ? completedOrder : order));
