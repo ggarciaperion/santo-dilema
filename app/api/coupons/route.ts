@@ -98,7 +98,8 @@ export async function POST(request: Request) {
         );
       }
 
-      if (coupon.phone !== phone) {
+      // Los cupones internos (phone === "INTERNO") pueden ser usados por cualquier teléfono
+      if (coupon.phone !== "INTERNO" && coupon.phone !== phone) {
         return NextResponse.json(
           { error: "Este cupón no pertenece a tu teléfono" },
           { status: 403 }
@@ -257,7 +258,10 @@ export async function POST(request: Request) {
       }
 
       const coupons = await storage.getCoupons();
-      const couponIndex = coupons.findIndex((c: Coupon) => c.code === code && c.phone === phone);
+      // Buscar cupón por código, y verificar que sea del teléfono correcto o sea cupón interno
+      const couponIndex = coupons.findIndex((c: Coupon) =>
+        c.code === code && (c.phone === phone || c.phone === "INTERNO")
+      );
 
       if (couponIndex === -1) {
         return NextResponse.json(
