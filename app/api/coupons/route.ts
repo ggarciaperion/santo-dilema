@@ -270,10 +270,12 @@ export async function POST(request: Request) {
         );
       }
 
-      coupons[couponIndex].status = "used";
-      coupons[couponIndex].usedAt = new Date().toISOString();
-
-      await storage.updateCoupons(coupons);
+      // Los cupones internos no se marcan como usados (son reutilizables)
+      if (coupons[couponIndex].phone !== "INTERNO") {
+        coupons[couponIndex].status = "used";
+        coupons[couponIndex].usedAt = new Date().toISOString();
+        await storage.updateCoupons(coupons);
+      }
 
       return NextResponse.json({ success: true });
     }
