@@ -306,9 +306,14 @@ export default function CheckoutPage() {
 
   // Aplicar descuento de cupón si es válido (SIEMPRE sobre precio base, no promocional)
   const couponDiscountAmount = couponValid ? (subtotalBase * couponDiscount) / 100 : 0;
+
   // Si el cupón tiene delivery gratis, el costo del delivery es 0
   const finalDeliveryCost = couponHasDeliveryFree ? 0 : deliveryCost;
-  const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount + finalDeliveryCost;
+
+  // Si hay cupón válido, usar subtotalBase (elimina promociones)
+  // Si NO hay cupón, usar subtotal (mantiene promociones)
+  const baseForTotal = couponValid ? subtotalBase : subtotal;
+  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount + finalDeliveryCost;
 
   // Validar si el formulario está completo
   const isFormValid = () => {
