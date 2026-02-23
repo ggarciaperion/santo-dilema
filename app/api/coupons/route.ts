@@ -280,6 +280,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
+    // Resetear cupón interno (volver a estado pending)
+    if (action === "reset-internal") {
+      const { code } = body;
+
+      if (!code) {
+        return NextResponse.json(
+          { error: "Código requerido" },
+          { status: 400 }
+        );
+      }
+
+      const coupons = await storage.getCoupons();
+      const couponIndex = coupons.findIndex((c: Coupon) => c.code === code && c.phone === "INTERNO");
+
+      if (couponIndex === -1) {
+        return NextResponse.json(
+          { error: "Cupón interno no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      // Resetear estado a pending
+      coupons[couponIndex].status = "pending";
+      delete coupons[couponIndex].usedAt;
+
+      await storage.updateCoupons(coupons);
+
+      return NextResponse.json({
+        success: true,
+        message: "Cupón interno reseteado",
+        coupon: {
+          code: coupons[couponIndex].code,
+          status: coupons[couponIndex].status
+        }
+      });
+    }
+
     return NextResponse.json(
       { error: "Acción no válida" },
       { status: 400 }
