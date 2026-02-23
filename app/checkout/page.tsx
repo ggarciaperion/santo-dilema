@@ -248,7 +248,27 @@ export default function CheckoutPage() {
   // Verificar si hay alguna promoción activa (combo o individual)
   const hasAnyActivePromotion = hasComboDiscount || hasIndividualDiscount;
 
-  // Calcular el total real basado en completedOrders
+  // Calcular subtotal BASE (sin promociones) - para aplicar cupones
+  const subtotalBase = completedOrders.reduce((total, order) => {
+    const fatProduct = fatProducts.find((p) => p.id === order.productId);
+    const fitProduct = fitProducts.find((p) => p.id === order.productId);
+    const product = fatProduct || fitProduct;
+
+    if (!product) return total;
+
+    // Usar SIEMPRE el precio original del producto (sin descuentos)
+    const originalPrice = order.originalPrice ?? product.price;
+    const productTotal = originalPrice * order.quantity;
+
+    // Calcular total de complementos
+    const complementsTotal = order.complementIds.reduce((sum, compId) => {
+      return sum + (availableComplements[compId]?.price || 0);
+    }, 0);
+
+    return total + productTotal + complementsTotal;
+  }, 0);
+
+  // Calcular subtotal REAL (con promociones aplicadas)
   const subtotal = completedOrders.reduce((total, order) => {
     // Buscar el producto en los arrays
     const fatProduct = fatProducts.find((p) => p.id === order.productId);
@@ -257,7 +277,7 @@ export default function CheckoutPage() {
 
     if (!product) return total;
 
-    // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
+    // Promos no acumulables: si combo activo, ignorar descuento individual
     const basePrice = order.finalPrice ?? product.price;
     const productPrice = (hasComboDiscount && order.discountApplied)
       ? (order.originalPrice ?? product.price)
@@ -284,8 +304,8 @@ export default function CheckoutPage() {
     }
   })();
 
-  // Aplicar descuento de cupón si es válido
-  const couponDiscountAmount = couponValid ? ((subtotal - comboDiscountAmount) * couponDiscount) / 100 : 0;
+  // Aplicar descuento de cupón si es válido (SIEMPRE sobre precio base, no promocional)
+  const couponDiscountAmount = couponValid ? (subtotalBase * couponDiscount) / 100 : 0;
   // Si el cupón tiene delivery gratis, el costo del delivery es 0
   const finalDeliveryCost = couponHasDeliveryFree ? 0 : deliveryCost;
   const realTotal = subtotal - comboDiscountAmount - couponDiscountAmount + finalDeliveryCost;
