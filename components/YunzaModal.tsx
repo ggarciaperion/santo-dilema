@@ -8,7 +8,7 @@ interface YunzaModalProps {
   onClose: () => void;
 }
 
-// Premios disponibles en la Yunza
+// Premios disponibles en la Yunza (9 regalos)
 const PRIZES = [
   { id: 1, label: '20% OFF', color: '#3b82f6', emoji: '🎁' },
   { id: 2, label: '30% OFF', color: '#ef4444', emoji: '🎊' },
@@ -19,9 +19,6 @@ const PRIZES = [
   { id: 7, label: 'Delivery Gratis 🏍️', color: '#f59e0b', emoji: '🎉' },
   { id: 8, label: '30% OFF', color: '#ec4899', emoji: '🎊' },
   { id: 9, label: 'Delivery Gratis 🏍️', color: '#f59e0b', emoji: '🎉' },
-  { id: 10, label: '20% OFF', color: '#8b5cf6', emoji: '🎁' },
-  { id: 11, label: '40% OFF', color: '#14b8a6', emoji: '🎈' },
-  { id: 12, label: 'Delivery Gratis 🏍️', color: '#f59e0b', emoji: '🎉' },
 ];
 
 // Componente de confetti festivo
@@ -370,27 +367,22 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
 
                 {/* Regalos colgando - distribuidos estratégicamente en las ramas */}
                 {PRIZES.map((prize, index) => {
-                  // Posiciones estratégicas para 12 regalos más dispersos en el árbol
+                  // Posiciones estratégicas para 9 regalos dentro del árbol
                   const positions = [
-                    // Capa superior (3 regalos) - Más arriba y dispersos
-                    { x: 0, y: 10, rope: 30 },       // Centro arriba
-                    { x: -70, y: 18, rope: 35 },     // Izquierda arriba
-                    { x: 75, y: 16, rope: 32 },      // Derecha arriba
+                    // Capa superior (3 regalos)
+                    { x: 0, y: 15, rope: 28 },       // Centro arriba
+                    { x: -55, y: 20, rope: 32 },     // Izquierda arriba
+                    { x: 55, y: 20, rope: 30 },      // Derecha arriba
 
-                    // Capa media-alta (3 regalos) - Más separados
-                    { x: -100, y: 30, rope: 38 },    // Extremo izquierdo
-                    { x: -25, y: 28, rope: 25 },     // Centro-izquierda
-                    { x: 95, y: 32, rope: 36 },      // Extremo derecho
+                    // Capa media (3 regalos)
+                    { x: -75, y: 38, rope: 35 },     // Izquierda media
+                    { x: 0, y: 35, rope: 25 },       // Centro media
+                    { x: 75, y: 38, rope: 33 },      // Derecha media
 
-                    // Capa media (3 regalos) - Bien distribuidos
-                    { x: -115, y: 48, rope: 42 },    // Extremo izquierdo media
-                    { x: 15, y: 45, rope: 28 },      // Centro-derecha media
-                    { x: 120, y: 50, rope: 40 },     // Extremo derecho media
-
-                    // Capa inferior (3 regalos) - Máxima dispersión
-                    { x: -130, y: 65, rope: 48 },    // Extremo izquierdo abajo
-                    { x: -40, y: 62, rope: 33 },     // Centro-izquierda abajo
-                    { x: 135, y: 68, rope: 46 },     // Extremo derecho abajo
+                    // Capa inferior (3 regalos)
+                    { x: -90, y: 58, rope: 40 },     // Izquierda abajo
+                    { x: 0, y: 55, rope: 30 },       // Centro abajo
+                    { x: 90, y: 58, rope: 38 },      // Derecha abajo
                   ];
 
                   const pos = positions[index];
