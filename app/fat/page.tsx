@@ -1368,7 +1368,11 @@ export default function FatPage() {
                                       {isPromoDuoDilemaSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
                                           <span className="text-[9px] text-gray-500 line-through">S/ 34.00</span>
-                                          <span className="text-[9px] text-amber-400 font-bold">→ S/ 30.00 {hasBothPromoDuoSalsas ? '✓ ACTIVO' : 'con ambas salsas'}</span>
+                                          <span className="text-[9px] text-amber-400 font-bold">
+                                            → S/ 30.00 {hasBothPromoDuoSalsas ? '✓ ACTIVO' : (
+                                              salsa.id === 'teriyaki' ? 'Combínala con Honey mustard' : 'Combínala con Oriental Teriyaki'
+                                            )}
+                                          </span>
                                         </div>
                                       )}
                                     </div>
