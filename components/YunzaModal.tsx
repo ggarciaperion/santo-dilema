@@ -355,34 +355,34 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
 
               {/* Árbol de Yunza */}
               <div className="relative mx-auto w-full max-w-lg h-[500px] md:h-[600px] mb-4 flex items-center justify-center">
-                {/* Imagen del árbol de fondo con animación */}
+                {/* Imagen del árbol de fondo con animación - Más grande para cubrir todos los regalos */}
                 <div className="absolute inset-0 flex items-center justify-center tree-sway" style={{ transformOrigin: 'bottom center' }}>
                   <img
                     src="/yunza.png"
                     alt="Árbol de Yunza"
-                    className="w-full h-full object-contain drop-shadow-2xl"
+                    className="w-[130%] h-[130%] object-contain drop-shadow-2xl"
                     style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
                   />
                 </div>
 
                 {/* Regalos colgando - distribuidos estratégicamente en las ramas */}
                 {PRIZES.map((prize, index) => {
-                  // Posiciones estratégicas para 9 regalos dentro del árbol
+                  // Posiciones estratégicas para 9 regalos sobre el árbol
                   const positions = [
-                    // Capa superior (3 regalos)
-                    { x: 0, y: 15, rope: 28 },       // Centro arriba
-                    { x: -55, y: 20, rope: 32 },     // Izquierda arriba
-                    { x: 55, y: 20, rope: 30 },      // Derecha arriba
+                    // Capa superior (3 regalos) - Más abajo para estar dentro del árbol
+                    { x: 0, y: 22, rope: 28 },       // Centro arriba
+                    { x: -50, y: 28, rope: 32 },     // Izquierda arriba
+                    { x: 50, y: 28, rope: 30 },      // Derecha arriba
 
                     // Capa media (3 regalos)
-                    { x: -75, y: 38, rope: 35 },     // Izquierda media
-                    { x: 0, y: 35, rope: 25 },       // Centro media
-                    { x: 75, y: 38, rope: 33 },      // Derecha media
+                    { x: -70, y: 42, rope: 35 },     // Izquierda media
+                    { x: 0, y: 40, rope: 25 },       // Centro media
+                    { x: 70, y: 42, rope: 33 },      // Derecha media
 
                     // Capa inferior (3 regalos)
-                    { x: -90, y: 58, rope: 40 },     // Izquierda abajo
-                    { x: 0, y: 55, rope: 30 },       // Centro abajo
-                    { x: 90, y: 58, rope: 38 },      // Derecha abajo
+                    { x: -85, y: 60, rope: 40 },     // Izquierda abajo
+                    { x: 0, y: 58, rope: 30 },       // Centro abajo
+                    { x: 85, y: 60, rope: 38 },      // Derecha abajo
                   ];
 
                   const pos = positions[index];
