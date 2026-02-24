@@ -892,6 +892,22 @@ export default function FatPage() {
 
   return (
     <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+      {/* Decoración carnavalesca sutil */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Serpentinas sutiles */}
+        <div className="absolute top-0 left-[10%] w-2 h-32 bg-gradient-to-b from-pink-500/20 to-transparent rotate-12 animate-sway"></div>
+        <div className="absolute top-0 right-[15%] w-2 h-40 bg-gradient-to-b from-yellow-400/20 to-transparent -rotate-12 animate-sway" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute top-0 left-[35%] w-2 h-36 bg-gradient-to-b from-purple-500/20 to-transparent rotate-6 animate-sway" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-0 right-[40%] w-2 h-44 bg-gradient-to-b from-orange-400/20 to-transparent -rotate-6 animate-sway" style={{ animationDelay: '1.5s' }}></div>
+
+        {/* Confetti sutil en las esquinas */}
+        <div className="absolute top-10 left-5 w-3 h-3 bg-pink-500/30 rounded-full animate-float"></div>
+        <div className="absolute top-20 right-8 w-2 h-2 bg-yellow-400/30 rounded-full animate-float" style={{ animationDelay: '0.3s' }}></div>
+        <div className="absolute top-16 left-[20%] w-2 h-2 bg-purple-500/30 rounded-full animate-float" style={{ animationDelay: '0.6s' }}></div>
+        <div className="absolute top-24 right-[25%] w-3 h-3 bg-orange-400/30 rounded-full animate-float" style={{ animationDelay: '0.9s' }}></div>
+        <div className="absolute top-32 left-[60%] w-2 h-2 bg-pink-400/30 rounded-full animate-float" style={{ animationDelay: '1.2s' }}></div>
+      </div>
+
       {/* Iconos decorativos de fondo */}
       <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
         {/* Alitas */}
