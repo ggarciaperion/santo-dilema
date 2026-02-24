@@ -204,6 +204,16 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           75% { transform: rotate(3deg) scale(1.05); }
         }
 
+        @keyframes gift-swing {
+          0%, 100% { transform: rotate(-5deg); }
+          50% { transform: rotate(5deg); }
+        }
+
+        @keyframes gift-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+
         @keyframes gift-fall {
           0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
           100% { transform: translateY(500px) rotate(180deg) scale(0.5); opacity: 0; }
@@ -224,6 +234,14 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
 
         .gift-hover:hover {
           animation: gift-shake 0.5s ease-in-out;
+        }
+
+        .gift-swing {
+          animation: gift-swing 2.5s ease-in-out infinite;
+        }
+
+        .gift-float {
+          animation: gift-float 3s ease-in-out infinite;
         }
 
         .gift-selected {
@@ -352,31 +370,35 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
 
                 {/* Regalos colgando - distribuidos estratégicamente en las ramas */}
                 {PRIZES.map((prize, index) => {
-                  // Posiciones estratégicas para 12 regalos distribuidos en el árbol
+                  // Posiciones estratégicas para 12 regalos más dispersos en el árbol
                   const positions = [
-                    // Capa superior (3 regalos)
-                    { x: 0, y: 15, rope: 25 },      // Centro arriba
-                    { x: -60, y: 22, rope: 30 },    // Izquierda arriba
-                    { x: 60, y: 22, rope: 28 },     // Derecha arriba
+                    // Capa superior (3 regalos) - Más arriba y dispersos
+                    { x: 0, y: 10, rope: 30 },       // Centro arriba
+                    { x: -70, y: 18, rope: 35 },     // Izquierda arriba
+                    { x: 75, y: 16, rope: 32 },      // Derecha arriba
 
-                    // Capa media-alta (3 regalos)
-                    { x: -80, y: 35, rope: 35 },    // Izquierda media-alta
-                    { x: 0, y: 32, rope: 22 },      // Centro media-alta
-                    { x: 80, y: 35, rope: 33 },     // Derecha media-alta
+                    // Capa media-alta (3 regalos) - Más separados
+                    { x: -100, y: 30, rope: 38 },    // Extremo izquierdo
+                    { x: -25, y: 28, rope: 25 },     // Centro-izquierda
+                    { x: 95, y: 32, rope: 36 },      // Extremo derecho
 
-                    // Capa media (3 regalos)
-                    { x: -95, y: 50, rope: 40 },    // Izquierda media
-                    { x: -30, y: 48, rope: 25 },    // Centro-izquierda media
-                    { x: 95, y: 50, rope: 38 },     // Derecha media
+                    // Capa media (3 regalos) - Bien distribuidos
+                    { x: -115, y: 48, rope: 42 },    // Extremo izquierdo media
+                    { x: 15, y: 45, rope: 28 },      // Centro-derecha media
+                    { x: 120, y: 50, rope: 40 },     // Extremo derecho media
 
-                    // Capa inferior (3 regalos)
-                    { x: -110, y: 65, rope: 45 },   // Izquierda abajo
-                    { x: 30, y: 63, rope: 30 },     // Centro-derecha abajo
-                    { x: 110, y: 65, rope: 42 },    // Derecha abajo
+                    // Capa inferior (3 regalos) - Máxima dispersión
+                    { x: -130, y: 65, rope: 48 },    // Extremo izquierdo abajo
+                    { x: -40, y: 62, rope: 33 },     // Centro-izquierda abajo
+                    { x: 135, y: 68, rope: 46 },     // Extremo derecho abajo
                   ];
 
                   const pos = positions[index];
                   const ropeLength = pos.rope;
+
+                  // Animaciones diferentes para cada regalo
+                  const animationType = index % 2 === 0 ? 'gift-swing' : 'gift-float';
+                  const animationDelay = `${(index * 0.2)}s`;
 
                   return (
                     <div
@@ -404,30 +426,31 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
                       <button
                         onClick={() => selectGift(prize.id)}
                         disabled={animatingGift !== null}
-                        className={`relative w-14 h-14 md:w-16 md:h-16 rounded-lg shadow-2xl transition-all ${
+                        className={`relative w-10 h-10 md:w-12 md:h-12 rounded-lg shadow-2xl transition-all ${
                           animatingGift === prize.id
                             ? 'gift-selected'
                             : animatingGift === null
-                            ? 'gift-hover hover:scale-110 cursor-pointer'
+                            ? `gift-hover hover:scale-110 cursor-pointer ${animationType}`
                             : 'opacity-50 cursor-not-allowed'
                         }`}
                         style={{
                           background: `linear-gradient(135deg, ${prize.color} 0%, ${prize.color}dd 100%)`,
                           boxShadow: `0 4px 20px ${prize.color}80, inset 0 1px 0 rgba(255,255,255,0.3)`,
+                          animationDelay: animatingGift === null ? animationDelay : '0s',
                         }}
                       >
                         {/* Lazo del regalo - más destacado */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-full bg-white/40 shadow-md"></div>
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-white/40 shadow-md"></div>
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-full bg-white/40 shadow-md"></div>
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-white/40 shadow-md"></div>
 
                         {/* Moño en la parte superior */}
-                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex gap-1">
-                          <div className="w-3 h-3 bg-white/60 rounded-full shadow-md"></div>
-                          <div className="w-3 h-3 bg-white/60 rounded-full shadow-md"></div>
+                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 flex gap-0.5">
+                          <div className="w-2 h-2 bg-white/60 rounded-full shadow-md"></div>
+                          <div className="w-2 h-2 bg-white/60 rounded-full shadow-md"></div>
                         </div>
 
                         {/* Emoji del premio */}
-                        <span className="absolute inset-0 flex items-center justify-center text-2xl md:text-3xl drop-shadow-lg">
+                        <span className="absolute inset-0 flex items-center justify-center text-xl md:text-2xl drop-shadow-lg">
                           {prize.emoji}
                         </span>
                       </button>
