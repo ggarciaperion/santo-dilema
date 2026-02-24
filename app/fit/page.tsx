@@ -589,18 +589,86 @@ export default function FitPage() {
     <div className="min-h-screen bg-black relative">
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Serpentinas sutiles */}
-        <div className="absolute top-0 left-[10%] w-2 h-32 bg-gradient-to-b from-pink-500/20 to-transparent rotate-12 animate-sway"></div>
-        <div className="absolute top-0 right-[15%] w-2 h-40 bg-gradient-to-b from-yellow-400/20 to-transparent -rotate-12 animate-sway" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute top-0 left-[35%] w-2 h-36 bg-gradient-to-b from-purple-500/20 to-transparent rotate-6 animate-sway" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-0 right-[40%] w-2 h-44 bg-gradient-to-b from-cyan-400/20 to-transparent -rotate-6 animate-sway" style={{ animationDelay: '1.5s' }}></div>
+        {/* Globos de carnaval - Izquierda */}
+        <div className="absolute top-20 left-8 opacity-40">
+          <svg width="60" height="80" viewBox="0 0 60 80" className="animate-float">
+            <ellipse cx="30" cy="35" rx="25" ry="30" fill="#ef4444" opacity="0.8"/>
+            <path d="M30 65 Q32 75, 35 80" stroke="#999" strokeWidth="1" fill="none"/>
+            <ellipse cx="30" cy="30" rx="8" ry="10" fill="white" opacity="0.4"/>
+          </svg>
+        </div>
+        <div className="absolute top-32 left-16 opacity-40" style={{ animationDelay: '0.5s' }}>
+          <svg width="50" height="70" viewBox="0 0 50 70" className="animate-float">
+            <ellipse cx="25" cy="30" rx="20" ry="25" fill="#fbbf24" opacity="0.8"/>
+            <path d="M25 55 Q27 65, 30 70" stroke="#999" strokeWidth="1" fill="none"/>
+            <ellipse cx="25" cy="25" rx="7" ry="8" fill="white" opacity="0.4"/>
+          </svg>
+        </div>
+        <div className="absolute top-48 left-12 opacity-40" style={{ animationDelay: '1s' }}>
+          <svg width="55" height="75" viewBox="0 0 55 75" className="animate-float">
+            <ellipse cx="27" cy="32" rx="22" ry="27" fill="#a855f7" opacity="0.8"/>
+            <path d="M27 59 Q29 69, 32 75" stroke="#999" strokeWidth="1" fill="none"/>
+            <ellipse cx="27" cy="27" rx="7" ry="9" fill="white" opacity="0.4"/>
+          </svg>
+        </div>
 
-        {/* Confetti sutil en las esquinas */}
-        <div className="absolute top-10 left-5 w-3 h-3 bg-pink-500/30 rounded-full animate-float"></div>
-        <div className="absolute top-20 right-8 w-2 h-2 bg-yellow-400/30 rounded-full animate-float" style={{ animationDelay: '0.3s' }}></div>
-        <div className="absolute top-16 left-[20%] w-2 h-2 bg-purple-500/30 rounded-full animate-float" style={{ animationDelay: '0.6s' }}></div>
-        <div className="absolute top-24 right-[25%] w-3 h-3 bg-cyan-400/30 rounded-full animate-float" style={{ animationDelay: '0.9s' }}></div>
-        <div className="absolute top-32 left-[60%] w-2 h-2 bg-pink-400/30 rounded-full animate-float" style={{ animationDelay: '1.2s' }}></div>
+        {/* Globos de carnaval - Derecha */}
+        <div className="absolute top-24 right-10 opacity-40" style={{ animationDelay: '0.3s' }}>
+          <svg width="58" height="78" viewBox="0 0 58 78" className="animate-float">
+            <ellipse cx="29" cy="34" rx="24" ry="29" fill="#22d3ee" opacity="0.8"/>
+            <path d="M29 63 Q31 73, 34 78" stroke="#999" strokeWidth="1" fill="none"/>
+            <ellipse cx="29" cy="29" rx="8" ry="10" fill="white" opacity="0.4"/>
+          </svg>
+        </div>
+        <div className="absolute top-40 right-20 opacity-40" style={{ animationDelay: '0.8s' }}>
+          <svg width="52" height="72" viewBox="0 0 52 72" className="animate-float">
+            <ellipse cx="26" cy="31" rx="21" ry="26" fill="#ec4899" opacity="0.8"/>
+            <path d="M26 57 Q28 67, 31 72" stroke="#999" strokeWidth="1" fill="none"/>
+            <ellipse cx="26" cy="26" rx="7" ry="9" fill="white" opacity="0.4"/>
+          </svg>
+        </div>
+
+        {/* Regalos de carnaval */}
+        <div className="absolute top-[60%] left-[5%] opacity-30 animate-float" style={{ animationDelay: '0.2s' }}>
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <rect x="5" y="10" width="30" height="25" rx="2" fill="#ef4444" opacity="0.8"/>
+            <rect x="18" y="10" width="4" height="25" fill="#fbbf24" opacity="0.9"/>
+            <rect x="5" y="20" width="30" height="4" fill="#fbbf24" opacity="0.9"/>
+            <path d="M15 10 Q20 5, 25 10" stroke="#fbbf24" strokeWidth="2" fill="none"/>
+            <circle cx="20" cy="7" r="3" fill="#fbbf24" opacity="0.8"/>
+          </svg>
+        </div>
+        <div className="absolute top-[65%] right-[8%] opacity-30 animate-float" style={{ animationDelay: '0.7s' }}>
+          <svg width="35" height="35" viewBox="0 0 35 35">
+            <rect x="4" y="8" width="27" height="22" rx="2" fill="#22d3ee" opacity="0.8"/>
+            <rect x="16" y="8" width="3" height="22" fill="#a855f7" opacity="0.9"/>
+            <rect x="4" y="17" width="27" height="3" fill="#a855f7" opacity="0.9"/>
+            <path d="M13 8 Q17.5 4, 22 8" stroke="#a855f7" strokeWidth="2" fill="none"/>
+            <circle cx="17.5" cy="6" r="2.5" fill="#a855f7" opacity="0.8"/>
+          </svg>
+        </div>
+        <div className="absolute top-[70%] left-[15%] opacity-30 animate-float" style={{ animationDelay: '1.2s' }}>
+          <svg width="38" height="38" viewBox="0 0 38 38">
+            <rect x="4" y="9" width="30" height="24" rx="2" fill="#fbbf24" opacity="0.8"/>
+            <rect x="17" y="9" width="4" height="24" fill="#ec4899" opacity="0.9"/>
+            <rect x="4" y="19" width="30" height="4" fill="#ec4899" opacity="0.9"/>
+            <path d="M14 9 Q19 4, 24 9" stroke="#ec4899" strokeWidth="2" fill="none"/>
+            <circle cx="19" cy="6" r="3" fill="#ec4899" opacity="0.8"/>
+          </svg>
+        </div>
+
+        {/* Serpentinas */}
+        <div className="absolute top-0 left-[20%] w-2 h-40 bg-gradient-to-b from-pink-500/30 to-transparent rotate-12"></div>
+        <div className="absolute top-0 right-[25%] w-2 h-48 bg-gradient-to-b from-yellow-400/30 to-transparent -rotate-12"></div>
+        <div className="absolute top-0 left-[45%] w-2 h-44 bg-gradient-to-b from-purple-500/30 to-transparent rotate-8"></div>
+        <div className="absolute top-0 right-[50%] w-2 h-52 bg-gradient-to-b from-cyan-400/30 to-transparent -rotate-8"></div>
+
+        {/* Confetti */}
+        <div className="absolute top-10 left-[30%] w-3 h-3 bg-pink-500/40 rounded-full"></div>
+        <div className="absolute top-16 right-[35%] w-2 h-2 bg-yellow-400/40 rounded-full"></div>
+        <div className="absolute top-12 left-[60%] w-2 h-2 bg-purple-500/40 rounded-full"></div>
+        <div className="absolute top-20 right-[15%] w-3 h-3 bg-cyan-400/40 rounded-full"></div>
+        <div className="absolute top-24 left-[70%] w-2 h-2 bg-pink-400/40 rounded-full"></div>
       </div>
 
       {/* Iconos decorativos de fondo */}
