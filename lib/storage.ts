@@ -24,7 +24,7 @@ let couponsFilePath: string = '';
 let promo30FilePath: string = '';
 let promoFit30FilePath: string = '';
 let menuStockFilePath: string = '';
-let wheelSpinsFilePath: string = '';
+let yunzaParticipationsFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -40,7 +40,7 @@ if (!isProduction) {
   promo30FilePath = path.join(dataDir, 'promo30.json');
   promoFit30FilePath = path.join(dataDir, 'promofit30.json');
   menuStockFilePath = path.join(dataDir, 'menu-stock.json');
-  wheelSpinsFilePath = path.join(dataDir, 'wheel-spins.json');
+  yunzaParticipationsFilePath = path.join(dataDir, 'yunza-participations.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -76,8 +76,8 @@ function ensureDataDirectory() {
     if (!fs.existsSync(menuStockFilePath)) {
       fs.writeFileSync(menuStockFilePath, JSON.stringify({}, null, 2));
     }
-    if (!fs.existsSync(wheelSpinsFilePath)) {
-      fs.writeFileSync(wheelSpinsFilePath, JSON.stringify([], null, 2));
+    if (!fs.existsSync(yunzaParticipationsFilePath)) {
+      fs.writeFileSync(yunzaParticipationsFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -757,33 +757,33 @@ export const storage = {
     }
   },
 
-  // ========== WHEEL SPINS (RULETA) ==========
+  // ========== YUNZA PARTICIPATIONS ==========
 
-  async getWheelSpins(): Promise<any[]> {
+  async getYunzaParticipations(): Promise<any[]> {
     if (isProduction) {
       if (!redis) throw new Error('Database not configured.');
-      const data = await redis.get<any[]>('wheelSpins');
+      const data = await redis.get<any[]>('yunzaParticipations');
       return data || [];
     } else {
       ensureDataDirectory();
-      const data = fs.readFileSync(wheelSpinsFilePath, 'utf-8');
+      const data = fs.readFileSync(yunzaParticipationsFilePath, 'utf-8');
       return JSON.parse(data);
     }
   },
 
-  async saveWheelSpin(spin: any): Promise<any> {
-    const spins = await this.getWheelSpins();
-    spins.unshift(spin);
+  async saveYunzaParticipation(participation: any): Promise<any> {
+    const participations = await this.getYunzaParticipations();
+    participations.unshift(participation);
 
     if (isProduction) {
       if (!redis) throw new Error('Database not configured.');
-      await redis.set('wheelSpins', spins);
+      await redis.set('yunzaParticipations', participations);
     } else {
       ensureDataDirectory();
-      fs.writeFileSync(wheelSpinsFilePath, JSON.stringify(spins, null, 2));
+      fs.writeFileSync(yunzaParticipationsFilePath, JSON.stringify(participations, null, 2));
     }
 
-    return spin;
+    return participation;
   },
 
   async saveCoupon(coupon: any): Promise<any> {

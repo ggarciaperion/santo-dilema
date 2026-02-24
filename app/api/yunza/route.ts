@@ -1,35 +1,39 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
-// Configuración de premios de la ruleta (8 slices)
+// Configuración de premios de la Yunza (12 regalos)
 const PRIZES = [
-  { id: 'delivery-free-1', type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️', probability: 0.125 },
-  { id: 'discount-20-1', type: 'discount', value: 20, label: '20% OFF', probability: 0.125 },
-  { id: 'delivery-free-2', type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️', probability: 0.125 },
-  { id: 'discount-30', type: 'discount', value: 30, label: '30% OFF', probability: 0.125 },
-  { id: 'delivery-free-3', type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️', probability: 0.125 },
-  { id: 'discount-20-2', type: 'discount', value: 20, label: '20% OFF', probability: 0.125 },
-  { id: 'discount-40', type: 'discount', value: 40, label: '40% OFF', probability: 0.125 },
-  { id: '2x1-all', type: '2x1', value: 0, label: '2x1 en toda la carta', probability: 0.125 },
+  { id: 1, type: 'discount', value: 20, label: '20% OFF' },
+  { id: 2, type: 'discount', value: 30, label: '30% OFF' },
+  { id: 3, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
+  { id: 4, type: 'discount', value: 40, label: '40% OFF' },
+  { id: 5, type: '2x1', value: 0, label: '2x1 en toda la carta' },
+  { id: 6, type: 'discount', value: 20, label: '20% OFF' },
+  { id: 7, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
+  { id: 8, type: 'discount', value: 30, label: '30% OFF' },
+  { id: 9, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
+  { id: 10, type: 'discount', value: 20, label: '20% OFF' },
+  { id: 11, type: 'discount', value: 40, label: '40% OFF' },
+  { id: 12, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
 ];
 
 // Límites diarios de premios
 const DAILY_LIMITS = {
   '2x1': { max: 1, timeRange: { start: 20, end: 21 } }, // 8-9pm (solo 1 vez)
   'discount-40': { max: 2, timeRange: null }, // 6-11pm (2 veces)
-  'discount-30': { max: 2, timeRange: null }, // 6-11pm (2 veces)
-  'discount-20': { max: 5, timeRange: null }, // 6-11pm (5 veces)
+  'discount-30': { max: 3, timeRange: null }, // 6-11pm (3 veces)
+  'discount-20': { max: 6, timeRange: null }, // 6-11pm (6 veces)
   // delivery: ilimitado
 };
 
 // Función para contar premios otorgados hoy por tipo
 async function getTodayPrizeCounts() {
-  const spins = await storage.getWheelSpins();
+  const participations = await storage.getYunzaParticipations();
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-  const todaySpins = spins.filter(spin => {
-    const spinDate = new Date(spin.spinDate).toISOString().split('T')[0];
-    return spinDate === today;
+  const todayParticipations = participations.filter(p => {
+    const pDate = new Date(p.participationDate).toISOString().split('T')[0];
+    return pDate === today;
   });
 
   const counts = {
@@ -39,13 +43,13 @@ async function getTodayPrizeCounts() {
     'discount-20': 0,
   };
 
-  todaySpins.forEach(spin => {
-    if (spin.prizeType === '2x1') {
+  todayParticipations.forEach(p => {
+    if (p.prizeType === '2x1') {
       counts['2x1']++;
-    } else if (spin.prizeType === 'discount') {
-      if (spin.prizeValue === 40) counts['discount-40']++;
-      else if (spin.prizeValue === 30) counts['discount-30']++;
-      else if (spin.prizeValue === 20) counts['discount-20']++;
+    } else if (p.prizeType === 'discount') {
+      if (p.prizeValue === 40) counts['discount-40']++;
+      else if (p.prizeValue === 30) counts['discount-30']++;
+      else if (p.prizeValue === 20) counts['discount-20']++;
     }
   });
 
@@ -78,12 +82,12 @@ async function selectRandomPrize() {
       return counts['discount-40'] < DAILY_LIMITS['discount-40'].max;
     }
 
-    // Descuento 30%: máximo 2 por día
+    // Descuento 30%: máximo 3 por día
     if (prize.type === 'discount' && prize.value === 30) {
       return counts['discount-30'] < DAILY_LIMITS['discount-30'].max;
     }
 
-    // Descuento 20%: máximo 5 por día
+    // Descuento 20%: máximo 6 por día
     if (prize.type === 'discount' && prize.value === 20) {
       return counts['discount-20'] < DAILY_LIMITS['discount-20'].max;
     }
@@ -98,33 +102,23 @@ async function selectRandomPrize() {
 
   // Si no hay premios disponibles (todos los límites alcanzados), dar delivery gratis
   if (availablePrizes.length === 0) {
-    return PRIZES.find(p => p.type === 'delivery') || PRIZES[0];
+    return PRIZES.find(p => p.type === 'delivery') || PRIZES[2];
   }
 
   // Seleccionar aleatoriamente entre los premios disponibles
-  const random = Math.random();
-  const normalizedProbability = 1 / availablePrizes.length;
-  let cumulative = 0;
-
-  for (const prize of availablePrizes) {
-    cumulative += normalizedProbability;
-    if (random <= cumulative) {
-      return prize;
-    }
-  }
-
-  return availablePrizes[0]; // Fallback
+  const randomIndex = Math.floor(Math.random() * availablePrizes.length);
+  return availablePrizes[randomIndex];
 }
 
 function generateCouponCode(prizeType: string, value: number): string {
-  const prefix = prizeType === 'discount' ? `SANTO${value}` :
-                 prizeType === 'delivery' ? 'DELIVERY' :
-                 'SANTO2X1';
+  const prefix = prizeType === 'discount' ? `YUNZA${value}` :
+                 prizeType === 'delivery' ? 'YUNZADELI' :
+                 'YUNZA2X1';
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `${prefix}-${random}`;
 }
 
-// GET - Verificar si un teléfono ya giró
+// GET - Verificar si un teléfono ya participó
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -134,47 +128,51 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Teléfono requerido" }, { status: 400 });
     }
 
-    const spins = await storage.getWheelSpins();
-    const existingSpin = spins.find(s => s.phone === phone);
+    const participations = await storage.getYunzaParticipations();
+    const existingParticipation = participations.find(p => p.phone === phone);
 
-    if (existingSpin) {
+    if (existingParticipation) {
       return NextResponse.json({
-        canSpin: false,
-        message: "Este número ya giró la ruleta",
-        existingSpin: {
-          phone: existingSpin.phone,
-          prize: existingSpin.prize,
-          couponCode: existingSpin.couponCode.slice(-2), // Solo últimos 2 dígitos
-          spinDate: existingSpin.spinDate
+        canParticipate: false,
+        message: "Este número ya participó en la promoción",
+        existingParticipation: {
+          phone: existingParticipation.phone,
+          prize: existingParticipation.prize,
+          couponCode: existingParticipation.couponCode.slice(-2),
+          participationDate: existingParticipation.participationDate
         }
       });
     }
 
-    return NextResponse.json({ canSpin: true });
+    return NextResponse.json({ canParticipate: true });
   } catch (error) {
     console.error("Error al verificar teléfono:", error);
     return NextResponse.json({ error: "Error al verificar teléfono" }, { status: 500 });
   }
 }
 
-// POST - Registrar un nuevo giro
+// POST - Registrar una nueva participación
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { phone } = body;
+    const { phone, giftId } = body;
 
     if (!phone) {
       return NextResponse.json({ error: "Teléfono requerido" }, { status: 400 });
     }
 
-    // Verificar que no haya girado antes
-    const spins = await storage.getWheelSpins();
-    const existingSpin = spins.find(s => s.phone === phone);
+    if (!giftId) {
+      return NextResponse.json({ error: "Regalo no seleccionado" }, { status: 400 });
+    }
 
-    if (existingSpin) {
+    // Verificar que no haya participado antes
+    const participations = await storage.getYunzaParticipations();
+    const existingParticipation = participations.find(p => p.phone === phone);
+
+    if (existingParticipation) {
       return NextResponse.json({
-        error: "Este número ya giró la ruleta",
-        canSpin: false
+        error: "Este número ya participó en la promoción",
+        canParticipate: false
       }, { status: 400 });
     }
 
@@ -182,19 +180,20 @@ export async function POST(request: Request) {
     const prize = await selectRandomPrize();
     const couponCode = generateCouponCode(prize.type, prize.value);
 
-    // Guardar el giro
-    const newSpin = {
+    // Guardar la participación
+    const newParticipation = {
       id: Date.now().toString(),
       phone,
+      giftId,
       prize: prize.label,
       prizeType: prize.type,
       prizeValue: prize.value,
       couponCode,
-      spinDate: new Date().toISOString(),
-      used: false,
+      participationDate: new Date().toISOString(),
+      status: 'enviado',
     };
 
-    await storage.saveWheelSpin(newSpin);
+    await storage.saveYunzaParticipation(newParticipation);
 
     // También crear el cupón en el sistema de cupones
     const coupon = {
@@ -220,12 +219,12 @@ export async function POST(request: Request) {
         type: prize.type,
         value: prize.value,
       },
-      couponPreview: couponCode.slice(-2), // Solo últimos 2 dígitos
+      couponPreview: couponCode.slice(-2),
       message: `¡El código completo se envió a tu WhatsApp: ${phone}!`
     });
 
   } catch (error) {
-    console.error("Error al procesar giro:", error);
-    return NextResponse.json({ error: "Error al procesar giro" }, { status: 500 });
+    console.error("Error al procesar participación:", error);
+    return NextResponse.json({ error: "Error al procesar participación" }, { status: 500 });
   }
 }

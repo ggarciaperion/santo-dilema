@@ -3,29 +3,29 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import WheelModal from "@/components/WheelModal";
+import YunzaModal from "@/components/YunzaModal";
 
 // Fecha de lanzamiento: 13 Feb 2026 a las 18:30 hora Perú (UTC-5)
 const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
-  const [showWheelModal, setShowWheelModal] = useState(false);
+  const [showYunzaModal, setShowYunzaModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
 
   useEffect(() => {
-    // Mostrar ruleta después de 3 segundos
+    // Mostrar Yunza después de 3 segundos
     // En ambiente de prueba (iota.vercel.app) siempre mostrar
     // En producción solo mostrar si no ha sido vista antes
     const isTestEnvironment = window.location.hostname.includes('santo-dilema-iota.vercel.app');
-    const hasSeenWheel = localStorage.getItem("santo-dilema-wheel-shown");
+    const hasSeenYunza = localStorage.getItem("santo-dilema-yunza-shown");
 
-    if (isTestEnvironment || !hasSeenWheel) {
+    if (isTestEnvironment || !hasSeenYunza) {
       const timer = setTimeout(() => {
-        setShowWheelModal(true);
+        setShowYunzaModal(true);
         if (!isTestEnvironment) {
-          localStorage.setItem("santo-dilema-wheel-shown", "true");
+          localStorage.setItem("santo-dilema-yunza-shown", "true");
         }
       }, 3000);
       return () => clearTimeout(timer);
@@ -440,7 +440,7 @@ export default function Home() {
       </div>
 
       {/* Modal de Ruleta */}
-      <WheelModal isOpen={showWheelModal} onClose={() => setShowWheelModal(false)} />
+      <YunzaModal isOpen={showYunzaModal} onClose={() => setShowYunzaModal(false)} />
     </main>
   );
 }
