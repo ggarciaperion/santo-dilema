@@ -43,10 +43,9 @@ const products: Product[] = [
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
     description: "El clásico que no falla — acá lo hacemos mejor. Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. César cremosa de la casa incluida.",
-    price: 18.00,
+    price: 22.50,
     image: "/2.png",
     category: "fit",
-    oldPrice: 22.50,
   },
   {
     id: "ensalada-caesar",
