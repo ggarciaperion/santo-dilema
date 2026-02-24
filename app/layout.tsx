@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
+import MaintenanceWrapper from "./maintenance-wrapper";
 
 export const metadata: Metadata = {
   title: "Santo Dilema - Fit o Fat",
@@ -21,7 +22,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <MaintenanceWrapper>
+            {children}
+          </MaintenanceWrapper>
+        </Providers>
       </body>
     </html>
   );
