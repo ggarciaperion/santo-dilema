@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface YunzaModalProps {
   isOpen: boolean;
@@ -338,75 +339,52 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
               </div>
 
               {/* Árbol de Yunza */}
-              <div className="relative mx-auto max-w-md h-[450px] md:h-[550px] mb-4">
-                {/* Tronco del árbol - Más realista */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-40 tree-sway" style={{ transformOrigin: 'bottom center' }}>
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 rounded-t-lg">
-                    {/* Textura de corteza */}
-                    <div className="absolute inset-0 opacity-30">
-                      <div className="w-full h-2 bg-amber-950/60 mt-6"></div>
-                      <div className="w-full h-1 bg-amber-950/40 mt-4"></div>
-                      <div className="w-full h-2 bg-amber-950/60 mt-8"></div>
-                      <div className="w-full h-1 bg-amber-950/40 mt-4"></div>
-                      <div className="w-full h-2 bg-amber-950/60 mt-6"></div>
-                    </div>
-                    {/* Sombra del tronco */}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/20 to-transparent rounded-t-lg"></div>
-                  </div>
+              <div className="relative mx-auto w-full max-w-lg h-[500px] md:h-[600px] mb-4 flex items-center justify-center">
+                {/* Imagen del árbol de fondo con animación */}
+                <div className="absolute inset-0 flex items-center justify-center tree-sway" style={{ transformOrigin: 'bottom center' }}>
+                  <img
+                    src="/YUNZA.png"
+                    alt="Árbol de Yunza"
+                    className="w-full h-full object-contain drop-shadow-2xl"
+                    style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+                  />
                 </div>
 
-                {/* Copa del árbol - Más definida y realista */}
-                <div className="absolute bottom-32 left-1/2 -translate-x-1/2 tree-sway" style={{ transformOrigin: 'bottom center' }}>
-                  {/* Capa 1 - Parte superior (más pequeña) */}
-                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-32 h-24">
-                    <div className="absolute inset-0 bg-green-700 rounded-[50%] opacity-80" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
-                    <div className="absolute inset-0 bg-green-600 rounded-[50%] opacity-60 blur-sm"></div>
-                  </div>
-
-                  {/* Capa 2 - Parte media */}
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-32">
-                    <div className="absolute inset-0 bg-green-700 rounded-[50%] opacity-80" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
-                    <div className="absolute inset-0 bg-green-600 rounded-[50%] opacity-60 blur-sm"></div>
-                  </div>
-
-                  {/* Capa 3 - Parte inferior (más grande) */}
-                  <div className="absolute top-5 left-1/2 -translate-x-1/2 w-64 h-40 md:w-80 md:h-48">
-                    <div className="absolute inset-0 bg-green-700 rounded-[50%] opacity-80" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
-                    <div className="absolute inset-0 bg-green-600 rounded-[50%] opacity-60 blur-sm"></div>
-                    {/* Detalles de hojas */}
-                    <div className="absolute inset-0 bg-green-800/40 rounded-[50%] blur-md"></div>
-                  </div>
-
-                  {/* Brillo en la copa */}
-                  <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-20 h-20 bg-green-400/30 rounded-full blur-xl"></div>
-                </div>
-
-                {/* Regalos colgando - distribuidos alrededor del árbol */}
+                {/* Regalos colgando - distribuidos estratégicamente en las ramas */}
                 {PRIZES.map((prize, index) => {
-                  // Distribuir en capas alrededor del árbol
-                  const layer = Math.floor(index / 4); // 3 capas de 4 regalos
-                  const indexInLayer = index % 4;
+                  // Posiciones estratégicas para 12 regalos distribuidos en el árbol
+                  const positions = [
+                    // Capa superior (3 regalos)
+                    { x: 0, y: 15, rope: 25 },      // Centro arriba
+                    { x: -60, y: 22, rope: 30 },    // Izquierda arriba
+                    { x: 60, y: 22, rope: 28 },     // Derecha arriba
 
-                  // Radio y posición vertical según la capa
-                  const radiusBase = layer === 0 ? 90 : layer === 1 ? 110 : 130;
-                  const yBase = layer === 0 ? 35 : layer === 1 ? 45 : 55;
+                    // Capa media-alta (3 regalos)
+                    { x: -80, y: 35, rope: 35 },    // Izquierda media-alta
+                    { x: 0, y: 32, rope: 22 },      // Centro media-alta
+                    { x: 80, y: 35, rope: 33 },     // Derecha media-alta
 
-                  // Ángulo para distribuir en círculo
-                  const angle = (360 / 4) * indexInLayer - 90 + (layer * 45);
-                  const radius = radiusBase;
-                  const x = Math.cos((angle * Math.PI) / 180) * radius;
-                  const y = Math.sin((angle * Math.PI) / 180) * (radius * 0.6) + yBase;
+                    // Capa media (3 regalos)
+                    { x: -95, y: 50, rope: 40 },    // Izquierda media
+                    { x: -30, y: 48, rope: 25 },    // Centro-izquierda media
+                    { x: 95, y: 50, rope: 38 },     // Derecha media
 
-                  // Longitud de cuerda variable
-                  const ropeLength = 20 + (index % 3) * 10;
+                    // Capa inferior (3 regalos)
+                    { x: -110, y: 65, rope: 45 },   // Izquierda abajo
+                    { x: 30, y: 63, rope: 30 },     // Centro-derecha abajo
+                    { x: 110, y: 65, rope: 42 },    // Derecha abajo
+                  ];
+
+                  const pos = positions[index];
+                  const ropeLength = pos.rope;
 
                   return (
                     <div
                       key={prize.id}
                       className="absolute z-20"
                       style={{
-                        left: `calc(50% + ${x}px)`,
-                        top: `${y}%`,
+                        left: `calc(50% + ${pos.x}px)`,
+                        top: `${pos.y}%`,
                         transform: 'translate(-50%, -50%)',
                       }}
                     >
