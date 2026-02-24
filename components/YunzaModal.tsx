@@ -267,8 +267,8 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
       {showSerpentinas && <Serpentinas />}
       {showConfetti && <Confetti />}
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
-        <div className="glass-morphism rounded-3xl shadow-2xl max-w-2xl w-full p-6 md:p-8 relative overflow-hidden border-4 border-fuchsia-500" style={{
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 md:p-6 animate-in fade-in duration-300 overflow-y-auto">
+        <div className="glass-morphism rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 md:p-8 relative overflow-hidden border-2 sm:border-4 border-fuchsia-500 my-auto" style={{
           boxShadow: '0 0 30px rgba(236, 72, 153, 0.6), 0 0 60px rgba(236, 72, 153, 0.4)'
         }}>
 
@@ -280,7 +280,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {/* Botón cerrar */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-pink-400 hover:text-pink-300 text-2xl font-bold z-10 transition-all hover:scale-110"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-pink-400 hover:text-pink-300 text-xl sm:text-2xl font-bold z-10 transition-all hover:scale-110 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center"
           >
             ✕
           </button>
@@ -288,22 +288,22 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {/* STEP 1: TELÉFONO */}
           {step === 'phone' && (
             <div className="text-center relative z-10">
-              <div className="mb-6">
-                <div className="text-7xl mb-4 animate-bounce">🎉</div>
-                <h2 className="text-3xl md:text-4xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 carnival-glow">
+              <div className="mb-4 sm:mb-6">
+                <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4 animate-bounce">🎉</div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 carnival-glow px-2">
                   ¡La Yunza del Sabor!
                 </h2>
-                <p className="text-xl md:text-2xl font-bold text-yellow-400 mb-2">
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-400 mb-2">
                   Carnavales Santo Dilema
                 </p>
-                <p className="text-pink-300 text-sm md:text-base">
+                <p className="text-pink-300 text-xs sm:text-sm md:text-base px-2">
                   Ingresa tu WhatsApp y elige un regalo del árbol 🎊
                 </p>
               </div>
 
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <div className="flex gap-2">
-                  <span className="px-4 py-4 glass-morphism rounded-xl font-black text-yellow-400 border border-white/20 text-lg">
+                  <span className="px-2 sm:px-3 md:px-4 py-3 sm:py-4 glass-morphism rounded-lg sm:rounded-xl font-black text-yellow-400 border border-white/20 text-base sm:text-lg">
                     +51
                   </span>
                   <input
@@ -311,31 +311,31 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="999 888 777"
-                    className="flex-1 px-6 py-4 rounded-xl glass-morphism text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-pink-500 border border-white/20 placeholder-gray-500 transition-all"
+                    className="flex-1 px-3 sm:px-4 md:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl glass-morphism text-white text-base sm:text-lg font-bold focus:outline-none focus:ring-2 focus:ring-pink-500 border border-white/20 placeholder-gray-500 transition-all"
                     maxLength={9}
                   />
                 </div>
                 {error && (
-                  <p className="text-red-400 text-sm mt-3 font-bold">{error}</p>
+                  <p className="text-red-400 text-xs sm:text-sm mt-2 sm:mt-3 font-bold">{error}</p>
                 )}
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-black py-4 md:py-5 rounded-xl text-lg md:text-xl hover:scale-105 transition-all duration-300 shadow-lg"
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl text-base sm:text-lg md:text-xl hover:scale-105 transition-all duration-300 shadow-lg"
                 >
                   Cerrar
                 </button>
                 <button
                   onClick={validatePhone}
-                  className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black py-4 md:py-5 rounded-xl text-lg md:text-xl hover:scale-105 transition-all duration-300 shadow-lg"
+                  className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl text-base sm:text-lg md:text-xl hover:scale-105 transition-all duration-300 shadow-lg"
                 >
                   Participar
                 </button>
               </div>
 
-              <p className="text-xs text-gray-400 mt-4 opacity-70">
+              <p className="text-xs text-gray-400 mt-3 sm:mt-4 opacity-70">
                 * Solo puedes participar una vez
               </p>
             </div>
@@ -344,17 +344,17 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {/* STEP 2: SELECCIONAR REGALO */}
           {step === 'select' && (
             <div className="text-center relative z-10">
-              <div className="mb-4">
-                <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 mb-2">
+              <div className="mb-3 sm:mb-4">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 mb-2 px-2">
                   ¡Elige tu regalo!
                 </h2>
-                <p className="text-pink-300 text-sm md:text-base">
+                <p className="text-pink-300 text-xs sm:text-sm md:text-base px-2">
                   Haz clic en cualquier regalo colgando del árbol 🌳
                 </p>
               </div>
 
               {/* Árbol de Yunza */}
-              <div className="relative mx-auto w-full max-w-lg h-[500px] md:h-[600px] mb-4 flex items-center justify-center">
+              <div className="relative mx-auto w-full max-w-lg h-[350px] sm:h-[450px] md:h-[500px] lg:h-[600px] mb-3 sm:mb-4 flex items-center justify-center">
                 {/* Imagen del árbol de fondo con animación - Más grande para cubrir todos los regalos */}
                 <div className="absolute inset-0 flex items-center justify-center tree-sway" style={{ transformOrigin: 'bottom center' }}>
                   <img
@@ -418,7 +418,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
                       <button
                         onClick={() => selectGift(prize.id)}
                         disabled={animatingGift !== null}
-                        className={`relative w-10 h-10 md:w-12 md:h-12 rounded-lg shadow-2xl transition-all ${
+                        className={`relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md sm:rounded-lg shadow-2xl transition-all ${
                           animatingGift === prize.id
                             ? 'gift-selected'
                             : animatingGift === null
@@ -442,7 +442,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
                         </div>
 
                         {/* Emoji del premio */}
-                        <span className="absolute inset-0 flex items-center justify-center text-xl md:text-2xl drop-shadow-lg">
+                        <span className="absolute inset-0 flex items-center justify-center text-base sm:text-xl md:text-2xl drop-shadow-lg">
                           {prize.emoji}
                         </span>
                       </button>
@@ -452,10 +452,10 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
               </div>
 
               {error && (
-                <p className="text-red-400 text-sm font-bold mb-4">{error}</p>
+                <p className="text-red-400 text-xs sm:text-sm font-bold mb-3 sm:mb-4">{error}</p>
               )}
 
-              <p className="text-yellow-300 text-xs md:text-sm font-bold animate-pulse">
+              <p className="text-yellow-300 text-xs sm:text-sm font-bold animate-pulse px-2">
                 ✨ Todos los regalos tienen premio ✨
               </p>
             </div>
@@ -464,39 +464,39 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {/* STEP 3: RESULTADO */}
           {step === 'result' && prize && (
             <div className="text-center relative z-10 animate-in zoom-in duration-500">
-              <div className="text-7xl md:text-8xl mb-6 animate-bounce">🎊</div>
-              <h2 className="text-3xl md:text-4xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500">
+              <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-4 sm:mb-6 animate-bounce">🎊</div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-3 sm:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 px-2">
                 ¡FELICIDADES!
               </h2>
-              <div className="relative inline-block mb-6">
-                <p className="text-2xl md:text-3xl font-black text-white carnival-glow">
+              <div className="relative inline-block mb-4 sm:mb-6 px-2">
+                <p className="text-xl sm:text-2xl md:text-3xl font-black text-white carnival-glow">
                   {prize.label}
                 </p>
               </div>
 
-              <div className="glass-morphism rounded-2xl p-6 md:p-8 mb-6 border border-pink-400/30 relative overflow-hidden">
+              <div className="glass-morphism rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 border border-pink-400/30 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10"></div>
-                <p className="text-sm text-gray-300 mb-3 relative z-10">Tu código termina en:</p>
-                <div className="text-6xl md:text-7xl font-black mb-4 text-yellow-400 relative z-10">
+                <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-3 relative z-10">Tu código termina en:</p>
+                <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4 text-yellow-400 relative z-10">
                   **{couponPreview}
                 </div>
                 <p className="text-xs text-gray-400 mb-1 relative z-10">
                   El código completo se envió a:
                 </p>
-                <p className="text-lg font-bold text-pink-400 relative z-10">
+                <p className="text-base sm:text-lg font-bold text-pink-400 relative z-10 break-all">
                   WhatsApp: +51 {phone}
                 </p>
               </div>
 
-              <div className="bg-yellow-500/10 border-2 border-yellow-500 rounded-xl p-4 mb-6">
-                <p className="text-sm text-yellow-300 font-bold">
+              <div className="bg-yellow-500/10 border-2 border-yellow-500 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+                <p className="text-xs sm:text-sm text-yellow-300 font-bold">
                   📱 Revisa tu WhatsApp para el código completo
                 </p>
               </div>
 
               <button
                 onClick={onClose}
-                className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black py-4 md:py-5 rounded-xl text-lg md:text-xl hover:scale-105 transition-all duration-300 shadow-lg"
+                className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl text-base sm:text-lg md:text-xl hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 ¡IR A PEDIR AHORA!
               </button>
