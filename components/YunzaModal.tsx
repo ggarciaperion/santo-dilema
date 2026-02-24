@@ -338,48 +338,95 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
               </div>
 
               {/* Árbol de Yunza */}
-              <div className="relative mx-auto max-w-md h-[400px] md:h-[500px] mb-4">
-                {/* Tronco del árbol */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-32 bg-gradient-to-b from-amber-800 to-amber-900 rounded-t-lg tree-sway" style={{ transformOrigin: 'bottom center' }}>
-                  {/* Textura del tronco */}
-                  <div className="absolute inset-0 opacity-20">
-                    <div className="w-full h-1 bg-amber-950 mt-4"></div>
-                    <div className="w-full h-1 bg-amber-950 mt-8"></div>
-                    <div className="w-full h-1 bg-amber-950 mt-12"></div>
+              <div className="relative mx-auto max-w-md h-[450px] md:h-[550px] mb-4">
+                {/* Tronco del árbol - Más realista */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-40 tree-sway" style={{ transformOrigin: 'bottom center' }}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 rounded-t-lg">
+                    {/* Textura de corteza */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="w-full h-2 bg-amber-950/60 mt-6"></div>
+                      <div className="w-full h-1 bg-amber-950/40 mt-4"></div>
+                      <div className="w-full h-2 bg-amber-950/60 mt-8"></div>
+                      <div className="w-full h-1 bg-amber-950/40 mt-4"></div>
+                      <div className="w-full h-2 bg-amber-950/60 mt-6"></div>
+                    </div>
+                    {/* Sombra del tronco */}
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/20 to-transparent rounded-t-lg"></div>
                   </div>
                 </div>
 
-                {/* Copa del árbol (fondo decorativo) */}
-                <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-64 h-64 md:w-80 md:h-80 tree-sway" style={{ transformOrigin: 'bottom center' }}>
-                  <div className="absolute inset-0 bg-gradient-to-b from-green-600/40 to-green-800/40 rounded-full blur-xl"></div>
-                  <div className="absolute inset-4 bg-gradient-to-b from-green-500/30 to-green-700/30 rounded-full blur-lg"></div>
+                {/* Copa del árbol - Más definida y realista */}
+                <div className="absolute bottom-32 left-1/2 -translate-x-1/2 tree-sway" style={{ transformOrigin: 'bottom center' }}>
+                  {/* Capa 1 - Parte superior (más pequeña) */}
+                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-32 h-24">
+                    <div className="absolute inset-0 bg-green-700 rounded-[50%] opacity-80" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+                    <div className="absolute inset-0 bg-green-600 rounded-[50%] opacity-60 blur-sm"></div>
+                  </div>
+
+                  {/* Capa 2 - Parte media */}
+                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-32">
+                    <div className="absolute inset-0 bg-green-700 rounded-[50%] opacity-80" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+                    <div className="absolute inset-0 bg-green-600 rounded-[50%] opacity-60 blur-sm"></div>
+                  </div>
+
+                  {/* Capa 3 - Parte inferior (más grande) */}
+                  <div className="absolute top-5 left-1/2 -translate-x-1/2 w-64 h-40 md:w-80 md:h-48">
+                    <div className="absolute inset-0 bg-green-700 rounded-[50%] opacity-80" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+                    <div className="absolute inset-0 bg-green-600 rounded-[50%] opacity-60 blur-sm"></div>
+                    {/* Detalles de hojas */}
+                    <div className="absolute inset-0 bg-green-800/40 rounded-[50%] blur-md"></div>
+                  </div>
+
+                  {/* Brillo en la copa */}
+                  <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-20 h-20 bg-green-400/30 rounded-full blur-xl"></div>
                 </div>
 
-                {/* Regalos colgando - distribuidos en círculo */}
+                {/* Regalos colgando - distribuidos alrededor del árbol */}
                 {PRIZES.map((prize, index) => {
-                  const angle = (360 / PRIZES.length) * index - 90;
-                  const radius = 100;
+                  // Distribuir en capas alrededor del árbol
+                  const layer = Math.floor(index / 4); // 3 capas de 4 regalos
+                  const indexInLayer = index % 4;
+
+                  // Radio y posición vertical según la capa
+                  const radiusBase = layer === 0 ? 90 : layer === 1 ? 110 : 130;
+                  const yBase = layer === 0 ? 35 : layer === 1 ? 45 : 55;
+
+                  // Ángulo para distribuir en círculo
+                  const angle = (360 / 4) * indexInLayer - 90 + (layer * 45);
+                  const radius = radiusBase;
                   const x = Math.cos((angle * Math.PI) / 180) * radius;
-                  const y = Math.sin((angle * Math.PI) / 180) * radius;
+                  const y = Math.sin((angle * Math.PI) / 180) * (radius * 0.6) + yBase;
+
+                  // Longitud de cuerda variable
+                  const ropeLength = 20 + (index % 3) * 10;
 
                   return (
                     <div
                       key={prize.id}
-                      className="absolute"
+                      className="absolute z-20"
                       style={{
                         left: `calc(50% + ${x}px)`,
-                        top: `calc(40% + ${y}px)`,
+                        top: `${y}%`,
                         transform: 'translate(-50%, -50%)',
                       }}
                     >
-                      {/* Cuerda del regalo */}
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-amber-900/50 -translate-y-8"></div>
+                      {/* Cuerda del regalo - más visible y realista */}
+                      <div
+                        className="absolute top-0 left-1/2 -translate-x-1/2 w-1 bg-gradient-to-b from-amber-800 to-amber-900 shadow-lg"
+                        style={{
+                          height: `${ropeLength}px`,
+                          transform: `translateX(-50%) translateY(-${ropeLength}px)`,
+                        }}
+                      >
+                        {/* Nudo superior */}
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-amber-900 rounded-full"></div>
+                      </div>
 
                       {/* Regalo */}
                       <button
                         onClick={() => selectGift(prize.id)}
                         disabled={animatingGift !== null}
-                        className={`relative w-12 h-12 md:w-14 md:h-14 rounded-lg shadow-lg transition-all ${
+                        className={`relative w-14 h-14 md:w-16 md:h-16 rounded-lg shadow-2xl transition-all ${
                           animatingGift === prize.id
                             ? 'gift-selected'
                             : animatingGift === null
@@ -387,16 +434,22 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
                             : 'opacity-50 cursor-not-allowed'
                         }`}
                         style={{
-                          background: prize.color,
-                          boxShadow: `0 4px 15px ${prize.color}80`,
+                          background: `linear-gradient(135deg, ${prize.color} 0%, ${prize.color}dd 100%)`,
+                          boxShadow: `0 4px 20px ${prize.color}80, inset 0 1px 0 rgba(255,255,255,0.3)`,
                         }}
                       >
-                        {/* Lazo del regalo */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-full bg-white/30"></div>
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-white/30"></div>
+                        {/* Lazo del regalo - más destacado */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-full bg-white/40 shadow-md"></div>
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-white/40 shadow-md"></div>
+
+                        {/* Moño en la parte superior */}
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex gap-1">
+                          <div className="w-3 h-3 bg-white/60 rounded-full shadow-md"></div>
+                          <div className="w-3 h-3 bg-white/60 rounded-full shadow-md"></div>
+                        </div>
 
                         {/* Emoji del premio */}
-                        <span className="absolute inset-0 flex items-center justify-center text-2xl">
+                        <span className="absolute inset-0 flex items-center justify-center text-2xl md:text-3xl drop-shadow-lg">
                           {prize.emoji}
                         </span>
                       </button>
