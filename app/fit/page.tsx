@@ -315,8 +315,30 @@ export default function FitPage() {
   const handleCardClick = (productId: string) => {
     const currentQty = orderQuantity[productId] || 0;
 
-    // Solo expandir si tiene cantidad > 0 y no está expandido
-    if (currentQty > 0 && expandedCard !== productId) {
+    // Si qty = 0, permitir expandir/colapsar con clic
+    if (currentQty === 0) {
+      if (expandedCard === productId) {
+        // Colapsar
+        setExpandedCard(null);
+        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
+        setShowExtras((prev) => ({ ...prev, [productId]: false }));
+      } else {
+        // Expandir
+        setExpandedCard(productId);
+        if (!selectedComplements[productId]) {
+          setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
+        }
+
+        // Scroll hacia el contenido expandido después de que se expanda el cartel
+        setTimeout(() => {
+          const card = cardRefs.current[productId];
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 600);
+      }
+    } else if (currentQty > 0 && expandedCard !== productId) {
+      // Si qty > 0, solo expandir si no está expandido
       setExpandedCard(productId);
 
       // Scroll hacia el contenido expandido después de que se expanda el cartel
@@ -335,8 +357,8 @@ export default function FitPage() {
       ...prev,
       [productId]: currentQty + 1
     }));
-    // Si el cartel no está expandido y hay cantidad, expandirlo
-    if (expandedCard !== productId && currentQty >= 0) {
+    // Solo expandir automáticamente si ya tenía cantidad > 0
+    if (expandedCard !== productId && currentQty > 0) {
       setExpandedCard(productId);
       if (!selectedComplements[productId]) {
         setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));

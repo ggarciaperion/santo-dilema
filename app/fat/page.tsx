@@ -449,8 +449,38 @@ export default function FatPage() {
   const handleCardClick = (productId: string) => {
     const currentQty = orderQuantity[productId] || 0;
 
-    // Solo expandir si tiene cantidad > 0 y no está expandido
-    if (currentQty > 0 && expandedCard !== productId) {
+    // Si qty = 0, permitir expandir/colapsar con clic
+    if (currentQty === 0) {
+      if (expandedCard === productId) {
+        // Colapsar
+        setExpandedCard(null);
+        setShowSalsas((prev) => ({ ...prev, [productId]: false }));
+        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
+        setShowExtras((prev) => ({ ...prev, [productId]: false }));
+      } else {
+        // Expandir
+        setExpandedCard(productId);
+        setShowSalsas((prev) => ({ ...prev, [productId]: true }));
+        if (!selectedSalsas[productId]) {
+          setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
+        }
+        if (!selectedComplements[productId]) {
+          setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
+        }
+
+        // Scroll hacia la sección de salsas después de que se expanda el cartel
+        setTimeout(() => {
+          const card = cardRefs.current[productId];
+          if (card) {
+            const salsasButton = card.querySelector('[data-salsas-button]');
+            if (salsasButton) {
+              salsasButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }, 600);
+      }
+    } else if (currentQty > 0 && expandedCard !== productId) {
+      // Si qty > 0, solo expandir si no está expandido
       setExpandedCard(productId);
       setShowSalsas((prev) => ({ ...prev, [productId]: true }));
 
@@ -474,8 +504,9 @@ export default function FatPage() {
       [productId]: currentQty + 1
     }));
 
-    // Si el cartel no está expandido y hay cantidad, expandirlo
-    if (expandedCard !== productId && currentQty >= 0) {
+    // Solo expandir automáticamente si ya está expandido o si ya tenía cantidad > 0
+    if (expandedCard !== productId && currentQty > 0) {
+      // Si pasa de 1 a 2, 2 a 3, etc., expandir
       setExpandedCard(productId);
       setShowSalsas((prev) => ({ ...prev, [productId]: true }));
       if (!selectedSalsas[productId]) {
