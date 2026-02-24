@@ -15,9 +15,14 @@ export default function Home() {
   const [isPreLaunch, setIsPreLaunch] = useState(false);
 
   useEffect(() => {
-    // Mostrar Yunza después de 3 segundos
-    // En ambiente de prueba (iota.vercel.app) siempre mostrar
-    // En producción solo mostrar si no ha sido vista antes
+    // MODO PRUEBAS: Mostrar Yunza en cada recarga
+    // TODO: Cambiar en producción para mostrar solo una vez
+    const timer = setTimeout(() => {
+      setShowYunzaModal(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+
+    /* PRODUCCIÓN: Descomentar esto y eliminar el código de arriba
     const isTestEnvironment = window.location.hostname.includes('santo-dilema-iota.vercel.app');
     const hasSeenYunza = localStorage.getItem("santo-dilema-yunza-shown");
 
@@ -30,6 +35,7 @@ export default function Home() {
       }, 3000);
       return () => clearTimeout(timer);
     }
+    */
   }, []);
 
   useEffect(() => {
