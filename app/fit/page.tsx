@@ -254,7 +254,7 @@ export default function FitPage() {
 
   // Auto-avanzar carrusel de banner cada 5 segundos
   useEffect(() => {
-    const t = setInterval(() => setBannerSlide(s => (s + 1) % 4), 5000);
+    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
     return () => clearInterval(t);
   }, []);
 
