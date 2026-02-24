@@ -15,11 +15,11 @@ export default function Home() {
   const [isPreLaunch, setIsPreLaunch] = useState(false);
 
   useEffect(() => {
-    // MODO PRUEBAS: Mostrar Yunza en cada recarga
+    // MODO PRUEBAS: Mostrar Yunza en cada recarga (más rápido)
     // TODO: Cambiar en producción para mostrar solo una vez
     const timer = setTimeout(() => {
       setShowYunzaModal(true);
-    }, 3000);
+    }, 800);
     return () => clearTimeout(timer);
 
     /* PRODUCCIÓN: Descomentar esto y eliminar el código de arriba
