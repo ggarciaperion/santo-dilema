@@ -343,7 +343,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
                 {/* Imagen del árbol de fondo con animación */}
                 <div className="absolute inset-0 flex items-center justify-center tree-sway" style={{ transformOrigin: 'bottom center' }}>
                   <img
-                    src="/YUNZA.png"
+                    src="/yunza.png"
                     alt="Árbol de Yunza"
                     className="w-full h-full object-contain drop-shadow-2xl"
                     style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
