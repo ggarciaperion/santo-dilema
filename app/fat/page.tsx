@@ -650,6 +650,10 @@ export default function FatPage() {
     const hasPromoDuoDilema = product.id === "duo-dilema" &&
       orderSalsas.includes("teriyaki") &&
       orderSalsas.includes("honey-mustard");
+    const hasPromoSantoPecado = product.id === "santo-pecado" &&
+      orderSalsas.includes("barbecue") &&
+      orderSalsas.includes("buffalo-picante") &&
+      orderSalsas.includes("macerichada");
 
     let finalPrice = product.price;
     let discountApplied = false;
@@ -659,6 +663,9 @@ export default function FatPage() {
       discountApplied = true;
     } else if (hasPromoDuoDilema) {
       finalPrice = 30;
+      discountApplied = true;
+    } else if (hasPromoSantoPecado) {
+      finalPrice = 42;
       discountApplied = true;
     }
 
@@ -1237,6 +1244,12 @@ export default function FatPage() {
                           <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 30.00</span>
                           <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">PROMO</span>
                         </div>
+                      ) : product.id === "santo-pecado" && currentSalsas.includes("barbecue") && currentSalsas.includes("buffalo-picante") && currentSalsas.includes("macerichada") ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-gray-500 line-through text-xs md:text-sm">S/ 47.00</span>
+                          <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 42.00</span>
+                          <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">PROMO</span>
+                        </div>
                       ) : (
                         <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
                           S/ {product.price.toFixed(2)}
@@ -1343,11 +1356,13 @@ export default function FatPage() {
                               const isPromoSalsa = product.id === "pequeno-dilema" && salsa.id === "ahumada";
                               const isPromoDuoDilemaSalsa = product.id === "duo-dilema" && (salsa.id === "teriyaki" || salsa.id === "honey-mustard");
                               const hasBothPromoDuoSalsas = product.id === "duo-dilema" && currentSalsas.includes("teriyaki") && currentSalsas.includes("honey-mustard");
+                              const isPromoSantoPecadoSalsa = product.id === "santo-pecado" && (salsa.id === "barbecue" || salsa.id === "buffalo-picante" || salsa.id === "macerichada");
+                              const hasAllPromoSantoPecadoSalsas = product.id === "santo-pecado" && currentSalsas.includes("barbecue") && currentSalsas.includes("buffalo-picante") && currentSalsas.includes("macerichada");
 
                               return (
                                 <div
                                   key={salsa.id}
-                                  className={`rounded p-1.5 md:p-2 border ${(isPromoSalsa || isPromoDuoDilemaSalsa) ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]' : 'bg-gray-800/30 border-amber-500/10'}`}
+                                  className={`rounded p-1.5 md:p-2 border ${(isPromoSalsa || isPromoDuoDilemaSalsa || isPromoSantoPecadoSalsa) ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]' : 'bg-gray-800/30 border-amber-500/10'}`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex-1">
@@ -1355,6 +1370,7 @@ export default function FatPage() {
                                         {salsa.name}
                                         {isPromoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
                                         {isPromoDuoDilemaSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
+                                        {isPromoSantoPecadoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
                                       </div>
                                       <p className="text-[9px] md:text-[10px] text-gray-400 italic mt-0.5">
                                         {salsa.description}
@@ -1371,6 +1387,18 @@ export default function FatPage() {
                                           <span className="text-[9px] text-amber-400 font-bold">
                                             → S/ 30.00 {hasBothPromoDuoSalsas ? '✓ ACTIVO' : (
                                               salsa.id === 'teriyaki' ? 'Combínala con Honey mustard' : 'Combínala con Oriental Teriyaki'
+                                            )}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {isPromoSantoPecadoSalsa && (
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                          <span className="text-[9px] text-gray-500 line-through">S/ 47.00</span>
+                                          <span className="text-[9px] text-amber-400 font-bold">
+                                            → S/ 42.00 {hasAllPromoSantoPecadoSalsas ? '✓ ACTIVO' : (
+                                              salsa.id === 'barbecue' ? 'Combínala con Santo Picante + Sweet & Sour' :
+                                              salsa.id === 'buffalo-picante' ? 'Combínala con BBQ ahumada + Sweet & Sour' :
+                                              'Combínala con BBQ ahumada + Santo Picante'
                                             )}
                                           </span>
                                         </div>
