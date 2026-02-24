@@ -1339,7 +1339,7 @@ export default function FatPage() {
                           data-salsas-section
                           className={`overflow-hidden transition-all duration-500 ease-in-out ${
                             showSalsas[product.id]
-                              ? 'max-h-[600px] opacity-100 mt-2 md:mt-3'
+                              ? 'max-h-[800px] opacity-100 mt-2 md:mt-3'
                               : 'max-h-0 opacity-0 mt-0'
                           }`}
                         >
