@@ -894,6 +894,24 @@ export default function FatPage() {
     <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Cadeneta de carnaval */}
+        <svg className="absolute top-4 left-0 w-full h-16 opacity-35" viewBox="0 0 1200 60" preserveAspectRatio="none">
+          <line x1="0" y1="8" x2="1200" y2="8" stroke="#666" strokeWidth="1.5" opacity="0.4"/>
+          {/* Banderines triangulares */}
+          <polygon points="40,8 20,40 60,40" fill="#ec4899" opacity="0.8"/>
+          <polygon points="140,8 120,40 160,40" fill="#fbbf24" opacity="0.8"/>
+          <polygon points="240,8 220,40 260,40" fill="#f97316" opacity="0.8"/>
+          <polygon points="340,8 320,40 360,40" fill="#a855f7" opacity="0.8"/>
+          <polygon points="440,8 420,40 460,40" fill="#ef4444" opacity="0.8"/>
+          <polygon points="540,8 520,40 560,40" fill="#f59e0b" opacity="0.8"/>
+          <polygon points="640,8 620,40 660,40" fill="#ec4899" opacity="0.8"/>
+          <polygon points="740,8 720,40 760,40" fill="#f97316" opacity="0.8"/>
+          <polygon points="840,8 820,40 860,40" fill="#a855f7" opacity="0.8"/>
+          <polygon points="940,8 920,40 960,40" fill="#fbbf24" opacity="0.8"/>
+          <polygon points="1040,8 1020,40 1060,40" fill="#ef4444" opacity="0.8"/>
+          <polygon points="1140,8 1120,40 1160,40" fill="#f97316" opacity="0.8"/>
+        </svg>
+
         {/* Globos de carnaval - Izquierda */}
         <div className="absolute top-20 left-8 opacity-40">
           <svg width="60" height="80" viewBox="0 0 60 80" className="animate-float">

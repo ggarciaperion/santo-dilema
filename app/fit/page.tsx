@@ -144,7 +144,6 @@ export default function FitPage() {
   const [bannerSlide, setBannerSlide] = useState(0);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
-  const [showPromoModal, setShowPromoModal] = useState(true);
   const router = useRouter();
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
@@ -589,6 +588,24 @@ export default function FitPage() {
     <div className="min-h-screen bg-black relative">
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Cadeneta de carnaval */}
+        <svg className="absolute top-4 left-0 w-full h-16 opacity-35" viewBox="0 0 1200 60" preserveAspectRatio="none">
+          <line x1="0" y1="8" x2="1200" y2="8" stroke="#666" strokeWidth="1.5" opacity="0.4"/>
+          {/* Banderines triangulares */}
+          <polygon points="40,8 20,40 60,40" fill="#ec4899" opacity="0.8"/>
+          <polygon points="140,8 120,40 160,40" fill="#fbbf24" opacity="0.8"/>
+          <polygon points="240,8 220,40 260,40" fill="#a855f7" opacity="0.8"/>
+          <polygon points="340,8 320,40 360,40" fill="#22d3ee" opacity="0.8"/>
+          <polygon points="440,8 420,40 460,40" fill="#ef4444" opacity="0.8"/>
+          <polygon points="540,8 520,40 560,40" fill="#f59e0b" opacity="0.8"/>
+          <polygon points="640,8 620,40 660,40" fill="#ec4899" opacity="0.8"/>
+          <polygon points="740,8 720,40 760,40" fill="#22d3ee" opacity="0.8"/>
+          <polygon points="840,8 820,40 860,40" fill="#a855f7" opacity="0.8"/>
+          <polygon points="940,8 920,40 960,40" fill="#fbbf24" opacity="0.8"/>
+          <polygon points="1040,8 1020,40 1060,40" fill="#ef4444" opacity="0.8"/>
+          <polygon points="1140,8 1120,40 1160,40" fill="#22d3ee" opacity="0.8"/>
+        </svg>
+
         {/* Globos de carnaval - Izquierda */}
         <div className="absolute top-20 left-8 opacity-40">
           <svg width="60" height="80" viewBox="0 0 60 80" className="animate-float">
@@ -1518,32 +1535,6 @@ export default function FitPage() {
           </div>
         );
       })()}
-
-      {/* Modal de Promoción FIT */}
-      {showPromoModal && (
-        <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[200] p-4 md:p-6 lg:p-8"
-          onClick={() => setShowPromoModal(false)}
-        >
-          <div
-            className="relative w-full max-w-[95vw] md:max-w-[85vw] lg:max-w-3xl max-h-[90vh] md:max-h-[85vh] flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowPromoModal(false)}
-              className="absolute -top-2 -right-2 md:top-0 md:right-0 w-10 h-10 md:w-12 md:h-12 bg-fuchsia-600 hover:bg-fuchsia-500 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg z-10 border-2 border-white"
-              title="Cerrar"
-            >
-              <span className="text-white text-2xl md:text-3xl font-bold leading-none">×</span>
-            </button>
-            <img
-              src="/promofit.png"
-              alt="Promoción FIT"
-              className="w-full h-auto max-h-[85vh] md:max-h-[80vh] object-contain rounded-lg shadow-2xl"
-            />
-          </div>
-        </div>
-      )}
 
       <WhatsAppButton />
     </div>
