@@ -59,10 +59,9 @@ const products: Product[] = [
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
     description: "El mar en un bowl. Atún en trozos, lechuga romana, tomate cherry, pepino, maíz americano, palta y huevo. Con aderezo cremoso especial de la casa.",
-    price: 18.50,
+    price: 20.00,
     image: "/4.png",
     category: "fit",
-    oldPrice: 23.50,
   },
 ];
 
