@@ -1214,15 +1214,15 @@ export default function FitPage() {
 
                       <button
                         onClick={() => {
-                          if (!isSoldOut) {
+                          if (!isSoldOut && (orderQuantity[product.id] || 0) > 0) {
                             handleCompleteOrder(product);
                             setIsEditingOrder(false);
                           }
                         }}
-                        disabled={isSoldOut}
-                        className={`w-full py-2.5 rounded font-bold text-sm transition-all ${isSoldOut ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95'}`}
+                        disabled={isSoldOut || (orderQuantity[product.id] || 0) === 0}
+                        className={`w-full py-2.5 rounded font-bold text-sm transition-all ${isSoldOut || (orderQuantity[product.id] || 0) === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95'}`}
                       >
-                        {isSoldOut ? 'No disponible' : isEditingOrder ? 'Confirmar orden' : 'Agregar orden'}
+                        {isSoldOut ? 'No disponible' : (orderQuantity[product.id] || 0) === 0 ? 'Agrega al menos 1 unidad' : isEditingOrder ? 'Confirmar orden' : 'Agregar orden'}
                       </button>
                     </div>
                   </div>

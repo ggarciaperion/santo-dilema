@@ -1695,17 +1695,19 @@ export default function FatPage() {
                           handleCompleteOrder(product);
                           setIsEditingOrder(false);
                         }}
-                        disabled={!canAdd || isSoldOut}
+                        disabled={!canAdd || isSoldOut || (orderQuantity[product.id] || 0) === 0}
                         className={`w-full py-2.5 md:py-3.5 rounded-lg md:rounded-xl font-bold text-sm md:text-base transition-all
                           ${isSoldOut
                             ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
-                            : canAdd
-                              ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat cursor-pointer active:scale-95'
-                              : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
+                            : (orderQuantity[product.id] || 0) === 0
+                              ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
+                              : canAdd
+                                ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat cursor-pointer active:scale-95'
+                                : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
                           }
                         `}
                       >
-                        {isSoldOut ? 'No disponible' : canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
+                        {isSoldOut ? 'No disponible' : (orderQuantity[product.id] || 0) === 0 ? 'Agrega al menos 1 unidad' : canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
                       </button>
                     </div>
                   </div>
