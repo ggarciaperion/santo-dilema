@@ -268,7 +268,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
       {showConfetti && <Confetti />}
 
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 md:p-6 animate-in fade-in duration-300 overflow-y-auto">
-        <div className="glass-morphism rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 md:p-8 relative overflow-hidden border-2 sm:border-4 border-fuchsia-500 my-auto" style={{
+        <div className="glass-morphism rounded-2xl sm:rounded-3xl shadow-2xl max-w-full sm:max-w-lg md:max-w-xl w-full p-4 sm:p-5 md:p-6 relative overflow-hidden border-2 sm:border-4 border-fuchsia-500 my-auto" style={{
           boxShadow: '0 0 30px rgba(236, 72, 153, 0.6), 0 0 60px rgba(236, 72, 153, 0.4)'
         }}>
 
@@ -288,15 +288,15 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {/* STEP 1: TELÉFONO */}
           {step === 'phone' && (
             <div className="text-center relative z-10">
-              <div className="mb-4 sm:mb-6">
-                <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4 animate-bounce">🎉</div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 carnival-glow px-2">
+              <div className="mb-4 sm:mb-5">
+                <div className="text-5xl sm:text-6xl md:text-6xl mb-3 sm:mb-4 animate-bounce">🎉</div>
+                <h2 className="text-2xl sm:text-3xl md:text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 carnival-glow px-2">
                   ¡La Yunza del Sabor!
                 </h2>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-400 mb-2">
+                <p className="text-lg sm:text-xl md:text-xl font-bold text-yellow-400 mb-2">
                   Carnavales Santo Dilema
                 </p>
-                <p className="text-pink-300 text-xs sm:text-sm md:text-base px-2">
+                <p className="text-pink-300 text-xs sm:text-sm md:text-sm px-2">
                   Ingresa tu WhatsApp y elige un regalo del árbol 🎊
                 </p>
               </div>
@@ -345,16 +345,16 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {step === 'select' && (
             <div className="text-center relative z-10">
               <div className="mb-3 sm:mb-4">
-                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 mb-2 px-2">
+                <h2 className="text-xl sm:text-2xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 mb-2 px-2">
                   ¡Elige tu regalo!
                 </h2>
-                <p className="text-pink-300 text-xs sm:text-sm md:text-base px-2">
+                <p className="text-pink-300 text-xs sm:text-sm md:text-sm px-2">
                   Haz clic en cualquier regalo colgando del árbol 🌳
                 </p>
               </div>
 
               {/* Árbol de Yunza */}
-              <div className="relative mx-auto w-full max-w-lg h-[350px] sm:h-[450px] md:h-[500px] lg:h-[600px] mb-3 sm:mb-4 flex items-center justify-center">
+              <div className="relative mx-auto w-full max-w-lg h-[350px] sm:h-[400px] md:h-[450px] mb-3 sm:mb-4 flex items-center justify-center">
                 {/* Imagen del árbol de fondo con animación - Más grande para cubrir todos los regalos */}
                 <div className="absolute inset-0 flex items-center justify-center tree-sway" style={{ transformOrigin: 'bottom center' }}>
                   <img
@@ -464,20 +464,20 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {/* STEP 3: RESULTADO */}
           {step === 'result' && prize && (
             <div className="text-center relative z-10 animate-in zoom-in duration-500">
-              <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-4 sm:mb-6 animate-bounce">🎊</div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-3 sm:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 px-2">
+              <div className="text-5xl sm:text-6xl md:text-6xl mb-4 sm:mb-5 animate-bounce">🎊</div>
+              <h2 className="text-2xl sm:text-3xl md:text-3xl font-black mb-3 sm:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 px-2">
                 ¡FELICIDADES!
               </h2>
-              <div className="relative inline-block mb-4 sm:mb-6 px-2">
-                <p className="text-xl sm:text-2xl md:text-3xl font-black text-white carnival-glow">
+              <div className="relative inline-block mb-4 sm:mb-5 px-2">
+                <p className="text-xl sm:text-2xl md:text-2xl font-black text-white carnival-glow">
                   {prize.label}
                 </p>
               </div>
 
-              <div className="glass-morphism rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 border border-pink-400/30 relative overflow-hidden">
+              <div className="glass-morphism rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 mb-4 sm:mb-5 border border-pink-400/30 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10"></div>
                 <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-3 relative z-10">Tu código termina en:</p>
-                <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4 text-yellow-400 relative z-10">
+                <div className="text-4xl sm:text-5xl md:text-5xl font-black mb-3 sm:mb-4 text-yellow-400 relative z-10">
                   **{couponPreview}
                 </div>
                 <p className="text-xs text-gray-400 mb-1 relative z-10">
