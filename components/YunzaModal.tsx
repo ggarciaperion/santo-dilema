@@ -127,6 +127,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
   // Reproducir audio cuando se muestre el árbol de regalos
   useEffect(() => {
     if (step === 'select' && audioRef.current) {
+      audioRef.current.volume = 0.3; // Establecer volumen al 30%
       audioRef.current.play().catch(err => {
         console.log('Error al reproducir audio:', err);
       });
@@ -377,7 +378,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           {/* Botón cerrar */}
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-pink-400 hover:text-pink-300 text-xl sm:text-2xl font-bold z-10 transition-all hover:scale-110 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-pink-400 hover:text-pink-300 text-xl sm:text-2xl font-bold z-50 transition-all hover:scale-110 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-black/30 rounded-full hover:bg-black/50"
           >
             ✕
           </button>
