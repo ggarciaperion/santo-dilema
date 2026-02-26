@@ -252,10 +252,11 @@ export default function FitPage() {
   }, [completedOrders]);
 
   // Auto-avanzar carrusel de banner cada 5 segundos
-  useEffect(() => {
-    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
-    return () => clearInterval(t);
-  }, []);
+  // Desactivado: solo hay 1 banner
+  // useEffect(() => {
+  //   const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
+  //   return () => clearInterval(t);
+  // }, []);
 
   // Medir ancho real de la fila de carteles para alinear el banner (solo desktop)
   useEffect(() => {
@@ -812,24 +813,6 @@ export default function FitPage() {
             <div className="w-full flex-shrink-0">
               <img src="/movilduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
             </div>
-            <div className="w-full flex-shrink-0 bg-gray-900">
-              <video
-                src="/5solesmovil.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="w-full h-auto block"
-              />
-            </div>
-          </div>
-          {/* Dots */}
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-            {[0, 1].map(i => (
-              <button key={i} onClick={() => setBannerSlide(i)}
-                className={`w-2 h-2 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
-            ))}
           </div>
         </div>
 
@@ -842,24 +825,6 @@ export default function FitPage() {
             <div className="w-full flex-shrink-0">
               <img src="/webduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
             </div>
-            <div className="w-full flex-shrink-0 bg-gray-900">
-              <video
-                src="/5solesweb.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="w-full h-auto block"
-              />
-            </div>
-          </div>
-          {/* Dots */}
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
-            {[0, 1].map(i => (
-              <button key={i} onClick={() => setBannerSlide(i)}
-                className={`w-2.5 h-2.5 rounded-full transition-all ${bannerSlide === i ? 'bg-white scale-125' : 'bg-white/50'}`} />
-            ))}
           </div>
         </div>
         <div className="h-6 md:h-8" />
