@@ -5688,21 +5688,21 @@ export default function AdminPage() {
                         </thead>
                         <tbody>
                           {coupons.map((coupon, index) => {
-                            const whatsappMessage = `Hola! Somos Santo Dilema
+                            const whatsappMessage = `Hola! Somos Santo Dilema 🍗🥗
 
-Gracias por participar en nuestra Yunza del Sabor!
+Gracias por participar en nuestra Yunza del Sabor! 🎉
 
-FELICIDADES! Ganaste: ${coupon.prize || `${coupon.discount}% de descuento`}
+🔥 FELICIDADES! Ganaste: ${coupon.prize || `${coupon.discount}% de descuento`}
 
-Tu cupon promocional es: ${coupon.code}
+🎁 Tu cupon promocional es: ${coupon.code}
 
 Para canjear tu premio:
-1. Ingresa a www.santodilema.com
-2. Elige tus productos favoritos
-3. En el checkout, ingresa tu cupon
-4. Disfruta de tu premio!
+1. Ingresa a www.santodilema.com 🌐
+2. Elige tus productos favoritos 🍟
+3. En el checkout, ingresa tu cupon ✨
+4. Disfruta de tu premio! 😋
 
-Valido por 30 dias.`;
+⏰ Valido por 30 dias.`;
                             const whatsappUrl = `https://wa.me/51${coupon.phone}?text=${encodeURIComponent(whatsappMessage)}`;
 
                             return (
