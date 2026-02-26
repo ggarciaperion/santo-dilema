@@ -5687,9 +5687,28 @@ export default function AdminPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {coupons.map((coupon, index) => (
+                          {coupons.map((coupon, index) => {
+                            const whatsappMessage = `Hola 👋 Somos Santo Dilema 🍗🥗
+
+Gracias por participar en nuestra ¡Yunza del Sabor!
+
+Tu cupón promocional es: ${coupon.code}`;
+                            const whatsappUrl = `https://wa.me/51${coupon.phone}?text=${encodeURIComponent(whatsappMessage)}`;
+
+                            return (
                             <tr key={coupon.id} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
-                              <td className="py-3 px-4 text-white text-sm font-mono">{coupon.phone}</td>
+                              <td className="py-3 px-4">
+                                <a
+                                  href={whatsappUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-green-400 hover:text-green-300 text-sm font-mono underline cursor-pointer transition-colors flex items-center gap-2"
+                                  title="Enviar mensaje por WhatsApp"
+                                >
+                                  <span>📱</span>
+                                  {coupon.phone}
+                                </a>
+                              </td>
                               <td className="py-3 px-4 text-white text-sm">{coupon.customerName}</td>
                               <td className="py-3 px-4">
                                 <code className="text-fuchsia-400 text-xs font-bold bg-black/50 px-2 py-1 rounded">
@@ -5729,7 +5748,8 @@ export default function AdminPage() {
                                 }) : '-'}
                               </td>
                             </tr>
-                          ))}
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
