@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 interface YunzaModalProps {
@@ -103,6 +103,7 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showSerpentinas, setShowSerpentinas] = useState(false);
   const [animatingGift, setAnimatingGift] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -115,8 +116,22 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
       setShowConfetti(false);
       setShowSerpentinas(false);
       setAnimatingGift(null);
+      // Detener audio si está reproduciéndose
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
     }
   }, [isOpen]);
+
+  // Reproducir audio cuando se muestre el árbol de regalos
+  useEffect(() => {
+    if (step === 'select' && audioRef.current) {
+      audioRef.current.play().catch(err => {
+        console.log('Error al reproducir audio:', err);
+      });
+    }
+  }, [step]);
 
   const validatePhone = async () => {
     if (!phone || phone.length < 9) {
@@ -595,6 +610,9 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
           </div>
         </div>
       </div>
+
+      {/* Audio de carnaval */}
+      <audio ref={audioRef} src="/sonido.mp3" preload="auto" />
     </>
   );
 }
