@@ -277,6 +277,88 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-pink-600 via-yellow-500 to-purple-600 blur-3xl"></div>
           </div>
 
+          {/* Decoraciones de carnaval de fondo */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+            {/* Cadeneta superior */}
+            <svg className="absolute top-0 left-0 w-full h-16" viewBox="0 0 1200 60" preserveAspectRatio="none">
+              <line x1="0" y1="8" x2="1200" y2="8" stroke="#fff" strokeWidth="2" opacity="0.3"/>
+              <polygon points="50,8 30,40 70,40" fill="#ef4444" opacity="0.6"/>
+              <polygon points="150,8 130,40 170,40" fill="#fbbf24" opacity="0.6"/>
+              <polygon points="250,8 230,40 270,40" fill="#a855f7" opacity="0.6"/>
+              <polygon points="350,8 330,40 370,40" fill="#22d3ee" opacity="0.6"/>
+              <polygon points="450,8 430,40 470,40" fill="#ec4899" opacity="0.6"/>
+              <polygon points="550,8 530,40 570,40" fill="#10b981" opacity="0.6"/>
+              <polygon points="650,8 630,40 670,40" fill="#ef4444" opacity="0.6"/>
+              <polygon points="750,8 730,40 770,40" fill="#f59e0b" opacity="0.6"/>
+              <polygon points="850,8 830,40 870,40" fill="#a855f7" opacity="0.6"/>
+              <polygon points="950,8 930,40 970,40" fill="#22d3ee" opacity="0.6"/>
+              <polygon points="1050,8 1030,40 1070,40" fill="#ec4899" opacity="0.6"/>
+              <polygon points="1150,8 1130,40 1170,40" fill="#10b981" opacity="0.6"/>
+            </svg>
+
+            {/* Globos de carnaval - Izquierda */}
+            <div className="absolute top-16 left-4 animate-float">
+              <svg width="50" height="70" viewBox="0 0 50 70">
+                <ellipse cx="25" cy="30" rx="20" ry="25" fill="#ef4444" opacity="0.7"/>
+                <path d="M25 55 Q27 65, 30 70" stroke="#999" strokeWidth="1" fill="none"/>
+                <ellipse cx="25" cy="25" rx="7" ry="9" fill="white" opacity="0.3"/>
+              </svg>
+            </div>
+            <div className="absolute top-32 left-8 animate-float" style={{ animationDelay: '0.5s' }}>
+              <svg width="45" height="65" viewBox="0 0 45 65">
+                <ellipse cx="22" cy="28" rx="18" ry="23" fill="#fbbf24" opacity="0.7"/>
+                <path d="M22 51 Q24 61, 27 65" stroke="#999" strokeWidth="1" fill="none"/>
+                <ellipse cx="22" cy="23" rx="6" ry="8" fill="white" opacity="0.3"/>
+              </svg>
+            </div>
+            <div className="absolute bottom-24 left-6 animate-float" style={{ animationDelay: '1s' }}>
+              <svg width="48" height="68" viewBox="0 0 48 68">
+                <ellipse cx="24" cy="29" rx="19" ry="24" fill="#a855f7" opacity="0.7"/>
+                <path d="M24 53 Q26 63, 29 68" stroke="#999" strokeWidth="1" fill="none"/>
+                <ellipse cx="24" cy="24" rx="7" ry="8" fill="white" opacity="0.3"/>
+              </svg>
+            </div>
+
+            {/* Globos de carnaval - Derecha */}
+            <div className="absolute top-20 right-6 animate-float" style={{ animationDelay: '0.3s' }}>
+              <svg width="52" height="72" viewBox="0 0 52 72">
+                <ellipse cx="26" cy="31" rx="21" ry="26" fill="#22d3ee" opacity="0.7"/>
+                <path d="M26 57 Q28 67, 31 72" stroke="#999" strokeWidth="1" fill="none"/>
+                <ellipse cx="26" cy="26" rx="7" ry="9" fill="white" opacity="0.3"/>
+              </svg>
+            </div>
+            <div className="absolute top-40 right-10 animate-float" style={{ animationDelay: '0.8s' }}>
+              <svg width="46" height="66" viewBox="0 0 46 66">
+                <ellipse cx="23" cy="28" rx="18" ry="23" fill="#ec4899" opacity="0.7"/>
+                <path d="M23 51 Q25 61, 28 66" stroke="#999" strokeWidth="1" fill="none"/>
+                <ellipse cx="23" cy="23" rx="6" ry="8" fill="white" opacity="0.3"/>
+              </svg>
+            </div>
+            <div className="absolute bottom-28 right-8 animate-float" style={{ animationDelay: '0.2s' }}>
+              <svg width="50" height="70" viewBox="0 0 50 70">
+                <ellipse cx="25" cy="30" rx="20" ry="25" fill="#10b981" opacity="0.7"/>
+                <path d="M25 55 Q27 65, 30 70" stroke="#999" strokeWidth="1" fill="none"/>
+                <ellipse cx="25" cy="25" rx="7" ry="9" fill="white" opacity="0.3"/>
+              </svg>
+            </div>
+
+            {/* Confetti de fondo */}
+            <div className="absolute top-[15%] left-[15%] w-3 h-3 bg-pink-500 rounded-full opacity-60"></div>
+            <div className="absolute top-[25%] right-[20%] w-2 h-2 bg-yellow-400 rounded-full opacity-60"></div>
+            <div className="absolute top-[35%] left-[25%] w-2 h-2 bg-purple-500 rounded-full opacity-60"></div>
+            <div className="absolute top-[45%] right-[15%] w-3 h-3 bg-cyan-400 rounded-full opacity-60"></div>
+            <div className="absolute top-[55%] left-[30%] w-2 h-2 bg-pink-400 rounded-full opacity-60"></div>
+            <div className="absolute top-[65%] right-[25%] w-3 h-3 bg-yellow-500 rounded-full opacity-60"></div>
+            <div className="absolute top-[75%] left-[20%] w-2 h-2 bg-green-400 rounded-full opacity-60"></div>
+            <div className="absolute bottom-[15%] right-[30%] w-2 h-2 bg-purple-400 rounded-full opacity-60"></div>
+
+            {/* Serpentinas diagonales */}
+            <div className="absolute top-0 left-[15%] w-1 h-32 bg-gradient-to-b from-pink-500/40 to-transparent rotate-12"></div>
+            <div className="absolute top-0 right-[20%] w-1 h-40 bg-gradient-to-b from-yellow-400/40 to-transparent -rotate-12"></div>
+            <div className="absolute top-0 left-[45%] w-1 h-36 bg-gradient-to-b from-purple-500/40 to-transparent rotate-8"></div>
+            <div className="absolute top-0 right-[50%] w-1 h-44 bg-gradient-to-b from-cyan-400/40 to-transparent -rotate-8"></div>
+          </div>
+
           {/* Botón cerrar */}
           <button
             onClick={onClose}
