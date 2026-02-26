@@ -584,6 +584,15 @@ export default function YunzaModal({ isOpen, onClose }: YunzaModalProps) {
               </button>
             </div>
           )}
+
+          {/* Logo de Santo Dilema en esquina inferior derecha */}
+          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 md:bottom-4 md:right-4 z-20 opacity-40 pointer-events-none">
+            <img
+              src="/logoprincipal.png"
+              alt="Santo Dilema"
+              className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain"
+            />
+          </div>
         </div>
       </div>
     </>
