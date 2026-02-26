@@ -357,8 +357,8 @@ export default function FitPage() {
       ...prev,
       [productId]: currentQty + 1
     }));
-    // Solo expandir automáticamente si ya tenía cantidad > 0
-    if (expandedCard !== productId && currentQty > 0) {
+    // Expandir automáticamente cuando se agrega unidad (de 0 a 1 o de 1 a 2, etc)
+    if (expandedCard !== productId && currentQty >= 0) {
       setExpandedCard(productId);
       if (!selectedComplements[productId]) {
         setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));

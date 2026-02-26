@@ -505,9 +505,8 @@ export default function FatPage() {
       [productId]: currentQty + 1
     }));
 
-    // Solo expandir automáticamente si ya está expandido o si ya tenía cantidad > 0
-    if (expandedCard !== productId && currentQty > 0) {
-      // Si pasa de 1 a 2, 2 a 3, etc., expandir
+    // Expandir automáticamente cuando se agrega unidad (de 0 a 1, de 1 a 2, etc.)
+    if (expandedCard !== productId && currentQty >= 0) {
       setExpandedCard(productId);
       setShowSalsas((prev) => ({ ...prev, [productId]: true }));
       if (!selectedSalsas[productId]) {
