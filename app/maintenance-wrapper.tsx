@@ -8,10 +8,8 @@ export default function MaintenanceWrapper({ children }: { children: React.React
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Detectar si estamos en producción (santodilema.com)
-    const isProduction = window.location.hostname === 'www.santodilema.com' ||
-                         window.location.hostname === 'santodilema.com';
-    setIsMaintenanceMode(isProduction);
+    // Modo mantenimiento desactivado - mostrar página normal
+    setIsMaintenanceMode(false);
     setIsChecking(false);
   }, []);
 
