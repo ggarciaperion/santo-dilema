@@ -7,23 +7,28 @@ const PRIZES = [
   { id: 2, type: 'discount', value: 30, label: '30% OFF' },
   { id: 3, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
   { id: 4, type: 'discount', value: 40, label: '40% OFF' },
-  { id: 5, type: '2x1', value: 0, label: '2x1 en toda la carta' },
+  { id: 5, type: 'discount', value: 10, label: '10% OFF' },
   { id: 6, type: 'discount', value: 20, label: '20% OFF' },
   { id: 7, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
   { id: 8, type: 'discount', value: 30, label: '30% OFF' },
   { id: 9, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
   { id: 10, type: 'discount', value: 20, label: '20% OFF' },
-  { id: 11, type: 'discount', value: 40, label: '40% OFF' },
+  { id: 11, type: 'discount', value: 10, label: '10% OFF' },
   { id: 12, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
 ];
 
+// Fechas de vigencia de la promoción (Hora Perú UTC-5)
+const PROMO_START_DATE = new Date('2026-02-26T18:00:00-05:00'); // 26 feb 6pm
+const PROMO_END_DATE = new Date('2026-03-01T23:00:00-05:00');   // 1 marzo 11pm
+
 // Límites diarios de premios
 const DAILY_LIMITS = {
-  '2x1': { max: 1, timeRange: { start: 20, end: 21 } }, // 8-9pm (solo 1 vez)
-  'discount-40': { max: 2, timeRange: null }, // 6-11pm (2 veces)
-  'discount-30': { max: 3, timeRange: null }, // 6-11pm (3 veces)
-  'discount-20': { max: 6, timeRange: null }, // 6-11pm (6 veces)
-  // delivery: ilimitado
+  'discount-40': { max: 1 },  // Solo 1 vez por día
+  'discount-30': { max: 2 },  // 2 veces por día
+  'discount-20': { max: 5 },  // 5 veces por día
+  'discount-10': { max: 7 },  // 7 veces por día
+  // 2x1 y 50%: NUNCA (no están en la lista de premios)
+  // delivery: ilimitado (cuando se agotan los otros premios)
 };
 
 // Función para contar premios otorgados hoy por tipo
@@ -37,59 +42,80 @@ async function getTodayPrizeCounts() {
   });
 
   const counts = {
-    '2x1': 0,
     'discount-40': 0,
     'discount-30': 0,
     'discount-20': 0,
+    'discount-10': 0,
   };
 
   todayParticipations.forEach(p => {
-    if (p.prizeType === '2x1') {
-      counts['2x1']++;
-    } else if (p.prizeType === 'discount') {
+    if (p.prizeType === 'discount') {
       if (p.prizeValue === 40) counts['discount-40']++;
       else if (p.prizeValue === 30) counts['discount-30']++;
       else if (p.prizeValue === 20) counts['discount-20']++;
+      else if (p.prizeValue === 10) counts['discount-10']++;
     }
   });
 
   return counts;
 }
 
-// Función para verificar si estamos en el rango de horario para 2x1
-function isIn2x1TimeRange(): boolean {
+// Función para verificar si estamos en el horario y fecha válida de la promoción
+function isPromoActive(): { active: boolean; message?: string } {
   const now = new Date();
-  // Convertir a hora de Perú (UTC-5)
+
+  // Verificar fecha
+  if (now < PROMO_START_DATE) {
+    return {
+      active: false,
+      message: 'La promoción inicia el 26 de febrero a las 6:00 PM'
+    };
+  }
+
+  if (now > PROMO_END_DATE) {
+    return {
+      active: false,
+      message: 'La promoción finalizó el 1 de marzo a las 11:00 PM'
+    };
+  }
+
+  // Verificar horario (6pm - 11pm hora Perú)
   const peruTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
   const hour = peruTime.getHours();
 
-  return hour >= 20 && hour < 21; // 8pm - 9pm
+  if (hour < 18 || hour >= 23) {
+    return {
+      active: false,
+      message: 'La promoción está activa de 6:00 PM a 11:00 PM'
+    };
+  }
+
+  return { active: true };
 }
 
 async function selectRandomPrize() {
   const counts = await getTodayPrizeCounts();
-  const is2x1Time = isIn2x1TimeRange();
 
   // Crear lista de premios disponibles según límites
   const availablePrizes = PRIZES.filter(prize => {
-    // 2x1: solo en horario 8-9pm y si no se alcanzó el límite
-    if (prize.type === '2x1') {
-      return is2x1Time && counts['2x1'] < DAILY_LIMITS['2x1'].max;
-    }
-
-    // Descuento 40%: máximo 2 por día
+    // Descuento 40%: máximo 1 por día
     if (prize.type === 'discount' && prize.value === 40) {
       return counts['discount-40'] < DAILY_LIMITS['discount-40'].max;
     }
 
-    // Descuento 30%: máximo 3 por día
+    // Descuento 30%: máximo 2 por día
     if (prize.type === 'discount' && prize.value === 30) {
       return counts['discount-30'] < DAILY_LIMITS['discount-30'].max;
     }
 
-    // Descuento 20%: máximo 6 por día
+    // Descuento 20%: máximo 5 por día
     if (prize.type === 'discount' && prize.value === 20) {
       return counts['discount-20'] < DAILY_LIMITS['discount-20'].max;
+    }
+
+    // Descuento 10%: máximo 7 por día
+    if (prize.type === 'discount' && prize.value === 10) {
+      return counts['discount-10'] < DAILY_LIMITS['discount-10'].max;
     }
 
     // Delivery gratis: siempre disponible
@@ -126,6 +152,15 @@ export async function GET(request: Request) {
 
     if (!phone) {
       return NextResponse.json({ error: "Teléfono requerido" }, { status: 400 });
+    }
+
+    // Verificar si la promoción está activa
+    const promoStatus = isPromoActive();
+    if (!promoStatus.active) {
+      return NextResponse.json({
+        canParticipate: false,
+        message: promoStatus.message
+      });
     }
 
     // MODO PRODUCCIÓN: Una participación por teléfono
@@ -166,6 +201,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Regalo no seleccionado" }, { status: 400 });
     }
 
+    // Verificar si la promoción está activa
+    const promoStatus = isPromoActive();
+    if (!promoStatus.active) {
+      return NextResponse.json({
+        error: promoStatus.message,
+        canParticipate: false
+      }, { status: 400 });
+    }
+
     // MODO PRODUCCIÓN: Una participación por teléfono
     const participations = await storage.getYunzaParticipations();
     const existingParticipation = participations.find(p => p.phone === phone);
@@ -204,7 +248,7 @@ export async function POST(request: Request) {
       customerName: '',
       discount: prize.type === 'discount' ? prize.value : 0,
       deliveryFree: prize.type === 'delivery',
-      is2x1: prize.type === '2x1',
+      is2x1: false, // 2x1 nunca está disponible
       status: 'pending' as const,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 días
