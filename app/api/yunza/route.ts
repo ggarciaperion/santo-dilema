@@ -128,9 +128,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Teléfono requerido" }, { status: 400 });
     }
 
-    // MODO PRUEBAS: Permitir múltiples participaciones
-    // TODO: Descomentar en producción
-    /*
+    // MODO PRODUCCIÓN: Una participación por teléfono
     const participations = await storage.getYunzaParticipations();
     const existingParticipation = participations.find(p => p.phone === phone);
 
@@ -146,7 +144,6 @@ export async function GET(request: Request) {
         }
       });
     }
-    */
 
     return NextResponse.json({ canParticipate: true });
   } catch (error) {
@@ -169,9 +166,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Regalo no seleccionado" }, { status: 400 });
     }
 
-    // MODO PRUEBAS: Permitir múltiples participaciones
-    // TODO: Descomentar en producción
-    /*
+    // MODO PRODUCCIÓN: Una participación por teléfono
     const participations = await storage.getYunzaParticipations();
     const existingParticipation = participations.find(p => p.phone === phone);
 
@@ -181,7 +176,6 @@ export async function POST(request: Request) {
         canParticipate: false
       }, { status: 400 });
     }
-    */
 
     // Seleccionar premio aleatorio
     const prize = await selectRandomPrize();
