@@ -420,3 +420,44 @@ body {
     transform: scale(1.05);
   }
 }
+
+/* Efecto neón rojo para TUNA FRESH BOWL */
+@keyframes neonRedGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.8),
+                0 0 30px rgba(239, 68, 68, 0.6),
+                0 0 45px rgba(239, 68, 68, 0.4),
+                inset 0 0 20px rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 1),
+                0 0 50px rgba(239, 68, 68, 0.8),
+                0 0 75px rgba(239, 68, 68, 0.6),
+                inset 0 0 30px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 1);
+  }
+}
+
+.neon-red-border {
+  animation: neonRedGlow 2s ease-in-out infinite;
+}
+
+@keyframes neonRedPricePulse {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.8),
+                 0 0 20px rgba(239, 68, 68, 0.6),
+                 0 0 30px rgba(239, 68, 68, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(239, 68, 68, 1),
+                 0 0 40px rgba(239, 68, 68, 0.8),
+                 0 0 60px rgba(239, 68, 68, 0.6);
+    transform: scale(1.05);
+  }
+}
+
+.neon-red-price {
+  animation: neonRedPricePulse 1.5s ease-in-out infinite;
+}

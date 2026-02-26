@@ -59,7 +59,8 @@ const products: Product[] = [
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
     description: "El mar en un bowl. Atún en trozos, lechuga romana, tomate cherry, pepino, maíz americano, palta y huevo. Con aderezo cremoso especial de la casa.",
-    price: 20.00,
+    price: 19.00,
+    oldPrice: 23.50,
     image: "/4.png",
     category: "fit",
   },
@@ -851,7 +852,9 @@ export default function FitPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none
                     ${product.oldPrice
-                      ? 'border-4 border-amber-400 super-promo-glow'
+                      ? product.id === 'ensalada-mediterranea'
+                        ? 'border-4 border-red-500 neon-red-border'
+                        : 'border-4 border-amber-400 super-promo-glow'
                       : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'
                     }
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
@@ -927,7 +930,11 @@ export default function FitPage() {
                             <span className="text-xs md:text-sm font-bold text-gray-500 line-through opacity-70">
                               S/ {product.oldPrice.toFixed(2)}
                             </span>
-                            <span className="text-lg md:text-2xl font-black text-amber-400 promo-price-pulse">
+                            <span className={`text-lg md:text-2xl font-black ${
+                              product.id === 'ensalada-mediterranea'
+                                ? 'text-red-500 neon-red-price'
+                                : 'text-amber-400 promo-price-pulse'
+                            }`}>
                               S/ {product.price.toFixed(2)}
                             </span>
                           </>
