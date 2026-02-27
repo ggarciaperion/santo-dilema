@@ -38,7 +38,7 @@ const products: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>8 alitas</span> crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa no vas a querer quedarte en solo <span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span style='color: #fbbf24; font-weight: 700;'>8</span>.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>8 alitas</span> crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa no vas a querer quedarte en solo <span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>8</span>.",
     price: 20.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -46,7 +46,7 @@ const products: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>14 alitas</span> con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>14 alitas</span> con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
     price: 34.00,
     image: "/duo-dilema.png?v=3",
     category: "fat",
@@ -54,7 +54,7 @@ const products: Product[] = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>20 alitas</span>, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>20 alitas</span>, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
     price: 47.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",

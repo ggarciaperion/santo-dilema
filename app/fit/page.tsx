@@ -71,7 +71,7 @@ const fatProducts: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span style='color: #fbbf24; font-weight: 700;'>8 alitas</span> acompañadas de papas y 01 salsa favorita.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>8 alitas</span> acompañadas de papas y 01 salsa favorita.",
     price: 20.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -79,7 +79,7 @@ const fatProducts: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span style='color: #fbbf24; font-weight: 700;'>14 alitas</span> acompañadas de papas francesas y 02 de tus salsas favoritas.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>14 alitas</span> acompañadas de papas francesas y 02 de tus salsas favoritas.",
     price: 34.00,
     image: "/duo-dilema.png?v=3",
     category: "fat",
@@ -87,7 +87,7 @@ const fatProducts: Product[] = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span style='color: #fbbf24; font-weight: 700;'>20 alitas</span> acompañadas de papas francesas y 03 de tus salsas favoritas.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>20 alitas</span> acompañadas de papas francesas y 03 de tus salsas favoritas.",
     price: 47.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",
