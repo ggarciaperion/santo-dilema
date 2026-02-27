@@ -253,11 +253,10 @@ export default function FitPage() {
   }, [completedOrders]);
 
   // Auto-avanzar carrusel de banner cada 5 segundos
-  // Desactivado: solo hay 1 banner
-  // useEffect(() => {
-  //   const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
-  //   return () => clearInterval(t);
-  // }, []);
+  useEffect(() => {
+    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
+    return () => clearInterval(t);
+  }, []);
 
   // Medir ancho real de la fila de carteles para alinear el banner (solo desktop)
   useEffect(() => {
@@ -812,6 +811,9 @@ export default function FitPage() {
             style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
           >
             <div className="w-full flex-shrink-0">
+              <img src="/bannerhoymovil.png" alt="Banner Principal" className="w-full h-auto block" />
+            </div>
+            <div className="w-full flex-shrink-0">
               <img src="/movilduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
             </div>
           </div>
@@ -823,6 +825,9 @@ export default function FitPage() {
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
           >
+            <div className="w-full flex-shrink-0">
+              <img src="/bannerhoyweb.png" alt="Banner Principal" className="w-full h-auto block" />
+            </div>
             <div className="w-full flex-shrink-0">
               <img src="/webduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
             </div>
