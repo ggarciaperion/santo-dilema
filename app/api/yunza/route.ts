@@ -3,18 +3,18 @@ import { storage } from "@/lib/storage";
 
 // Configuración de premios de la Yunza (12 regalos)
 const PRIZES = [
-  { id: 1, type: 'discount', value: 20, label: '20% OFF' },
-  { id: 2, type: 'discount', value: 30, label: '30% OFF' },
-  { id: 3, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
-  { id: 4, type: 'discount', value: 40, label: '40% OFF' },
+  { id: 1, type: 'discount', value: 30, label: '30% OFF' },
+  { id: 2, type: 'discount', value: 20, label: '20% OFF' },
+  { id: 3, type: 'discount', value: 10, label: '10% OFF' },
+  { id: 4, type: 'discount', value: 20, label: '20% OFF' },
   { id: 5, type: 'discount', value: 10, label: '10% OFF' },
   { id: 6, type: 'discount', value: 20, label: '20% OFF' },
-  { id: 7, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
-  { id: 8, type: 'discount', value: 30, label: '30% OFF' },
-  { id: 9, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
-  { id: 10, type: 'discount', value: 20, label: '20% OFF' },
+  { id: 7, type: 'discount', value: 10, label: '10% OFF' },
+  { id: 8, type: 'discount', value: 10, label: '10% OFF' },
+  { id: 9, type: 'discount', value: 10, label: '10% OFF' },
+  { id: 10, type: 'discount', value: 10, label: '10% OFF' },
   { id: 11, type: 'discount', value: 10, label: '10% OFF' },
-  { id: 12, type: 'delivery', value: 0, label: 'Delivery Gratis 🏍️' },
+  { id: 12, type: 'discount', value: 10, label: '10% OFF' },
 ];
 
 // Fechas de vigencia de la promoción (Hora Perú UTC-5)
@@ -23,12 +23,10 @@ const PROMO_END_DATE = new Date('2026-03-01T23:00:00-05:00');   // 1 marzo 11pm
 
 // Límites diarios de premios
 const DAILY_LIMITS = {
-  'discount-40': { max: 1 },  // Solo 1 vez por día
-  'discount-30': { max: 2 },  // 2 veces por día
-  'discount-20': { max: 5 },  // 5 veces por día
-  'discount-10': { max: 7 },  // 7 veces por día
-  // 2x1 y 50%: NUNCA (no están en la lista de premios)
-  // delivery: ilimitado (cuando se agotan los otros premios)
+  'discount-30': { max: 1 },  // Solo 1 vez por día
+  'discount-20': { max: 3 },  // 3 veces por día
+  // discount-10: ILIMITADO (sin límite)
+  // 2x1, 50%, 40%, delivery: NUNCA (no están en la lista de premios)
 };
 
 // Función para contar premios otorgados hoy por tipo
@@ -42,18 +40,15 @@ async function getTodayPrizeCounts() {
   });
 
   const counts = {
-    'discount-40': 0,
     'discount-30': 0,
     'discount-20': 0,
-    'discount-10': 0,
   };
 
   todayParticipations.forEach(p => {
     if (p.prizeType === 'discount') {
-      if (p.prizeValue === 40) counts['discount-40']++;
-      else if (p.prizeValue === 30) counts['discount-30']++;
+      if (p.prizeValue === 30) counts['discount-30']++;
       else if (p.prizeValue === 20) counts['discount-20']++;
-      else if (p.prizeValue === 10) counts['discount-10']++;
+      // 10% no se cuenta porque es ilimitado
     }
   });
 
@@ -98,37 +93,27 @@ async function selectRandomPrize() {
 
   // Crear lista de premios disponibles según límites
   const availablePrizes = PRIZES.filter(prize => {
-    // Descuento 40%: máximo 1 por día
-    if (prize.type === 'discount' && prize.value === 40) {
-      return counts['discount-40'] < DAILY_LIMITS['discount-40'].max;
-    }
-
-    // Descuento 30%: máximo 2 por día
+    // Descuento 30%: máximo 1 por día
     if (prize.type === 'discount' && prize.value === 30) {
       return counts['discount-30'] < DAILY_LIMITS['discount-30'].max;
     }
 
-    // Descuento 20%: máximo 5 por día
+    // Descuento 20%: máximo 3 por día
     if (prize.type === 'discount' && prize.value === 20) {
       return counts['discount-20'] < DAILY_LIMITS['discount-20'].max;
     }
 
-    // Descuento 10%: máximo 7 por día
+    // Descuento 10%: SIEMPRE disponible (ilimitado)
     if (prize.type === 'discount' && prize.value === 10) {
-      return counts['discount-10'] < DAILY_LIMITS['discount-10'].max;
-    }
-
-    // Delivery gratis: siempre disponible
-    if (prize.type === 'delivery') {
       return true;
     }
 
     return false;
   });
 
-  // Si no hay premios disponibles (todos los límites alcanzados), dar delivery gratis
+  // Si no hay premios disponibles (todos los límites alcanzados), dar 10%
   if (availablePrizes.length === 0) {
-    return PRIZES.find(p => p.type === 'delivery') || PRIZES[2];
+    return PRIZES.find(p => p.type === 'discount' && p.value === 10) || PRIZES[2];
   }
 
   // Seleccionar aleatoriamente entre los premios disponibles
@@ -137,9 +122,7 @@ async function selectRandomPrize() {
 }
 
 function generateCouponCode(prizeType: string, value: number): string {
-  const prefix = prizeType === 'discount' ? `YUNZA${value}` :
-                 prizeType === 'delivery' ? 'YUNZADELI' :
-                 'YUNZA2X1';
+  const prefix = `YUNZA${value}`;
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `${prefix}-${random}`;
 }
@@ -246,9 +229,9 @@ export async function POST(request: Request) {
       code: couponCode,
       phone,
       customerName: '',
-      discount: prize.type === 'discount' ? prize.value : 0,
-      deliveryFree: prize.type === 'delivery',
-      is2x1: false, // 2x1 nunca está disponible
+      discount: prize.value, // Siempre es un descuento
+      deliveryFree: false,
+      is2x1: false,
       status: 'pending' as const,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 días
