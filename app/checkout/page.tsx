@@ -297,7 +297,7 @@ export default function CheckoutPage() {
     switch (deliveryOption) {
       case 'chancay-centro': return 4;
       case 'puerto': return 5;
-      case 'peralvillo': return 7;
+      case 'peralvillo': return 5;
       case 'la-balanza': return 5;
       case 'otros': return 0;
       default: return 0;
@@ -1298,7 +1298,7 @@ export default function CheckoutPage() {
                     <p className="text-gray-400 text-xs mt-0.5">Zona Peralvillo</p>
                   </div>
                 </div>
-                <span className="text-sky-400 font-black text-base font-mono">S/ 7.00</span>
+                <span className="text-sky-400 font-black text-base font-mono">S/ 5.00</span>
               </button>
 
               {/* La Balanza */}
