@@ -71,7 +71,7 @@ const fatProducts: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "6 alitas acompañadas de papas y 01 salsa favorita.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span style='color: #fbbf24; font-weight: 700;'>8 alitas</span> acompañadas de papas y 01 salsa favorita.",
     price: 20.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -79,7 +79,7 @@ const fatProducts: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "12 alitas acompañadas de papas francesas y 02 de tus salsas favoritas.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span style='color: #fbbf24; font-weight: 700;'>14 alitas</span> acompañadas de papas francesas y 02 de tus salsas favoritas.",
     price: 34.00,
     image: "/duo-dilema.png?v=3",
     category: "fat",
@@ -87,7 +87,7 @@ const fatProducts: Product[] = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    description: "18 alitas acompañadas de papas francesas y 03 de tus salsas favoritas.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span style='color: #fbbf24; font-weight: 700;'>20 alitas</span> acompañadas de papas francesas y 03 de tus salsas favoritas.",
     price: 47.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",
@@ -925,9 +925,10 @@ export default function FitPage() {
                     <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2">
-                      {product.description}
-                    </p>
+                    <p
+                      className="text-cyan-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2"
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
                       <div className="flex flex-col gap-0.5">
                         {product.oldPrice ? (

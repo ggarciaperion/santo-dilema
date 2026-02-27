@@ -38,7 +38,7 @@ const products: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "6 alitas crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa no vas a querer quedarte en solo 6.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>8 alitas</span> crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa no vas a querer quedarte en solo <span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span style='color: #fbbf24; font-weight: 700;'>8</span>.",
     price: 20.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -46,7 +46,7 @@ const products: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "12 alitas con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>14 alitas</span> con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
     price: 34.00,
     image: "/duo-dilema.png?v=3",
     category: "fat",
@@ -54,7 +54,7 @@ const products: Product[] = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    description: "18 alitas, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
+    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>20 alitas</span>, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
     price: 47.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",
@@ -1228,9 +1228,10 @@ export default function FatPage() {
                     <h4 className="text-xs md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
                       {product.name}
                     </h4>
-                    <p className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-2 md:line-clamp-3 md:h-12">
-                      {product.description}
-                    </p>
+                    <p
+                      className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-2 md:line-clamp-3 md:h-12"
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
                       {product.id === "pequeno-dilema" && currentSalsas.includes("ahumada") ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
