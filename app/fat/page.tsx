@@ -22,6 +22,7 @@ interface Salsa {
   id: string;
   name: string;
   description: string;
+  soldOut?: boolean;
 }
 
 interface CompletedOrder {
@@ -131,7 +132,8 @@ const salsas: Salsa[] = [
   {
     id: "teriyaki",
     name: "Oriental Teriyaki",
-    description: "Salsa asiática, dulce y salado en equilibrio. Con notas ahumadas que evocan los sabores orientales"
+    description: "Salsa asiática, dulce y salado en equilibrio. Con notas ahumadas que evocan los sabores orientales",
+    soldOut: true
   },
   {
     id: "macerichada",
@@ -1352,7 +1354,7 @@ export default function FatPage() {
                               const wasRecentlyAdded = recentlyAddedSalsas.has(`${product.id}-${salsa.id}`);
                               // Ocultar botón + cuando el count de esta salsa alcanza el máximo permitido
                               const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
-                              const canAddMore = count < maxSalsaCount && canSelect;
+                              const canAddMore = count < maxSalsaCount && canSelect && !salsa.soldOut;
                               const showAddButton = canAddMore;
                               const isPromoSalsa = product.id === "pequeno-dilema" && salsa.id === "ahumada";
                               const isPromoDuoDilemaSalsa = product.id === "duo-dilema" && (salsa.id === "teriyaki" || salsa.id === "honey-mustard");
@@ -1363,26 +1365,33 @@ export default function FatPage() {
                               return (
                                 <div
                                   key={salsa.id}
-                                  className={`rounded p-1.5 md:p-2 border ${(isPromoSalsa || isPromoDuoDilemaSalsa || isPromoSantoPecadoSalsa) ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]' : 'bg-gray-800/30 border-amber-500/10'}`}
+                                  className={`rounded p-1.5 md:p-2 border ${
+                                    salsa.soldOut
+                                      ? 'bg-gray-800/50 border-gray-600/30 opacity-60'
+                                      : (isPromoSalsa || isPromoDuoDilemaSalsa || isPromoSantoPecadoSalsa)
+                                        ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]'
+                                        : 'bg-gray-800/30 border-amber-500/10'
+                                  }`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex-1">
-                                      <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : 'text-white'}`}>
+                                      <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : salsa.soldOut ? 'text-gray-500' : 'text-white'}`}>
                                         {salsa.name}
-                                        {isPromoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
-                                        {isPromoDuoDilemaSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
-                                        {isPromoSantoPecadoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
+                                        {salsa.soldOut && <span className="ml-1.5 text-[8px] bg-gray-600 text-gray-300 px-1 py-0.5 rounded font-bold align-middle">AGOTADO</span>}
+                                        {!salsa.soldOut && isPromoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
+                                        {!salsa.soldOut && isPromoDuoDilemaSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
+                                        {!salsa.soldOut && isPromoSantoPecadoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
                                       </div>
-                                      <p className="text-[9px] md:text-[10px] text-gray-400 italic mt-0.5">
+                                      <p className={`text-[9px] md:text-[10px] italic mt-0.5 ${salsa.soldOut ? 'text-gray-600' : 'text-gray-400'}`}>
                                         {salsa.description}
                                       </p>
-                                      {isPromoSalsa && (
+                                      {!salsa.soldOut && isPromoSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
                                           <span className="text-[9px] text-gray-500 line-through">S/ 20.00</span>
                                           <span className="text-[9px] text-amber-400 font-bold">→ S/ 16.00 con esta salsa</span>
                                         </div>
                                       )}
-                                      {isPromoDuoDilemaSalsa && (
+                                      {!salsa.soldOut && isPromoDuoDilemaSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
                                           <span className="text-[9px] text-gray-500 line-through">S/ 34.00</span>
                                           <span className="text-[9px] text-amber-400 font-bold">
@@ -1392,7 +1401,7 @@ export default function FatPage() {
                                           </span>
                                         </div>
                                       )}
-                                      {isPromoSantoPecadoSalsa && (
+                                      {!salsa.soldOut && isPromoSantoPecadoSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
                                           <span className="text-[9px] text-gray-500 line-through">S/ 47.00</span>
                                           <span className="text-[9px] text-amber-400 font-bold">
