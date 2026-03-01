@@ -678,7 +678,7 @@ export default function FatPage() {
     // Guardar la orden completada
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
-    const hasPromoAcevichada = product.id === "pequeno-dilema" && orderSalsas.includes("ahumada");
+    const hasPromoAcevichada = product.id === "pequeno-dilema" && orderSalsas.includes("honey-mustard");
     const hasPromoDuoDilema = product.id === "duo-dilema" &&
       orderSalsas.includes("teriyaki") &&
       orderSalsas.includes("honey-mustard");
@@ -1235,7 +1235,7 @@ export default function FatPage() {
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
-                      {product.id === "pequeno-dilema" && currentSalsas.includes("ahumada") ? (
+                      {product.id === "pequeno-dilema" && currentSalsas.includes("honey-mustard") ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-gray-500 line-through text-xs md:text-sm">S/ 20.00</span>
                           <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 16.00</span>
@@ -1356,7 +1356,7 @@ export default function FatPage() {
                               const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
                               const canAddMore = count < maxSalsaCount && canSelect && !salsa.soldOut;
                               const showAddButton = canAddMore;
-                              const isPromoSalsa = product.id === "pequeno-dilema" && salsa.id === "ahumada";
+                              const isPromoSalsa = product.id === "pequeno-dilema" && salsa.id === "honey-mustard";
                               const isPromoDuoDilemaSalsa = product.id === "duo-dilema" && (salsa.id === "teriyaki" || salsa.id === "honey-mustard");
                               const hasBothPromoDuoSalsas = product.id === "duo-dilema" && currentSalsas.includes("teriyaki") && currentSalsas.includes("honey-mustard");
                               const isPromoSantoPecadoSalsa = product.id === "santo-pecado" && (salsa.id === "barbecue" || salsa.id === "buffalo-picante" || salsa.id === "macerichada");
