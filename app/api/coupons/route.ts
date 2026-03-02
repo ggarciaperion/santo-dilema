@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
 // Fecha de corte global: ningún cupón es válido después de esta fecha
-const COUPON_GLOBAL_EXPIRY = new Date("2026-02-28T23:59:59-05:00"); // Hora Perú (UTC-5)
+const COUPON_GLOBAL_EXPIRY = new Date("2026-03-01T23:59:59-05:00"); // Hora Perú (UTC-5)
 
 // IDs de salsas promocionales (Promoción 13%)
 const PROMO_SAUCE_IDS = [
@@ -113,16 +113,20 @@ export async function POST(request: Request) {
         );
       }
 
-      // Verificar fecha de corte global (28 de febrero 2026)
+      // Verificar fecha de corte global (1 de marzo 2026)
+      // NOTA: Todos los cupones generados en febrero pueden canjearse hasta el 1 de marzo
       if (new Date() > COUPON_GLOBAL_EXPIRY) {
         return NextResponse.json(
-          { error: "Los cupones promocionales vencieron el 28 de febrero" },
+          { error: "Los cupones promocionales vencieron el 1 de marzo" },
           { status: 400 }
         );
       }
 
+      // Validación individual de expiresAt - usar el máximo entre fecha individual y fecha global
       const expiresAt = new Date(coupon.expiresAt);
-      if (expiresAt < new Date()) {
+      const effectiveExpiry = expiresAt > COUPON_GLOBAL_EXPIRY ? expiresAt : COUPON_GLOBAL_EXPIRY;
+
+      if (effectiveExpiry < new Date()) {
         return NextResponse.json(
           { error: "Cupón expirado" },
           { status: 400 }
@@ -184,7 +188,7 @@ export async function POST(request: Request) {
         discount: 13,
         status: "pending",
         createdAt: new Date().toISOString(),
-        expiresAt: new Date("2026-02-28T23:59:59").toISOString(),
+        expiresAt: new Date("2026-03-01T23:59:59").toISOString(),
         orderId,
       };
 
