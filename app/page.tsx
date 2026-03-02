@@ -9,7 +9,7 @@ import YunzaModal from "@/components/YunzaModal";
 const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 
 export default function Home() {
-  const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
+  const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | "taco" | null>(null);
   const [showYunzaModal, setShowYunzaModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
@@ -52,7 +52,7 @@ export default function Home() {
 
       {/* Título principal dividido con neón - SANTO | DILEMA */}
       <div className={`absolute top-2 md:top-6 z-20 flex flex-col items-center justify-center transition-all duration-700 ease-out ${
-        hoveredSide === "fit" ? "md:left-[35%]" : hoveredSide === "fat" ? "md:left-[65%]" : "md:left-1/2"
+        hoveredSide === "fit" ? "md:left-[22%]" : hoveredSide === "fat" ? "md:left-1/2" : hoveredSide === "taco" ? "md:left-[78%]" : "md:left-1/2"
       } left-1/2 transform -translate-x-1/2`}>
         <h1 className="flex items-center gap-2 md:gap-4 text-2xl md:text-4xl lg:text-6xl font-black tracking-tight">
           <span className="text-amber-400 gold-glow inline-flex items-center">
@@ -82,27 +82,35 @@ export default function Home() {
             </span>
           </span>
           <div className={`w-0.5 h-6 md:h-12 lg:h-16 bg-gradient-to-b from-transparent to-transparent shadow-lg transition-all duration-700 ${
-            hoveredSide === "fit" ? "via-cyan-400 shadow-cyan-400/50" : hoveredSide === "fat" ? "via-red-400 shadow-red-400/50" : "via-fuchsia-500 shadow-fuchsia-500/50"
+            hoveredSide === "fit" ? "via-cyan-400 shadow-cyan-400/50" : hoveredSide === "fat" ? "via-red-400 shadow-red-400/50" : hoveredSide === "taco" ? "via-emerald-500 shadow-emerald-500/50" : "via-fuchsia-500 shadow-fuchsia-500/50"
           }`}></div>
           <span className={`transition-all duration-700 ${
-            hoveredSide === "fit" ? "text-cyan-400 neon-glow-fit" : hoveredSide === "fat" ? "text-red-400 neon-glow-fat" : "text-fuchsia-500 neon-glow-purple"
+            hoveredSide === "fit" ? "text-cyan-400 neon-glow-fit" : hoveredSide === "fat" ? "text-red-400 neon-glow-fat" : hoveredSide === "taco" ? "text-emerald-500 neon-glow-taco" : "text-fuchsia-500 neon-glow-purple"
           }`}>DILEMA</span>
         </h1>
 
         {/* Taglines debajo - animados según hover en desktop, siempre visibles en móvil */}
-        <div className="flex items-center gap-3 md:gap-8 lg:gap-12 mt-1 md:mt-2 overflow-hidden">
-          <p className={`text-cyan-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fit whitespace-nowrap md:transition-all md:duration-500 ${
-            hoveredSide === "fat" ? "md:opacity-0 md:-translate-x-8" : "opacity-100 translate-x-0"
+        <div className="flex items-center gap-2 md:gap-4 lg:gap-6 mt-1 md:mt-2 overflow-hidden">
+          <p className={`text-cyan-400/80 text-[8px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fit whitespace-nowrap md:transition-all md:duration-500 ${
+            hoveredSide === "fat" || hoveredSide === "taco" ? "md:opacity-0 md:-translate-x-8" : "opacity-100 translate-x-0"
           }`}>
             PREMIUM SALADS
           </p>
           <div className={`w-0.5 h-2 md:h-3 bg-transparent md:transition-all md:duration-500 ${
             hoveredSide === null ? "opacity-100" : "md:opacity-0"
           }`}></div>
-          <p className={`text-red-400/80 text-[9px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fat whitespace-nowrap md:transition-all md:duration-500 ${
-            hoveredSide === "fit" ? "md:opacity-0 md:translate-x-8" : "opacity-100 translate-x-0"
+          <p className={`text-red-400/80 text-[8px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fat whitespace-nowrap md:transition-all md:duration-500 ${
+            hoveredSide === "fit" || hoveredSide === "taco" ? "md:opacity-0" : "opacity-100 translate-x-0"
           }`}>
             PREMIUM WINGS
+          </p>
+          <div className={`w-0.5 h-2 md:h-3 bg-transparent md:transition-all md:duration-500 ${
+            hoveredSide === null ? "opacity-100" : "md:opacity-0"
+          }`}></div>
+          <p className={`text-emerald-500/80 text-[8px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-taco whitespace-nowrap md:transition-all md:duration-500 ${
+            hoveredSide === "fit" || hoveredSide === "fat" ? "md:opacity-0 md:translate-x-8" : "opacity-100 translate-x-0"
+          }`}>
+            AUTHENTIC TACOS
           </p>
         </div>
       </div>
@@ -110,8 +118,8 @@ export default function Home() {
       {/* Lado FIT - Ensaladas */}
       <Link
         href="/fit"
-        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[50dvh] md:min-h-screen ${
-          hoveredSide === "fat" ? "md:flex-[0.3]" : "flex-1"
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[33.33dvh] md:min-h-screen ${
+          hoveredSide === "fat" || hoveredSide === "taco" ? "md:flex-[0.2]" : hoveredSide === "fit" ? "md:flex-[1.6]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fit")}
         onMouseLeave={() => setHoveredSide(null)}
@@ -262,8 +270,8 @@ export default function Home() {
       {/* Lado FAT - Alitas */}
       <Link
         href="/fat"
-        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[50dvh] md:min-h-screen ${
-          hoveredSide === "fit" ? "md:flex-[0.3]" : "flex-1"
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[33.33dvh] md:min-h-screen ${
+          hoveredSide === "fit" || hoveredSide === "taco" ? "md:flex-[0.2]" : hoveredSide === "fat" ? "md:flex-[1.6]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("fat")}
         onMouseLeave={() => setHoveredSide(null)}
@@ -412,21 +420,136 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-400 to-transparent neon-glow-fat" />
       </Link>
 
+      {/* Línea divisoria con efecto neón */}
+      <div className="h-1 md:h-auto md:w-1 bg-gradient-to-r md:bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent z-10 shadow-lg shadow-fuchsia-500/50" />
+
+      {/* Lado TACO - Tacos Mexicanos */}
+      <Link
+        href="/tacos"
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[33.33dvh] md:min-h-screen ${
+          hoveredSide === "fit" || hoveredSide === "fat" ? "md:flex-[0.2]" : hoveredSide === "taco" ? "md:flex-[1.6]" : "flex-1"
+        }`}
+        onMouseEnter={() => setHoveredSide("taco")}
+        onMouseLeave={() => setHoveredSide(null)}
+      >
+        <div
+          className={`absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-green-700/20 to-black transition-all duration-500 ${
+            hoveredSide === "taco" ? "opacity-100" : "opacity-60"
+          }`}
+        />
+
+        {/* Iconos decorativos TACO - Elementos mexicanos */}
+        <div className="absolute inset-0 overflow-hidden opacity-15">
+          {/* Tacos */}
+          <svg className="absolute top-20 left-16 w-28 h-28 text-emerald-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 60 Q25 30, 50 20 Q75 30, 80 60 L70 80 Q50 70, 30 80 Z"/>
+            <circle cx="40" cy="50" r="3" fill="currentColor" opacity="0.4"/>
+            <circle cx="60" cy="48" r="3" fill="currentColor" opacity="0.4"/>
+            <path d="M35 55 L65 55" strokeWidth="1.5"/>
+          </svg>
+
+          <svg className="absolute bottom-28 right-20 w-24 h-24 text-green-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M25 55 Q30 35, 50 28 Q70 35, 75 55 L68 75 Q50 68, 32 75 Z"/>
+            <circle cx="42" cy="48" r="2.5" fill="currentColor" opacity="0.4"/>
+            <circle cx="58" cy="46" r="2.5" fill="currentColor" opacity="0.4"/>
+          </svg>
+
+          {/* Chiles picantes */}
+          <svg className="absolute top-1/3 right-12 w-20 h-20 text-red-500 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M50 25 Q48 32, 46 42 Q44 52, 44 62 Q44 72, 48 78 Q52 78, 56 72 Q56 62, 56 52 Q54 42, 52 32 Q50 25, 50 25Z"/>
+            <path d="M50 22 Q52 18, 55 18 Q58 18, 60 20" strokeWidth="2"/>
+          </svg>
+
+          <svg className="absolute bottom-1/3 left-24 w-18 h-18 text-red-400 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M50 30 Q48 36, 46 44 Q44 54, 44 64 Q44 74, 48 80 Q52 80, 56 74 Q56 64, 56 54 Q54 44, 52 36 Q50 30, 50 30Z"/>
+          </svg>
+
+          {/* Aguacates */}
+          <svg className="absolute top-1/2 left-16 w-24 h-24 text-lime-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+            <ellipse cx="50" cy="55" rx="28" ry="35" />
+            <ellipse cx="50" cy="55" rx="15" ry="18" />
+            <circle cx="50" cy="50" r="8" fill="currentColor" opacity="0.3"/>
+            <path d="M48 25 Q50 20, 52 25" strokeWidth="3"/>
+          </svg>
+
+          {/* Tortillas */}
+          <svg className="absolute bottom-24 left-32 w-26 h-26 text-amber-300 rotate-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="50" cy="50" r="30"/>
+            <circle cx="50" cy="50" r="25" opacity="0.5"/>
+            <circle cx="45" cy="45" r="2" fill="currentColor" opacity="0.3"/>
+            <circle cx="58" cy="52" r="2" fill="currentColor" opacity="0.3"/>
+          </svg>
+
+          {/* Cilantro / Hierbas */}
+          <svg className="absolute top-40 right-28 w-20 h-20 text-green-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M50 20 L50 80 M50 30 Q35 35, 30 45 M50 30 Q65 35, 70 45 M50 50 Q38 55, 33 65 M50 50 Q62 55, 67 65"/>
+          </svg>
+
+          {/* Limones */}
+          <svg className="absolute top-24 left-28 w-18 h-18 text-lime-300 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="50" cy="50" r="20"/>
+            <path d="M50 30 L50 70 M30 50 L70 50" strokeWidth="1" opacity="0.5"/>
+          </svg>
+
+          {/* Cebollas */}
+          <svg className="absolute bottom-40 right-16 w-22 h-22 text-purple-300 opacity-60 float-slower" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <ellipse cx="50" cy="50" rx="18" ry="22"/>
+            <ellipse cx="50" cy="50" rx="12" ry="16" opacity="0.5"/>
+            <path d="M48 28 Q50 22, 52 28" strokeWidth="2.5"/>
+          </svg>
+        </div>
+
+        {/* Efecto de brillo neón en hover */}
+        {hoveredSide === "taco" && (
+          <div className="absolute inset-0 bg-emerald-500/10 animate-pulse" />
+        )}
+
+        <div className="relative z-10 text-center text-white px-3 md:px-6 pt-6 pb-4 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
+          <div className="mb-0 md:mb-1">
+            <div className="mb-0 md:mb-1 filter drop-shadow-lg">
+              <Image
+                src="/pequeno-dilema.png?v=3"
+                alt="Tacos Auténticos"
+                width={140}
+                height={140}
+                className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
+              />
+            </div>
+          </div>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-0 md:mb-1 -mt-2 md:mt-0 tracking-tight text-emerald-400 neon-glow-taco">
+            FIESTA
+          </h2>
+          <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
+            Tacos Auténticos
+          </p>
+          <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
+            hoveredSide === "taco" ? "md:opacity-100 md:translate-y-0" : ""
+          }`}>
+            <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-emerald-400 rounded-full neon-border-taco">
+              <span className="text-emerald-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Línea decorativa con efecto neón */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent neon-glow-taco" />
+      </Link>
+
       {/* Dark Kitchen Label - Parte inferior */}
       <div className={`absolute bottom-1 md:bottom-3 z-20 transform -translate-x-1/2 transition-all duration-700 ease-out px-4 ${
-        hoveredSide === "fit" ? "md:left-[35%]" : hoveredSide === "fat" ? "md:left-[65%]" : "md:left-1/2"
+        hoveredSide === "fit" ? "md:left-[16.5%]" : hoveredSide === "fat" ? "md:left-1/2" : hoveredSide === "taco" ? "md:left-[83.5%]" : "md:left-1/2"
       } left-1/2`}>
         <div className="flex items-center gap-1.5 md:gap-2 text-center">
           <div className={`w-3 md:w-6 h-px bg-gradient-to-r from-transparent transition-all duration-700 ${
-            hoveredSide === "fit" ? "to-cyan-400" : hoveredSide === "fat" ? "to-red-400" : "to-fuchsia-500"
+            hoveredSide === "fit" ? "to-cyan-400" : hoveredSide === "fat" ? "to-red-400" : hoveredSide === "taco" ? "to-emerald-500" : "to-fuchsia-500"
           }`}></div>
           <p className={`text-[8px] md:text-xs font-bold tracking-widest transition-all duration-700 whitespace-nowrap ${
-            hoveredSide === "fit" ? "text-cyan-400 neon-glow-fit" : hoveredSide === "fat" ? "text-red-400 neon-glow-fat" : "text-fuchsia-400 neon-glow-purple"
+            hoveredSide === "fit" ? "text-cyan-400 neon-glow-fit" : hoveredSide === "fat" ? "text-red-400 neon-glow-fat" : hoveredSide === "taco" ? "text-emerald-400 neon-glow-taco" : "text-fuchsia-400 neon-glow-purple"
           }`}>
             PREMIUM DARK KITCHEN · DELIVERY ONLY
           </p>
           <div className={`w-3 md:w-6 h-px bg-gradient-to-l from-transparent transition-all duration-700 ${
-            hoveredSide === "fit" ? "to-cyan-400" : hoveredSide === "fat" ? "to-red-400" : "to-fuchsia-500"
+            hoveredSide === "fit" ? "to-cyan-400" : hoveredSide === "fat" ? "to-red-400" : hoveredSide === "taco" ? "to-emerald-500" : "to-fuchsia-500"
           }`}></div>
         </div>
       </div>
