@@ -2,7 +2,11 @@
 // Dominio de pruebas: siempre abierto
 const TEST_DOMAIN = "santo-dilema-iota.vercel.app";
 
+// ⚠️ MODO PRUEBA TEMPORAL ACTIVADO - SIEMPRE ABIERTO ⚠️
 export function isBusinessOpen(): boolean {
+  return true; // 🔥 TEMPORAL: Habilitado para validar nuevo diseño de carteles
+
+  /* CÓDIGO ORIGINAL - DESCOMENTAR DESPUÉS DE VALIDAR
   if (typeof window !== "undefined" && window.location.hostname === TEST_DOMAIN) {
     return true;
   }
@@ -17,6 +21,7 @@ export function isBusinessOpen(): boolean {
   const isOpenHour = hour >= 18 && hour < 23;    // 6pm a 11pm
 
   return isOpenDay && isOpenHour;
+  */
 }
 
 export function getNextOpenMessage(): string {
