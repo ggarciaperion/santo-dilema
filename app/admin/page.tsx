@@ -4298,16 +4298,56 @@ export default function AdminPage() {
                 });
               });
 
-              // Construir filas de rendimiento cruzando catálogo + ventas
-              const perfRows = saleProducts.map((p: any) => {
+              // Construir filas de rendimiento: TODOS los productos vendidos
+              const perfRowsMap = new Map<string, any>();
+
+              // 1. Primero agregar productos del catálogo (con costo conocido)
+              saleProducts.forEach((p: any) => {
                 const key = normalize(p.name || "");
                 const sold = soldMap[key] || { qty: 0, revenue: 0 };
                 const cost = p.cost || 0;
                 const totalCost = cost * sold.qty;
                 const netProfit = sold.revenue - totalCost;
                 const margin = cost > 0 ? (sold.qty > 0 ? (netProfit / totalCost) * 100 : ((p.price - cost) / cost) * 100) : 0;
-                return { ...p, sold: sold.qty, revenue: sold.revenue, totalCost, netProfit, margin };
-              }).sort((a: any, b: any) => b.sold - a.sold);
+                perfRowsMap.set(key, { ...p, sold: sold.qty, revenue: sold.revenue, totalCost, netProfit, margin });
+              });
+
+              // 2. Agregar items vendidos que NO están en el catálogo (complementos, extras)
+              Object.keys(soldMap).forEach((key) => {
+                if (!perfRowsMap.has(key)) {
+                  const sold = soldMap[key];
+                  // Buscar en availableComplements o products sin filtrar
+                  const complement = Object.values(availableComplements).find(
+                    (c: any) => normalize(c.name) === key
+                  );
+                  const productMatch = products.find((p: any) => normalize(p.name) === key);
+
+                  const product = complement || productMatch;
+                  const cost = product?.cost || 0;
+                  const price = product?.price || (sold.qty > 0 ? sold.revenue / sold.qty : 0);
+                  const category = product?.category || "complemento";
+
+                  const totalCost = cost * sold.qty;
+                  const netProfit = sold.revenue - totalCost;
+                  const margin = cost > 0 ? (sold.qty > 0 ? (netProfit / totalCost) * 100 : 0) : 0;
+
+                  perfRowsMap.set(key, {
+                    id: key,
+                    name: Object.keys(soldMap).find(k => normalize(k) === key) || key,
+                    category,
+                    price,
+                    cost,
+                    sold: sold.qty,
+                    revenue: sold.revenue,
+                    totalCost,
+                    netProfit,
+                    margin,
+                    type: "sale"
+                  });
+                }
+              });
+
+              const perfRows = Array.from(perfRowsMap.values()).sort((a: any, b: any) => b.sold - a.sold);
 
               // KPIs globales - Calcular revenue directo de pedidos (más preciso)
               const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
