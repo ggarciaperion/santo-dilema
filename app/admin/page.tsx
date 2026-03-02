@@ -3461,7 +3461,7 @@ export default function AdminPage() {
                 totalCOGS += cost * sold.qty;
               });
 
-              // Calcular GASTOS OPERATIVOS (compras/gastos del periodo)
+              // Calcular GASTOS POR CATEGORÍA (compras/gastos del periodo)
               let filteredPurchases = inventory;
               if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
                 const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
@@ -3471,18 +3471,39 @@ export default function AdminPage() {
                   return purchaseDate >= fromDate && purchaseDate <= toDate;
                 });
               }
-              const gastosOperativos = filteredPurchases.reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
 
-              // KPIs
+              // Separar gastos por categoría
+              const gastosOperativos = filteredPurchases
+                .filter(p => (p.category || "operativos") === "operativos")
+                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
+
+              const gastosFijos = filteredPurchases
+                .filter(p => (p.category || "operativos") === "fijos")
+                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
+
+              const gastosPersonal = filteredPurchases
+                .filter(p => (p.category || "operativos") === "personal")
+                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
+
+              const gastosMarketing = filteredPurchases
+                .filter(p => (p.category || "operativos") === "marketing")
+                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
+
+              const totalGastos = totalCOGS + gastosOperativos + gastosFijos + gastosPersonal + gastosMarketing;
+
+              // KPIs Financieros
               const margenBruto = totalCOGS > 0 ? ((totalRevenue - totalCOGS) / totalCOGS) * 100 : 0;
-              const utilidadOperativa = totalRevenue - totalCOGS - gastosOperativos;
-              const margenNeto = totalRevenue > 0 ? (utilidadOperativa / totalRevenue) * 100 : 0;
+              const utilidadNeta = totalRevenue - totalGastos;
+              const margenNeto = totalRevenue > 0 ? (utilidadNeta / totalRevenue) * 100 : 0;
+              const roi = totalGastos > 0 ? (utilidadNeta / totalGastos) * 100 : 0;
 
               return (
                 <div>
                   {/* Header con filtros */}
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                    <h3 className="text-2xl font-black text-cyan-400">📊 Dashboard Financiero</h3>
+                    <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+                      📊 Dashboard Financiero Profesional
+                    </h3>
 
                     {/* Filtros rápidos y manuales */}
                     <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
@@ -3554,69 +3575,142 @@ export default function AdminPage() {
                     </div>
                   )}
 
-                  {/* KPIs Grid - 2 filas x 3 columnas */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Fila 1: Ventas, COGS, Margen Bruto */}
-
-                    {/* Ventas */}
-                    <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl border-2 border-green-500/50 p-5">
-                      <p className="text-green-400 text-xs font-bold mb-1.5 uppercase">💵 Ventas</p>
-                      <p className="text-4xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
-                      <p className="text-xs text-gray-400 mt-1.5">{deliveredOrders.length} pedidos entregados</p>
+                  <div className="space-y-6">
+                    {/* SECCIÓN 1: INGRESOS */}
+                    <div className="bg-gradient-to-br from-green-900/30 to-green-800/10 rounded-2xl border-2 border-green-500/40 p-6">
+                      <h4 className="text-lg font-black text-green-400 mb-4 flex items-center gap-2">
+                        <span className="text-2xl">💰</span> INGRESOS
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div className="bg-gradient-to-br from-green-600/20 to-green-500/10 rounded-xl border-2 border-green-400/60 p-6">
+                          <p className="text-green-300 text-xs font-bold mb-2 uppercase tracking-wide">💵 Ventas Totales</p>
+                          <p className="text-5xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
+                          <p className="text-sm text-green-300/80 mt-2 font-semibold">{deliveredOrders.length} pedidos entregados</p>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* COGS */}
-                    <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 rounded-xl border-2 border-orange-500/50 p-5">
-                      <p className="text-orange-400 text-xs font-bold mb-1.5 uppercase">🍖 Costo de Ventas (COGS)</p>
-                      <p className="text-4xl font-black text-orange-400">S/ {totalCOGS.toFixed(2)}</p>
-                      <p className="text-xs text-gray-400 mt-1.5">Costo de productos vendidos</p>
+                    {/* SECCIÓN 2: COSTOS Y GASTOS */}
+                    <div className="bg-gradient-to-br from-red-900/30 to-orange-800/10 rounded-2xl border-2 border-red-500/40 p-6">
+                      <h4 className="text-lg font-black text-red-400 mb-4 flex items-center gap-2">
+                        <span className="text-2xl">💸</span> COSTOS Y GASTOS
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* COGS */}
+                        <div className="bg-gradient-to-br from-orange-600/20 to-orange-500/10 rounded-xl border-2 border-orange-400/60 p-5">
+                          <p className="text-orange-300 text-xs font-bold mb-2 uppercase tracking-wide">🍖 Costo de Ventas (COGS)</p>
+                          <p className="text-3xl font-black text-orange-400">S/ {totalCOGS.toFixed(2)}</p>
+                          <p className="text-xs text-orange-300/70 mt-2">Costo de productos vendidos</p>
+                        </div>
+
+                        {/* Gastos Operativos */}
+                        <div className="bg-gradient-to-br from-red-600/20 to-red-500/10 rounded-xl border-2 border-red-400/60 p-5">
+                          <p className="text-red-300 text-xs font-bold mb-2 uppercase tracking-wide">🔧 Gastos Operativos</p>
+                          <p className="text-3xl font-black text-red-400">S/ {gastosOperativos.toFixed(2)}</p>
+                          <p className="text-xs text-red-300/70 mt-2">Insumos, materiales, etc.</p>
+                        </div>
+
+                        {/* Costos Fijos */}
+                        <div className="bg-gradient-to-br from-rose-600/20 to-rose-500/10 rounded-xl border-2 border-rose-400/60 p-5">
+                          <p className="text-rose-300 text-xs font-bold mb-2 uppercase tracking-wide">🏢 Costos Fijos</p>
+                          <p className="text-3xl font-black text-rose-400">S/ {gastosFijos.toFixed(2)}</p>
+                          <p className="text-xs text-rose-300/70 mt-2">Alquiler, servicios, etc.</p>
+                        </div>
+
+                        {/* Gastos de Personal */}
+                        <div className="bg-gradient-to-br from-purple-600/20 to-purple-500/10 rounded-xl border-2 border-purple-400/60 p-5">
+                          <p className="text-purple-300 text-xs font-bold mb-2 uppercase tracking-wide">👥 Gastos de Personal</p>
+                          <p className="text-3xl font-black text-purple-400">S/ {gastosPersonal.toFixed(2)}</p>
+                          <p className="text-xs text-purple-300/70 mt-2">Salarios y beneficios</p>
+                        </div>
+
+                        {/* Gastos de Marketing */}
+                        <div className="bg-gradient-to-br from-pink-600/20 to-pink-500/10 rounded-xl border-2 border-pink-400/60 p-5">
+                          <p className="text-pink-300 text-xs font-bold mb-2 uppercase tracking-wide">📢 Gastos de Marketing</p>
+                          <p className="text-3xl font-black text-pink-400">S/ {gastosMarketing.toFixed(2)}</p>
+                          <p className="text-xs text-pink-300/70 mt-2">Publicidad y promociones</p>
+                        </div>
+
+                        {/* Total de Gastos */}
+                        <div className="bg-gradient-to-br from-red-700/30 to-red-600/20 rounded-xl border-2 border-red-500/80 p-5">
+                          <p className="text-red-200 text-xs font-bold mb-2 uppercase tracking-wide">💸 Total de Gastos</p>
+                          <p className="text-3xl font-black text-red-300">S/ {totalGastos.toFixed(2)}</p>
+                          <p className="text-xs text-red-200/70 mt-2">Inversión total del periodo</p>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Margen Bruto */}
-                    <div className="bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 rounded-xl border-2 border-emerald-500/50 p-5">
-                      <p className="text-emerald-400 text-xs font-bold mb-1.5 uppercase">📊 Margen Bruto</p>
-                      <p className="text-4xl font-black text-emerald-400">{margenBruto.toFixed(1)}%</p>
-                      <p className="text-xs text-gray-400 mt-1.5">
-                        S/ {(totalRevenue - totalCOGS).toFixed(2)}
-                      </p>
+                    {/* SECCIÓN 3: RENTABILIDAD */}
+                    <div className="bg-gradient-to-br from-cyan-900/30 to-emerald-800/10 rounded-2xl border-2 border-cyan-500/40 p-6">
+                      <h4 className="text-lg font-black text-cyan-400 mb-4 flex items-center gap-2">
+                        <span className="text-2xl">📈</span> RENTABILIDAD
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Margen Bruto */}
+                        <div className="bg-gradient-to-br from-emerald-600/20 to-emerald-500/10 rounded-xl border-2 border-emerald-400/60 p-5">
+                          <p className="text-emerald-300 text-xs font-bold mb-2 uppercase tracking-wide">💰 Margen Bruto</p>
+                          <p className="text-4xl font-black text-emerald-400">{margenBruto.toFixed(1)}%</p>
+                          <p className="text-xs text-emerald-300/70 mt-2">S/ {(totalRevenue - totalCOGS).toFixed(2)}</p>
+                          <p className="text-xs text-emerald-200/60 mt-1">Rentabilidad de productos</p>
+                        </div>
+
+                        {/* Utilidad Neta */}
+                        <div className={`bg-gradient-to-br ${utilidadNeta >= 0 ? 'from-cyan-600/20 to-cyan-500/10 border-cyan-400/60' : 'from-amber-600/20 to-amber-500/10 border-amber-400/60'} rounded-xl border-2 p-5`}>
+                          <p className={`${utilidadNeta >= 0 ? 'text-cyan-300' : 'text-amber-300'} text-xs font-bold mb-2 uppercase tracking-wide`}>
+                            📊 Utilidad Neta
+                          </p>
+                          <p className={`text-4xl font-black ${utilidadNeta >= 0 ? 'text-cyan-400' : 'text-amber-400'}`}>
+                            S/ {utilidadNeta.toFixed(2)}
+                          </p>
+                          <p className={`text-xs ${utilidadNeta >= 0 ? 'text-cyan-300/70' : 'text-amber-300/70'} mt-2`}>
+                            Ganancia real del periodo
+                          </p>
+                        </div>
+
+                        {/* Margen Neto */}
+                        <div className="bg-gradient-to-br from-teal-600/20 to-teal-500/10 rounded-xl border-2 border-teal-400/60 p-5">
+                          <p className="text-teal-300 text-xs font-bold mb-2 uppercase tracking-wide">📈 Margen Neto</p>
+                          <p className="text-4xl font-black text-teal-400">{margenNeto.toFixed(1)}%</p>
+                          <p className="text-xs text-teal-300/70 mt-2">
+                            {margenNeto >= 30 ? '🎉 ¡Excelente!' : margenNeto >= 15 ? '✅ Bueno' : margenNeto >= 0 ? '⚠️ Mejorable' : '❌ Negativo'}
+                          </p>
+                        </div>
+
+                        {/* ROI - Retorno de Capital */}
+                        <div className="bg-gradient-to-br from-yellow-600/20 to-amber-500/10 rounded-xl border-2 border-yellow-400/60 p-5">
+                          <p className="text-yellow-300 text-xs font-bold mb-2 uppercase tracking-wide">🎯 Retorno de Capital (ROI)</p>
+                          <p className="text-4xl font-black text-yellow-400">{roi.toFixed(1)}%</p>
+                          <p className="text-xs text-yellow-300/70 mt-2">
+                            {roi >= 0 ? `Por cada S/1 invertido ganas S/${(1 + roi/100).toFixed(2)}` : 'Capital en pérdida'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Fila 2: Gastos Operativos, Utilidad Operativa, Margen Neto */}
-
-                    {/* Gastos Operativos */}
-                    <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 rounded-xl border-2 border-red-500/50 p-5">
-                      <p className="text-red-400 text-xs font-bold mb-1.5 uppercase">📉 Gastos Operativos</p>
-                      <p className="text-4xl font-black text-red-400">S/ {gastosOperativos.toFixed(2)}</p>
-                      <p className="text-xs text-gray-400 mt-1.5">{filteredPurchases.length} compras/gastos</p>
+                    {/* Info adicional */}
+                    <div className="bg-gradient-to-r from-purple-900/20 to-cyan-900/20 border border-purple-500/30 rounded-xl p-5">
+                      <h5 className="text-purple-300 text-sm font-bold mb-2 flex items-center gap-2">
+                        💡 Guía de Métricas Financieras
+                      </h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-300">
+                        <div>
+                          <p className="font-bold text-emerald-400 mb-1">📊 Margen Bruto:</p>
+                          <p className="text-gray-400">Mide la rentabilidad de tus productos (Ventas - COGS).</p>
+                        </div>
+                        <div>
+                          <p className="font-bold text-cyan-400 mb-1">📈 Margen Neto:</p>
+                          <p className="text-gray-400">Porcentaje de ganancia real después de TODOS los gastos.</p>
+                        </div>
+                        <div>
+                          <p className="font-bold text-yellow-400 mb-1">🎯 ROI (Retorno de Capital):</p>
+                          <p className="text-gray-400">Cuánto ganas por cada sol invertido. Un ROI de 50% significa que recuperas tu inversión más 50% de ganancia.</p>
+                        </div>
+                        <div>
+                          <p className="font-bold text-red-400 mb-1">💸 Costos Fijos vs Operativos:</p>
+                          <p className="text-gray-400">Fijos: alquiler, servicios. Operativos: insumos, materiales variables.</p>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* Utilidad Operativa */}
-                    <div className={`bg-gradient-to-br ${utilidadOperativa >= 0 ? 'from-fuchsia-900/40 to-fuchsia-800/20 border-fuchsia-500/50' : 'from-amber-900/40 to-amber-800/20 border-amber-500/50'} rounded-xl border-2 p-5`}>
-                      <p className={`${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'} text-xs font-bold mb-1.5 uppercase`}>
-                        ✅ Utilidad Operativa
-                      </p>
-                      <p className={`text-4xl font-black ${utilidadOperativa >= 0 ? 'text-fuchsia-400' : 'text-amber-400'}`}>
-                        S/ {utilidadOperativa.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1.5">Ventas - COGS - Gastos</p>
-                    </div>
-
-                    {/* Margen Neto */}
-                    <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/20 rounded-xl border-2 border-cyan-500/50 p-5">
-                      <p className="text-cyan-400 text-xs font-bold mb-1.5 uppercase">📈 Margen Neto</p>
-                      <p className="text-4xl font-black text-cyan-400">{margenNeto.toFixed(1)}%</p>
-                      <p className="text-xs text-gray-400 mt-1.5">
-                        {margenNeto >= 30 ? '¡Excelente!' : margenNeto >= 15 ? 'Bueno' : margenNeto >= 0 ? 'Mejorable' : 'Negativo'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Info adicional */}
-                  <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4 mt-6">
-                    <p className="text-cyan-300 text-xs">
-                      <span className="font-bold">💡 Información:</span> Este dashboard integra datos de ventas (Productos de Venta) y gastos operativos (Compras y Gastos) para darte una visión completa de tu negocio.
-                      El <strong>Margen Bruto</strong> muestra rentabilidad de productos, mientras que el <strong>Margen Neto</strong> considera todos los gastos operativos.
-                    </p>
                   </div>
                 </div>
               );
