@@ -2500,25 +2500,24 @@ export default function AdminPage() {
                                 });
 
                                 return (
-                                  <div className="mt-1 ml-8 bg-gradient-to-r from-amber-500/25 to-orange-500/25 border-2 border-amber-500 rounded px-2 py-1">
-                                    <div className="flex items-center gap-1 mb-0.5">
-                                      <span className="text-amber-400 font-black text-xs">⚠️ EXTRAS:</span>
-                                    </div>
-                                    <div className="space-y-0.5">
-                                      {Object.entries(complementCounts).map(([compId, count], compIdx) => {
-                                        const complement = availableComplements[compId];
-                                        if (!complement) return null;
-                                        const totalPrice = complement.price * count;
-                                        return (
-                                          <div key={compIdx} className="text-xs text-amber-200 flex items-center gap-1 font-bold">
-                                            <span className="text-amber-400 font-black">+</span>
-                                            {count > 1 && <span className="text-amber-300 font-black">{count}x</span>}
-                                            <span>{complement.name}</span>
-                                            <span className="text-amber-400 font-black">S/ {totalPrice.toFixed(2)}</span>
+                                  <div className="mt-1 ml-8 space-y-1">
+                                    {Object.entries(complementCounts).map(([compId, count], compIdx) => {
+                                      const complement = availableComplements[compId];
+                                      if (!complement) return null;
+                                      const totalPrice = complement.price * count;
+                                      return (
+                                        <div key={compIdx} className="bg-gradient-to-r from-amber-500/25 to-orange-500/25 border-2 border-amber-500 rounded px-2 py-1">
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-amber-400 font-black text-base">⚠️</span>
+                                              {count > 1 && <span className="text-amber-300 font-black text-xs">{count}x</span>}
+                                              <span className="text-amber-100 font-bold text-xs">{complement.name}</span>
+                                            </div>
+                                            <span className="text-amber-400 font-black text-xs">S/ {totalPrice.toFixed(2)}</span>
                                           </div>
-                                        );
-                                      })}
-                                    </div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 );
                               })()}
@@ -2662,7 +2661,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* BOTONES DE ACCIÓN */}
-                <div className="border-t border-white/10 mt-2 pt-2 px-3 flex flex-wrap gap-2 justify-end">
+                <div className="px-3 pb-3 pt-3 flex flex-wrap gap-2 justify-end">
                     {order.status === "pendiente-verificacion" && (
                       <>
                         <button
