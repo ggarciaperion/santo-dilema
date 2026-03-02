@@ -1498,47 +1498,54 @@ export default function AdminPage() {
       });
     }
 
-    // Definir rangos de fechas
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    // Si hay filtro activo, usar directamente los pedidos filtrados para TODOS los cálculos
+    let todayOrders, dailySales, currentMonthOrders, monthlySales;
+    let lastMonthOrders, lastMonthSales, progressPercentage, lastMonthAverageTicket, totalRevenue;
 
-    const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    if (isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo) {
+      // MODO FILTRADO: usar deliveredOrders (ya filtrados) para todos los cálculos
+      todayOrders = deliveredOrders;
+      dailySales = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+      currentMonthOrders = deliveredOrders;
+      monthlySales = dailySales;
+      lastMonthOrders = [];
+      lastMonthSales = 0;
+      progressPercentage = 0;
+      lastMonthAverageTicket = 0;
+      totalRevenue = dailySales;
+    } else {
+      // MODO NORMAL: usar rangos de fechas predeterminados
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    // 1. VENTAS DEL DÍA - Importe S/ del día en curso
-    const todayOrders = deliveredOrders.filter((order: any) => {
-      const orderDate = getPeruDate(order.createdAt);
-      return orderDate >= startOfToday && orderDate <= endOfToday;
-    });
-    const dailySales = todayOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+      const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-    // 2. VENTAS DEL MES - Importe S/ del mes en curso
-    const currentMonthOrders = deliveredOrders.filter((order: any) => {
-      const orderDate = getPeruDate(order.createdAt);
-      return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
-    });
-    const monthlySales = currentMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+      todayOrders = deliveredOrders.filter((order: any) => {
+        const orderDate = getPeruDate(order.createdAt);
+        return orderDate >= startOfToday && orderDate <= endOfToday;
+      });
+      dailySales = todayOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
-    // 3. VENTAS DEL MES ANTERIOR - Para comparación
-    const lastMonthOrders = deliveredOrders.filter((order: any) => {
-      const orderDate = getPeruDate(order.createdAt);
-      return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
-    });
-    const lastMonthSales = lastMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+      currentMonthOrders = deliveredOrders.filter((order: any) => {
+        const orderDate = getPeruDate(order.createdAt);
+        return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
+      });
+      monthlySales = currentMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
-    // PORCENTAJE DE AVANCE - Mes actual sobre mes anterior
-    const progressPercentage = lastMonthSales > 0 ? (monthlySales / lastMonthSales) * 100 : 0;
+      lastMonthOrders = deliveredOrders.filter((order: any) => {
+        const orderDate = getPeruDate(order.createdAt);
+        return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
+      });
+      lastMonthSales = lastMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
-    // 4. TICKET PROMEDIO - Promedio del mes anterior
-    const lastMonthAverageTicket = lastMonthOrders.length > 0
-      ? lastMonthSales / lastMonthOrders.length
-      : 0;
-
-    // 5. INGRESOS TOTALES - Desde el día uno
-    const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+      progressPercentage = lastMonthSales > 0 ? (monthlySales / lastMonthSales) * 100 : 0;
+      lastMonthAverageTicket = lastMonthOrders.length > 0 ? lastMonthSales / lastMonthOrders.length : 0;
+      totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+    }
 
     // NUEVO: Productos vendidos en el MES ACTUAL (ordenados de mayor a menor)
     const currentMonthProductSales = new Map();
@@ -1693,11 +1700,10 @@ export default function AdminPage() {
     const topProductLastMonth = lastMonthProductsArray[0] || null;
     const leastProductLastMonth = lastMonthProductsArray[lastMonthProductsArray.length - 1] || null;
 
-    // Órdenes del día (solo entregadas)
-    const todayDeliveredOrders = deliveredOrders.filter((order: any) => {
-      const orderDate = getPeruDate(order.createdAt);
-      return orderDate >= startOfToday && orderDate <= endOfToday;
-    });
+    // Órdenes del día (solo entregadas) - respeta el filtro activo
+    const todayDeliveredOrders = isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo
+      ? deliveredOrders
+      : todayOrders;
 
     // Progreso de órdenes: mes actual vs mes anterior
     const ordersProgressPercentage = lastMonthOrders.length > 0
