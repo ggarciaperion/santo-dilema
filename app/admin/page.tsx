@@ -1370,7 +1370,7 @@ export default function AdminPage() {
     return Array.from(customersMap.values()).sort((a, b) => b.totalOrders - a.totalOrders);
   };
 
-  const allCustomers = getCustomersData();
+  const allCustomers = activeTab === "customers" || activeTab === "analytics" ? getCustomersData() : [];
 
   // Segmentación avanzada de clientes
   const getCustomerSegments = () => {
@@ -1879,7 +1879,28 @@ export default function AdminPage() {
     };
   };
 
-  const analytics = getAnalytics();
+  const analytics = activeTab === "analytics" ? getAnalytics() : {
+    dailySales: 0,
+    monthlySales: 0,
+    progressPercentage: 0,
+    lastMonthAverageTicket: 0,
+    totalRevenue: 0,
+    todayDeliveredOrdersCount: 0,
+    productsArray: [],
+    currentMonthProductsArray: [],
+    topDaysLastMonth: [],
+    lastMonthProductsWithComparison: [],
+    allComplementsList: [],
+    paymentMethodsArray: [],
+    peakHour: "",
+    peakHourCount: 0,
+    mostSoldComplement: null,
+    allComplements: [],
+    complementsByCategory: {},
+    conversionRate: 0,
+    menusSoldToday: 0,
+    beveragesSoldToday: 0
+  };
 
   // Generar datos para la gráfica de órdenes entregadas en línea de tiempo
   const getChartData = () => {
@@ -1927,7 +1948,7 @@ export default function AdminPage() {
     return chartData;
   };
 
-  const chartData = getChartData();
+  const chartData = activeTab === "analytics" ? getChartData() : [];
 
   // Mostrar pantalla de carga mientras se verifica la autenticación
   if (checkingAuth) {
