@@ -2479,12 +2479,16 @@ export default function AdminPage() {
 
                               {/* Mostrar salsas si existen */}
                               {itemSalsas.length > 0 && (
-                                <div className="mt-1 ml-8 text-[10px] text-yellow-300">
-                                  <span className="font-bold">🌶️ Salsas: </span>
-                                  {itemSalsas.map((salsaId: string) => {
-                                    const salsa = salsas.find(s => s.id === salsaId);
-                                    return salsa?.name || salsaId;
-                                  }).join(', ')}
+                                <div className="mt-1 ml-8 bg-gradient-to-r from-yellow-500/25 to-lime-500/25 border-2 border-yellow-500 rounded px-2 py-1">
+                                  <div className="flex items-center gap-1 mb-0.5">
+                                    <span className="text-yellow-400 font-black text-xs">🌶️ SALSAS:</span>
+                                  </div>
+                                  <div className="text-xs text-yellow-200 font-bold">
+                                    {itemSalsas.map((salsaId: string) => {
+                                      const salsa = salsas.find(s => s.id === salsaId);
+                                      return salsa?.name || salsaId;
+                                    }).join(', ')}
+                                  </div>
                                 </div>
                               )}
 
@@ -2658,7 +2662,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* BOTONES DE ACCIÓN */}
-                <div className="border-t border-white/10 mt-2 pt-2 px-3 flex flex-wrap gap-2">
+                <div className="border-t border-white/10 mt-2 pt-2 px-3 flex flex-wrap gap-2 justify-end">
                     {order.status === "pendiente-verificacion" && (
                       <>
                         <button
