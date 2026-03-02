@@ -3903,8 +3903,8 @@ export default function AdminPage() {
                                     };
                                     const config = categoryConfig[category] || categoryConfig.operativos;
                                     return (
-                                      <span className={`text-xs font-bold ${config.color}`} title={config.label}>
-                                        {config.icon}
+                                      <span className={`text-xs font-bold ${config.color}`}>
+                                        {config.icon} {config.label}
                                       </span>
                                     );
                                   })()}
@@ -4997,8 +4997,8 @@ export default function AdminPage() {
                                     };
                                     const config = categoryConfig[category] || categoryConfig.operativos;
                                     return (
-                                      <span className={`text-xs font-bold ${config.color}`} title={config.label}>
-                                        {config.icon}
+                                      <span className={`text-xs font-bold ${config.color}`}>
+                                        {config.icon} {config.label}
                                       </span>
                                     );
                                   })()}
