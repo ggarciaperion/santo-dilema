@@ -4276,20 +4276,14 @@ export default function AdminPage() {
                 const items = order.completedOrders || order.cart || [];
                 const couponFactor = 1 - (order.couponDiscount || 0) / 100;
                 items.forEach((item: any) => {
-                  // 1. Menú principal
+                  // 1. Menú principal (Pequeño Dilema, Dúo Dilema, Santo Pecado, ensaladas)
                   const menuName = item.name || item.product?.name || "";
                   const qty = item.quantity || 0;
                   const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
                   if (menuName) addToSoldMap(menuName, qty, price * qty);
 
-                  // 2. Salsas (array de IDs de salsas base incluidas en el menú)
-                  const itemSalsas: string[] = item.salsas || [];
-                  itemSalsas.forEach((salsaId: string) => {
-                    const salsa = salsas.find(s => s.id === salsaId);
-                    if (salsa) addToSoldMap(salsa.name, 1, 0); // incluidas en precio, costo 0 o lo defines tú
-                  });
-
-                  // 3. Complementos pagados (bebidas, extras, salsas extra)
+                  // 2. Complementos y extras pagados (bebidas, papas extras, salsas extras)
+                  // NO incluye salsas base que vienen con el menú
                   const compIds: string[] = item.complementIds || [];
                   compIds.forEach((compId: string) => {
                     const comp = availableComplements[compId];
