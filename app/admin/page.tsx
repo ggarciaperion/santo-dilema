@@ -4309,8 +4309,8 @@ export default function AdminPage() {
                 return { ...p, sold: sold.qty, revenue: sold.revenue, totalCost, netProfit, margin };
               }).sort((a: any, b: any) => b.sold - a.sold);
 
-              // KPIs globales
-              const totalRevenue = perfRows.reduce((s: number, r: any) => s + r.revenue, 0);
+              // KPIs globales - Calcular revenue directo de pedidos (más preciso)
+              const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
               const totalCostAll = perfRows.reduce((s: number, r: any) => s + r.totalCost, 0);
               const totalProfit = totalRevenue - totalCostAll;
               // Margen promedio: solo productos con ventas
@@ -4404,9 +4404,9 @@ export default function AdminPage() {
                         {/* Indicador período activo */}
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-400">Mostrando:</span>
-                          {isSalesDateFiltered ? (
+                          {isSalesDateFiltered && salesDateFrom && salesDateTo ? (
                             <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 text-xs font-bold">
-                              📅 {new Date(salesDateFrom).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo).toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
+                              📅 {new Date(salesDateFrom + "T12:00:00").toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo + "T12:00:00").toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
                             </span>
                           ) : (
                             <span className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-full text-gray-300 text-xs font-bold">
