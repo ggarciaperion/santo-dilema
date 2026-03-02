@@ -2485,42 +2485,35 @@ export default function AdminPage() {
 
                               {/* Mostrar salsas si existen */}
                               {itemSalsas.length > 0 && (
-                                <div className="mt-1 ml-8 bg-gradient-to-r from-yellow-500/25 to-lime-500/25 border-2 border-yellow-500 rounded px-2 py-1">
-                                  <div className="flex items-center gap-1 mb-0.5">
-                                    <span className="text-yellow-400 font-black text-xs">🌶️ SALSAS:</span>
-                                  </div>
-                                  <div className="text-xs text-yellow-200 font-bold">
-                                    {itemSalsas.map((salsaId: string) => {
-                                      const salsa = salsas.find(s => s.id === salsaId);
-                                      return salsa?.name || salsaId;
-                                    }).join(', ')}
-                                  </div>
+                                <div className="mt-1 ml-8 text-[10px] text-yellow-300">
+                                  <span className="font-bold">🌶️ Salsas: </span>
+                                  {itemSalsas.map((salsaId: string) => {
+                                    const salsa = salsas.find(s => s.id === salsaId);
+                                    return salsa?.name || salsaId;
+                                  }).join(', ')}
                                 </div>
                               )}
 
-                              {/* ⚠️ EXTRAS - DESTACADOS VISUALMENTE ⚠️ */}
+                              {/* Mostrar complementos si existen - agrupados por tipo */}
                               {itemComplementIds.length > 0 && (() => {
+                                // Agrupar complementos duplicados
                                 const complementCounts: { [key: string]: number } = {};
                                 itemComplementIds.forEach((compId: string) => {
                                   complementCounts[compId] = (complementCounts[compId] || 0) + 1;
                                 });
 
                                 return (
-                                  <div className="mt-1 ml-8 space-y-1">
+                                  <div className="mt-1 ml-8 space-y-0.5">
                                     {Object.entries(complementCounts).map(([compId, count], compIdx) => {
                                       const complement = availableComplements[compId];
                                       if (!complement) return null;
                                       const totalPrice = complement.price * count;
                                       return (
-                                        <div key={compIdx} className="bg-gradient-to-r from-amber-500/25 to-orange-500/25 border-2 border-amber-500 rounded px-2 py-1">
-                                          <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5">
-                                              <span className="text-amber-400 font-black text-base">⚠️</span>
-                                              {count > 1 && <span className="text-amber-300 font-black text-xs">{count}x</span>}
-                                              <span className="text-amber-100 font-bold text-xs">{complement.name}</span>
-                                            </div>
-                                            <span className="text-amber-400 font-black text-xs">S/ {totalPrice.toFixed(2)}</span>
-                                          </div>
+                                        <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
+                                          <span className="font-bold">+</span>
+                                          {count > 1 && <span className="text-green-400 font-black">{count}x</span>}
+                                          <span>{complement.name}</span>
+                                          <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
                                         </div>
                                       );
                                     })}
@@ -2664,10 +2657,17 @@ export default function AdminPage() {
                       <p className="text-sm font-black text-white">Contraentrega</p>
                     )}
                   </div>
-                </div>
 
-                {/* BOTONES DE ACCIÓN */}
-                <div className="px-3 pb-3 pt-3 flex flex-wrap gap-2 justify-end">
+                  {/* NOTA SI EXISTE */}
+                  {order.notes && (
+                    <div className="flex-shrink-0 bg-yellow-500/20 border border-yellow-500 rounded px-2 py-2 w-full md:max-w-[150px]">
+                      <p className="text-[10px] text-yellow-400 font-bold uppercase mb-1">⚠️ NOTA</p>
+                      <p className="text-xs font-medium text-yellow-100 line-clamp-2">{order.notes}</p>
+                    </div>
+                  )}
+
+                  {/* BOTONES DE ACCIÓN */}
+                  <div className="flex-shrink-0 flex gap-2 w-full md:w-auto">
                     {order.status === "pendiente-verificacion" && (
                       <>
                         <button
@@ -2742,6 +2742,8 @@ export default function AdminPage() {
                         ✕ Cancelado
                       </div>
                     )}
+                </div>
+
                 </div>
               </div>
             ))}
