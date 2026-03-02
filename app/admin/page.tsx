@@ -3628,96 +3628,88 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* SECCIÓN 3: CAJA Y RENTABILIDAD - Tu dinero real */}
+                    {/* SECCIÓN 3: TU CAJA - Simple y claro */}
                     <div className="bg-gradient-to-br from-cyan-900/30 to-emerald-800/10 rounded-2xl border-2 border-cyan-500/40 p-6">
                       <h4 className="text-lg font-black text-cyan-400 mb-4 flex items-center gap-2">
-                        <span className="text-2xl">📊</span> CAJA Y RENTABILIDAD (Tu dinero real)
+                        <span className="text-2xl">💰</span> TU CAJA
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* CAJA / Utilidad */}
-                        <div className={`bg-gradient-to-br ${cajaUtilidad >= 0 ? 'from-emerald-600/30 to-emerald-500/20 border-emerald-400/80' : 'from-red-600/30 to-red-500/20 border-red-400/80'} rounded-xl border-2 p-5`}>
-                          <p className={`${cajaUtilidad >= 0 ? 'text-emerald-300' : 'text-red-300'} text-xs font-bold mb-2 uppercase tracking-wide`}>
-                            💰 CAJA / Utilidad
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* CAJA DISPONIBLE */}
+                        <div className={`bg-gradient-to-br ${cajaUtilidad >= 0 ? 'from-emerald-600/30 to-emerald-500/20 border-emerald-400/80' : 'from-red-600/30 to-red-500/20 border-red-400/80'} rounded-xl border-2 p-6`}>
+                          <p className={`${cajaUtilidad >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-bold mb-2 uppercase tracking-wide`}>
+                            💵 Dinero Disponible
                           </p>
-                          <p className={`text-4xl font-black ${cajaUtilidad >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          <p className={`text-5xl font-black ${cajaUtilidad >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             S/ {cajaUtilidad.toFixed(2)}
                           </p>
-                          <p className={`text-xs ${cajaUtilidad >= 0 ? 'text-emerald-300/70' : 'text-red-300/70'} mt-2`}>
-                            Dinero que te queda
+                          <p className={`text-sm ${cajaUtilidad >= 0 ? 'text-emerald-300/70' : 'text-red-300/70'} mt-3 font-semibold`}>
+                            Lo que tienes en caja
                           </p>
-                          <p className="text-xs text-gray-400 mt-1 font-mono">
-                            {totalVentas.toFixed(0)} - {totalCompras.toFixed(0)}
-                          </p>
+                          <div className="mt-3 pt-3 border-t border-emerald-500/30">
+                            <p className="text-xs text-gray-400">Ventas: S/ {totalVentas.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400">Gastos: S/ {totalCompras.toFixed(2)}</p>
+                          </div>
                         </div>
 
-                        {/* Margen de Caja */}
-                        <div className="bg-gradient-to-br from-teal-600/20 to-teal-500/10 rounded-xl border-2 border-teal-400/60 p-5">
-                          <p className="text-teal-300 text-xs font-bold mb-2 uppercase tracking-wide">📈 Margen de Utilidad</p>
-                          <p className="text-4xl font-black text-teal-400">{margenCaja.toFixed(1)}%</p>
-                          <p className="text-xs text-teal-300/70 mt-2">
-                            {margenCaja >= 40 ? '🎉 ¡Excelente!' : margenCaja >= 20 ? '✅ Bueno' : margenCaja >= 0 ? '⚠️ Ajustado' : '❌ En pérdida'}
+                        {/* RECUPERACIÓN DE INVERSIÓN */}
+                        <div className="bg-gradient-to-br from-blue-600/30 to-blue-500/20 rounded-xl border-2 border-blue-400/80 p-6">
+                          <p className="text-blue-300 text-sm font-bold mb-2 uppercase tracking-wide">🔄 Recuperación de Inversión</p>
+                          <p className="text-5xl font-black text-blue-400">{recuperacionCapital.toFixed(0)}%</p>
+                          <p className="text-sm text-blue-300/70 mt-3 font-semibold">
+                            {recuperacionCapital >= 100 ? '✅ Inversión recuperada' : 'Avance de recuperación'}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            De cada S/100 vendidos, te quedan S/{margenCaja.toFixed(0)}
-                          </p>
+                          <div className="mt-3 pt-3 border-t border-blue-500/30">
+                            {recuperacionCapital < 100 ? (
+                              <>
+                                <p className="text-xs text-gray-400">Te falta: {(100 - recuperacionCapital).toFixed(0)}%</p>
+                                <p className="text-xs text-gray-400">Equivale a: S/ {(totalCompras - totalVentas).toFixed(2)}</p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-xs text-emerald-400">¡Ya superaste tu inversión!</p>
+                                <p className="text-xs text-gray-400">Excedente: S/ {(totalVentas - totalCompras).toFixed(2)}</p>
+                              </>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Recuperación de Capital */}
-                        <div className="bg-gradient-to-br from-blue-600/20 to-blue-500/10 rounded-xl border-2 border-blue-400/60 p-5">
-                          <p className="text-blue-300 text-xs font-bold mb-2 uppercase tracking-wide">🔄 Recuperación de Capital</p>
-                          <p className="text-4xl font-black text-blue-400">{recuperacionCapital.toFixed(1)}%</p>
-                          <p className="text-xs text-blue-300/70 mt-2">
-                            {recuperacionCapital >= 100 ? '✅ Ya recuperaste tu inversión' : `Te falta recuperar ${(100 - recuperacionCapital).toFixed(0)}%`}
+                        {/* PROMEDIO DIARIO */}
+                        <div className="bg-gradient-to-br from-purple-600/30 to-purple-500/20 rounded-xl border-2 border-purple-400/80 p-6">
+                          <p className="text-purple-300 text-sm font-bold mb-2 uppercase tracking-wide">📊 Ventas Promedio</p>
+                          <p className="text-5xl font-black text-purple-400">
+                            S/ {deliveredOrders.length > 0 ? (totalVentas / deliveredOrders.length).toFixed(2) : '0.00'}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Por cada S/1 invertido, vendiste S/{(recuperacionCapital/100).toFixed(2)}
+                          <p className="text-sm text-purple-300/70 mt-3 font-semibold">
+                            Ticket promedio por pedido
                           </p>
-                        </div>
-
-                        {/* ROI - Retorno de Inversión */}
-                        <div className="bg-gradient-to-br from-yellow-600/20 to-amber-500/10 rounded-xl border-2 border-yellow-400/60 p-5">
-                          <p className="text-yellow-300 text-xs font-bold mb-2 uppercase tracking-wide">🎯 ROI (Retorno)</p>
-                          <p className="text-4xl font-black text-yellow-400">{roi.toFixed(1)}%</p>
-                          <p className="text-xs text-yellow-300/70 mt-2">
-                            {roi >= 50 ? '🔥 ¡Rentable!' : roi >= 0 ? '📈 Positivo' : '📉 Negativo'}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {roi >= 0 ? `Ganancia de S/${(roi/100).toFixed(2)} por cada S/1 invertido` : 'Estás perdiendo dinero'}
-                          </p>
+                          <div className="mt-3 pt-3 border-t border-purple-500/30">
+                            <p className="text-xs text-gray-400">Total pedidos: {deliveredOrders.length}</p>
+                            <p className="text-xs text-gray-400">
+                              {deliveredOrders.length > 0
+                                ? `Aprox. ${(totalVentas / deliveredOrders.length * 30).toFixed(0)} al mes si vendes 30 pedidos`
+                                : 'Sin pedidos aún'}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Info adicional */}
-                    <div className="bg-gradient-to-r from-purple-900/20 to-cyan-900/20 border border-purple-500/30 rounded-xl p-5">
-                      <h5 className="text-purple-300 text-sm font-bold mb-2 flex items-center gap-2">
-                        💡 Guía de Flujo de Caja
-                      </h5>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-300">
+                    {/* Info adicional - Simplificada */}
+                    <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-500/30 rounded-xl p-5">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">⚠️</span>
                         <div>
-                          <p className="font-bold text-emerald-400 mb-1">💰 CAJA / Utilidad:</p>
-                          <p className="text-gray-400">Dinero real que te queda después de pagar todas las compras y gastos. Formula: Ventas - Total Gastado.</p>
+                          <p className="text-yellow-300 text-sm font-bold mb-2">IMPORTANTE: Registra TODAS tus compras</p>
+                          <p className="text-xs text-gray-300">
+                            Este dashboard solo muestra el dinero de las <span className="text-yellow-400 font-bold">compras que registres</span> en "Historial de Compras".
+                          </p>
+                          <p className="text-xs text-gray-300 mt-2">
+                            Si no has registrado tus compras de ingredientes (pollo, lechuga, pan, salsas, gas, etc.), tu "Dinero Disponible" estará <span className="text-red-400 font-bold">inflado</span> y NO es real.
+                          </p>
+                          <p className="text-xs text-emerald-400 mt-3 font-semibold">
+                            ✅ Registra cada compra → Verás tu caja real → Sabrás cuánto puedes sacar
+                          </p>
                         </div>
-                        <div>
-                          <p className="font-bold text-teal-400 mb-1">📈 Margen de Utilidad:</p>
-                          <p className="text-gray-400">Porcentaje de ganancia sobre las ventas. Si es 30%, significa que de cada S/100 vendidos, S/30 son ganancia.</p>
-                        </div>
-                        <div>
-                          <p className="font-bold text-blue-400 mb-1">🔄 Recuperación de Capital:</p>
-                          <p className="text-gray-400">Cuánto has vendido vs cuánto invertiste. 100% = ya recuperaste tu inversión. 150% = vendiste 1.5 veces lo invertido.</p>
-                        </div>
-                        <div>
-                          <p className="font-bold text-yellow-400 mb-1">🎯 ROI (Retorno de Inversión):</p>
-                          <p className="text-gray-400">Ganancia pura por cada sol invertido. ROI de 50% = por cada S/1 invertido, ganas S/0.50 adicional.</p>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-purple-500/20">
-                        <p className="text-xs text-yellow-300 font-bold">⚠️ IMPORTANTE:</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Este dashboard muestra FLUJO DE CAJA REAL. Solo cuenta las compras que registres en "Historial de Compras".
-                          Si no has registrado tus compras de insumos, los números mostrarán utilidades infladas.
-                          Registra TODAS tus compras para ver tu situación financiera real.
-                        </p>
                       </div>
                     </div>
                   </div>
