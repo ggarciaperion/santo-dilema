@@ -124,32 +124,5 @@
     "cost": 1,
     "active": true,
     "type": "sale"
-  },
-  {
-    "id": "trio-taco-classico",
-    "name": "Trío Taco Clásico",
-    "category": "taco",
-    "price": 22.9,
-    "cost": 11,
-    "active": true,
-    "type": "sale"
-  },
-  {
-    "id": "taco-fiesta-mix",
-    "name": "Taco Fiesta Mix",
-    "category": "taco",
-    "price": 32.9,
-    "cost": 16,
-    "active": true,
-    "type": "sale"
-  },
-  {
-    "id": "mega-taco-combo",
-    "name": "Mega Taco Combo",
-    "category": "taco",
-    "price": 42.9,
-    "cost": 21,
-    "active": true,
-    "type": "sale"
   }
 ]
