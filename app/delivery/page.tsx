@@ -65,8 +65,13 @@ function DeliveryTimer({ startTime }: { startTime: string }) {
     return () => clearInterval(interval);
   }, []);
 
+  // Obtener hora actual en zona horaria de Perú
+  const now = new Date();
+  const peruNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+
+  // Parsear el timestamp de inicio
   const startMs = new Date(startTime).getTime();
-  const diff = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+  const diff = Math.max(0, Math.floor((peruNow.getTime() - startMs) / 1000));
   const minutes = Math.floor(diff / 60);
   const seconds = diff % 60;
 

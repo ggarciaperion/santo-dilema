@@ -77,9 +77,15 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
     }
 
     const updateElapsed = () => {
-      const now = new Date().getTime();
-      const created = new Date(createdAt).getTime();
-      let diff = Math.floor((now - created) / 1000); // diferencia en segundos
+      // Obtener hora actual en zona horaria de Perú
+      const now = new Date();
+      const peruNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+
+      // Parsear el timestamp del pedido
+      const created = new Date(createdAt);
+
+      // Calcular diferencia en milisegundos
+      let diff = Math.floor((peruNow.getTime() - created.getTime()) / 1000); // diferencia en segundos
 
       // Asegurar que no sea negativo (inicia en 0)
       if (diff < 0) {

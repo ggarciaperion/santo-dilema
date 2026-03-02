@@ -9,6 +9,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Helper para obtener timestamp actual en zona horaria de Perú (UTC-5)
+function getPeruTimestamp(): string {
+  const now = new Date();
+  // Convertir a zona horaria de Perú (UTC-5)
+  const peruTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+  return peruTime.toISOString();
+}
+
 // Productos FAT para referencia
 const fatProducts = [
   {
@@ -169,6 +177,7 @@ export async function POST(request: Request) {
     });
 
     // Crear nuevo pedido con ID único
+    const peruNow = getPeruTimestamp();
     const newOrder = {
       id: orderId,
       name,
@@ -187,9 +196,9 @@ export async function POST(request: Request) {
       paymentMethod,
       cantoCancelo: cantoCancelo || undefined,
       paymentProofPath,
-      timestamp,
+      timestamp: peruNow,
       status,
-      createdAt: timestamp || new Date().toISOString(),
+      createdAt: peruNow,
     };
 
     console.log("✅ Pedido creado con ID:", newOrder.id, "| Método:", paymentMethod);
@@ -216,7 +225,7 @@ export async function PATCH(request: Request) {
   try {
     const { id, status } = await request.json();
 
-    const now = new Date().toISOString();
+    const now = getPeruTimestamp();
     const timestampField: Record<string, string> = {};
     if (status === 'confirmed') timestampField.confirmedAt = now;
     else if (status === 'en-camino') timestampField.enCaminoAt = now;
@@ -277,13 +286,14 @@ export async function PATCH(request: Request) {
 
       // Guardar la deducción si hay items
       if (deductionItems.length > 0) {
+        const deductionTime = getPeruTimestamp();
         const deduction = {
           id: Date.now().toString(),
           orderId: updatedOrder.id,
           orderName: `Pedido #${updatedOrder.id} - ${updatedOrder.name}`,
           items: deductionItems,
-          deductionDate: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
+          deductionDate: deductionTime,
+          createdAt: deductionTime,
         };
 
         await storage.saveDeduction(deduction);
