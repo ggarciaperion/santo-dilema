@@ -3729,36 +3729,31 @@ export default function AdminPage() {
             {financialSection === "purchases" && (
               <>
                 {(() => {
-                  // Filtrar inventario
-                  const filteredInventory = inventory.filter((purchase) => {
-                    // Filtro por mes (por defecto mes actual)
-                    if (inventoryMonthFilter) {
-                      const purchaseDate = new Date(purchase.purchaseDate);
-                      const purchaseYearMonth = `${purchaseDate.getFullYear()}-${String(purchaseDate.getMonth() + 1).padStart(2, '0')}`;
-                      if (purchaseYearMonth !== inventoryMonthFilter) {
-                        return false;
-                      }
-                    }
+                  // Filtrar inventario usando LOS MISMOS FILTROS del Dashboard
+                  let filteredInventory = inventory;
 
-                    // Filtro por fecha específica
-                    if (inventoryDateFilter) {
-                      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
-                      if (purchaseDate !== inventoryDateFilter) {
-                        return false;
-                      }
-                    }
+                  // Aplicar el mismo filtro de fechas que usa el Dashboard
+                  if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
+                    const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
+                    const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
+                    filteredInventory = filteredInventory.filter((purchase: any) => {
+                      const purchaseDate = getPeruDate(purchase.purchaseDate);
+                      return purchaseDate >= fromDate && purchaseDate <= toDate;
+                    });
+                  }
 
-                    // Filtro por categoría
-                    if (inventoryCategoryFilter !== "all") {
-                      const purchaseCategory = purchase.category || "operativos"; // Por defecto: operativos
-                      if (purchaseCategory !== inventoryCategoryFilter) {
-                        return false;
-                      }
-                    }
+                  // Filtro por categoría
+                  if (inventoryCategoryFilter !== "all") {
+                    const purchaseCategory = (purchase: any) => purchase.category || "operativos";
+                    filteredInventory = filteredInventory.filter((purchase: any) => {
+                      return purchaseCategory(purchase) === inventoryCategoryFilter;
+                    });
+                  }
 
-                    // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
-                    if (inventorySearchTerm) {
-                      const searchLower = inventorySearchTerm.toLowerCase();
+                  // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
+                  if (inventorySearchTerm) {
+                    const searchLower = inventorySearchTerm.toLowerCase();
+                    filteredInventory = filteredInventory.filter((purchase: any) => {
                       const hasMatchingProduct = purchase.items.some((item: any) =>
                         item.productName.toLowerCase().includes(searchLower)
                       );
@@ -3766,18 +3761,23 @@ export default function AdminPage() {
                       const hasMatchingPhone = purchase.supplierPhone?.includes(inventorySearchTerm);
                       const hasMatchingPayment = purchase.paymentMethod?.toLowerCase().includes(searchLower);
 
-                      if (!hasMatchingProduct && !hasMatchingSupplier && !hasMatchingPhone && !hasMatchingPayment) {
-                        return false;
-                      }
-                    }
-
-                    return true;
-                  });
+                      return hasMatchingProduct || hasMatchingSupplier || hasMatchingPhone || hasMatchingPayment;
+                    });
+                  }
 
                   return (
                     <>
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-4">💰 Compras y Gastos {getMonthName(inventoryMonthFilter)}</h3>
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
+                    <h3 className="text-2xl font-bold text-white">💰 Compras y Gastos</h3>
+
+                    {/* Indicador de filtro sincronizado */}
+                    {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
+                      <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 text-xs text-cyan-300">
+                        🔗 Sincronizado con Dashboard: {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Sub-tabs */}
                   <div className="flex gap-2 mb-4 border-b-2 border-fuchsia-500/20">
@@ -3803,16 +3803,8 @@ export default function AdminPage() {
                     </button>
                   </div>
 
-                  {/* Header con filtros y botón */}
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="month"
-                        value={inventoryMonthFilter}
-                        onChange={(e) => setInventoryMonthFilter(e.target.value)}
-                        className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                      />
-                    </div>
+                  {/* Header con botón Nueva Compra */}
+                  <div className="flex justify-end items-center mb-4">
                     {purchasesSubTab === "history" && (
                       <button
                         onClick={() => {
