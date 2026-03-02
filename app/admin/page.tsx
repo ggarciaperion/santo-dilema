@@ -3398,14 +3398,14 @@ export default function AdminPage() {
 
               // Filtrar pedidos entregados por fecha
               let deliveredOrders = orders.filter((o: any) =>
-                o.status === "delivered" || o.status === "Entregado"
+                o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado"
               );
 
               if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                const fromDate = new Date(dashboardDateFrom + "T00:00:00");
-                const toDate = new Date(dashboardDateTo + "T23:59:59");
+                const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
+                const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
                 deliveredOrders = deliveredOrders.filter((o: any) => {
-                  const orderDate = new Date(o.createdAt);
+                  const orderDate = getPeruDate(o.createdAt);
                   return orderDate >= fromDate && orderDate <= toDate;
                 });
               }
@@ -3446,24 +3446,25 @@ export default function AdminPage() {
                 });
               });
 
-              // Calcular VENTAS y COGS
-              let totalRevenue = 0;
+              // Calcular VENTAS directamente de los pedidos (igual que Analytics)
+              const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+
+              // Calcular COGS solo de productos con type === "sale"
               let totalCOGS = 0;
               saleProducts.forEach((p: any) => {
                 const key = normalize(p.name || "");
                 const sold = soldMap[key] || { qty: 0, revenue: 0 };
                 const cost = p.cost || 0;
-                totalRevenue += sold.revenue;
                 totalCOGS += cost * sold.qty;
               });
 
               // Calcular GASTOS OPERATIVOS (compras/gastos del periodo)
               let filteredPurchases = inventory;
               if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                const fromDate = new Date(dashboardDateFrom + "T00:00:00");
-                const toDate = new Date(dashboardDateTo + "T23:59:59");
+                const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
+                const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
                 filteredPurchases = inventory.filter((purchase: any) => {
-                  const purchaseDate = new Date(purchase.purchaseDate);
+                  const purchaseDate = getPeruDate(purchase.purchaseDate);
                   return purchaseDate >= fromDate && purchaseDate <= toDate;
                 });
               }
@@ -4102,15 +4103,15 @@ export default function AdminPage() {
 
               // --- Rendimiento: cruzar catálogo con pedidos entregados ---
               let deliveredOrders = orders.filter((o: any) =>
-                o.status === "delivered" || o.status === "Entregado"
+                o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado"
               );
 
               // Filtro por fechas
               if (isSalesDateFiltered && salesDateFrom && salesDateTo) {
-                const fromDate = new Date(salesDateFrom + "T00:00:00");
-                const toDate = new Date(salesDateTo + "T23:59:59");
+                const fromDate = new Date(salesDateFrom + "T00:00:00-05:00");
+                const toDate = new Date(salesDateTo + "T23:59:59-05:00");
                 deliveredOrders = deliveredOrders.filter((o: any) => {
-                  const orderDate = new Date(o.createdAt);
+                  const orderDate = getPeruDate(o.createdAt);
                   return orderDate >= fromDate && orderDate <= toDate;
                 });
               }
