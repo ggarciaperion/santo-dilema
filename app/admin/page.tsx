@@ -3642,13 +3642,17 @@ export default function AdminPage() {
                       }
                     }
 
-                    // Filtro por nombre de producto
+                    // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
                     if (inventorySearchTerm) {
                       const searchLower = inventorySearchTerm.toLowerCase();
                       const hasMatchingProduct = purchase.items.some((item: any) =>
                         item.productName.toLowerCase().includes(searchLower)
                       );
-                      if (!hasMatchingProduct) {
+                      const hasMatchingSupplier = purchase.supplier?.toLowerCase().includes(searchLower);
+                      const hasMatchingPhone = purchase.supplierPhone?.includes(inventorySearchTerm);
+                      const hasMatchingPayment = purchase.paymentMethod?.toLowerCase().includes(searchLower);
+
+                      if (!hasMatchingProduct && !hasMatchingSupplier && !hasMatchingPhone && !hasMatchingPayment) {
                         return false;
                       }
                     }
@@ -3729,11 +3733,39 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                {/* Buscador en tiempo real */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="🔍 Buscar por producto, proveedor, teléfono o método de pago..."
+                      value={inventorySearchTerm}
+                      onChange={(e) => setInventorySearchTerm(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-900 border-2 border-fuchsia-500/30 rounded-lg text-white placeholder-gray-500 focus:border-fuchsia-400 focus:outline-none text-sm"
+                    />
+                    {inventorySearchTerm && (
+                      <button
+                        onClick={() => setInventorySearchTerm("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-lg font-bold"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  {inventorySearchTerm && (
+                    <p className="text-xs text-fuchsia-400 mt-2">
+                      📊 Mostrando {filteredInventory.length} resultado{filteredInventory.length !== 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+
                 {/* Inventory List - Formato Tabla Excel */}
                 <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
                   {filteredInventory.length === 0 ? (
                     <div className="text-center py-12">
-                      <p className="text-xl text-gray-400">No hay compras en este mes</p>
+                      <p className="text-xl text-gray-400">
+                        {inventorySearchTerm ? `No se encontraron resultados para "${inventorySearchTerm}"` : 'No hay compras en este mes'}
+                      </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -4739,13 +4771,17 @@ export default function AdminPage() {
                       }
                     }
 
-                    // Filtro por nombre de producto
+                    // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
                     if (inventorySearchTerm) {
                       const searchLower = inventorySearchTerm.toLowerCase();
                       const hasMatchingProduct = purchase.items.some((item: any) =>
                         item.productName.toLowerCase().includes(searchLower)
                       );
-                      if (!hasMatchingProduct) {
+                      const hasMatchingSupplier = purchase.supplier?.toLowerCase().includes(searchLower);
+                      const hasMatchingPhone = purchase.supplierPhone?.includes(inventorySearchTerm);
+                      const hasMatchingPayment = purchase.paymentMethod?.toLowerCase().includes(searchLower);
+
+                      if (!hasMatchingProduct && !hasMatchingSupplier && !hasMatchingPhone && !hasMatchingPayment) {
                         return false;
                       }
                     }
