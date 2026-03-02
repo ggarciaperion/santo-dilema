@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       supplierRuc: body.supplierRuc || "",
       supplierPhone: body.supplierPhone || "",
       paymentMethod: body.paymentMethod || "plin-yape",
+      category: body.category || "operativos",
       items: body.items, // Array de { productName, quantity, unit, unitCost, total }
       totalAmount: body.totalAmount,
       notes: body.notes || "",
@@ -72,6 +73,7 @@ export async function PUT(request: Request) {
       supplierRuc: body.supplierRuc || "",
       supplierPhone: body.supplierPhone || "",
       paymentMethod: body.paymentMethod || "plin-yape",
+      category: body.category || "operativos",
       items: body.items,
       totalAmount: body.totalAmount,
       notes: body.notes || "",

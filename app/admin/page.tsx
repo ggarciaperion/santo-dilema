@@ -6608,18 +6608,38 @@ _Valido por 30 dias._`;
               </div>
             </div>
 
-            {/* Lista de Artículos */}
+            {/* Formulario dinámico según categoría */}
             <div className="mb-3">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
-                <button
-                  onClick={addInventoryItem}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                >
-                  + Item
-                </button>
-              </div>
+              {inventoryForm.category === "operativos" && (
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-sm font-bold text-white">📋 Insumos y Productos</h4>
+                  <button
+                    onClick={addInventoryItem}
+                    className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
+                  >
+                    + Item
+                  </button>
+                </div>
+              )}
+              {inventoryForm.category === "personal" && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-bold text-white mb-3">👥 Pago de Personal</h4>
+                </div>
+              )}
+              {inventoryForm.category === "fijos" && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-bold text-white mb-3">🏢 Gastos Fijos</h4>
+                </div>
+              )}
+              {inventoryForm.category === "marketing" && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-bold text-white mb-3">📢 Marketing y Publicidad</h4>
+                </div>
+              )}
 
+              {/* FORMULARIO PARA GASTOS OPERATIVOS */}
+              {inventoryForm.category === "operativos" && (
+              <>
               {/* Encabezados de columnas */}
               <div className="bg-gray-800 rounded-lg p-2 mb-2">
                 <div className="grid grid-cols-12 gap-2">
@@ -6757,6 +6777,236 @@ _Valido por 30 dias._`;
                   </div>
                 ))}
               </div>
+              </>
+              )}
+
+              {/* FORMULARIO PARA GASTOS DE PERSONAL */}
+              {inventoryForm.category === "personal" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-green-400 mb-1">Nombre del empleado *</label>
+                      <input
+                        type="text"
+                        value={inventoryForm.items[0]?.productName || ""}
+                        onChange={(e) => {
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "DÍA" };
+                          setInventoryForm({ ...inventoryForm, items: newItems });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
+                        placeholder="NOMBRE COMPLETO"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-green-400 mb-1">Días trabajados *</label>
+                      <input
+                        type="number"
+                        value={inventoryForm.items[0]?.quantity || 0}
+                        onChange={(e) => {
+                          const days = parseInt(e.target.value) || 0;
+                          const dailyRate = inventoryForm.items[0]?.unitCost || 0;
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], quantity: days, volume: 1, total: days * dailyRate };
+                          const total = days * dailyRate;
+                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: total });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-green-400 mb-1">Pago por día (S/) *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={inventoryForm.items[0]?.unitCost || 0}
+                        onChange={(e) => {
+                          const dailyRate = parseFloat(e.target.value) || 0;
+                          const days = inventoryForm.items[0]?.quantity || 0;
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], unitCost: dailyRate, total: days * dailyRate };
+                          const total = days * dailyRate;
+                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: total });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
+                    <p className="text-xs text-green-300 font-bold">Total a pagar: S/ {inventoryForm.totalAmount.toFixed(2)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* FORMULARIO PARA GASTOS FIJOS */}
+              {inventoryForm.category === "fijos" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-purple-400 mb-1">Concepto *</label>
+                      <select
+                        value={inventoryForm.items[0]?.productName || ""}
+                        onChange={(e) => {
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], productName: e.target.value, unit: "SERVICIO", quantity: 1, volume: 1 };
+                          setInventoryForm({ ...inventoryForm, items: newItems });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
+                      >
+                        <option value="">-- Seleccionar --</option>
+                        <option value="ALQUILER">🏠 ALQUILER</option>
+                        <option value="LUZ">💡 LUZ</option>
+                        <option value="AGUA">💧 AGUA</option>
+                        <option value="GAS">🔥 GAS</option>
+                        <option value="INTERNET">📡 INTERNET</option>
+                        <option value="TELÉFONO">📞 TELÉFONO</option>
+                        <option value="OTRO">📋 OTRO</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-purple-400 mb-1">Monto (S/) *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={inventoryForm.items[0]?.unitCost || 0}
+                        onChange={(e) => {
+                          const amount = parseFloat(e.target.value) || 0;
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
+                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  {inventoryForm.items[0]?.productName === "OTRO" && (
+                    <div>
+                      <label className="block text-xs font-bold text-purple-400 mb-1">Descripción</label>
+                      <input
+                        type="text"
+                        value={inventoryForm.items[0]?.category || ""}
+                        onChange={(e) => {
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], category: e.target.value.toUpperCase() };
+                          setInventoryForm({ ...inventoryForm, items: newItems });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
+                        placeholder="ESPECIFICAR GASTO"
+                      />
+                    </div>
+                  )}
+                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
+                    <p className="text-xs text-purple-300 font-bold">Total: S/ {inventoryForm.totalAmount.toFixed(2)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* FORMULARIO PARA MARKETING */}
+              {inventoryForm.category === "marketing" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-orange-400 mb-1">Descripción de la publicidad *</label>
+                      <input
+                        type="text"
+                        value={inventoryForm.items[0]?.productName || ""}
+                        onChange={(e) => {
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "CAMPAÑA" };
+                          setInventoryForm({ ...inventoryForm, items: newItems });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                        placeholder="EJ: HISTORIAS INSTAGRAM, FACEBOOK ADS"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-orange-400 mb-1">Tipo de pago *</label>
+                      <select
+                        value={inventoryForm.items[0]?.category || ""}
+                        onChange={(e) => {
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], category: e.target.value, quantity: 1, volume: 1 };
+                          setInventoryForm({ ...inventoryForm, items: newItems });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                      >
+                        <option value="">-- Seleccionar --</option>
+                        <option value="PAGO">💵 PAGO EN EFECTIVO/TRANSFERENCIA</option>
+                        <option value="CANJE">🍖 CANJE POR MENÚS</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {inventoryForm.items[0]?.category === "PAGO" && (
+                    <div>
+                      <label className="block text-xs font-bold text-orange-400 mb-1">Monto pagado (S/) *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={inventoryForm.items[0]?.unitCost || 0}
+                        onChange={(e) => {
+                          const amount = parseFloat(e.target.value) || 0;
+                          const newItems = [...inventoryForm.items];
+                          newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
+                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  )}
+
+                  {inventoryForm.items[0]?.category === "CANJE" && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-orange-400 mb-1">Cantidad de menús entregados *</label>
+                        <input
+                          type="number"
+                          value={inventoryForm.items[0]?.quantity || 0}
+                          onChange={(e) => {
+                            const qty = parseInt(e.target.value) || 0;
+                            const cost = inventoryForm.items[0]?.unitCost || 0;
+                            const newItems = [...inventoryForm.items];
+                            newItems[0] = { ...newItems[0], quantity: qty, total: qty * cost };
+                            setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
+                          }}
+                          className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-orange-400 mb-1">Costo por menú (S/) *</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={inventoryForm.items[0]?.unitCost || 0}
+                          onChange={(e) => {
+                            const cost = parseFloat(e.target.value) || 0;
+                            const qty = inventoryForm.items[0]?.quantity || 0;
+                            const newItems = [...inventoryForm.items];
+                            newItems[0] = { ...newItems[0], unitCost: cost, total: qty * cost };
+                            setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
+                          }}
+                          className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
+                    <p className="text-xs text-orange-300 font-bold">
+                      {inventoryForm.items[0]?.category === "CANJE"
+                        ? `Costo equivalente: S/ ${inventoryForm.totalAmount.toFixed(2)} (${inventoryForm.items[0]?.quantity || 0} menús)`
+                        : `Total: S/ ${inventoryForm.totalAmount.toFixed(2)}`
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Total */}
