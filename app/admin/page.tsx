@@ -4310,6 +4310,14 @@ export default function AdminPage() {
               Object.keys(soldMap).forEach((key) => {
                 if (!perfRowsMap.has(key)) {
                   const sold = soldMap[key];
+                  const originalName = sold.originalName || key;
+
+                  // Detectar venta histórica del día de apertura
+                  const isHistoricalSale = originalName.toLowerCase().includes("venta") &&
+                                          (originalName.toLowerCase().includes("apertura") ||
+                                           originalName.toLowerCase().includes("histórica") ||
+                                           originalName.toLowerCase().includes("historica"));
+
                   // Buscar en availableComplements o products sin filtrar
                   const complement = Object.values(availableComplements).find(
                     (c: any) => c && c.name && normalize(c.name) === key
@@ -4317,7 +4325,12 @@ export default function AdminPage() {
                   const productMatch = products.find((p: any) => p && p.name && normalize(p.name) === key);
 
                   const product = complement || productMatch;
-                  const cost = product?.cost || 0;
+
+                  // Si es venta histórica, asignar 50% del revenue como costo
+                  const cost = isHistoricalSale
+                    ? (sold.revenue * 0.5) / sold.qty  // 50% del total como costo unitario
+                    : (product?.cost || 0);
+
                   const price = product?.price || (sold.qty > 0 ? sold.revenue / sold.qty : 0);
                   const category = product?.category || "complemento";
 
@@ -4327,7 +4340,7 @@ export default function AdminPage() {
 
                   perfRowsMap.set(key, {
                     id: key,
-                    name: sold.originalName || key,
+                    name: originalName,
                     category,
                     price,
                     cost,
