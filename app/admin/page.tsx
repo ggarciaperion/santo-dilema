@@ -4262,12 +4262,12 @@ export default function AdminPage() {
                   return orderDate >= fromDate && orderDate <= toDate;
                 });
               }
-              // Mapa nombre normalizado → { qty, revenue }
-              const soldMap: Record<string, { qty: number; revenue: number }> = {};
+              // Mapa nombre normalizado → { qty, revenue, originalName }
+              const soldMap: Record<string, { qty: number; revenue: number; originalName: string }> = {};
               const addToSoldMap = (name: string, qty: number, revenue: number) => {
                 const key = normalize(name);
                 if (!key) return;
-                if (!soldMap[key]) soldMap[key] = { qty: 0, revenue: 0 };
+                if (!soldMap[key]) soldMap[key] = { qty: 0, revenue: 0, originalName: name };
                 soldMap[key].qty += qty;
                 soldMap[key].revenue += revenue;
               };
@@ -4333,7 +4333,7 @@ export default function AdminPage() {
 
                   perfRowsMap.set(key, {
                     id: key,
-                    name: Object.keys(soldMap).find(k => normalize(k) === key) || key,
+                    name: sold.originalName || key,
                     category,
                     price,
                     cost,
