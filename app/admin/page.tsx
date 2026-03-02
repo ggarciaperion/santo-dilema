@@ -277,6 +277,8 @@ export default function AdminPage() {
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
   const [stockSearchTerm, setStockSearchTerm] = useState<string>("");
   const [stockConsumptions, setStockConsumptions] = useState<Map<string, number>>(new Map());
+  const [showHistoricalSaleModal, setShowHistoricalSaleModal] = useState(false);
+  const [historicalSaleRegistered, setHistoricalSaleRegistered] = useState(false);
   const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
   const [inventoryMonthFilter, setInventoryMonthFilter] = useState<string>(() => {
     const now = new Date();
@@ -383,6 +385,7 @@ export default function AdminPage() {
     loadCoupons();
     loadCatalogProducts();
     loadMenuStock();
+    checkHistoricalSale();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
       loadOrders();
@@ -869,6 +872,39 @@ export default function AdminPage() {
     setAnalyticsDateFrom("");
     setAnalyticsDateTo("");
     setIsAnalyticsDateFiltered(false);
+  };
+
+  // Verificar si ya existe la venta histórica
+  const checkHistoricalSale = async () => {
+    try {
+      const response = await fetch("/api/historical-sale");
+      const data = await response.json();
+      setHistoricalSaleRegistered(data.exists);
+    } catch (error) {
+      console.error("Error al verificar venta histórica:", error);
+    }
+  };
+
+  // Registrar venta histórica del 13 de febrero
+  const registerHistoricalSale = async () => {
+    try {
+      const response = await fetch("/api/historical-sale", {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("✅ Venta histórica del 13 de febrero registrada exitosamente");
+        setHistoricalSaleRegistered(true);
+        setShowHistoricalSaleModal(false);
+        loadOrders(); // Recargar pedidos
+      } else {
+        alert(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error al registrar venta histórica:", error);
+      alert("❌ Error al registrar la venta histórica");
+    }
   };
 
   // Exportar todos los pedidos a CSV
@@ -1944,6 +1980,15 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {!historicalSaleRegistered && (
+                <button
+                  onClick={() => setShowHistoricalSaleModal(true)}
+                  className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-3 rounded-lg font-bold transition-all transform hover:scale-105 text-sm"
+                  title="Registrar venta histórica del 13 de febrero"
+                >
+                  📅 Venta Histórica
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105"
@@ -6851,6 +6896,51 @@ _Valido por 30 dias._`;
               ) : (
                 <p className="text-gray-400 text-center py-8">No hay comprobante disponible</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación - Venta Histórica */}
+      {showHistoricalSaleModal && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowHistoricalSaleModal(false)}
+        >
+          <div
+            className="bg-gray-900 rounded-xl border-2 border-orange-500 max-w-lg w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-2xl font-black text-orange-400 mb-4">
+              📅 Registrar Venta Histórica
+            </h3>
+            <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-4 mb-4">
+              <p className="text-white text-sm mb-2">
+                <strong>Fecha:</strong> 13 de febrero 2026 (Día de apertura)
+              </p>
+              <p className="text-white text-sm mb-2">
+                <strong>Monto:</strong> S/ 250.00
+              </p>
+              <p className="text-gray-400 text-xs mt-3">
+                ⚠️ Esta venta se perdió por un error del sistema y se recuperará con esta acción. Solo se registrará el monto total, sin detalle de pedidos individuales.
+              </p>
+            </div>
+            <p className="text-gray-300 text-sm mb-6">
+              Esta acción registrará la venta del día de apertura en el sistema para que se contabilice correctamente en los históricos y analytics.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={registerHistoricalSale}
+                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
+              >
+                ✅ Confirmar Registro
+              </button>
+              <button
+                onClick={() => setShowHistoricalSaleModal(false)}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition-all"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
