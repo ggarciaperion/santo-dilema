@@ -3037,7 +3037,7 @@ export default function AdminPage() {
                     Limpiar Filtro
                   </button>
                 )}
-                {isAnalyticsDateFiltered && (
+                {isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo && (
                   <span className="text-sm text-green-400 font-bold">
                     ✓ Mostrando datos del {new Date(analyticsDateFrom).toLocaleDateString("es-PE")} al {new Date(analyticsDateTo).toLocaleDateString("es-PE")}
                   </span>
@@ -3054,7 +3054,7 @@ export default function AdminPage() {
                 <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
                 <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
-                  {isAnalyticsDateFiltered ? `${new Date(analyticsDateFrom).toLocaleDateString("es-PE")} - ${new Date(analyticsDateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
+                  {isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo ? `${new Date(analyticsDateFrom).toLocaleDateString("es-PE")} - ${new Date(analyticsDateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
                 </p>
               </div>
 
