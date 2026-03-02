@@ -43,8 +43,7 @@ const products: Product[] = [
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
     description: "El clásico que no falla — acá lo hacemos mejor. Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. César cremosa de la casa incluida.",
-    price: 20.00,
-    oldPrice: 22.50,
+    price: 22.50,
     image: "/2.png",
     category: "fit",
   },
@@ -60,8 +59,7 @@ const products: Product[] = [
     id: "ensalada-mediterranea",
     name: "TUNA FRESH BOWL",
     description: "El mar en un bowl. Atún en trozos, lechuga romana, tomate cherry, pepino, maíz americano, palta y huevo. Con aderezo cremoso especial de la casa.",
-    price: 20.00,
-    oldPrice: 23.50,
+    price: 23.50,
     image: "/4.png",
     category: "fit",
   },
@@ -147,11 +145,10 @@ export default function FitPage() {
   const router = useRouter();
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
+  // PROMOCIÓN DESACTIVADA
   const FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
   const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
-  const hasComboDiscount =
-    completedOrders.some(o => FAT_IDS.includes(o.productId)) &&
-    completedOrders.some(o => FIT_IDS.includes(o.productId));
+  const hasComboDiscount = false; // Promoción combo desactivada
 
   const completedTotal = completedOrders.reduce((total, order) => {
     const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
@@ -805,36 +802,8 @@ export default function FitPage() {
 
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
-        {/* Banner móvil - Carrusel */}
-        <div className="block md:hidden w-full mb-2 relative overflow-hidden rounded">
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
-          >
-            <div className="w-full flex-shrink-0">
-              <img src="/bannerhoymovil.png" alt="Banner Principal" className="w-full h-auto block" />
-            </div>
-            <div className="w-full flex-shrink-0">
-              <img src="/movilduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
-            </div>
-          </div>
-        </div>
-
-        {/* Banner web - Carrusel */}
-        <div className="hidden md:block mx-auto relative overflow-hidden rounded-lg" style={bannerWidth ? { width: bannerWidth } : {}}>
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
-          >
-            <div className="w-full flex-shrink-0">
-              <img src="/bannerhoyweb.png" alt="Banner Principal" className="w-full h-auto block" />
-            </div>
-            <div className="w-full flex-shrink-0">
-              <img src="/webduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
-            </div>
-          </div>
-        </div>
-        <div className="h-6 md:h-8" />
+        {/* Banners promocionales desactivados */}
+        <div className="h-2" />
         <div className="relative flex items-center justify-center overflow-visible">
           <div
             ref={scrollContainerRef}

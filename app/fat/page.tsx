@@ -201,11 +201,10 @@ export default function FatPage() {
   const router = useRouter();
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
+  // PROMOCIÓN DESACTIVADA
   const FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
   const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
-  const hasComboDiscount =
-    completedOrders.some(o => FAT_IDS.includes(o.productId)) &&
-    completedOrders.some(o => FIT_IDS.includes(o.productId));
+  const hasComboDiscount = false; // Promoción combo desactivada
 
   const completedTotal = completedOrders.reduce((total, order) => {
     const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
@@ -678,14 +677,9 @@ export default function FatPage() {
     // Guardar la orden completada
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
-    const hasPromoAcevichada = product.id === "pequeno-dilema" && orderSalsas.includes("honey-mustard");
-    const hasPromoDuoDilema = product.id === "duo-dilema" &&
-      orderSalsas.includes("teriyaki") &&
-      orderSalsas.includes("honey-mustard");
-    const hasPromoSantoPecado = product.id === "santo-pecado" &&
-      orderSalsas.includes("barbecue") &&
-      orderSalsas.includes("buffalo-picante") &&
-      orderSalsas.includes("macerichada");
+    const hasPromoAcevichada = false; // Promoción desactivada
+    const hasPromoDuoDilema = false; // Promoción desactivada
+    const hasPromoSantoPecado = false; // Promoción desactivada
 
     let finalPrice = product.price;
     let discountApplied = false;
@@ -1118,36 +1112,8 @@ export default function FatPage() {
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
-        {/* Banner móvil - Carrusel */}
-        <div className="block md:hidden w-full mb-2 relative overflow-hidden rounded">
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
-          >
-            <div className="w-full flex-shrink-0">
-              <img src="/bannerhoymovil.png" alt="Banner Principal" className="w-full h-auto block" />
-            </div>
-            <div className="w-full flex-shrink-0">
-              <img src="/movilduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
-            </div>
-          </div>
-        </div>
-
-        {/* Banner web - Carrusel */}
-        <div className="hidden md:block mx-auto relative overflow-hidden rounded-lg" style={bannerWidth ? { width: bannerWidth } : {}}>
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${bannerSlide * 100}%)` }}
-          >
-            <div className="w-full flex-shrink-0">
-              <img src="/bannerhoyweb.png" alt="Banner Principal" className="w-full h-auto block" />
-            </div>
-            <div className="w-full flex-shrink-0">
-              <img src="/webduo.png" alt="Promo Duo Dilema" className="w-full h-auto block" />
-            </div>
-          </div>
-        </div>
-        <div className="h-6 md:h-8" />
+        {/* Banners promocionales desactivados */}
+        <div className="h-2" />
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible">
           {/* Scrollable Products - Carrusel en móvil, grilla en desktop */}
@@ -1235,29 +1201,9 @@ export default function FatPage() {
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
-                      {product.id === "pequeno-dilema" && currentSalsas.includes("honey-mustard") ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-gray-500 line-through text-xs md:text-sm">S/ 20.00</span>
-                          <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 16.00</span>
-                          <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">PROMO</span>
-                        </div>
-                      ) : product.id === "duo-dilema" && currentSalsas.includes("teriyaki") && currentSalsas.includes("honey-mustard") ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-gray-500 line-through text-xs md:text-sm">S/ 34.00</span>
-                          <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 30.00</span>
-                          <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">PROMO</span>
-                        </div>
-                      ) : product.id === "santo-pecado" && currentSalsas.includes("barbecue") && currentSalsas.includes("buffalo-picante") && currentSalsas.includes("macerichada") ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-gray-500 line-through text-xs md:text-sm">S/ 47.00</span>
-                          <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ 42.00</span>
-                          <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">PROMO</span>
-                        </div>
-                      ) : (
-                        <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
-                          S/ {product.price.toFixed(2)}
-                        </span>
-                      )}
+                      <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
+                        S/ {product.price.toFixed(2)}
+                      </span>
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
                           onClick={(e) => {
@@ -1356,11 +1302,11 @@ export default function FatPage() {
                               const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
                               const canAddMore = count < maxSalsaCount && canSelect && !salsa.soldOut;
                               const showAddButton = canAddMore;
-                              const isPromoSalsa = product.id === "pequeno-dilema" && salsa.id === "honey-mustard";
-                              const isPromoDuoDilemaSalsa = product.id === "duo-dilema" && (salsa.id === "teriyaki" || salsa.id === "honey-mustard");
-                              const hasBothPromoDuoSalsas = product.id === "duo-dilema" && currentSalsas.includes("teriyaki") && currentSalsas.includes("honey-mustard");
-                              const isPromoSantoPecadoSalsa = product.id === "santo-pecado" && (salsa.id === "barbecue" || salsa.id === "buffalo-picante" || salsa.id === "macerichada");
-                              const hasAllPromoSantoPecadoSalsas = product.id === "santo-pecado" && currentSalsas.includes("barbecue") && currentSalsas.includes("buffalo-picante") && currentSalsas.includes("macerichada");
+                              const isPromoSalsa = false; // Promociones desactivadas
+                              const isPromoDuoDilemaSalsa = false; // Promociones desactivadas
+                              const hasBothPromoDuoSalsas = false; // Promociones desactivadas
+                              const isPromoSantoPecadoSalsa = false; // Promociones desactivadas
+                              const hasAllPromoSantoPecadoSalsas = false; // Promociones desactivadas
 
                               return (
                                 <div

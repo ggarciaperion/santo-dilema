@@ -15,26 +15,12 @@ export default function Home() {
   const [isPreLaunch, setIsPreLaunch] = useState(false);
 
   useEffect(() => {
-    // MODO PRUEBAS: Mostrar Yunza en cada recarga (más rápido)
-    // TODO: Cambiar en producción para mostrar solo una vez
+    // YUNZA DESACTIVADA - Promoción finalizada
+    /*
     const timer = setTimeout(() => {
       setShowYunzaModal(true);
     }, 800);
     return () => clearTimeout(timer);
-
-    /* PRODUCCIÓN: Descomentar esto y eliminar el código de arriba
-    const isTestEnvironment = window.location.hostname.includes('santo-dilema-iota.vercel.app');
-    const hasSeenYunza = localStorage.getItem("santo-dilema-yunza-shown");
-
-    if (isTestEnvironment || !hasSeenYunza) {
-      const timer = setTimeout(() => {
-        setShowYunzaModal(true);
-        if (!isTestEnvironment) {
-          localStorage.setItem("santo-dilema-yunza-shown", "true");
-        }
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
     */
   }, []);
 

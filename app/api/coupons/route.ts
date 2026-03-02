@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
 // Fecha de corte global: ningún cupón es válido después de esta fecha
-const COUPON_GLOBAL_EXPIRY = new Date("2026-03-01T23:59:59-05:00"); // Hora Perú (UTC-5)
+// CUPONES DESACTIVADOS - Todos expiraron el 1 de marzo
+const COUPON_GLOBAL_EXPIRY = new Date("2026-03-01T00:00:00-05:00"); // Hora Perú (UTC-5)
 
 // IDs de salsas promocionales (Promoción 13%)
 const PROMO_SAUCE_IDS = [
