@@ -988,17 +988,18 @@ export default function AdminPage() {
       ];
     });
 
-    const csvContent = [headers, ...rows]
-      .map(row => row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    // Usar TABULADORES en lugar de comas para que Excel lo abra correctamente
+    const tsvContent = [headers, ...rows]
+      .map(row => row.map((cell: any) => String(cell).replace(/\t/g, ' ')).join('\t'))
       .join('\n');
 
     const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([BOM + tsvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     const now = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
     link.href = url;
-    link.download = `pedidos-santo-dilema-${now}.csv`;
+    link.download = `pedidos-santo-dilema-${now}.xls`;
     link.click();
     URL.revokeObjectURL(url);
   };
