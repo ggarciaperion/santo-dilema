@@ -263,6 +263,7 @@ export default function AdminPage() {
     supplierRuc: "",
     supplierPhone: "",
     paymentMethod: "plin-yape",
+    category: "operativos",
     items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
     totalAmount: 0,
     purchaseDate: new Date().toISOString().split('T')[0]
@@ -284,6 +285,7 @@ export default function AdminPage() {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+  const [inventoryCategoryFilter, setInventoryCategoryFilter] = useState<string>("all");
   const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [showInventoryEditModal, setShowInventoryEditModal] = useState(false);
@@ -1167,6 +1169,7 @@ export default function AdminPage() {
           supplierRuc: "",
           supplierPhone: "",
           paymentMethod: "plin-yape",
+          category: "operativos",
           items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
           totalAmount: 0,
           purchaseDate: new Date().toISOString().split('T')[0]
@@ -3642,6 +3645,14 @@ export default function AdminPage() {
                       }
                     }
 
+                    // Filtro por categoría
+                    if (inventoryCategoryFilter !== "all") {
+                      const purchaseCategory = purchase.category || "operativos"; // Por defecto: operativos
+                      if (purchaseCategory !== inventoryCategoryFilter) {
+                        return false;
+                      }
+                    }
+
                     // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
                     if (inventorySearchTerm) {
                       const searchLower = inventorySearchTerm.toLowerCase();
@@ -3717,21 +3728,107 @@ export default function AdminPage() {
                 {/* ========== HISTORIAL DE COMPRAS ========== */}
                 {purchasesSubTab === "history" && (
                   <>
-                    {/* Pequeño cartel con totales */}
-                    <div className="flex gap-3 mb-6">
-                  <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-fuchsia-500/20">
-                    <p className="text-xs text-gray-400">Compras del mes</p>
-                    <p className="text-sm font-bold text-fuchsia-400">
-                      S/ {filteredInventory.reduce((sum, p) => sum + p.totalAmount, 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-cyan-500/20">
-                    <p className="text-xs text-gray-400">Compras totales</p>
-                    <p className="text-sm font-bold text-cyan-400">
-                      S/ {inventory.reduce((sum, p) => sum + p.totalAmount, 0).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
+                    {/* Carteles con totales por categoría */}
+                    {(() => {
+                      const operativos = filteredInventory.filter(p => (p.category || "operativos") === "operativos").reduce((sum, p) => sum + p.totalAmount, 0);
+                      const fijos = filteredInventory.filter(p => (p.category || "operativos") === "fijos").reduce((sum, p) => sum + p.totalAmount, 0);
+                      const personal = filteredInventory.filter(p => (p.category || "operativos") === "personal").reduce((sum, p) => sum + p.totalAmount, 0);
+                      const marketing = filteredInventory.filter(p => (p.category || "operativos") === "marketing").reduce((sum, p) => sum + p.totalAmount, 0);
+                      const total = filteredInventory.reduce((sum, p) => sum + p.totalAmount, 0);
+
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+                          {/* Gastos Operativos */}
+                          <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 rounded-lg border-2 border-blue-500/50 p-4">
+                            <p className="text-blue-400 text-xs font-bold mb-1 uppercase">🍖 Operativos</p>
+                            <p className="text-2xl font-black text-blue-400">S/ {operativos.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 mt-1">Insumos y materias primas</p>
+                          </div>
+
+                          {/* Gastos Fijos */}
+                          <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 rounded-lg border-2 border-purple-500/50 p-4">
+                            <p className="text-purple-400 text-xs font-bold mb-1 uppercase">🏢 Fijos</p>
+                            <p className="text-2xl font-black text-purple-400">S/ {fijos.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 mt-1">Alquiler, servicios, etc.</p>
+                          </div>
+
+                          {/* Gastos de Personal */}
+                          <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-lg border-2 border-green-500/50 p-4">
+                            <p className="text-green-400 text-xs font-bold mb-1 uppercase">👥 Personal</p>
+                            <p className="text-2xl font-black text-green-400">S/ {personal.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 mt-1">Salarios y beneficios</p>
+                          </div>
+
+                          {/* Marketing y Publicidad */}
+                          <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 rounded-lg border-2 border-orange-500/50 p-4">
+                            <p className="text-orange-400 text-xs font-bold mb-1 uppercase">📢 Marketing</p>
+                            <p className="text-2xl font-black text-orange-400">S/ {marketing.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 mt-1">Publicidad y promoción</p>
+                          </div>
+
+                          {/* Total del Período */}
+                          <div className="bg-gradient-to-br from-fuchsia-900/40 to-fuchsia-800/20 rounded-lg border-2 border-fuchsia-500/50 p-4">
+                            <p className="text-fuchsia-400 text-xs font-bold mb-1 uppercase">💰 Total</p>
+                            <p className="text-2xl font-black text-fuchsia-400">S/ {total.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 mt-1">Suma de todos los gastos</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Filtros */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <button
+                        onClick={() => setInventoryCategoryFilter("all")}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          inventoryCategoryFilter === "all"
+                            ? "bg-fuchsia-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        Todos
+                      </button>
+                      <button
+                        onClick={() => setInventoryCategoryFilter("operativos")}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          inventoryCategoryFilter === "operativos"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        🍖 Operativos
+                      </button>
+                      <button
+                        onClick={() => setInventoryCategoryFilter("fijos")}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          inventoryCategoryFilter === "fijos"
+                            ? "bg-purple-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        🏢 Fijos
+                      </button>
+                      <button
+                        onClick={() => setInventoryCategoryFilter("personal")}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          inventoryCategoryFilter === "personal"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        👥 Personal
+                      </button>
+                      <button
+                        onClick={() => setInventoryCategoryFilter("marketing")}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          inventoryCategoryFilter === "marketing"
+                            ? "bg-orange-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        📢 Marketing
+                      </button>
+                    </div>
 
                 {/* Buscador en tiempo real */}
                 <div className="mb-4">
@@ -3774,6 +3871,7 @@ export default function AdminPage() {
                           <tr className="bg-black/50">
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CATEGORÍA</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
@@ -3793,6 +3891,23 @@ export default function AdminPage() {
                                 <td className="border border-gray-700 px-3 py-2">
                                   <p className="text-xs font-bold text-white">{purchase.supplier}</p>
                                   {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-center">
+                                  {(() => {
+                                    const category = purchase.category || "operativos";
+                                    const categoryConfig: Record<string, {icon: string, color: string, label: string}> = {
+                                      operativos: { icon: "🍖", color: "text-blue-400", label: "Operativos" },
+                                      fijos: { icon: "🏢", color: "text-purple-400", label: "Fijos" },
+                                      personal: { icon: "👥", color: "text-green-400", label: "Personal" },
+                                      marketing: { icon: "📢", color: "text-orange-400", label: "Marketing" }
+                                    };
+                                    const config = categoryConfig[category] || categoryConfig.operativos;
+                                    return (
+                                      <span className={`text-xs font-bold ${config.color}`} title={config.label}>
+                                        {config.icon}
+                                      </span>
+                                    );
+                                  })()}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-xs text-white font-bold">
                                   {item.productName || '-'}
@@ -4771,6 +4886,14 @@ export default function AdminPage() {
                       }
                     }
 
+                    // Filtro por categoría
+                    if (inventoryCategoryFilter !== "all") {
+                      const purchaseCategory = purchase.category || "operativos"; // Por defecto: operativos
+                      if (purchaseCategory !== inventoryCategoryFilter) {
+                        return false;
+                      }
+                    }
+
                     // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
                     if (inventorySearchTerm) {
                       const searchLower = inventorySearchTerm.toLowerCase();
@@ -4842,6 +4965,7 @@ export default function AdminPage() {
                           <tr className="bg-black/50">
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CATEGORÍA</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
@@ -4861,6 +4985,23 @@ export default function AdminPage() {
                                 <td className="border border-gray-700 px-3 py-2">
                                   <p className="text-xs font-bold text-white">{purchase.supplier}</p>
                                   {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
+                                </td>
+                                <td className="border border-gray-700 px-3 py-2 text-center">
+                                  {(() => {
+                                    const category = purchase.category || "operativos";
+                                    const categoryConfig: Record<string, {icon: string, color: string, label: string}> = {
+                                      operativos: { icon: "🍖", color: "text-blue-400", label: "Operativos" },
+                                      fijos: { icon: "🏢", color: "text-purple-400", label: "Fijos" },
+                                      personal: { icon: "👥", color: "text-green-400", label: "Personal" },
+                                      marketing: { icon: "📢", color: "text-orange-400", label: "Marketing" }
+                                    };
+                                    const config = categoryConfig[category] || categoryConfig.operativos;
+                                    return (
+                                      <span className={`text-xs font-bold ${config.color}`} title={config.label}>
+                                        {config.icon}
+                                      </span>
+                                    );
+                                  })()}
                                 </td>
                                 <td className="border border-gray-700 px-3 py-2 text-xs text-white font-bold">
                                   {item.productName || '-'}
@@ -6392,7 +6533,7 @@ _Valido por 30 dias._`;
             <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
 
             {/* Información Compacta en Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
                 <input
@@ -6427,6 +6568,9 @@ _Valido por 30 dias._`;
                   maxLength={9}
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <div>
                 <label className="block text-xs font-bold text-fuchsia-400 mb-1">Fecha de compra *</label>
                 <input
@@ -6447,6 +6591,19 @@ _Valido por 30 dias._`;
                   <option value="efectivo">💵 Efectivo</option>
                   <option value="transferencia">🏦 Transferencia</option>
                   <option value="tarjeta">💳 Tarjeta</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Categoría de gasto *</label>
+                <select
+                  value={inventoryForm.category}
+                  onChange={(e) => setInventoryForm({ ...inventoryForm, category: e.target.value })}
+                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                >
+                  <option value="operativos">🍖 Gastos Operativos</option>
+                  <option value="fijos">🏢 Gastos Fijos</option>
+                  <option value="personal">👥 Gastos de Personal</option>
+                  <option value="marketing">📢 Marketing y Publicidad</option>
                 </select>
               </div>
             </div>
