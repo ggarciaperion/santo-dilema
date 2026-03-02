@@ -226,10 +226,15 @@ export default function AdminPage() {
   const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
   const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock">("dashboard");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [dateFrom, setDateFrom] = useState<string>("");
-  const [dateTo, setDateTo] = useState<string>("");
-  const [isDateFiltered, setIsDateFiltered] = useState(false);
-  const [showDateModal, setShowDateModal] = useState(false);
+  // Estados de filtro de fechas para la pestaña "Gestión de Pedidos"
+  const [ordersDateFrom, setOrdersDateFrom] = useState<string>("");
+  const [ordersDateTo, setOrdersDateTo] = useState<string>("");
+  const [isOrdersDateFiltered, setIsOrdersDateFiltered] = useState(false);
+  const [showOrdersDateModal, setShowOrdersDateModal] = useState(false);
+  // Estados de filtro de fechas para la pestaña "Analytics & CRM"
+  const [analyticsDateFrom, setAnalyticsDateFrom] = useState<string>("");
+  const [analyticsDateTo, setAnalyticsDateTo] = useState<string>("");
+  const [isAnalyticsDateFiltered, setIsAnalyticsDateFiltered] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [customerSegment, setCustomerSegment] = useState<string>("all");
   const [deliveryToast, setDeliveryToast] = useState<{ orderId: string; customerName: string } | null>(null);
@@ -838,19 +843,32 @@ export default function AdminPage() {
     }
   };
 
-  // Función para aplicar filtro de fechas
-  const applyDateFilter = () => {
-    if (dateFrom && dateTo) {
-      setIsDateFiltered(true);
-      setShowDateModal(false);
+  // Función para aplicar filtro de fechas en la pestaña "Gestión de Pedidos"
+  const applyOrdersDateFilter = () => {
+    if (ordersDateFrom && ordersDateTo) {
+      setIsOrdersDateFiltered(true);
+      setShowOrdersDateModal(false);
     }
   };
 
-  const clearDateFilter = () => {
-    setDateFrom("");
-    setDateTo("");
-    setIsDateFiltered(false);
-    setShowDateModal(false);
+  const clearOrdersDateFilter = () => {
+    setOrdersDateFrom("");
+    setOrdersDateTo("");
+    setIsOrdersDateFiltered(false);
+    setShowOrdersDateModal(false);
+  };
+
+  // Función para aplicar filtro de fechas en la pestaña "Analytics & CRM"
+  const applyAnalyticsDateFilter = () => {
+    if (analyticsDateFrom && analyticsDateTo) {
+      setIsAnalyticsDateFiltered(true);
+    }
+  };
+
+  const clearAnalyticsDateFilter = () => {
+    setAnalyticsDateFrom("");
+    setAnalyticsDateTo("");
+    setIsAnalyticsDateFiltered(false);
   };
 
   // Exportar todos los pedidos a CSV
@@ -902,15 +920,15 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Filtrar pedidos según el filtro de fecha
+  // Filtrar pedidos según el filtro de fecha (pestaña "Gestión de Pedidos")
   let dateFilteredOrders = orders;
 
-  if (isDateFiltered && dateFrom && dateTo) {
+  if (isOrdersDateFiltered && ordersDateFrom && ordersDateTo) {
     // Filtro por rango de fechas personalizado
     dateFilteredOrders = orders.filter((order) => {
       const orderDate = getPeruDate(order.createdAt);
-      const fromDate = getPeruDate(dateFrom);
-      const toDate = getPeruDate(dateTo);
+      const fromDate = getPeruDate(ordersDateFrom);
+      const toDate = getPeruDate(ordersDateTo);
       toDate.setHours(23, 59, 59, 999);
 
       return orderDate >= fromDate && orderDate <= toDate;
@@ -1256,16 +1274,16 @@ export default function AdminPage() {
     });
   };
 
-  // Agrupar pedidos por cliente (DNI) - con filtro de fechas
+  // Agrupar pedidos por cliente (DNI) - con filtro de fechas (usa filtro de Analytics)
   const getCustomersData = () => {
     const customersMap = new Map();
 
     // Usar pedidos filtrados por fecha
-    const ordersToProcess = isDateFiltered && dateFrom && dateTo
+    const ordersToProcess = isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo
       ? orders.filter((order: any) => {
           const orderDate = new Date(order.createdAt);
-          const fromDate = new Date(dateFrom);
-          const toDate = new Date(dateTo);
+          const fromDate = new Date(analyticsDateFrom);
+          const toDate = new Date(analyticsDateTo);
           toDate.setHours(23, 59, 59, 999);
           return orderDate >= fromDate && orderDate <= toDate;
         })
@@ -1419,7 +1437,7 @@ export default function AdminPage() {
     );
   });
 
-  // Analytics - con filtro de fechas
+  // Analytics - con filtro de fechas (usa filtro de Analytics)
   const getAnalytics = () => {
     const now = getPeruDate();
 
@@ -1431,9 +1449,9 @@ export default function AdminPage() {
     );
 
     // Si hay filtro de fechas aplicado, filtrar por ese rango
-    if (isDateFiltered && dateFrom && dateTo) {
-      const filterStart = new Date(dateFrom + "T00:00:00");
-      const filterEnd = new Date(dateTo + "T23:59:59");
+    if (isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo) {
+      const filterStart = new Date(analyticsDateFrom + "T00:00:00");
+      const filterEnd = new Date(analyticsDateTo + "T23:59:59");
 
       deliveredOrders = deliveredOrders.filter((order: any) => {
         const orderDate = getPeruDate(order.createdAt);
@@ -2024,7 +2042,7 @@ export default function AdminPage() {
                 }`}
               >
                 <p className="text-gray-400 text-xs font-semibold text-left leading-tight">
-                  Total {isDateFiltered ? "(Filtrado)" : "(Hoy)"}
+                  Total {isOrdersDateFiltered ? "(Filtrado)" : "(Hoy)"}
                 </p>
                 <p className="text-3xl font-black text-white mt-1 text-left">{dateFilteredOrders.length}</p>
               </button>
@@ -2100,7 +2118,7 @@ export default function AdminPage() {
 
             {/* Botón de calendario */}
             <button
-              onClick={() => setShowDateModal(true)}
+              onClick={() => setShowOrdersDateModal(true)}
               className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
               title="Filtrar por fechas"
             >
@@ -2146,9 +2164,9 @@ export default function AdminPage() {
         </div>
       </section>
 
-      {/* Modal de filtro de fechas */}
-      {showDateModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowDateModal(false)}>
+      {/* Modal de filtro de fechas - Gestión de Pedidos */}
+      {showOrdersDateModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowOrdersDateModal(false)}>
           <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full mx-4 border-2 border-gray-700" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-black text-white mb-4">Filtrar por Fechas</h3>
 
@@ -2157,8 +2175,8 @@ export default function AdminPage() {
                 <label className="text-gray-400 text-sm font-semibold block mb-2">Desde:</label>
                 <input
                   type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
+                  value={ordersDateFrom}
+                  onChange={(e) => setOrdersDateFrom(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
                 />
               </div>
@@ -2167,40 +2185,40 @@ export default function AdminPage() {
                 <label className="text-gray-400 text-sm font-semibold block mb-2">Hasta:</label>
                 <input
                   type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
+                  value={ordersDateTo}
+                  onChange={(e) => setOrdersDateTo(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
                 <button
-                  onClick={applyDateFilter}
-                  disabled={!dateFrom || !dateTo}
+                  onClick={applyOrdersDateFilter}
+                  disabled={!ordersDateFrom || !ordersDateTo}
                   className="flex-1 px-6 py-3 bg-fuchsia-600 text-white rounded-lg font-bold hover:bg-fuchsia-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-all"
                 >
                   Aplicar Filtro
                 </button>
-                {isDateFiltered && (
+                {isOrdersDateFiltered && (
                   <button
-                    onClick={clearDateFilter}
+                    onClick={clearOrdersDateFilter}
                     className="px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all"
                   >
                     Limpiar
                   </button>
                 )}
                 <button
-                  onClick={() => setShowDateModal(false)}
+                  onClick={() => setShowOrdersDateModal(false)}
                   className="px-6 py-3 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition-all"
                 >
                   Cerrar
                 </button>
               </div>
 
-              {isDateFiltered && dateFrom && dateTo && (
+              {isOrdersDateFiltered && ordersDateFrom && ordersDateTo && (
                 <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
                   <p className="text-sm text-gray-400">
-                    📊 Filtrando desde <span className="text-white font-bold">{new Date(dateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(dateTo).toLocaleDateString('es-PE')}</span>
+                    📊 Filtrando desde <span className="text-white font-bold">{new Date(ordersDateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(ordersDateTo).toLocaleDateString('es-PE')}</span>
                   </p>
                 </div>
               )}
@@ -2940,8 +2958,8 @@ export default function AdminPage() {
                   <label className="text-sm font-bold text-fuchsia-400">Desde:</label>
                   <input
                     type="date"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
+                    value={analyticsDateFrom}
+                    onChange={(e) => setAnalyticsDateFrom(e.target.value)}
                     className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
@@ -2950,38 +2968,30 @@ export default function AdminPage() {
                   <label className="text-sm font-bold text-fuchsia-400">Hasta:</label>
                   <input
                     type="date"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
+                    value={analyticsDateTo}
+                    onChange={(e) => setAnalyticsDateTo(e.target.value)}
                     className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
                 </div>
                 <button
-                  onClick={() => {
-                    if (dateFrom && dateTo) {
-                      setIsDateFiltered(true);
-                    }
-                  }}
-                  disabled={!dateFrom || !dateTo}
+                  onClick={applyAnalyticsDateFilter}
+                  disabled={!analyticsDateFrom || !analyticsDateTo}
                   className="px-6 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Aplicar Filtro
                 </button>
-                {isDateFiltered && (
+                {isAnalyticsDateFiltered && (
                   <button
-                    onClick={() => {
-                      setIsDateFiltered(false);
-                      setDateFrom("");
-                      setDateTo("");
-                    }}
+                    onClick={clearAnalyticsDateFilter}
                     className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold transition-all"
                   >
                     Limpiar Filtro
                   </button>
                 )}
-                {isDateFiltered && (
+                {isAnalyticsDateFiltered && (
                   <span className="text-sm text-green-400 font-bold">
-                    ✓ Mostrando datos del {new Date(dateFrom).toLocaleDateString("es-PE")} al {new Date(dateTo).toLocaleDateString("es-PE")}
+                    ✓ Mostrando datos del {new Date(analyticsDateFrom).toLocaleDateString("es-PE")} al {new Date(analyticsDateTo).toLocaleDateString("es-PE")}
                   </span>
                 )}
               </div>
@@ -2996,7 +3006,7 @@ export default function AdminPage() {
                 <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
                 <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
-                  {isDateFiltered ? `${new Date(dateFrom).toLocaleDateString("es-PE")} - ${new Date(dateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
+                  {isAnalyticsDateFiltered ? `${new Date(analyticsDateFrom).toLocaleDateString("es-PE")} - ${new Date(analyticsDateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
                 </p>
               </div>
 
@@ -3005,7 +3015,7 @@ export default function AdminPage() {
                 <p className="text-green-400 text-sm font-bold mb-2">📦 Pedidos Entregados</p>
                 <p className="text-4xl font-black text-green-400">{analytics.todayDeliveredOrdersCount}</p>
                 <p className="text-gray-400 text-xs mt-2">
-                  {isDateFiltered ? "Del período filtrado" : "Hoy"}
+                  {isAnalyticsDateFiltered ? "Del período filtrado" : "Hoy"}
                 </p>
               </div>
 
