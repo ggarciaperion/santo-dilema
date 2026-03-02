@@ -963,11 +963,13 @@ export default function AdminPage() {
     // Filtro por rango de fechas personalizado
     dateFilteredOrders = orders.filter((order) => {
       const orderDate = getPeruDate(order.createdAt);
-      const fromDate = getPeruDate(ordersDateFrom);
-      const toDate = getPeruDate(ordersDateTo);
-      toDate.setHours(23, 59, 59, 999);
 
-      return orderDate >= fromDate && orderDate <= toDate;
+      // Crear fechas en zona horaria de Perú (UTC-5)
+      // Interpretamos las fechas del selector como fechas en Perú, no en UTC
+      const fromDatePeru = new Date(ordersDateFrom + "T00:00:00-05:00");
+      const toDatePeru = new Date(ordersDateTo + "T23:59:59-05:00");
+
+      return orderDate >= fromDatePeru && orderDate <= toDatePeru;
     });
   } else {
     // Por defecto, solo pedidos de hoy
@@ -1317,10 +1319,10 @@ export default function AdminPage() {
     // Usar pedidos filtrados por fecha
     const ordersToProcess = isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo
       ? orders.filter((order: any) => {
-          const orderDate = new Date(order.createdAt);
-          const fromDate = new Date(analyticsDateFrom);
-          const toDate = new Date(analyticsDateTo);
-          toDate.setHours(23, 59, 59, 999);
+          const orderDate = getPeruDate(order.createdAt);
+          // Crear fechas en zona horaria de Perú (UTC-5)
+          const fromDate = new Date(analyticsDateFrom + "T00:00:00-05:00");
+          const toDate = new Date(analyticsDateTo + "T23:59:59-05:00");
           return orderDate >= fromDate && orderDate <= toDate;
         })
       : orders;
@@ -1486,8 +1488,9 @@ export default function AdminPage() {
 
     // Si hay filtro de fechas aplicado, filtrar por ese rango
     if (isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo) {
-      const filterStart = new Date(analyticsDateFrom + "T00:00:00");
-      const filterEnd = new Date(analyticsDateTo + "T23:59:59");
+      // Crear fechas en zona horaria de Perú (UTC-5)
+      const filterStart = new Date(analyticsDateFrom + "T00:00:00-05:00");
+      const filterEnd = new Date(analyticsDateTo + "T23:59:59-05:00");
 
       deliveredOrders = deliveredOrders.filter((order: any) => {
         const orderDate = getPeruDate(order.createdAt);
