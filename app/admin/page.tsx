@@ -909,37 +909,82 @@ export default function AdminPage() {
     }
   };
 
-  // Exportar todos los pedidos a CSV
+  // Exportar todos los pedidos a CSV (formato tabla Excel mejorado)
   const exportOrdersToCSV = () => {
     const allOrders = orders;
     if (allOrders.length === 0) return;
 
+    // Ordenar por fecha (más recientes primero)
+    const sortedOrders = [...allOrders].sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
     const headers = [
-      "ID Pedido", "Fecha", "Nombre", "Teléfono", "Dirección",
-      "Productos", "Total (S/)", "Descuento Combo (S/)", "Descuento Cupón (S/)",
-      "Costo Delivery (S/)", "Zona Delivery", "Método de Pago", "Estado", "Cupón"
+      "N°",
+      "ID Pedido",
+      "Fecha",
+      "Hora",
+      "Cliente",
+      "Teléfono",
+      "Dirección",
+      "Productos",
+      "Cantidad Items",
+      "Subtotal",
+      "Descuento Combo",
+      "Descuento Cupón",
+      "Costo Delivery",
+      "TOTAL",
+      "Zona",
+      "Método Pago",
+      "Estado",
+      "Cupón Usado"
     ];
 
-    const rows = allOrders.map((order: any) => {
-      const fecha = new Date(order.createdAt).toLocaleString('es-PE', { timeZone: 'America/Lima' });
+    const rows = sortedOrders.map((order: any, index: number) => {
+      const orderDate = new Date(order.createdAt);
+      const fecha = orderDate.toLocaleDateString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric' });
+      const hora = orderDate.toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' });
+
+      // Productos en lista vertical (salto de línea)
       const productos = (order.cart || [])
         .map((item: any) => `${item.name} x${item.quantity}`)
-        .join(' | ');
+        .join('\n');
+
+      const cantidadItems = (order.cart || []).reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+
+      // Calcular subtotal (total - delivery + descuentos)
+      const subtotal = (order.totalPrice || 0) - (order.deliveryCost || 0) + (order.comboDiscount || 0) + (order.couponDiscount || 0);
+
+      // Estado traducido
+      const estadoMap: Record<string, string> = {
+        'pending': 'Pendiente',
+        'in-progress': 'En Preparación',
+        'ready': 'Listo',
+        'delivered': 'Entregado',
+        'cancelled': 'Cancelado',
+        'Entregado': 'Entregado'
+      };
+      const estadoTraducido = estadoMap[order.status] || order.status || '';
+
       return [
+        index + 1, // Número correlativo
         order.id,
         fecha,
+        hora,
         order.name,
         order.phone,
         order.address,
         productos,
-        (order.totalPrice || 0).toFixed(2),
+        cantidadItems,
+        subtotal.toFixed(2),
         (order.comboDiscount || 0).toFixed(2),
         (order.couponDiscount || 0).toFixed(2),
         (order.deliveryCost || 0).toFixed(2),
-        order.deliveryOption === 'centro' ? 'Chancay centro' : order.deliveryOption === 'alrededores' ? 'Chancay alrededores' : '',
+        (order.totalPrice || 0).toFixed(2),
+        order.deliveryOption === 'centro' ? 'Chancay centro' : order.deliveryOption === 'alrededores' ? 'Chancay alrededores' : 'Recojo en tienda',
         order.paymentMethod || '',
-        order.status || '',
-        order.couponCode || '',
+        estadoTraducido,
+        order.couponCode || 'Sin cupón',
       ];
     });
 
