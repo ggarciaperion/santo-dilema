@@ -4318,9 +4318,9 @@ export default function AdminPage() {
                   const sold = soldMap[key];
                   // Buscar en availableComplements o products sin filtrar
                   const complement = Object.values(availableComplements).find(
-                    (c: any) => normalize(c.name) === key
+                    (c: any) => c && c.name && normalize(c.name) === key
                   );
-                  const productMatch = products.find((p: any) => normalize(p.name) === key);
+                  const productMatch = products.find((p: any) => p && p.name && normalize(p.name) === key);
 
                   const product = complement || productMatch;
                   const cost = product?.cost || 0;
