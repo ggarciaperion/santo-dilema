@@ -2375,56 +2375,36 @@ export default function AdminPage() {
                   'ring-2 ring-red-500/30 opacity-50'
                 }`}
               >
-                {/* NUEVO LAYOUT: 3 COLUMNAS OPTIMIZADAS */}
-                <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_280px] gap-3 p-4">
+                {/* LAYOUT HORIZONTAL COMPACTO (altura conservada) */}
+                <div className="flex flex-col md:flex-row md:items-center gap-3 p-3">
 
-                  {/* COLUMNA 1: INFO BÁSICA (Izquierda) */}
-                  <div className={`rounded-lg px-4 py-3 ${
-                    order.status === 'pending' ? 'bg-yellow-500/20 border-2 border-yellow-500/50' :
-                    order.status === 'pendiente-verificacion' ? 'bg-purple-500/20 border-2 border-purple-500/50' :
-                    order.status === 'confirmed' ? 'bg-cyan-500/20 border-2 border-cyan-500/50' :
-                    order.status === 'en-camino' ? 'bg-blue-500/20 border-2 border-blue-500/50' :
-                    order.status === 'delivered' ? 'bg-green-500/20 border-2 border-green-500/30' :
-                    'bg-red-500/20 border-2 border-red-500/30'
+                  {/* HEADER: ESTADO Y NÚMERO */}
+                  <div className={`flex-shrink-0 px-3 py-2 rounded md:w-auto ${
+                    order.status === 'pending' ? 'bg-yellow-500/20' :
+                    order.status === 'pendiente-verificacion' ? 'bg-purple-500/20' :
+                    order.status === 'confirmed' ? 'bg-cyan-500/20' :
+                    order.status === 'en-camino' ? 'bg-blue-500/20' :
+                    order.status === 'delivered' ? 'bg-green-500/20' :
+                    'bg-red-500/20'
                   }`}>
-                    {/* Fecha y Hora */}
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 font-semibold mb-1">📅 RECIBIDO</p>
-                      <p className="text-sm font-black text-white">
-                        {new Date(order.createdAt).toLocaleDateString("es-PE", {
-                          day: '2-digit',
-                          month: 'short'
-                        })}
-                      </p>
-                      <p className="text-lg font-black text-white">
-                        {new Date(order.createdAt).toLocaleTimeString("es-PE", {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-
-                    {/* Estado */}
-                    <div className="mb-3">
-                      <span className={`px-3 py-1.5 rounded-lg text-sm font-black uppercase block text-center ${
-                        statusColors[order.status]
-                      }`}>
-                        {statusLabels[order.status]}
-                      </span>
-                    </div>
-
-                    {/* ID Pedido */}
-                    <div>
-                      <p className="text-xs text-gray-400 font-semibold mb-1">ID PEDIDO</p>
-                      <p className="font-mono font-black text-lg text-white">#{order.id}</p>
-                    </div>
-
-                    {/* Contador de tiempo */}
-                    <div className="mt-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-black uppercase block mb-1 ${
+                      statusColors[order.status]
+                    }`}>
+                      {statusLabels[order.status]}
+                    </span>
+                    <span className="font-mono font-black text-base text-white block">#{order.id}</span>
+                    <p className="text-[10px] text-gray-300 font-medium mt-1">
+                      {new Date(order.createdAt).toLocaleString("es-PE", {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                    {/* CONTADOR DE TIEMPO EN COLA */}
+                    <div className="mt-2">
                       <TimeCounter createdAt={order.createdAt} orderId={order.id} status={order.status} />
                     </div>
 
-                    {/* Rastro de tiempos */}
+                    {/* RASTRO DE TIEMPOS POR ETAPA */}
                     {(() => {
                       const steps: { label: string; time: string | undefined; color: string }[] = [
                         { label: 'Ingresó', time: order.createdAt, color: 'text-gray-400' },
@@ -2435,14 +2415,14 @@ export default function AdminPage() {
                       const filled = steps.filter(s => s.time);
                       if (filled.length < 2) return null;
                       return (
-                        <div className="mt-3 border-t border-white/10 pt-2 space-y-1">
+                        <div className="mt-2 border-t border-white/10 pt-2 space-y-0.5">
                           {filled.map((step, i) => {
                             const prev = filled[i - 1];
                             const elapsed = prev
                               ? Math.round((new Date(step.time!).getTime() - new Date(prev.time!).getTime()) / 60000)
                               : null;
                             return (
-                              <div key={i} className="flex items-center gap-1 text-[10px]">
+                              <div key={i} className="flex items-center gap-1 text-[9px]">
                                 <span className={`font-mono font-bold ${step.color}`}>
                                   {new Date(step.time!).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
@@ -2458,13 +2438,10 @@ export default function AdminPage() {
                     })()}
                   </div>
 
-                  {/* COLUMNA 2: DETALLE DEL PEDIDO (Centro - La más grande) */}
-                  <div className="bg-black/50 rounded-lg border border-white/20 px-4 py-3">
-                    <h3 className="text-sm font-black text-white uppercase mb-3 flex items-center gap-2">
-                      <span className="text-xl">🍽️</span> DETALLE DEL PEDIDO
-                    </h3>
-
-                    <div className="space-y-2">
+                  {/* SECCIÓN 1: PRODUCTOS */}
+                  <div className="flex-1 bg-black rounded border border-white/10 px-3 py-2">
+                    <h3 className="text-xs font-black text-white uppercase mb-2">🍽️ PEDIDO</h3>
+                    <div className="flex flex-wrap gap-2">
                       {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
                         (order as any).completedOrders.map((item: any, idx: number) => {
                           const productName = item.name || 'Sin nombre';
@@ -2479,44 +2456,39 @@ export default function AdminPage() {
                           const hasItemDiscount = (order as any).comboDiscount > 0 || (order as any).couponDiscount > 0 || item.discountApplied;
 
                           return (
-                            <div key={idx} className="border-b border-white/10 pb-2 last:border-0">
-                              {/* PRODUCTO PRINCIPAL */}
-                              <div className="flex items-start gap-3 mb-2">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-fuchsia-600 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                                  <span className="text-white font-black text-base">{quantity}</span>
+                            <div key={idx} className="bg-white/5 rounded px-2 py-1.5">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-white font-black text-sm">{quantity}</span>
                                 </div>
                                 <div className="flex-1">
-                                  <h4 className="text-base font-bold text-white leading-tight">{productName}</h4>
+                                  <h4 className="text-xs font-bold text-white">{productName}</h4>
                                   {hasItemDiscount ? (
-                                    <div className="flex items-center gap-2 flex-wrap mt-1">
-                                      <span className="text-gray-500 line-through text-sm">S/ {(originalPrice * quantity).toFixed(2)}</span>
-                                      <span className="text-base font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                      {item.discountApplied && <span className="text-[10px] bg-red-600/40 text-red-300 px-2 py-0.5 rounded font-bold">🔥 PROMO</span>}
-                                      {(order as any).comboDiscount > 0 && <span className="text-[10px] bg-fuchsia-600/30 text-fuchsia-400 px-2 py-0.5 rounded font-bold">COMBO -S/5</span>}
-                                      {(order as any).couponDiscount > 0 && <span className="text-[10px] bg-purple-600/30 text-purple-400 px-2 py-0.5 rounded font-bold">-{(order as any).couponDiscount}%</span>}
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-gray-500 line-through text-xs">S/ {(originalPrice * quantity).toFixed(2)}</span>
+                                      <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
+                                      {item.discountApplied && <span className="text-[9px] bg-red-600/40 text-red-300 px-1 rounded font-bold">🔥 PROMO Santo Picante</span>}
+                                      {(order as any).comboDiscount > 0 && <span className="text-[9px] bg-fuchsia-600/30 text-fuchsia-400 px-1 rounded font-bold">COMBO -S/ 5</span>}
+                                      {(order as any).couponDiscount > 0 && <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>}
                                     </div>
                                   ) : (
-                                    <span className="text-base font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
+                                    <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
                                   )}
                                 </div>
                               </div>
 
-                              {/* SALSAS */}
+                              {/* Mostrar salsas si existen */}
                               {itemSalsas.length > 0 && (
-                                <div className="ml-11 mb-2 bg-yellow-500/10 border border-yellow-500/30 rounded px-3 py-1.5">
-                                  <span className="text-xs font-bold text-yellow-400 flex items-center gap-1">
-                                    <span className="text-base">🌶️</span> Salsas:
-                                  </span>
-                                  <span className="text-sm text-yellow-300 font-semibold">
-                                    {itemSalsas.map((salsaId: string) => {
-                                      const salsa = salsas.find(s => s.id === salsaId);
-                                      return salsa?.name || salsaId;
-                                    }).join(', ')}
-                                  </span>
+                                <div className="mt-1 ml-8 text-[10px] text-yellow-300">
+                                  <span className="font-bold">🌶️ Salsas: </span>
+                                  {itemSalsas.map((salsaId: string) => {
+                                    const salsa = salsas.find(s => s.id === salsaId);
+                                    return salsa?.name || salsaId;
+                                  }).join(', ')}
                                 </div>
                               )}
 
-                              {/* ⚠️ EXTRAS - SUPER DESTACADOS ⚠️ */}
+                              {/* ⚠️ EXTRAS - DESTACADOS VISUALMENTE ⚠️ */}
                               {itemComplementIds.length > 0 && (() => {
                                 const complementCounts: { [key: string]: number } = {};
                                 itemComplementIds.forEach((compId: string) => {
@@ -2524,28 +2496,21 @@ export default function AdminPage() {
                                 });
 
                                 return (
-                                  <div className="ml-11 bg-gradient-to-r from-amber-500/30 to-orange-500/30 border-2 border-amber-400 rounded-lg px-3 py-2 shadow-lg">
-                                    <div className="flex items-center gap-2 mb-1.5">
-                                      <span className="text-2xl">⭐</span>
-                                      <span className="text-sm font-black text-amber-300 uppercase tracking-wide">EXTRAS</span>
+                                  <div className="mt-1 ml-8 bg-gradient-to-r from-amber-500/25 to-orange-500/25 border-2 border-amber-500 rounded px-2 py-1">
+                                    <div className="flex items-center gap-1 mb-0.5">
+                                      <span className="text-amber-400 font-black text-xs">⚠️ EXTRAS:</span>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-0.5">
                                       {Object.entries(complementCounts).map(([compId, count], compIdx) => {
                                         const complement = availableComplements[compId];
                                         if (!complement) return null;
                                         const totalPrice = complement.price * count;
                                         return (
-                                          <div key={compIdx} className="flex items-center justify-between bg-black/30 rounded px-2 py-1.5">
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-amber-400 font-black text-lg">+</span>
-                                              {count > 1 && (
-                                                <span className="w-6 h-6 rounded bg-amber-500 flex items-center justify-center">
-                                                  <span className="text-white font-black text-sm">{count}</span>
-                                                </span>
-                                              )}
-                                              <span className="text-base font-bold text-white">{complement.name}</span>
-                                            </div>
-                                            <span className="text-base font-black text-amber-400">S/ {totalPrice.toFixed(2)}</span>
+                                          <div key={compIdx} className="text-xs text-amber-200 flex items-center gap-1 font-bold">
+                                            <span className="text-amber-400 font-black">+</span>
+                                            {count > 1 && <span className="text-amber-300 font-black">{count}x</span>}
+                                            <span>{complement.name}</span>
+                                            <span className="text-amber-400 font-black">S/ {totalPrice.toFixed(2)}</span>
                                           </div>
                                         );
                                       })}
@@ -2564,116 +2529,121 @@ export default function AdminPage() {
                           const subtotal = productPrice * quantity;
 
                           return (
-                            <div key={idx} className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-fuchsia-600 to-purple-600 flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-black text-base">{quantity}</span>
+                            <div key={idx} className="flex items-center gap-2 bg-white/5 rounded px-2 py-1">
+                              <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                                <span className="text-white font-black text-sm">{quantity}</span>
                               </div>
-                              <div className="flex-1">
-                                <h4 className="text-base font-bold text-white">{productName}</h4>
-                                <span className="text-base font-black text-cyan-400">S/ {subtotal.toFixed(2)}</span>
+                              <div>
+                                <h4 className="text-xs font-bold text-white">{productName}</h4>
+                                <span className="text-sm font-black text-cyan-400">S/ {subtotal.toFixed(2)}</span>
                               </div>
                             </div>
                           );
                         })
                       ) : (
-                        <span className="text-sm text-gray-500">Sin productos</span>
+                        <span className="text-xs text-gray-500">Sin productos</span>
                       )}
                     </div>
                   </div>
 
-                  {/* COLUMNA 3: CLIENTE + TOTAL (Derecha) */}
-                  <div className="space-y-3">
-                    {/* CLIENTE */}
-                    <div className="bg-gray-800/80 rounded-lg border border-gray-700 px-4 py-3">
-                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-1">
-                        <span className="text-sm">👤</span> CLIENTE
-                      </h4>
-                      <p className="text-sm font-bold text-white mb-2">{order.name}</p>
-                      <p className="text-sm font-bold text-cyan-400 flex items-center gap-2 mb-2">
-                        <span>📱</span>
-                        <span className="font-mono">{order.phone}</span>
-                      </p>
-                      <p className="text-xs text-gray-300 flex items-start gap-2">
-                        <span className="text-sm">📍</span>
-                        <span className="line-clamp-3 leading-snug">{order.address}</span>
-                      </p>
-                      {(order as any).deliveryOption && (
-                        <div className={`mt-2 rounded px-2 py-1 text-[10px] font-bold ${
-                          (order as any).deliveryCost > 0 ? 'bg-sky-600/30 text-sky-300 border border-sky-500/50' : 'bg-gray-700 text-gray-300'
-                        }`}>
-                          <span>🛵 </span>
+                  {/* SECCIÓN 2: CLIENTE */}
+                  <div className="flex-shrink-0 w-full md:w-48 bg-gray-800 rounded px-3 py-2">
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">👤 Cliente</h4>
+                    <p className="text-xs font-bold text-white mb-1 truncate">{order.name}</p>
+                    <p className="text-xs font-bold text-white flex items-center gap-1 mb-1">
+                      <span>📱</span>
+                      <span className="font-mono">{order.phone}</span>
+                    </p>
+                    <p className="text-xs font-bold text-white flex items-start gap-1 mb-1">
+                      <span>📍</span>
+                      <span className="line-clamp-2">{order.address}</span>
+                    </p>
+                    {(order as any).deliveryOption ? (
+                      <div className={`mt-1 rounded px-1.5 py-0.5 text-[9px] font-bold flex items-center gap-1 ${(order as any).deliveryCost > 0 ? 'bg-sky-900/60 text-sky-200' : 'bg-gray-700 text-gray-300'}`}>
+                        <span>🛵</span>
+                        <span>
                           {(order as any).deliveryOption === 'centro'
-                            ? `Chancay centro (+S/ ${((order as any).deliveryCost || 0).toFixed(2)})`
+                            ? `Chancay centro +S/ ${((order as any).deliveryCost || 0).toFixed(2)}`
                             : 'Chancay alrededores'}
-                        </div>
-                      )}
-                    </div>
+                        </span>
+                      </div>
+                    ) : null}
+                    {order.notes && (
+                      <div className="mt-1 bg-yellow-500/20 border border-yellow-400 rounded px-1.5 py-1 text-[9px]">
+                        <span className="text-yellow-400 font-bold">⚠️ {order.notes}</span>
+                      </div>
+                    )}
+                  </div>
 
-                    {/* TOTAL */}
-                    <div className="bg-gradient-to-br from-cyan-600 to-blue-600 rounded-lg px-4 py-3 shadow-lg">
-                      <p className="text-xs text-cyan-100 font-bold uppercase mb-1">TOTAL A COBRAR</p>
-                      <p className="text-3xl font-black text-white mb-1">
-                        S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
+                  {/* SECCIÓN 3: TOTAL */}
+                  <div className="flex-shrink-0 bg-gradient-to-br from-cyan-600 to-blue-600 rounded px-3 py-2 text-center w-full md:w-auto md:min-w-[100px]">
+                    <p className="text-[10px] text-cyan-100 font-bold uppercase mb-0.5">Total</p>
+                    <p className="text-xl font-black text-white">
+                      S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
+                    </p>
+                    <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
+                    {(order as any).comboDiscount > 0 && (
+                      <p className="text-[9px] bg-fuchsia-900/60 text-fuchsia-200 rounded px-1 mt-1 font-bold">
+                        🔥 Combo FAT+FIT -S/ 5
                       </p>
-                      <p className="text-xs text-cyan-100 font-semibold">{order.totalItems || 0} items</p>
+                    )}
+                    {(order as any).couponDiscount > 0 && (
+                      <p className="text-[9px] bg-purple-900/60 text-purple-200 rounded px-1 mt-1 font-bold">
+                        Cupón -{(order as any).couponDiscount}% aplicado
+                      </p>
+                    )}
+                    {(order as any).deliveryCost > 0 && (
+                      <p className="text-[9px] bg-sky-900/60 text-sky-200 rounded px-1 mt-1 font-bold">
+                        🛵 +S/ {(order as any).deliveryCost.toFixed(2)} delivery
+                      </p>
+                    )}
+                    {(order as any).deliveryOption && (
+                      <p className="text-[9px] text-sky-300 mt-0.5">
+                        {(order as any).deliveryOption === 'centro' ? 'Chancay centro' : 'Chancay alrededores'}
+                      </p>
+                    )}
+                  </div>
 
-                      {(order as any).comboDiscount > 0 && (
-                        <div className="mt-2 bg-fuchsia-900/60 text-fuchsia-200 rounded px-2 py-1 text-[10px] font-bold">
-                          🔥 Combo FAT+FIT -S/ 5
-                        </div>
-                      )}
-                      {(order as any).couponDiscount > 0 && (
-                        <div className="mt-1 bg-purple-900/60 text-purple-200 rounded px-2 py-1 text-[10px] font-bold">
-                          Cupón -{(order as any).couponDiscount}%
-                        </div>
-                      )}
-                      {(order as any).deliveryCost > 0 && (
-                        <div className="mt-1 bg-sky-900/60 text-sky-200 rounded px-2 py-1 text-[10px] font-bold">
-                          🛵 +S/ {(order as any).deliveryCost.toFixed(2)} delivery
-                        </div>
-                      )}
-                    </div>
-
-                    {/* MÉTODO DE PAGO */}
-                    <div className={`rounded-lg px-4 py-3 ${
-                      order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
-                      order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
-                      'bg-gradient-to-br from-orange-600 to-red-600'
-                    }`}>
-                      <p className="text-xs text-white/80 font-bold uppercase mb-1">MÉTODO DE PAGO</p>
-                      {order.paymentMethod === 'anticipado' ? (
-                        <div>
-                          <p className="text-base font-black text-white">✓ PAGADO</p>
-                          <p className="text-xs text-white/80">Yape/Plin</p>
-                          {order.paymentProofPath && (
-                            <button
-                              onClick={() => {
-                                setSelectedVoucherPath(order.paymentProofPath || "");
-                                setShowVoucherModal(true);
-                              }}
-                              className="mt-2 w-full bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded text-xs font-bold transition-all"
-                            >
-                              📄 Ver comprobante
-                            </button>
-                          )}
-                        </div>
-                      ) : order.paymentMethod === 'contraentrega-yape-plin' ? (
-                        <div>
-                          <p className="text-base font-black text-white">YAPE/PLIN</p>
-                          <p className="text-xs text-white/80">Pagar al recibir</p>
-                        </div>
-                      ) : order.paymentMethod === 'contraentrega-efectivo-exacto' ? (
-                        <div>
-                          <p className="text-base font-black text-white">EFECTIVO EXACTO</p>
-                          <p className="text-xs text-white/80">Al recibir</p>
-                        </div>
-                      ) : order.paymentMethod === 'contraentrega-efectivo-cambio' ? (
-                        <div>
-                          <p className="text-base font-black text-white">EFECTIVO</p>
-                          {(order as any).cantoCancelo && (
-                            <>
-                              <p className="text-sm text-white/90 font-bold mt-1">
-                                Cancela con: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}
+                  {/* SECCIÓN 4: PAGO */}
+                  <div className={`flex-shrink-0 rounded px-3 py-2 w-full md:w-auto md:min-w-[110px] ${
+                    order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
+                    order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
+                    'bg-gradient-to-br from-orange-600 to-red-600'
+                  }`}>
+                    <p className="text-[10px] text-white/80 font-bold uppercase mb-0.5">Pago</p>
+                    {order.paymentMethod === 'anticipado' ? (
+                      <div>
+                        <p className="text-sm font-black text-white">✓ PAGADO</p>
+                        <p className="text-[10px] text-white/80">Yape/Plin</p>
+                        {order.paymentProofPath && (
+                          <button
+                            onClick={() => {
+                              setSelectedVoucherPath(order.paymentProofPath || "");
+                              setShowVoucherModal(true);
+                            }}
+                            className="mt-1 w-full bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1"
+                          >
+                            📄 Ver comprobante
+                          </button>
+                        )}
+                      </div>
+                    ) : order.paymentMethod === 'contraentrega-yape-plin' ? (
+                      <div>
+                        <p className="text-sm font-black text-white">YAPE/PLIN</p>
+                        <p className="text-[10px] text-white/80">Al recibir</p>
+                      </div>
+                    ) : order.paymentMethod === 'contraentrega-efectivo-exacto' ? (
+                      <div>
+                        <p className="text-sm font-black text-white">EFECTIVO</p>
+                        <p className="text-[10px] text-white/80">Exacto</p>
+                      </div>
+                    ) : order.paymentMethod === 'contraentrega-efectivo-cambio' ? (
+                      <div>
+                        <p className="text-sm font-black text-white">EFECTIVO</p>
+                        {(order as any).cantoCancelo && (
+                          <>
+                            <p className="text-[10px] text-white/90 font-bold">
+                              Cancela con: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}
                             </p>
                             <p className="text-[10px] text-white/90 font-bold">
                               Vuelto: S/ {(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
@@ -2684,23 +2654,11 @@ export default function AdminPage() {
                     ) : (
                       <p className="text-sm font-black text-white">Contraentrega</p>
                     )}
-                    </div>
-
-                    {/* NOTA SI EXISTE */}
-                    {order.notes && (
-                      <div className="bg-yellow-500/20 border-2 border-yellow-400 rounded-lg px-3 py-2">
-                        <p className="text-xs text-yellow-400 font-bold uppercase mb-1 flex items-center gap-1">
-                          <span className="text-base">⚠️</span> NOTA IMPORTANTE
-                        </p>
-                        <p className="text-sm font-semibold text-yellow-100">{order.notes}</p>
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                {/* BOTONES DE ACCIÓN - Fuera del grid */}
-                <div className="border-t border-white/10 pt-3 px-4 pb-2">
-                  <div className="flex gap-2">
+                {/* BOTONES DE ACCIÓN */}
+                <div className="border-t border-white/10 mt-2 pt-2 px-3 flex flex-wrap gap-2">
                     {order.status === "pendiente-verificacion" && (
                       <>
                         <button
@@ -2775,7 +2733,6 @@ export default function AdminPage() {
                         ✕ Cancelado
                       </div>
                     )}
-                  </div>
                 </div>
               </div>
             ))}
