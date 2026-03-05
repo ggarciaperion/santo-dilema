@@ -302,14 +302,7 @@ export default function ChallengeSection() {
       .then((d: ChallengeData) => setData(d))
       .catch(() => {});
 
-    const shown = sessionStorage.getItem('challengeModalShown_v1');
-    if (!shown) {
-      const timer = setTimeout(() => {
-        setShowModal(true);
-        sessionStorage.setItem('challengeModalShown_v1', 'true');
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
+    // Modal automático desactivado
   }, []);
 
   // No renderizar en SSR ni si ya pasó la fecha
