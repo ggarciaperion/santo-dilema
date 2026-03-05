@@ -73,7 +73,7 @@ function FloatingWidget({ data, onClick }: { data: ChallengeData; onClick: () =>
 
       {/* Tubo compacto */}
       <div
-        className="thermo-tube-glow relative w-7 h-52 rounded-full overflow-hidden"
+        className="thermo-tube-glow relative w-7 h-72 rounded-full overflow-hidden"
         style={{
           background: 'rgba(255,255,255,0.05)',
           border: '2px solid rgba(255,255,255,0.14)',
@@ -242,7 +242,7 @@ function ChallengeModal({ data, onClose }: { data: ChallengeData; onClose: () =>
             {[
               { icon: '🛒', bold: 'Compra cualquier menú', text: 'hasta el 28 de marzo y entras al sorteo automáticamente.' },
               { icon: '🔥', bold: 'Cada compra hace subir el termómetro.', text: 'Mientras más pedidos tengamos entre todos, más sube. ¡Si llegamos a la meta, el sorteo se activa!' },
-              { icon: '📢', bold: 'Sorteo en vivo', text: 'el sábado 28 de marzo por WhatsApp y redes.' },
+              { icon: '📢', bold: 'Sorteo en vivo', text: 'el domingo 29 de marzo por WhatsApp y redes.' },
             ].map(({ icon, bold, text }) => (
               <div key={bold} className="flex items-start gap-2.5">
                 <span className="text-lg leading-none mt-0.5 flex-shrink-0">{icon}</span>
@@ -264,7 +264,7 @@ function ChallengeModal({ data, onClose }: { data: ChallengeData; onClose: () =>
             </div>
             <div className="text-right">
               <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-0.5">Sorteo</p>
-              <p className="text-red-300 font-black text-base">Sáb 28 Mar</p>
+              <p className="text-red-300 font-black text-base">Dom 29 Mar</p>
             </div>
           </div>
 
