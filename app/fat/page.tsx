@@ -199,6 +199,7 @@ export default function FatPage() {
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
+  const [salsaOffers, setSalsaOffers] = useState<Record<string, Array<{ salsaId: string; price: number }>>>({});
   const router = useRouter();
 
   // Salsas con estado agotado derivado del menuStock en tiempo real
@@ -281,6 +282,10 @@ export default function FatPage() {
     fetch("/api/menu-discounts")
       .then((r) => r.json())
       .then((data) => setMenuDiscounts(data))
+      .catch(() => {});
+    fetch("/api/salsa-offers")
+      .then((r) => r.json())
+      .then((data) => setSalsaOffers(data))
       .catch(() => {});
   }, []);
 
@@ -1325,21 +1330,28 @@ export default function FatPage() {
                               const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
                               const canAddMore = count < maxSalsaCount && canSelect && !salsa.soldOut;
                               const showAddButton = canAddMore;
-                              const isPromoSalsa = false; // Promociones desactivadas
-                              const isPromoDuoDilemaSalsa = false; // Promociones desactivadas
-                              const hasBothPromoDuoSalsas = false; // Promociones desactivadas
-                              const isPromoSantoPecadoSalsa = false; // Promociones desactivadas
-                              const hasAllPromoSantoPecadoSalsas = false; // Promociones desactivadas
+                              // Salsa Oferta dinámica desde admin
+                              const menuOffers = salsaOffers[product.id] || [];
+                              const offerEntry = menuOffers.find(o => o.salsaId === salsa.id);
+                              const isOfferSalsa = !!offerEntry;
+                              const offerPrice = offerEntry?.price ?? 0;
+                              const isPromoSalsa = false;
+                              const isPromoDuoDilemaSalsa = false;
+                              const hasBothPromoDuoSalsas = false;
+                              const isPromoSantoPecadoSalsa = false;
+                              const hasAllPromoSantoPecadoSalsas = false;
 
                               return (
                                 <div
                                   key={salsa.id}
-                                  className={`rounded p-1.5 md:p-2 border ${
+                                  className={`rounded p-1.5 md:p-2 border transition-all ${
                                     salsa.soldOut
                                       ? 'bg-gray-800/50 border-gray-600/30 opacity-60'
-                                      : (isPromoSalsa || isPromoDuoDilemaSalsa || isPromoSantoPecadoSalsa)
-                                        ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]'
-                                        : 'bg-gray-800/30 border-amber-500/10'
+                                      : isOfferSalsa
+                                        ? 'bg-orange-950/40 border-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.5)]'
+                                        : (isPromoSalsa || isPromoDuoDilemaSalsa || isPromoSantoPecadoSalsa)
+                                          ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]'
+                                          : 'bg-gray-800/30 border-amber-500/10'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
@@ -1347,14 +1359,21 @@ export default function FatPage() {
                                       <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : salsa.soldOut ? 'text-gray-500' : 'text-white'}`}>
                                         {salsa.name}
                                         {salsa.soldOut && <span className="ml-1.5 text-[8px] bg-gray-600 text-gray-300 px-1 py-0.5 rounded font-bold align-middle">AGOTADO</span>}
-                                        {!salsa.soldOut && isPromoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
-                                        {!salsa.soldOut && isPromoDuoDilemaSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
-                                        {!salsa.soldOut && isPromoSantoPecadoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
+                                        {!salsa.soldOut && isOfferSalsa && <span className="ml-1.5 text-[8px] bg-orange-500 text-white px-1.5 py-0.5 rounded font-black align-middle animate-pulse">🔥 OFERTA</span>}
+                                        {!salsa.soldOut && !isOfferSalsa && isPromoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
+                                        {!salsa.soldOut && !isOfferSalsa && isPromoDuoDilemaSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
+                                        {!salsa.soldOut && !isOfferSalsa && isPromoSantoPecadoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
                                       </div>
                                       <p className={`text-[9px] md:text-[10px] italic mt-0.5 ${salsa.soldOut ? 'text-gray-600' : 'text-gray-400'}`}>
                                         {salsa.description}
                                       </p>
-                                      {!salsa.soldOut && isPromoSalsa && (
+                                      {!salsa.soldOut && isOfferSalsa && (
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                          <span className="text-[9px] text-gray-500 line-through">S/ {products.find(p => p.id === product.id)?.price.toFixed(2)}</span>
+                                          <span className="text-[9px] text-orange-400 font-black">→ S/ {offerPrice.toFixed(2)} eligiendo esta salsa 🔥</span>
+                                        </div>
+                                      )}
+                                      {!salsa.soldOut && !isOfferSalsa && isPromoSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
                                           <span className="text-[9px] text-gray-500 line-through">S/ 20.00</span>
                                           <span className="text-[9px] text-amber-400 font-bold">→ S/ 16.00 con esta salsa</span>

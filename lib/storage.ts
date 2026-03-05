@@ -27,6 +27,7 @@ let menuStockFilePath: string = '';
 let menuDiscountsFilePath: string = '';
 let yunzaParticipationsFilePath: string = '';
 let challengeFilePath: string = '';
+let salsaOffersFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -45,6 +46,7 @@ if (!isProduction) {
   menuDiscountsFilePath = path.join(dataDir, 'menu-discounts.json');
   yunzaParticipationsFilePath = path.join(dataDir, 'yunza-participations.json');
   challengeFilePath = path.join(dataDir, 'challenge.json');
+  salsaOffersFilePath = path.join(dataDir, 'salsa-offers.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -88,6 +90,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(challengeFilePath)) {
       fs.writeFileSync(challengeFilePath, JSON.stringify({ salesAmount: 0, goal: 5000, active: true, deadline: '2026-03-28' }, null, 2));
+    }
+    if (!fs.existsSync(salsaOffersFilePath)) {
+      fs.writeFileSync(salsaOffersFilePath, JSON.stringify({ 'pequeno-dilema': [], 'duo-dilema': [], 'santo-pecado': [] }, null, 2));
     }
   }
 }
@@ -857,6 +862,31 @@ export const storage = {
     } else {
       ensureDataDirectory();
       fs.writeFileSync(challengeFilePath, JSON.stringify(data, null, 2));
+    }
+  },
+
+  // ========== SALSA OFFERS ==========
+
+  async getSalsaOffers(): Promise<Record<string, Array<{ salsaId: string; price: number }>>> {
+    const defaultData = { 'pequeno-dilema': [], 'duo-dilema': [], 'santo-pecado': [] };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<any>('salsaOffers');
+      return data || defaultData;
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(salsaOffersFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  async saveSalsaOffers(data: Record<string, Array<{ salsaId: string; price: number }>>): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('salsaOffers', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(salsaOffersFilePath, JSON.stringify(data, null, 2));
     }
   },
 };
