@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import YunzaModal from "@/components/YunzaModal";
-import ChallengeSection from "@/components/ChallengeSection";
+import ChallengeSection from "./components/ChallengeSection";
 
 // Fecha de lanzamiento: 13 Feb 2026 a las 18:30 hora Perú (UTC-5)
 const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
