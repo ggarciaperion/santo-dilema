@@ -231,6 +231,9 @@ export default function AdminPage() {
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
   const [showPromo13, setShowPromo13] = useState(false);
+  const [challengeData, setChallengeData] = useState<{ salesAmount: number; goal: number; active: boolean; deadline: string }>({ salesAmount: 0, goal: 5000, active: true, deadline: '2026-03-28' });
+  const [challengeSalesInput, setChallengeSalesInput] = useState('');
+  const [challengeSaving, setChallengeSaving] = useState(false);
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [discountInputs, setDiscountInputs] = useState<Record<string, string>>({});
   const [discountSaving, setDiscountSaving] = useState<string | null>(null);
@@ -282,7 +285,7 @@ export default function AdminPage() {
   const [coupons, setCoupons] = useState<any[]>([]);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
-  const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty">("promotions");
+  const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty" | "challenge">("promotions");
   const [inventorySection, setInventorySection] = useState<"purchases" | "stock">("purchases");
   const [purchasesSubTab, setPurchasesSubTab] = useState<"history" | "stock">("history"); // Sub-tabs dentro de Compras y Gastos
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
@@ -398,6 +401,7 @@ export default function AdminPage() {
     loadCatalogProducts();
     loadMenuStock();
     loadMenuDiscounts();
+    loadChallengeData();
     checkHistoricalSale();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
@@ -496,6 +500,34 @@ export default function AdminPage() {
       setMenuStock(data);
     } catch (error) {
       console.error("Error al cargar menu stock:", error);
+    }
+  };
+
+  const loadChallengeData = async () => {
+    try {
+      const res = await fetch("/api/challenge");
+      const data = await res.json();
+      setChallengeData(data);
+      setChallengeSalesInput(String(data.salesAmount));
+    } catch (error) {
+      console.error("Error al cargar desafío:", error);
+    }
+  };
+
+  const saveChallengeData = async (updates: Partial<typeof challengeData>) => {
+    setChallengeSaving(true);
+    try {
+      const res = await fetch("/api/challenge", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      const result = await res.json();
+      if (result.success) setChallengeData(result.data);
+    } catch (error) {
+      console.error("Error al guardar desafío:", error);
+    } finally {
+      setChallengeSaving(false);
     }
   };
 
@@ -6113,6 +6145,16 @@ export default function AdminPage() {
               >
                 🏆 Programa de Fidelización
               </button>
+              <button
+                onClick={() => setMarketingSection("challenge")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  marketingSection === "challenge"
+                    ? "text-red-400 border-b-4 border-red-500"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                🔥 Desafío del Cliente
+              </button>
             </div>
 
             {marketingSection === "promotions" && (
@@ -6500,6 +6542,153 @@ _Valido por 30 dias._`;
                       💡 <strong>Próximamente:</strong> Integración automática de puntos y niveles de fidelización con cada compra
                     </p>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {marketingSection === "challenge" && (
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-red-900/30 to-orange-900/20 border-2 border-red-500/30 rounded-2xl p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-2xl font-black text-red-400 flex items-center gap-2">🔥 Desafío del Cliente — Marzo 2026</h3>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Termómetro de ventas visible en las páginas FAT, FIT y Home. Sorteo: sábado 28 de marzo.
+                      </p>
+                    </div>
+                    <div className={`px-3 py-1.5 rounded-full text-xs font-black ${challengeData.active ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}>
+                      {challengeData.active ? '● ACTIVO' : '○ INACTIVO'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progreso actual */}
+                <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
+                  <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">📊 Progreso Actual</h4>
+                  <div className="space-y-3">
+                    {/* Barra */}
+                    <div className="relative h-10 rounded-full overflow-hidden"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(255,255,255,0.1)' }}>
+                      <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-yellow-400/60 z-10" />
+                      <div
+                        className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-1000"
+                        style={{
+                          width: `${Math.max(45, Math.min(45 + (challengeData.salesAmount / challengeData.goal) * 55, 100))}%`,
+                          background: challengeData.salesAmount >= challengeData.goal
+                            ? 'linear-gradient(to right, #f59e0b, #ef4444, #fbbf24)'
+                            : 'linear-gradient(to right, #7f1d1d, #dc2626, #ef4444, #f87171)',
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <span className="text-white font-black text-sm drop-shadow-lg">
+                          S/ {challengeData.salesAmount.toLocaleString()} / S/ {challengeData.goal.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 font-semibold">
+                      <span>S/ 0</span>
+                      <span className="text-yellow-400/70">🏆 Meta: S/ {challengeData.goal.toLocaleString()}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="bg-gray-800 rounded-lg p-3 text-center">
+                        <p className="text-gray-400 text-[10px] uppercase font-bold">Ventas actuales</p>
+                        <p className="text-2xl font-black text-white mt-1">S/ {challengeData.salesAmount.toLocaleString()}</p>
+                      </div>
+                      <div className="bg-gray-800 rounded-lg p-3 text-center">
+                        <p className="text-gray-400 text-[10px] uppercase font-bold">Progreso</p>
+                        <p className="text-2xl font-black text-red-400 mt-1">{Math.round((challengeData.salesAmount / challengeData.goal) * 100)}%</p>
+                      </div>
+                      <div className="bg-gray-800 rounded-lg p-3 text-center">
+                        <p className="text-gray-400 text-[10px] uppercase font-bold">Faltan</p>
+                        <p className="text-2xl font-black text-amber-400 mt-1">S/ {Math.max(0, challengeData.goal - challengeData.salesAmount).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actualizar ventas */}
+                <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
+                  <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">✏️ Actualizar Ventas de Marzo</h4>
+                  <p className="text-gray-500 text-xs mb-4">
+                    Ingresa el monto total de ventas acumuladas en marzo. El termómetro se actualiza en tiempo real para todos los clientes.
+                  </p>
+                  <div className="flex gap-3">
+                    <div className="flex-1 relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">S/</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="10000"
+                        placeholder="Ej: 2350.50"
+                        value={challengeSalesInput}
+                        onChange={e => setChallengeSalesInput(e.target.value)}
+                        className="w-full bg-gray-800 border-2 border-gray-600 rounded-xl pl-9 pr-4 py-3 text-white text-lg font-bold focus:border-red-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const amount = parseFloat(challengeSalesInput);
+                        if (!isNaN(amount) && amount >= 0) {
+                          await saveChallengeData({ salesAmount: amount });
+                        }
+                      }}
+                      disabled={challengeSaving}
+                      className="px-6 py-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-black rounded-xl transition-all hover:scale-105"
+                    >
+                      {challengeSaving ? 'Guardando...' : '🔥 Actualizar'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Activar / Desactivar + Meta */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
+                    <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-3">⚡ Estado del Desafío</h4>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => saveChallengeData({ active: true })}
+                        disabled={challengeSaving || challengeData.active}
+                        className="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white"
+                      >
+                        ✅ Activar
+                      </button>
+                      <button
+                        onClick={() => saveChallengeData({ active: false })}
+                        disabled={challengeSaving || !challengeData.active}
+                        className="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all bg-gray-600 hover:bg-gray-500 disabled:opacity-40 text-white"
+                      >
+                        ⏸ Desactivar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
+                    <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-3">🎯 Meta de ventas</h4>
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">S/</span>
+                        <input
+                          type="number"
+                          step="100"
+                          min="500"
+                          defaultValue={challengeData.goal}
+                          onBlur={e => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val > 0) saveChallengeData({ goal: val });
+                          }}
+                          className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-8 pr-3 py-2.5 text-white text-sm font-bold focus:border-red-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Premio */}
+                <div className="bg-gradient-to-r from-yellow-900/20 to-amber-900/10 border border-yellow-500/20 rounded-xl p-5">
+                  <h4 className="text-yellow-300 font-bold text-sm uppercase tracking-wider mb-2">🏡 Premio del Sorteo</h4>
+                  <p className="text-white font-black text-lg">Full Day en Casa de Campo</p>
+                  <p className="text-gray-400 text-xs mt-1">Sorteo en vivo — Sábado 28 de Marzo 2026. Entre todos los clientes que compraron en marzo.</p>
                 </div>
               </div>
             )}

@@ -26,6 +26,7 @@ let promoFit30FilePath: string = '';
 let menuStockFilePath: string = '';
 let menuDiscountsFilePath: string = '';
 let yunzaParticipationsFilePath: string = '';
+let challengeFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -43,6 +44,7 @@ if (!isProduction) {
   menuStockFilePath = path.join(dataDir, 'menu-stock.json');
   menuDiscountsFilePath = path.join(dataDir, 'menu-discounts.json');
   yunzaParticipationsFilePath = path.join(dataDir, 'yunza-participations.json');
+  challengeFilePath = path.join(dataDir, 'challenge.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -83,6 +85,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(yunzaParticipationsFilePath)) {
       fs.writeFileSync(yunzaParticipationsFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(challengeFilePath)) {
+      fs.writeFileSync(challengeFilePath, JSON.stringify({ salesAmount: 0, goal: 5000, active: true, deadline: '2026-03-28' }, null, 2));
     }
   }
 }
@@ -828,5 +833,30 @@ export const storage = {
     }
 
     return coupon;
+  },
+
+  // ========== DESAFÍO DEL CLIENTE ==========
+
+  async getChallengeData(): Promise<any> {
+    const defaultData = { salesAmount: 0, goal: 5000, active: true, deadline: '2026-03-28' };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<any>('challengeData');
+      return data || defaultData;
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(challengeFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  async saveChallengeData(data: any): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('challengeData', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(challengeFilePath, JSON.stringify(data, null, 2));
+    }
   },
 };

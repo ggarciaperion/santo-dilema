@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import BannerCarousel from "../components/BannerCarousel";
 import WhatsAppButton from "../components/WhatsAppButton";
+import ChallengeSection from "../components/ChallengeSection";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 interface Product {
@@ -1516,6 +1517,7 @@ export default function FitPage() {
       })()}
 
       <WhatsAppButton />
+      <ChallengeSection />
     </div>
   );
 }
