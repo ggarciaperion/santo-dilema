@@ -10,9 +10,7 @@ export default function MaintenanceWrapper({ children }: { children: React.React
   useEffect(() => {
     // Mantenimiento solo en producción (santodilema.com)
     // El staging (santo-dilema-iota.vercel.app) permanece accesible
-    const hostname = window.location.hostname;
-    const isProduction = hostname === 'www.santodilema.com' || hostname === 'santodilema.com';
-    setIsMaintenanceMode(isProduction);
+    setIsMaintenanceMode(false);
     setIsChecking(false);
   }, []);
 
