@@ -6336,9 +6336,9 @@ _Valido por 30 dias._`;
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
                       { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", originalPrice: 18.50 },
-                      { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", originalPrice: 18.00 },
-                      { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", originalPrice: 20.00 },
-                      { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", originalPrice: 18.50 },
+                      { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", originalPrice: 22.50 },
+                      { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", originalPrice: 23.50 },
+                      { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", originalPrice: 23.50 },
                     ].map((item) => {
                       const hasDiscount = !!menuDiscounts[item.id];
                       const isSaving = discountSaving === item.id;
