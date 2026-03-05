@@ -73,7 +73,7 @@ function FloatingWidget({ data, onClick }: { data: ChallengeData; onClick: () =>
 
       {/* Tubo compacto */}
       <div
-        className="thermo-tube-glow relative w-7 h-32 rounded-full overflow-hidden"
+        className="thermo-tube-glow relative w-7 h-52 rounded-full overflow-hidden"
         style={{
           background: 'rgba(255,255,255,0.05)',
           border: '2px solid rgba(255,255,255,0.14)',
@@ -240,7 +240,7 @@ function ChallengeModal({ data, onClose }: { data: ChallengeData; onClose: () =>
           {/* Cómo funciona */}
           <div className="space-y-2.5">
             {[
-              { icon: '🛒', bold: 'Compra cualquier menú', text: 'antes del 28 de marzo y entras al sorteo automáticamente.' },
+              { icon: '🛒', bold: 'Compra cualquier menú', text: 'hasta el 28 de marzo y entras al sorteo automáticamente.' },
               { icon: '🔥', bold: 'Cada compra hace subir el termómetro.', text: 'Mientras más pedidos tengamos entre todos, más sube. ¡Si llegamos a la meta, el sorteo se activa!' },
               { icon: '📢', bold: 'Sorteo en vivo', text: 'el sábado 28 de marzo por WhatsApp y redes.' },
             ].map(({ icon, bold, text }) => (
