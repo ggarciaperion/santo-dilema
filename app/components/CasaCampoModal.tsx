@@ -10,12 +10,11 @@ export default function CasaCampoModal() {
   const videoRefDesktop = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Auto-show once per session
+    // Auto-show once per session — only image first, video reveals after image is closed
     const seen = sessionStorage.getItem('casacampo_modal_v1');
     if (!seen) {
       const t = setTimeout(() => {
         setShowImage(true);
-        setShowVideo(true);
         sessionStorage.setItem('casacampo_modal_v1', '1');
       }, 900);
       return () => clearTimeout(t);
@@ -23,10 +22,10 @@ export default function CasaCampoModal() {
   }, []);
 
   useEffect(() => {
-    // Listen for thermometer click — always reopen regardless of session flag
+    // Listen for thermometer click — reopen image first (video will follow on close)
     const handleOpen = () => {
       setShowImage(true);
-      setShowVideo(true);
+      setShowVideo(false);
     };
     window.addEventListener('openCasaCampo', handleOpen);
     return () => window.removeEventListener('openCasaCampo', handleOpen);
@@ -77,21 +76,21 @@ export default function CasaCampoModal() {
           />
         )}
 
-        {/* Video close button (behind image when image visible) */}
-        {showVideo && (
+        {/* Video (shown only after image is closed) */}
+        {showVideo && !showImage && (
           <button
             onClick={() => setShowVideo(false)}
             className={closeBtnClass}
-            style={{ ...closeBtnStyle, zIndex: 1 }}
+            style={{ ...closeBtnStyle, zIndex: 10 }}
             aria-label="Cerrar video"
           >
             ✕
           </button>
         )}
 
-        {/* Image overlay (front, z-10) */}
+        {/* Image overlay (front, z-20) — closing reveals video */}
         {showImage && (
-          <div className="absolute inset-0 z-10">
+          <div className="absolute inset-0 z-20">
             <Image
               src="/casacampo.jpg"
               alt="Full Day Casa de Campo — Desafío Santo Dilema"
@@ -101,9 +100,9 @@ export default function CasaCampoModal() {
               sizes="340px"
             />
             <button
-              onClick={() => setShowImage(false)}
+              onClick={() => { setShowImage(false); setShowVideo(true); }}
               className={closeBtnClass}
-              style={{ ...closeBtnStyle, zIndex: 20 }}
+              style={{ ...closeBtnStyle, zIndex: 30 }}
               aria-label="Cerrar imagen"
             >
               ✕
@@ -140,7 +139,7 @@ export default function CasaCampoModal() {
           </div>
         )}
 
-        {/* Image */}
+        {/* Image — closing reveals video */}
         {showImage && (
           <div
             className="relative rounded-2xl overflow-hidden shadow-2xl flex-shrink-0"
@@ -155,7 +154,7 @@ export default function CasaCampoModal() {
               sizes="300px"
             />
             <button
-              onClick={() => setShowImage(false)}
+              onClick={() => { setShowImage(false); setShowVideo(true); }}
               className={closeBtnClass}
               style={closeBtnStyle}
               aria-label="Cerrar imagen"

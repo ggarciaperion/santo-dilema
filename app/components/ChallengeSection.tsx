@@ -74,7 +74,7 @@ function FloatingWidget({ data, onClick }: { data: ChallengeData; onClick: () =>
 
       {/* Tubo neon */}
       <div
-        className="thermo-tube-neon relative w-8 h-72 rounded-full overflow-hidden"
+        className="thermo-tube-neon relative w-7 h-48 rounded-full overflow-hidden"
         style={{
           background: 'linear-gradient(to right, rgba(0,0,0,0.7), rgba(20,0,0,0.85), rgba(0,0,0,0.7))',
           border: '2px solid rgba(239,68,68,0.85)',
@@ -119,7 +119,7 @@ function FloatingWidget({ data, onClick }: { data: ChallengeData; onClick: () =>
 
       {/* Bulbo neon */}
       <div
-        className="thermo-bulb-pulse w-10 h-10 rounded-full flex items-center justify-center text-base"
+        className="thermo-bulb-pulse w-8 h-8 rounded-full flex items-center justify-center text-sm"
         style={{
           background: 'radial-gradient(circle at 35% 30%, #fca5a5, #ef4444, #7f1d1d)',
           boxShadow: '0 0 12px rgba(239,68,68,0.9), 0 0 24px rgba(239,68,68,0.6), 0 0 36px rgba(239,68,68,0.3)',
