@@ -611,10 +611,19 @@ export default function FatPage() {
               .join(", ");
 
             const cartItemId = `${productId}-main`;
+
+            // Aplicar precio de oferta si alguna salsa seleccionada tiene oferta
+            const menuOffers = salsaOffers[productId] || [];
+            const offerEntry = newSalsas
+              .map((sId) => menuOffers.find((o) => o.salsaId === sId))
+              .find((entry) => entry !== undefined);
+            const finalPrice = offerEntry ? offerEntry.price : product.price;
+
             const productWithSalsas: Product = {
               ...product,
               id: cartItemId,
               description: `${product.description} - Salsas: ${salsasText}`,
+              price: finalPrice,
             };
 
             // Remover el anterior y agregar el actualizado
@@ -655,10 +664,19 @@ export default function FatPage() {
               .join(", ");
 
             const cartItemId = `${productId}-main`;
+
+            // Aplicar precio de oferta si alguna salsa seleccionada tiene oferta
+            const menuOffers = salsaOffers[productId] || [];
+            const offerEntry = newSalsas
+              .map((sId) => menuOffers.find((o) => o.salsaId === sId))
+              .find((entry) => entry !== undefined);
+            const finalPrice = offerEntry ? offerEntry.price : product.price;
+
             const productWithSalsas: Product = {
               ...product,
               id: cartItemId,
               description: `${product.description} - Salsas: ${salsasText}`,
+              price: finalPrice,
             };
 
             // Si ya existe en el carrito, removerlo primero (por si cambió las salsas)

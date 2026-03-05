@@ -292,7 +292,6 @@ function ChallengeModal({ data, onClose }: { data: ChallengeData; onClose: () =>
 /* ─── Export principal ─── */
 export default function ChallengeSection() {
   const [data, setData] = useState<ChallengeData>({ salesAmount: 0, goal: GOAL, active: true, deadline: '2026-03-28' });
-  const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -301,8 +300,6 @@ export default function ChallengeSection() {
       .then(r => r.json())
       .then((d: ChallengeData) => setData(d))
       .catch(() => {});
-
-    // Modal automático desactivado
   }, []);
 
   // No renderizar en SSR ni si ya pasó la fecha
@@ -310,9 +307,9 @@ export default function ChallengeSection() {
   if (new Date() > DEADLINE) return null;
 
   return (
-    <>
-      <FloatingWidget data={data} onClick={() => setShowModal(true)} />
-      {showModal && <ChallengeModal data={data} onClose={() => setShowModal(false)} />}
-    </>
+    <FloatingWidget
+      data={data}
+      onClick={() => window.dispatchEvent(new CustomEvent('openCasaCampo'))}
+    />
   );
 }
