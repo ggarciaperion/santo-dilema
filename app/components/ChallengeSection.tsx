@@ -67,31 +67,32 @@ function FloatingWidget({ data, onClick }: { data: ChallengeData; onClick: () =>
       aria-label="Ver desafío del cliente"
     >
       {/* Badge superior */}
-      <div className="bg-red-600 group-hover:bg-red-500 transition-colors text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-lg whitespace-nowrap">
+      <div className="bg-red-600 group-hover:bg-red-500 transition-colors text-white text-[9px] font-black px-1.5 py-0.5 rounded-full whitespace-nowrap"
+        style={{ boxShadow: '0 0 10px rgba(239,68,68,0.7), 0 0 20px rgba(239,68,68,0.3)' }}>
         🔥 DESAFÍO
       </div>
 
-      {/* Tubo compacto */}
+      {/* Tubo neon */}
       <div
-        className="thermo-tube-glow relative w-7 h-72 rounded-full overflow-hidden"
+        className="thermo-tube-neon relative w-8 h-72 rounded-full overflow-hidden"
         style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '2px solid rgba(255,255,255,0.14)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+          background: 'linear-gradient(to right, rgba(0,0,0,0.7), rgba(20,0,0,0.85), rgba(0,0,0,0.7))',
+          border: '2px solid rgba(239,68,68,0.85)',
         }}
       >
-        {/* Línea de meta */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-yellow-400/70 z-10" />
+        {/* Línea de meta con glow amarillo */}
+        <div className="absolute top-0 left-0 right-0 h-0.5 z-10"
+          style={{ background: '#facc15', boxShadow: '0 0 6px #facc15, 0 0 12px rgba(250,204,21,0.6)' }} />
 
         {/* Gradaciones */}
         {[75, 50, 25].map(p => (
           <div key={p}
-            className="absolute left-0 right-0 h-px bg-white/12"
-            style={{ bottom: `${p}%` }}
+            className="absolute left-1 right-1 h-px"
+            style={{ bottom: `${p}%`, background: 'rgba(239,68,68,0.25)' }}
           />
         ))}
 
-        {/* Mercurio */}
+        {/* Mercurio con glow interno */}
         <div
           ref={fillRef}
           className={ready ? 'thermo-fill' : ''}
@@ -103,23 +104,26 @@ function FloatingWidget({ data, onClick }: { data: ChallengeData; onClick: () =>
             height: ready ? undefined : `${visualPct}%`,
             ['--thermo-height' as string]: `${visualPct}%`,
             background: isGoalReached
-              ? 'linear-gradient(to top, #f59e0b, #ef4444, #fbbf24)'
-              : 'linear-gradient(to top, #7f1d1d, #dc2626, #ef4444, #f87171)',
+              ? 'linear-gradient(to top, #92400e, #f59e0b, #fbbf24, #fde68a)'
+              : 'linear-gradient(to top, #450a0a, #991b1b, #ef4444, #fca5a5)',
+            boxShadow: isGoalReached
+              ? 'inset 0 0 12px rgba(251,191,36,0.5), 0 0 16px rgba(251,191,36,0.6)'
+              : 'inset 0 0 12px rgba(239,68,68,0.5), 0 0 16px rgba(239,68,68,0.6)',
           }}
         />
 
-        {/* Brillo lateral */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'linear-gradient(to right, transparent 55%, rgba(255,255,255,0.09))' }}
-        />
+        {/* Reflejo de vidrio (línea brillante izquierda) */}
+        <div className="absolute top-2 bottom-2 left-1 w-1 rounded-full pointer-events-none z-10"
+          style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.35), rgba(255,255,255,0.05))' }} />
       </div>
 
-      {/* Bulbo */}
+      {/* Bulbo neon */}
       <div
-        className="thermo-bulb-pulse w-9 h-9 rounded-full flex items-center justify-center text-sm shadow-xl"
+        className="thermo-bulb-pulse w-10 h-10 rounded-full flex items-center justify-center text-base"
         style={{
-          background: 'radial-gradient(circle at 35% 35%, #f87171, #dc2626, #7f1d1d)',
+          background: 'radial-gradient(circle at 35% 30%, #fca5a5, #ef4444, #7f1d1d)',
+          boxShadow: '0 0 12px rgba(239,68,68,0.9), 0 0 24px rgba(239,68,68,0.6), 0 0 36px rgba(239,68,68,0.3)',
+          border: '2px solid rgba(239,68,68,0.8)',
         }}
       >
         🔥

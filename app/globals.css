@@ -497,12 +497,36 @@ body {
   100% { transform: scaleY(1);    filter: brightness(1); }
 }
 
+/* Líquido que sube y baja suavemente */
+@keyframes thermoLiquidBob {
+  0%   { transform: scaleY(1);     filter: brightness(1)   saturate(1); }
+  25%  { transform: scaleY(1.06);  filter: brightness(1.5) saturate(1.4); }
+  50%  { transform: scaleY(1);     filter: brightness(1)   saturate(1); }
+  75%  { transform: scaleY(0.94);  filter: brightness(0.85) saturate(0.9); }
+  100% { transform: scaleY(1);     filter: brightness(1)   saturate(1); }
+}
+
+/* Neon del tubo */
+@keyframes thermoNeonTube {
+  0%, 100% {
+    box-shadow: 0 0 6px  rgba(239,68,68,0.9),
+                0 0 14px rgba(239,68,68,0.6),
+                0 0 28px rgba(239,68,68,0.35),
+                inset 0 0 10px rgba(239,68,68,0.15);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(239,68,68,1),
+                0 0 28px rgba(239,68,68,0.8),
+                0 0 56px rgba(239,68,68,0.5),
+                0 0 84px rgba(239,68,68,0.2),
+                inset 0 0 18px rgba(239,68,68,0.3);
+  }
+}
+
 @keyframes thermoWidgetPulse {
-  0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 6px rgba(239,68,68,0.5)); }
-  10%       { transform: scale(1.06); filter: drop-shadow(0 0 14px rgba(239,68,68,0.9)); }
-  20%       { transform: scale(1);    filter: drop-shadow(0 0 6px rgba(239,68,68,0.5)); }
-  35%       { transform: scale(1.04); filter: drop-shadow(0 0 10px rgba(239,68,68,0.7)); }
-  50%       { transform: scale(1);    filter: drop-shadow(0 0 6px rgba(239,68,68,0.5)); }
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(239,68,68,0.6)); }
+  25%       { filter: drop-shadow(0 0 16px rgba(239,68,68,1)) drop-shadow(0 0 32px rgba(239,68,68,0.5)); }
+  75%       { filter: drop-shadow(0 0 8px rgba(239,68,68,0.7)); }
 }
 
 @keyframes thermoGlow {
@@ -553,13 +577,17 @@ body {
 }
 
 .thermo-fill {
-  animation: thermoHeartbeat 2.2s ease-in-out infinite,
+  animation: thermoLiquidBob 2.4s ease-in-out infinite,
              thermoRise 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   transform-origin: bottom;
 }
 
+.thermo-tube-neon {
+  animation: thermoNeonTube 2.4s ease-in-out infinite;
+}
+
 .thermo-widget-pulse {
-  animation: thermoWidgetPulse 2.2s ease-in-out infinite;
+  animation: thermoWidgetPulse 2.4s ease-in-out infinite;
 }
 
 .thermo-tube-glow {
