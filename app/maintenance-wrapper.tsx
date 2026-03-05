@@ -8,8 +8,8 @@ export default function MaintenanceWrapper({ children }: { children: React.React
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Modo mantenimiento desactivado - mostrar página normal
-    setIsMaintenanceMode(false);
+    // Modo mantenimiento ACTIVO - volvemos en breve
+    setIsMaintenanceMode(true);
     setIsChecking(false);
   }, []);
 
