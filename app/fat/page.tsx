@@ -713,13 +713,32 @@ export default function FatPage() {
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
 
-    // El precio lo tomamos directamente del item en el carrito:
-    // handleSalsaToggle ya calculó el precio de oferta y lo guardó ahí.
+    // Método 1: precio de oferta desde salsaOffers state (admin config)
+    const menuOffers = salsaOffers[product.id] || [];
+    const salsaOfferEntry = orderSalsas
+      .map(sId => menuOffers.find(o => o.salsaId === sId))
+      .find(entry => entry !== undefined);
+    const offerPriceFromState = salsaOfferEntry?.price;
+
+    // Método 2: precio del carrito (handleSalsaToggle lo calculó al seleccionar la salsa)
     const cartItemId = `${product.id}-main`;
     const cartItemPrice = cart.find(item => item.product.id === cartItemId)?.product.price;
-    const finalPrice = (cartItemPrice !== undefined && cartItemPrice < product.price)
-      ? cartItemPrice
-      : product.price;
+    const offerPriceFromCart = (cartItemPrice !== undefined && cartItemPrice < product.price) ? cartItemPrice : undefined;
+
+    // Debug temporal — verificar en consola del navegador
+    console.log('[handleCompleteOrder]', {
+      productId: product.id,
+      productBasePrice: product.price,
+      orderSalsas,
+      menuOffers,
+      offerPriceFromState,
+      cartItemPrice,
+      offerPriceFromCart,
+    });
+
+    // Usar el precio de oferta disponible (primero salsaOffers, luego carrito)
+    const offerPrice = offerPriceFromState ?? offerPriceFromCart;
+    const finalPrice = (offerPrice !== undefined && offerPrice < product.price) ? offerPrice : product.price;
     const discountApplied = finalPrice < product.price;
 
     const completedOrder: CompletedOrder = {
