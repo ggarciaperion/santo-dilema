@@ -142,6 +142,7 @@ export default function FitPage() {
   const [bannerSlide, setBannerSlide] = useState(0);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
+  const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const router = useRouter();
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
@@ -281,11 +282,15 @@ export default function FitPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Cargar estado de stock de la carta desde el servidor
+  // Cargar estado de stock y descuentos desde el servidor
   useEffect(() => {
     fetch("/api/menu-stock")
       .then((r) => r.json())
       .then((data) => setMenuStock(data))
+      .catch(() => {});
+    fetch("/api/menu-discounts")
+      .then((r) => r.json())
+      .then((data) => setMenuDiscounts(data))
       .catch(() => {});
   }, []);
 
@@ -817,6 +822,7 @@ export default function FitPage() {
             {products.map((product) => {
               const isExpanded = expandedCard === product.id;
               const isSoldOut = !!menuStock[product.id];
+              const discountPrice = menuDiscounts[product.id];
 
               return (
                 <div
@@ -826,11 +832,13 @@ export default function FitPage() {
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none
-                    ${product.oldPrice
-                      ? product.id === 'ensalada-mediterranea'
-                        ? 'border-4 border-red-500 neon-red-border'
-                        : 'border-4 border-amber-400 super-promo-glow'
-                      : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'
+                    ${discountPrice
+                      ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40'
+                      : product.oldPrice
+                        ? product.id === 'ensalada-mediterranea'
+                          ? 'border-4 border-red-500 neon-red-border'
+                          : 'border-4 border-amber-400 super-promo-glow'
+                        : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'
                     }
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
@@ -901,7 +909,16 @@ export default function FitPage() {
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
                       <div className="flex flex-col gap-0.5">
-                        {product.oldPrice ? (
+                        {discountPrice ? (
+                          <>
+                            <span className="text-xs md:text-sm font-bold text-gray-500 line-through opacity-70">
+                              S/ {product.price.toFixed(2)}
+                            </span>
+                            <span className="text-lg md:text-2xl font-black text-amber-400 promo-price-pulse">
+                              S/ {discountPrice.toFixed(2)}
+                            </span>
+                          </>
+                        ) : product.oldPrice ? (
                           <>
                             <span className="text-xs md:text-sm font-bold text-gray-500 line-through opacity-70">
                               S/ {product.oldPrice.toFixed(2)}

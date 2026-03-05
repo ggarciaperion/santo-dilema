@@ -230,6 +230,10 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing" | "carta">("orders");
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
+  const [showPromo13, setShowPromo13] = useState(false);
+  const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
+  const [discountInputs, setDiscountInputs] = useState<Record<string, string>>({});
+  const [discountSaving, setDiscountSaving] = useState<string | null>(null);
   const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock">("dashboard");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   // Estados de filtro de fechas para la pestaña "Gestión de Pedidos"
@@ -393,6 +397,7 @@ export default function AdminPage() {
     loadCoupons();
     loadCatalogProducts();
     loadMenuStock();
+    loadMenuDiscounts();
     checkHistoricalSale();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
@@ -491,6 +496,45 @@ export default function AdminPage() {
       setMenuStock(data);
     } catch (error) {
       console.error("Error al cargar menu stock:", error);
+    }
+  };
+
+  const loadMenuDiscounts = async () => {
+    try {
+      const res = await fetch("/api/menu-discounts");
+      const data = await res.json();
+      setMenuDiscounts(data);
+      const inputs: Record<string, string> = {};
+      Object.entries(data).forEach(([id, price]) => { inputs[id] = String(price); });
+      setDiscountInputs(inputs);
+    } catch (error) {
+      console.error("Error al cargar descuentos:", error);
+    }
+  };
+
+  const saveDiscount = async (productId: string, originalPrice: number) => {
+    const inputVal = discountInputs[productId] || '';
+    const price = parseFloat(inputVal);
+    const validPrice = !isNaN(price) && price > 0 && price < originalPrice ? price : 0;
+    setDiscountSaving(productId);
+    try {
+      await fetch("/api/menu-discounts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, price: validPrice }),
+      });
+      setMenuDiscounts(prev => {
+        const next = { ...prev };
+        if (validPrice <= 0) { delete next[productId]; } else { next[productId] = validPrice; }
+        return next;
+      });
+      if (validPrice <= 0) {
+        setDiscountInputs(prev => { const n = { ...prev }; delete n[productId]; return n; });
+      }
+    } catch (error) {
+      console.error("Error al guardar descuento:", error);
+    } finally {
+      setDiscountSaving(null);
     }
   };
 
@@ -6074,8 +6118,20 @@ export default function AdminPage() {
             {marketingSection === "promotions" && (
               <>
 
-                {/* Promoción 13% - Sección Especial */}
-                <div className="mb-8 bg-gradient-to-r from-fuchsia-900/30 to-purple-900/30 border-2 border-fuchsia-500 rounded-2xl p-6">
+                {/* Promoción 13% - Sección Especial (colapsable, expirada) */}
+                <div className="mb-8">
+                  <button
+                    onClick={() => setShowPromo13(prev => !prev)}
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-400 transition-colors mb-2"
+                  >
+                    <span>{showPromo13 ? '▼' : '▶'}</span>
+                    <span className="line-through">🎁 Promoción 13% - Primeros 13 Clientes</span>
+                    <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">Expirada · 28 Feb 2026</span>
+                  </button>
+                </div>
+
+                {showPromo13 && (
+                <div className="mb-8 bg-gradient-to-r from-fuchsia-900/30 to-purple-900/30 border-2 border-fuchsia-500/40 rounded-2xl p-6 opacity-60">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 flex items-center gap-2">
@@ -6085,7 +6141,7 @@ export default function AdminPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-400">Válido hasta</p>
-                      <p className="text-lg font-bold text-fuchsia-400">28 Feb 2026</p>
+                      <p className="text-lg font-bold text-red-400 line-through">28 Feb 2026</p>
                     </div>
                   </div>
 
@@ -6219,6 +6275,107 @@ _Valido por 30 dias._`;
                       </table>
                     </div>
                   )}
+                </div>
+                )}
+
+                {/* ── Descuentos de Carta ── */}
+                <div className="mb-10">
+                  <h3 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">🏷️ Descuentos de Carta</h3>
+                  <p className="text-gray-400 text-sm mb-6">
+                    Ingresa un precio de oferta menor al original y guárdalo. Los clientes verán el precio tachado y el precio oferta palpitando en la carta.
+                    Deja el campo vacío y guarda para quitar el descuento.
+                  </p>
+
+                  {/* FAT */}
+                  <p className="text-red-400 font-bold text-sm uppercase tracking-wide mb-3">🥩 Carta FAT</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    {[
+                      { id: "pequeno-dilema", name: "Pequeño Dilema", originalPrice: 20.00 },
+                      { id: "duo-dilema", name: "Dúo Dilema", originalPrice: 34.00 },
+                      { id: "santo-pecado", name: "Santo Pecado", originalPrice: 47.00 },
+                    ].map((item) => {
+                      const hasDiscount = !!menuDiscounts[item.id];
+                      const isSaving = discountSaving === item.id;
+                      return (
+                        <div key={item.id} className={`bg-gray-900 rounded-xl border-2 p-4 transition-all ${hasDiscount ? 'border-amber-500/60' : 'border-gray-700'}`}>
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <p className="text-white font-bold text-sm">{item.name}</p>
+                              <p className="text-gray-500 text-xs">Original: S/ {item.originalPrice.toFixed(2)}</p>
+                            </div>
+                            {hasDiscount && (
+                              <span className="text-amber-400 text-xs font-black">→ S/ {menuDiscounts[item.id].toFixed(2)}</span>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              step="0.50"
+                              min="0"
+                              max={item.originalPrice - 0.5}
+                              placeholder={`Precio oferta (< ${item.originalPrice})`}
+                              value={discountInputs[item.id] || ''}
+                              onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white text-sm focus:border-amber-500 focus:outline-none"
+                            />
+                            <button
+                              onClick={() => saveDiscount(item.id, item.originalPrice)}
+                              disabled={isSaving}
+                              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSaving ? 'opacity-50' : ''}`}
+                            >
+                              {isSaving ? '...' : hasDiscount ? 'Actualizar' : 'Guardar'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* FIT */}
+                  <p className="text-cyan-400 font-bold text-sm uppercase tracking-wide mb-3">🥗 Carta FIT</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", originalPrice: 18.50 },
+                      { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", originalPrice: 18.00 },
+                      { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", originalPrice: 20.00 },
+                      { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", originalPrice: 18.50 },
+                    ].map((item) => {
+                      const hasDiscount = !!menuDiscounts[item.id];
+                      const isSaving = discountSaving === item.id;
+                      return (
+                        <div key={item.id} className={`bg-gray-900 rounded-xl border-2 p-4 transition-all ${hasDiscount ? 'border-cyan-500/60' : 'border-gray-700'}`}>
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <p className="text-white font-bold text-sm">{item.name}</p>
+                              <p className="text-gray-500 text-xs">Original: S/ {item.originalPrice.toFixed(2)}</p>
+                            </div>
+                            {hasDiscount && (
+                              <span className="text-cyan-400 text-xs font-black">→ S/ {menuDiscounts[item.id].toFixed(2)}</span>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              step="0.50"
+                              min="0"
+                              max={item.originalPrice - 0.5}
+                              placeholder={`Precio oferta (< ${item.originalPrice})`}
+                              value={discountInputs[item.id] || ''}
+                              onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white text-sm focus:border-cyan-500 focus:outline-none"
+                            />
+                            <button
+                              onClick={() => saveDiscount(item.id, item.originalPrice)}
+                              disabled={isSaving}
+                              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSaving ? 'opacity-50' : ''}`}
+                            >
+                              {isSaving ? '...' : hasDiscount ? 'Actualizar' : 'Guardar'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">

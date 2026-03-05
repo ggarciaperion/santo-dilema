@@ -24,6 +24,7 @@ let couponsFilePath: string = '';
 let promo30FilePath: string = '';
 let promoFit30FilePath: string = '';
 let menuStockFilePath: string = '';
+let menuDiscountsFilePath: string = '';
 let yunzaParticipationsFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
@@ -40,6 +41,7 @@ if (!isProduction) {
   promo30FilePath = path.join(dataDir, 'promo30.json');
   promoFit30FilePath = path.join(dataDir, 'promofit30.json');
   menuStockFilePath = path.join(dataDir, 'menu-stock.json');
+  menuDiscountsFilePath = path.join(dataDir, 'menu-discounts.json');
   yunzaParticipationsFilePath = path.join(dataDir, 'yunza-participations.json');
 }
 
@@ -75,6 +77,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(menuStockFilePath)) {
       fs.writeFileSync(menuStockFilePath, JSON.stringify({}, null, 2));
+    }
+    if (!fs.existsSync(menuDiscountsFilePath)) {
+      fs.writeFileSync(menuDiscountsFilePath, JSON.stringify({}, null, 2));
     }
     if (!fs.existsSync(yunzaParticipationsFilePath)) {
       fs.writeFileSync(yunzaParticipationsFilePath, JSON.stringify([], null, 2));
@@ -754,6 +759,30 @@ export const storage = {
     } else {
       ensureDataDirectory();
       fs.writeFileSync(menuStockFilePath, JSON.stringify(data, null, 2));
+    }
+  },
+
+  // ========== MENU DISCOUNTS ==========
+
+  async getMenuDiscounts(): Promise<Record<string, number>> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<Record<string, number>>('menuDiscounts');
+      return data || {};
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(menuDiscountsFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  async saveMenuDiscounts(data: Record<string, number>): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('menuDiscounts', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(menuDiscountsFilePath, JSON.stringify(data, null, 2));
     }
   },
 
