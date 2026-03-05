@@ -8,8 +8,11 @@ export default function MaintenanceWrapper({ children }: { children: React.React
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Modo mantenimiento ACTIVO - volvemos en breve
-    setIsMaintenanceMode(true);
+    // Mantenimiento solo en producción (santodilema.com)
+    // El staging (santo-dilema-iota.vercel.app) permanece accesible
+    const hostname = window.location.hostname;
+    const isProduction = hostname === 'www.santodilema.com' || hostname === 'santodilema.com';
+    setIsMaintenanceMode(isProduction);
     setIsChecking(false);
   }, []);
 
