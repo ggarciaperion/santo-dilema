@@ -192,14 +192,13 @@ function ChallengeModal({ data, onClose }: { data: ChallengeData; onClose: () =>
           <div className="bg-gradient-to-r from-yellow-900/30 to-amber-900/20 border border-yellow-500/30 rounded-xl p-4 text-center">
             <div className="text-3xl mb-1">🏡</div>
             <p className="text-yellow-300 font-black text-base uppercase tracking-wide">Full Day en Casa de Campo</p>
-            <p className="text-yellow-200/60 text-xs mt-1">Para 2 personas · Fin del verano 🌞</p>
+            <p className="text-yellow-200/60 text-xs mt-1">Para toda la familia · Fin del verano 🌞</p>
           </div>
 
           {/* Termómetro horizontal */}
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white/55 text-xs font-bold uppercase tracking-wide">Ventas de Marzo</span>
-              <span className="text-red-400 font-black text-sm">{pct}% de la meta</span>
+            <div className="mb-2">
+              <span className="text-white/55 text-xs font-bold uppercase tracking-wide">¿Cómo va el termómetro?</span>
             </div>
 
             <div
@@ -227,14 +226,14 @@ function ChallengeModal({ data, onClose }: { data: ChallengeData; onClose: () =>
               {/* Texto encima */}
               <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                 <span className="text-white font-black text-xs drop-shadow-lg">
-                  S/ {data.salesAmount.toLocaleString()} / S/ {GOAL.toLocaleString()}
+                  {isGoalReached ? '🔥 ¡META ALCANZADA!' : '¡Sigue subiendo!'}
                 </span>
               </div>
             </div>
 
             <div className="flex justify-between mt-1.5 text-[10px] font-semibold">
-              <span className="text-white/35">S/ 0</span>
-              <span className="text-yellow-400/70">🏆 S/ 5,000 = ¡SORTEO!</span>
+              <span className="text-white/35">Inicio</span>
+              <span className="text-yellow-400/70">🏆 ¡SORTEO!</span>
             </div>
           </div>
 
@@ -242,7 +241,7 @@ function ChallengeModal({ data, onClose }: { data: ChallengeData; onClose: () =>
           <div className="space-y-2.5">
             {[
               { icon: '🛒', bold: 'Compra cualquier menú', text: 'antes del 28 de marzo y entras al sorteo automáticamente.' },
-              { icon: '🔥', bold: 'Más pedidos = termómetro más arriba.', text: 'Si llegamos a S/ 5,000 en ventas ¡el sorteo se activa!' },
+              { icon: '🔥', bold: 'Cada compra hace subir el termómetro.', text: 'Mientras más pedidos tengamos entre todos, más sube. ¡Si llegamos a la meta, el sorteo se activa!' },
               { icon: '📢', bold: 'Sorteo en vivo', text: 'el sábado 28 de marzo por WhatsApp y redes.' },
             ].map(({ icon, bold, text }) => (
               <div key={bold} className="flex items-start gap-2.5">
