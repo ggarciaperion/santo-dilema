@@ -143,6 +143,13 @@ const salsas: Salsa[] = [
   },
 ];
 
+// Ofertas hardcodeadas por combinación de salsas
+const SALSA_OFFERS: Record<string, { salsas: string[]; price: number }> = {
+  'pequeno-dilema': { salsas: ['teriyaki'], price: 18 },
+  'duo-dilema': { salsas: ['barbecue', 'ahumada'], price: 32 },
+  'santo-pecado': { salsas: ['barbecue', 'buffalo-picante', 'parmesano-ajo'], price: 44 },
+};
+
 // Generar dinámicamente el diccionario de complementos disponibles
 const generateAvailableComplements = () => {
   const complements: Record<string, { name: string; price: number }> = {
@@ -200,7 +207,7 @@ export default function FatPage() {
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
-  const [salsaOffers, setSalsaOffers] = useState<Record<string, Array<{ salsaId: string; price: number }>>>({});
+  // salsaOffers eliminado — usar SALSA_OFFERS hardcodeado
   const router = useRouter();
 
   // Salsas con estado agotado derivado del menuStock en tiempo real
@@ -283,10 +290,6 @@ export default function FatPage() {
     fetch("/api/menu-discounts")
       .then((r) => r.json())
       .then((data) => setMenuDiscounts(data))
-      .catch(() => {});
-    fetch("/api/salsa-offers")
-      .then((r) => r.json())
-      .then((data) => setSalsaOffers(data))
       .catch(() => {});
   }, []);
 
@@ -612,12 +615,10 @@ export default function FatPage() {
 
             const cartItemId = `${productId}-main`;
 
-            // Aplicar precio de oferta si alguna salsa seleccionada tiene oferta
-            const menuOffers = salsaOffers[productId] || [];
-            const offerEntry = newSalsas
-              .map((sId) => menuOffers.find((o) => o.salsaId === sId))
-              .find((entry) => entry !== undefined);
-            const finalPrice = offerEntry ? offerEntry.price : product.price;
+            // Precio de oferta por combinación hardcodeada
+            const offerR = SALSA_OFFERS[productId];
+            const offerAppR = offerR && offerR.salsas.every(sId => newSalsas.includes(sId));
+            const finalPrice = offerAppR ? offerR.price : product.price;
 
             const productWithSalsas: Product = {
               ...product,
@@ -665,12 +666,10 @@ export default function FatPage() {
 
             const cartItemId = `${productId}-main`;
 
-            // Aplicar precio de oferta si alguna salsa seleccionada tiene oferta
-            const menuOffers = salsaOffers[productId] || [];
-            const offerEntry = newSalsas
-              .map((sId) => menuOffers.find((o) => o.salsaId === sId))
-              .find((entry) => entry !== undefined);
-            const finalPrice = offerEntry ? offerEntry.price : product.price;
+            // Precio de oferta por combinación hardcodeada
+            const offerA = SALSA_OFFERS[productId];
+            const offerAppA = offerA && offerA.salsas.every(sId => newSalsas.includes(sId));
+            const finalPrice = offerAppA ? offerA.price : product.price;
 
             const productWithSalsas: Product = {
               ...product,
@@ -713,32 +712,10 @@ export default function FatPage() {
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
 
-    // Método 1: precio de oferta desde salsaOffers state (admin config)
-    const menuOffers = salsaOffers[product.id] || [];
-    const salsaOfferEntry = orderSalsas
-      .map(sId => menuOffers.find(o => o.salsaId === sId))
-      .find(entry => entry !== undefined);
-    const offerPriceFromState = salsaOfferEntry?.price;
-
-    // Método 2: precio del carrito (handleSalsaToggle lo calculó al seleccionar la salsa)
-    const cartItemId = `${product.id}-main`;
-    const cartItemPrice = cart.find(item => item.product.id === cartItemId)?.product.price;
-    const offerPriceFromCart = (cartItemPrice !== undefined && cartItemPrice < product.price) ? cartItemPrice : undefined;
-
-    // Debug temporal — verificar en consola del navegador
-    console.log('[handleCompleteOrder]', {
-      productId: product.id,
-      productBasePrice: product.price,
-      orderSalsas,
-      menuOffers,
-      offerPriceFromState,
-      cartItemPrice,
-      offerPriceFromCart,
-    });
-
-    // Usar el precio de oferta disponible (primero salsaOffers, luego carrito)
-    const offerPrice = offerPriceFromState ?? offerPriceFromCart;
-    const finalPrice = (offerPrice !== undefined && offerPrice < product.price) ? offerPrice : product.price;
+    // Precio de oferta por combinación de salsas hardcodeada
+    const offerC = SALSA_OFFERS[product.id];
+    const offerApplies = offerC && offerC.salsas.every(sId => orderSalsas.includes(sId));
+    const finalPrice = offerApplies ? offerC.price : product.price;
     const discountApplied = finalPrice < product.price;
 
     const completedOrder: CompletedOrder = {
@@ -1360,11 +1337,10 @@ export default function FatPage() {
                               const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
                               const canAddMore = count < maxSalsaCount && canSelect && !salsa.soldOut;
                               const showAddButton = canAddMore;
-                              // Salsa Oferta dinámica desde admin
-                              const menuOffers = salsaOffers[product.id] || [];
-                              const offerEntry = menuOffers.find(o => o.salsaId === salsa.id);
-                              const isOfferSalsa = !!offerEntry;
-                              const offerPrice = offerEntry?.price ?? 0;
+                              // Salsa Oferta hardcodeada
+                              const offerConfig = SALSA_OFFERS[product.id];
+                              const isOfferSalsa = offerConfig ? offerConfig.salsas.includes(salsa.id) : false;
+                              const offerPrice = offerConfig?.price ?? 0;
                               const isPromoSalsa = false;
                               const isPromoDuoDilemaSalsa = false;
                               const hasBothPromoDuoSalsas = false;
@@ -1400,7 +1376,11 @@ export default function FatPage() {
                                       {!salsa.soldOut && isOfferSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
                                           <span className="text-[9px] text-gray-500 line-through">S/ {products.find(p => p.id === product.id)?.price.toFixed(2)}</span>
-                                          <span className="text-[9px] text-orange-400 font-black">→ S/ {offerPrice.toFixed(2)} eligiendo esta salsa 🔥</span>
+                                          <span className="text-[9px] text-orange-400 font-black">
+                                            {offerConfig && offerConfig.salsas.length > 1
+                                              ? `→ S/ ${offerPrice.toFixed(2)} eligiendo la combo oferta 🔥`
+                                              : `→ S/ ${offerPrice.toFixed(2)} eligiendo esta salsa 🔥`}
+                                          </span>
                                         </div>
                                       )}
                                       {!salsa.soldOut && !isOfferSalsa && isPromoSalsa && (

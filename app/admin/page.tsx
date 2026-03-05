@@ -234,15 +234,6 @@ export default function AdminPage() {
   const [challengeData, setChallengeData] = useState<{ salesAmount: number; goal: number; active: boolean; deadline: string }>({ salesAmount: 0, goal: 5000, active: true, deadline: '2026-03-28' });
   const [challengeSalesInput, setChallengeSalesInput] = useState('');
   const [challengeSaving, setChallengeSaving] = useState(false);
-  // Salsa Offers
-  type SalsaOfferEntry = { salsaId: string; price: number };
-  const [salsaOffers, setSalsaOffers] = useState<Record<string, SalsaOfferEntry[]>>({ 'pequeno-dilema': [], 'duo-dilema': [], 'santo-pecado': [] });
-  const [salsaOfferDraft, setSalsaOfferDraft] = useState<Record<string, Array<{ salsaId: string; price: string }>>>({
-    'pequeno-dilema': [{ salsaId: '', price: '' }],
-    'duo-dilema': [{ salsaId: '', price: '' }, { salsaId: '', price: '' }],
-    'santo-pecado': [{ salsaId: '', price: '' }, { salsaId: '', price: '' }, { salsaId: '', price: '' }],
-  });
-  const [salsaOfferSaving, setSalsaOfferSaving] = useState<string | null>(null);
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [discountInputs, setDiscountInputs] = useState<Record<string, string>>({});
   const [discountSaving, setDiscountSaving] = useState<string | null>(null);
@@ -411,7 +402,6 @@ export default function AdminPage() {
     loadMenuStock();
     loadMenuDiscounts();
     loadChallengeData();
-    loadSalsaOffers();
     checkHistoricalSale();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
@@ -511,47 +501,6 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error al cargar menu stock:", error);
     }
-  };
-
-  const loadSalsaOffers = async () => {
-    try {
-      const res = await fetch("/api/salsa-offers");
-      const data = await res.json();
-      setSalsaOffers(data);
-      // Populate draft from saved data
-      const draft: Record<string, Array<{ salsaId: string; price: string }>> = {
-        'pequeno-dilema': [{ salsaId: '', price: '' }],
-        'duo-dilema': [{ salsaId: '', price: '' }, { salsaId: '', price: '' }],
-        'santo-pecado': [{ salsaId: '', price: '' }, { salsaId: '', price: '' }, { salsaId: '', price: '' }],
-      };
-      Object.entries(data).forEach(([menuId, offers]: [string, any]) => {
-        const slots = draft[menuId];
-        if (slots) {
-          (offers as any[]).forEach((o, i) => {
-            if (slots[i]) slots[i] = { salsaId: o.salsaId, price: String(o.price) };
-          });
-        }
-      });
-      setSalsaOfferDraft(draft);
-    } catch {}
-  };
-
-  const saveSalsaOffer = async (menuId: string) => {
-    setSalsaOfferSaving(menuId);
-    try {
-      const draft = salsaOfferDraft[menuId] || [];
-      const offers = draft
-        .filter(d => d.salsaId && d.price && !isNaN(parseFloat(d.price)))
-        .map(d => ({ salsaId: d.salsaId, price: parseFloat(d.price) }));
-      const res = await fetch("/api/salsa-offers", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ menuId, offers }),
-      });
-      const result = await res.json();
-      if (result.success) setSalsaOffers(result.data);
-    } catch {}
-    finally { setSalsaOfferSaving(null); }
   };
 
   const loadChallengeData = async () => {
@@ -7045,99 +6994,6 @@ _Valido por 30 dias._`;
                         {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Descuento'}
                       </button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* SALSA OFERTA POR MENÚ */}
-          <div className="mt-10 mb-10">
-            <h3 className="text-xl font-black text-orange-400 mb-1 flex items-center gap-2">
-              🔥 Salsa Oferta por Menú
-            </h3>
-            <p className="text-gray-500 text-xs mb-5">
-              Elige qué salsa(s) tienen precio especial para cada menú FAT. El cliente verá esa salsa resaltada con el precio de oferta al expandir la carta.
-              Para quitar la oferta, deja el campo vacío y guarda.
-            </p>
-            <div className="space-y-6">
-              {[
-                { id: 'pequeno-dilema', name: 'Pequeño Dilema', basePrice: 20, slots: 1, color: 'border-orange-500/40' },
-                { id: 'duo-dilema',     name: 'Dúo Dilema',     basePrice: 34, slots: 2, color: 'border-orange-500/40' },
-                { id: 'santo-pecado',   name: 'Santo Pecado',   basePrice: 47, slots: 3, color: 'border-orange-500/40' },
-              ].map((menu) => {
-                const draft = salsaOfferDraft[menu.id] || [];
-                const saved = salsaOffers[menu.id] || [];
-                const isSaving = salsaOfferSaving === menu.id;
-                return (
-                  <div key={menu.id} className={`bg-gray-900 rounded-xl border-2 ${menu.color} p-5`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-white font-black text-base">{menu.name}</p>
-                        <p className="text-gray-500 text-xs">S/ {menu.basePrice.toFixed(2)} · {menu.slots} salsa{menu.slots > 1 ? 's' : ''} de oferta</p>
-                      </div>
-                      {saved.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {saved.map(s => {
-                            const sName = salsas.find(x => x.id === s.salsaId)?.name || s.salsaId;
-                            return (
-                              <span key={s.salsaId} className="text-[10px] bg-orange-600/30 border border-orange-500/40 text-orange-300 px-2 py-0.5 rounded-full font-bold">
-                                {sName} · S/ {s.price.toFixed(2)}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-2 mb-4">
-                      {Array.from({ length: menu.slots }).map((_, i) => (
-                        <div key={i} className="flex gap-2 items-center">
-                          <span className="text-orange-400 text-xs font-bold w-4 flex-shrink-0">#{i + 1}</span>
-                          <select
-                            value={draft[i]?.salsaId || ''}
-                            onChange={e => setSalsaOfferDraft(prev => {
-                              const next = { ...prev };
-                              const slots = [...(next[menu.id] || [])];
-                              slots[i] = { ...slots[i], salsaId: e.target.value };
-                              next[menu.id] = slots;
-                              return next;
-                            })}
-                            className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:border-orange-500 focus:outline-none"
-                          >
-                            <option value="">— Sin oferta —</option>
-                            {salsas.map(s => (
-                              <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                          </select>
-                          <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">S/</span>
-                            <input
-                              type="number"
-                              step="0.50"
-                              min="0"
-                              max={menu.basePrice - 0.5}
-                              placeholder={`< ${menu.basePrice}`}
-                              value={draft[i]?.price || ''}
-                              onChange={e => setSalsaOfferDraft(prev => {
-                                const next = { ...prev };
-                                const slots = [...(next[menu.id] || [])];
-                                slots[i] = { ...slots[i], price: e.target.value };
-                                next[menu.id] = slots;
-                                return next;
-                              })}
-                              className="w-28 bg-gray-800 border border-gray-600 rounded-lg pl-7 pr-2 py-2 text-white text-sm focus:border-orange-500 focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => saveSalsaOffer(menu.id)}
-                      disabled={isSaving}
-                      className={`w-full py-2 rounded-lg font-black text-sm transition-all ${isSaving ? 'opacity-50' : 'hover:scale-[1.02]'} bg-orange-600 hover:bg-orange-500 text-white`}
-                    >
-                      {isSaving ? 'Guardando...' : saved.length > 0 ? '🔥 Actualizar oferta' : '🔥 Activar oferta'}
-                    </button>
                   </div>
                 );
               })}
