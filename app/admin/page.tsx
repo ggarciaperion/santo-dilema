@@ -6703,6 +6703,49 @@ _Valido por 30 dias._`;
               })}
             </div>
           </div>
+
+          {/* SALSAS FAT */}
+          <div className="mt-10">
+            <h3 className="text-xl font-black text-amber-400 mb-1 flex items-center gap-2">
+              🫙 Salsas FAT
+            </h3>
+            <p className="text-gray-500 text-xs mb-4">
+              Al agotar una salsa los clientes no podrán seleccionarla al pedir. El cambio se refleja al instante.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {salsas.map((salsa) => {
+                const stockId = `salsa-${salsa.id}`;
+                const isSoldOut = !!menuStock[stockId];
+                const isSaving = menuStockSaving === stockId;
+                return (
+                  <div
+                    key={stockId}
+                    className={`bg-gray-900 rounded-xl border-2 p-4 flex items-center justify-between transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : "border-amber-700/40"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-white font-bold text-sm">{salsa.name}</p>
+                      {isSoldOut && (
+                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => toggleMenuStock(stockId, isSoldOut)}
+                      disabled={isSaving}
+                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${
+                        isSoldOut
+                          ? "bg-green-700 hover:bg-green-600 text-white"
+                          : "bg-red-700 hover:bg-red-600 text-white"
+                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </section>
       ) : null}
 

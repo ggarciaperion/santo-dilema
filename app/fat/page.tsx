@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import BannerCarousel from "../components/BannerCarousel";
 import WhatsAppButton from "../components/WhatsAppButton";
@@ -199,6 +199,12 @@ export default function FatPage() {
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const router = useRouter();
+
+  // Salsas con estado agotado derivado del menuStock en tiempo real
+  const effectiveSalsas = useMemo(
+    () => salsas.map(s => ({ ...s, soldOut: s.soldOut || !!menuStock[`salsa-${s.id}`] })),
+    [menuStock]
+  );
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
   // PROMOCIÓN DESACTIVADA
@@ -1293,7 +1299,7 @@ export default function FatPage() {
                           }`}
                         >
                           <div className="space-y-1 md:space-y-2">
-                            {salsas.map((salsa) => {
+                            {effectiveSalsas.map((salsa) => {
                               const count = getSalsaCount(product.id, salsa.id);
                               const isSelected = count > 0;
                               const canSelect = currentSalsas.length < requiredSalsas || isSelected;
