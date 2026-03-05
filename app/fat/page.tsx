@@ -712,33 +712,15 @@ export default function FatPage() {
     // Guardar la orden completada
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
-    const hasPromoAcevichada = false; // Promoción desactivada
-    const hasPromoDuoDilema = false; // Promoción desactivada
-    const hasPromoSantoPecado = false; // Promoción desactivada
 
-    let finalPrice = product.price;
-    let discountApplied = false;
-
-    if (hasPromoAcevichada) {
-      finalPrice = 16;
-      discountApplied = true;
-    } else if (hasPromoDuoDilema) {
-      finalPrice = 30;
-      discountApplied = true;
-    } else if (hasPromoSantoPecado) {
-      finalPrice = 42;
-      discountApplied = true;
-    } else {
-      // Aplicar precio de oferta dinámica por salsa (configurado en admin)
-      const menuOffers = salsaOffers[product.id] || [];
-      const salsaOfferEntry = orderSalsas
-        .map((sId) => menuOffers.find((o) => o.salsaId === sId))
-        .find((entry) => entry !== undefined);
-      if (salsaOfferEntry) {
-        finalPrice = salsaOfferEntry.price;
-        discountApplied = true;
-      }
-    }
+    // El precio lo tomamos directamente del item en el carrito:
+    // handleSalsaToggle ya calculó el precio de oferta y lo guardó ahí.
+    const cartItemId = `${product.id}-main`;
+    const cartItemPrice = cart.find(item => item.product.id === cartItemId)?.product.price;
+    const finalPrice = (cartItemPrice !== undefined && cartItemPrice < product.price)
+      ? cartItemPrice
+      : product.price;
+    const discountApplied = finalPrice < product.price;
 
     const completedOrder: CompletedOrder = {
       productId: product.id,
