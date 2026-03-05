@@ -6278,106 +6278,6 @@ _Valido por 30 dias._`;
                 </div>
                 )}
 
-                {/* ── Descuentos de Carta ── */}
-                <div className="mb-10">
-                  <h3 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">🏷️ Descuentos de Carta</h3>
-                  <p className="text-gray-400 text-sm mb-6">
-                    Ingresa un precio de oferta menor al original y guárdalo. Los clientes verán el precio tachado y el precio oferta palpitando en la carta.
-                    Deja el campo vacío y guarda para quitar el descuento.
-                  </p>
-
-                  {/* FAT */}
-                  <p className="text-red-400 font-bold text-sm uppercase tracking-wide mb-3">🥩 Carta FAT</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                    {[
-                      { id: "pequeno-dilema", name: "Pequeño Dilema", originalPrice: 20.00 },
-                      { id: "duo-dilema", name: "Dúo Dilema", originalPrice: 34.00 },
-                      { id: "santo-pecado", name: "Santo Pecado", originalPrice: 47.00 },
-                    ].map((item) => {
-                      const hasDiscount = !!menuDiscounts[item.id];
-                      const isSaving = discountSaving === item.id;
-                      return (
-                        <div key={item.id} className={`bg-gray-900 rounded-xl border-2 p-4 transition-all ${hasDiscount ? 'border-amber-500/60' : 'border-gray-700'}`}>
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-white font-bold text-sm">{item.name}</p>
-                              <p className="text-gray-500 text-xs">Original: S/ {item.originalPrice.toFixed(2)}</p>
-                            </div>
-                            {hasDiscount && (
-                              <span className="text-amber-400 text-xs font-black">→ S/ {menuDiscounts[item.id].toFixed(2)}</span>
-                            )}
-                          </div>
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              step="0.50"
-                              min="0"
-                              max={item.originalPrice - 0.5}
-                              placeholder={`Precio oferta (< ${item.originalPrice})`}
-                              value={discountInputs[item.id] || ''}
-                              onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white text-sm focus:border-amber-500 focus:outline-none"
-                            />
-                            <button
-                              onClick={() => saveDiscount(item.id, item.originalPrice)}
-                              disabled={isSaving}
-                              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSaving ? 'opacity-50' : ''}`}
-                            >
-                              {isSaving ? '...' : hasDiscount ? 'Actualizar' : 'Guardar'}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* FIT */}
-                  <p className="text-cyan-400 font-bold text-sm uppercase tracking-wide mb-3">🥗 Carta FIT</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", originalPrice: 18.50 },
-                      { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", originalPrice: 22.50 },
-                      { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", originalPrice: 23.50 },
-                      { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", originalPrice: 23.50 },
-                    ].map((item) => {
-                      const hasDiscount = !!menuDiscounts[item.id];
-                      const isSaving = discountSaving === item.id;
-                      return (
-                        <div key={item.id} className={`bg-gray-900 rounded-xl border-2 p-4 transition-all ${hasDiscount ? 'border-cyan-500/60' : 'border-gray-700'}`}>
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-white font-bold text-sm">{item.name}</p>
-                              <p className="text-gray-500 text-xs">Original: S/ {item.originalPrice.toFixed(2)}</p>
-                            </div>
-                            {hasDiscount && (
-                              <span className="text-cyan-400 text-xs font-black">→ S/ {menuDiscounts[item.id].toFixed(2)}</span>
-                            )}
-                          </div>
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              step="0.50"
-                              min="0"
-                              max={item.originalPrice - 0.5}
-                              placeholder={`Precio oferta (< ${item.originalPrice})`}
-                              value={discountInputs[item.id] || ''}
-                              onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white text-sm focus:border-cyan-500 focus:outline-none"
-                            />
-                            <button
-                              onClick={() => saveDiscount(item.id, item.originalPrice)}
-                              disabled={isSaving}
-                              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSaving ? 'opacity-50' : ''}`}
-                            >
-                              {isSaving ? '...' : hasDiscount ? 'Actualizar' : 'Guardar'}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h3 className="text-2xl font-bold text-white">Promociones Activas</h3>
@@ -6777,39 +6677,64 @@ _Valido por 30 dias._`;
             <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2">
               🥩 Carta FAT
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Stock FAT */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {[
-                { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 20.00" },
-                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 34.00" },
-                { id: "santo-pecado", name: "Santo Pecado", price: "S/ 47.00" },
+                { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 20.00", originalPrice: 20.00 },
+                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 34.00", originalPrice: 34.00 },
+                { id: "santo-pecado", name: "Santo Pecado", price: "S/ 47.00", originalPrice: 47.00 },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
+                const hasDiscount = !!menuDiscounts[item.id];
+                const isSavingDiscount = discountSaving === item.id;
                 return (
                   <div
                     key={item.id}
-                    className={`bg-gray-900 rounded-xl border-2 p-5 flex items-center justify-between transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : "border-gray-700"
+                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-amber-500/50" : "border-gray-700"
                     }`}
                   >
-                    <div>
-                      <p className="text-white font-bold text-base">{item.name}</p>
-                      <p className="text-gray-400 text-sm">{item.price}</p>
-                      {isSoldOut && (
-                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
-                      )}
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="text-white font-bold text-base">{item.name}</p>
+                        {hasDiscount ? (
+                          <p className="text-xs mt-0.5">
+                            <span className="text-gray-500 line-through">S/ {item.originalPrice.toFixed(2)}</span>
+                            <span className="text-amber-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
+                          </p>
+                        ) : (
+                          <p className="text-gray-400 text-sm">{item.price}</p>
+                        )}
+                        {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
+                      </div>
+                      <button
+                        onClick={() => toggleMenuStock(item.id, isSoldOut)}
+                        disabled={isSaving}
+                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
+                          isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"
+                        } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => toggleMenuStock(item.id, isSoldOut)}
-                      disabled={isSaving}
-                      className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
-                        isSoldOut
-                          ? "bg-green-700 hover:bg-green-600 text-white"
-                          : "bg-red-700 hover:bg-red-600 text-white"
-                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
-                    </button>
+                    {/* Descuento inline */}
+                    <div className="flex gap-2 mt-1 pt-3 border-t border-gray-800">
+                      <input
+                        type="number" step="0.50" min="0" max={item.originalPrice - 0.5}
+                        placeholder="Precio oferta"
+                        value={discountInputs[item.id] || ''}
+                        onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-amber-500 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => saveDiscount(item.id, item.originalPrice)}
+                        disabled={isSavingDiscount}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
+                      >
+                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Descuento'}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -6821,40 +6746,65 @@ _Valido por 30 dias._`;
             <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2">
               🥗 Carta FIT
             </h3>
+            {/* Stock FIT */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.50" },
-                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 22.50" },
-                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 23.50" },
-                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 23.50" },
+                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.50", originalPrice: 18.50 },
+                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 22.50", originalPrice: 22.50 },
+                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 23.50", originalPrice: 23.50 },
+                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 23.50", originalPrice: 23.50 },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
+                const hasDiscount = !!menuDiscounts[item.id];
+                const isSavingDiscount = discountSaving === item.id;
                 return (
                   <div
                     key={item.id}
-                    className={`bg-gray-900 rounded-xl border-2 p-5 flex items-center justify-between transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : "border-gray-700"
+                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-cyan-500/50" : "border-gray-700"
                     }`}
                   >
-                    <div>
-                      <p className="text-white font-bold text-base">{item.name}</p>
-                      <p className="text-gray-400 text-sm">{item.price}</p>
-                      {isSoldOut && (
-                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
-                      )}
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="text-white font-bold text-base">{item.name}</p>
+                        {hasDiscount ? (
+                          <p className="text-xs mt-0.5">
+                            <span className="text-gray-500 line-through">S/ {item.originalPrice.toFixed(2)}</span>
+                            <span className="text-cyan-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
+                          </p>
+                        ) : (
+                          <p className="text-gray-400 text-sm">{item.price}</p>
+                        )}
+                        {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
+                      </div>
+                      <button
+                        onClick={() => toggleMenuStock(item.id, isSoldOut)}
+                        disabled={isSaving}
+                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
+                          isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"
+                        } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => toggleMenuStock(item.id, isSoldOut)}
-                      disabled={isSaving}
-                      className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
-                        isSoldOut
-                          ? "bg-green-700 hover:bg-green-600 text-white"
-                          : "bg-red-700 hover:bg-red-600 text-white"
-                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
-                    </button>
+                    {/* Descuento inline */}
+                    <div className="flex gap-2 mt-1 pt-3 border-t border-gray-800">
+                      <input
+                        type="number" step="0.50" min="0" max={item.originalPrice - 0.5}
+                        placeholder="Precio oferta"
+                        value={discountInputs[item.id] || ''}
+                        onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-cyan-500 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => saveDiscount(item.id, item.originalPrice)}
+                        disabled={isSavingDiscount}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
+                      >
+                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Descuento'}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
