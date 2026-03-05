@@ -63,7 +63,7 @@ function FloatingWidget({ data, onClick }: { data: ChallengeData; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="thermo-widget-pulse challenge-widget-in fixed bottom-28 right-3 z-40 flex flex-col items-center gap-1 cursor-pointer group"
+      className="thermo-widget-pulse challenge-widget-in fixed bottom-28 left-3 z-40 flex flex-col items-center gap-1 cursor-pointer group"
       aria-label="Ver desafío del cliente"
     >
       {/* Badge superior */}
