@@ -728,6 +728,16 @@ export default function FatPage() {
     } else if (hasPromoSantoPecado) {
       finalPrice = 42;
       discountApplied = true;
+    } else {
+      // Aplicar precio de oferta dinámica por salsa (configurado en admin)
+      const menuOffers = salsaOffers[product.id] || [];
+      const salsaOfferEntry = orderSalsas
+        .map((sId) => menuOffers.find((o) => o.salsaId === sId))
+        .find((entry) => entry !== undefined);
+      if (salsaOfferEntry) {
+        finalPrice = salsaOfferEntry.price;
+        discountApplied = true;
+      }
     }
 
     const completedOrder: CompletedOrder = {
