@@ -66,11 +66,32 @@ const fitProducts = [
 
 const allProducts = [...fatProducts, ...fitProducts];
 
-// GET - Obtener todos los pedidos
-export async function GET() {
+// GET - Obtener pedidos (soporta ?status=en-camino y ?today=true para reducir carga)
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const statusFilter = searchParams.get("status");
+    const todayOnly = searchParams.get("today") === "true";
+
     const orders = await storage.getOrders();
-    return NextResponse.json(orders);
+
+    let result = orders;
+
+    if (statusFilter) {
+      result = result.filter((o: any) => o.status === statusFilter);
+    }
+
+    if (todayOnly) {
+      const nowPeru = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Lima" }));
+      result = result.filter((o: any) => {
+        const d = new Date(new Date(o.createdAt).toLocaleString("en-US", { timeZone: "America/Lima" }));
+        return d.getDate() === nowPeru.getDate() &&
+               d.getMonth() === nowPeru.getMonth() &&
+               d.getFullYear() === nowPeru.getFullYear();
+      });
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error al leer pedidos:", error);
     return NextResponse.json([], { status: 200 });

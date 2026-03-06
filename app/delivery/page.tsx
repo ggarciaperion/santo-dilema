@@ -87,9 +87,6 @@ function DeliveryTimer({ startTime }: { startTime: string }) {
   );
 }
 
-// PIN por defecto: 1234 (puede ser cambiado desde variables de entorno)
-const DELIVERY_PIN = process.env.NEXT_PUBLIC_DELIVERY_PIN || "1234";
-
 export default function DeliveryPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState("");
@@ -101,14 +98,11 @@ export default function DeliveryPage() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
 
-  // Cargar pedidos en camino
+  // Cargar solo pedidos en-camino (endpoint filtrado — no trae todo el histórico)
   const loadOrders = async () => {
     try {
-      const response = await fetch("/api/orders");
-      const allOrders = await response.json();
-
-      // Filtrar solo pedidos "en-camino"
-      const deliveryOrders = allOrders.filter((order: any) => order.status === "en-camino");
+      const response = await fetch("/api/orders?status=en-camino");
+      const deliveryOrders = await response.json();
       setOrders(deliveryOrders);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
@@ -124,14 +118,24 @@ export default function DeliveryPage() {
     }
   }, [isAuthenticated]);
 
-  const handlePinSubmit = (e: React.FormEvent) => {
+  // PIN validado server-side (el valor nunca viaja al cliente)
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (pin === DELIVERY_PIN) {
-      setIsAuthenticated(true);
-      setPinError(false);
-      localStorage.setItem("delivery-auth", "true");
-    } else {
+    try {
+      const res = await fetch("/api/delivery-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      if (res.ok) {
+        setIsAuthenticated(true);
+        setPinError(false);
+        localStorage.setItem("delivery-auth", "true");
+      } else {
+        setPinError(true);
+        setPin("");
+      }
+    } catch {
       setPinError(true);
       setPin("");
     }
