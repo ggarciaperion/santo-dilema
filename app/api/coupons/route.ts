@@ -80,16 +80,6 @@ export async function POST(request: Request) {
 
     // Validar cupón para usar
     if (action === "validate") {
-      // Cupones habilitados solo en staging (iota) y localhost
-      const host = request.headers.get('host') || '';
-      const isAllowed = host.includes('iota') || host.includes('localhost') || host.includes('127.0.0.1');
-      if (!isAllowed) {
-        return NextResponse.json(
-          { error: "Cupones no disponibles en este momento" },
-          { status: 403 }
-        );
-      }
-
       const { code, phone } = body;
 
       if (!code || !phone) {
