@@ -47,13 +47,13 @@ const fitProducts = [
   {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
-    price: 22.50,
+    price: 20.00,
     category: "fit",
   },
   {
     id: "ensalada-caesar",
     name: "PROTEIN FIT BOWL",
-    price: 23.50,
+    price: 20.00,
     category: "fit",
   },
   {
@@ -154,8 +154,11 @@ export async function POST(request: Request) {
     // Calcular el siguiente número correlativo del día
     const nextCorrelative = (todayOrders.length + 1).toString().padStart(4, '0');
 
-    // Formato: SD + correlativo (4 dígitos) + día (2 dígitos) + mes (2 dígitos)
-    const orderId = `SD${nextCorrelative}${day}${month}`;
+    // Sufijo de 3 dígitos de ms para evitar colisión en pedidos simultáneos
+    const msSuffix = (Date.now() % 1000).toString().padStart(3, '0');
+
+    // Formato: SD + correlativo (4 dígitos) + día (2 dígitos) + mes (2 dígitos) + ms (3 dígitos)
+    const orderId = `SD${nextCorrelative}${day}${month}${msSuffix}`;
 
     // Expandir completedOrders con datos completos de productos
     const expandedOrders = completedOrders.map((order: any) => {
@@ -241,8 +244,8 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Si el pedido se marca como "Entregado", descontar automáticamente del stock
-    if (status === "Entregado") {
+    // Si el pedido se marca como entregado, descontar automáticamente del stock
+    if (status === "delivered") {
       console.log("📦 Pedido marcado como Entregado. Iniciando descuento automático de stock...");
 
       // Obtener todos los productos para acceder a sus componentes

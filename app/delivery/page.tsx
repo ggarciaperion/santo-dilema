@@ -24,7 +24,7 @@ const generateAvailableComplements = () => {
     "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
     "sprite": { name: "Sprite 500ml", price: 4.00 },
     "fanta": { name: "Fanta 500ml", price: 4.00 },
-    "extra-papas": { name: "Extra papas", price: 4.00 },
+    "extra-papas": { name: "Extra papas", price: 5.00 },
     "extra-salsa": { name: "Extra salsa", price: 3.00 },
     "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
     "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
@@ -65,13 +65,12 @@ function DeliveryTimer({ startTime }: { startTime: string }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Obtener hora actual en zona horaria de Perú
-  const now = new Date();
-  const peruNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
-
-  // Parsear el timestamp de inicio
+  // Calcular diferencia en UTC (ambos lados son UTC)
   const startMs = new Date(startTime).getTime();
-  const diff = Math.max(0, Math.floor((peruNow.getTime() - startMs) / 1000));
+  let diff = Math.floor((Date.now() - startMs) / 1000);
+  // Corrección para timestamps en formato antiguo (Lima-hora almacenada como UTC, 5h de offset)
+  if (diff > 4 * 60 * 60) diff -= 5 * 60 * 60;
+  diff = Math.max(0, diff);
   const minutes = Math.floor(diff / 60);
   const seconds = diff % 60;
 
