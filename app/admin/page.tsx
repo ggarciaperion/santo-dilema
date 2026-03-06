@@ -219,6 +219,8 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const previousOrderIdsRef = useRef<Set<string>>(new Set());
   const previousOrderStatusRef = useRef<Map<string, string>>(new Map());
+  // Set permanente: una vez anunciado como entregado, NUNCA se vuelve a anunciar
+  const announcedDeliveredRef = useRef<Set<string>>(new Set());
   const [filter, setFilter] = useState<string>("all");
   const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
   const [chartTimeFilter, setChartTimeFilter] = useState<"days" | "weeks" | "months" | "years">("days");
@@ -453,6 +455,8 @@ export default function AdminPage() {
 
         // Detectar pedidos recién entregados (delivery confirmó entrega) usando useRef
         const newlyDelivered = data.filter((order: Order) => {
+          // announcedDeliveredRef es permanente: si ya fue anunciado, NUNCA vuelve a disparar
+          if (announcedDeliveredRef.current.has(order.id)) return false;
           const previousStatus = previousOrderStatusRef.current.get(order.id);
           const isNewlyDelivered = previousStatus !== 'delivered' && previousStatus !== undefined && order.status === 'delivered';
 
@@ -466,8 +470,11 @@ export default function AdminPage() {
         if (newlyDelivered.length > 0) {
           console.log(`✅ [ADMIN] ¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
           console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
-          // Marcar INMEDIATAMENTE en el ref para evitar race conditions (doble disparo de sonido)
-          newlyDelivered.forEach((o: Order) => previousOrderStatusRef.current.set(o.id, 'delivered'));
+          // Registrar PERMANENTEMENTE para que nunca vuelva a disparar (race condition + refresh)
+          newlyDelivered.forEach((o: Order) => {
+            announcedDeliveredRef.current.add(o.id);
+            previousOrderStatusRef.current.set(o.id, 'delivered');
+          });
           console.log(`🔊 [ADMIN] Llamando a playDeliveryConfirmSound()...`);
           playDeliveryConfirmSound();
           // Mostrar toast con el primer pedido entregado detectado
