@@ -77,17 +77,15 @@ function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderI
     }
 
     const updateElapsed = () => {
-      // Obtener hora actual en zona horaria de Perú
-      const now = new Date();
-      const peruNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
-
-      // Parsear el timestamp del pedido
       const created = new Date(createdAt);
+      let diff = Math.floor((Date.now() - created.getTime()) / 1000);
 
-      // Calcular diferencia en milisegundos
-      let diff = Math.floor((peruNow.getTime() - created.getTime()) / 1000); // diferencia en segundos
+      // Corrección para timestamps en formato antiguo (Lima-hora almacenada como UTC, 5h de offset)
+      // Si diff > 4h, el timestamp tiene el formato viejo: restar 5h para corregirlo
+      if (diff > 4 * 60 * 60) {
+        diff -= 5 * 60 * 60;
+      }
 
-      // Asegurar que no sea negativo (inicia en 0)
       if (diff < 0) {
         diff = 0;
       }
@@ -468,6 +466,8 @@ export default function AdminPage() {
         if (newlyDelivered.length > 0) {
           console.log(`✅ [ADMIN] ¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
           console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
+          // Marcar INMEDIATAMENTE en el ref para evitar race conditions (doble disparo de sonido)
+          newlyDelivered.forEach((o: Order) => previousOrderStatusRef.current.set(o.id, 'delivered'));
           console.log(`🔊 [ADMIN] Llamando a playDeliveryConfirmSound()...`);
           playDeliveryConfirmSound();
           // Mostrar toast con el primer pedido entregado detectado

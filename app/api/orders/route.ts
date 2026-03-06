@@ -9,12 +9,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Helper para obtener timestamp actual en zona horaria de Perú (UTC-5)
+// Helper para obtener timestamp actual en UTC
 function getPeruTimestamp(): string {
-  const now = new Date();
-  // Convertir a zona horaria de Perú (UTC-5)
-  const peruTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
-  return peruTime.toISOString();
+  return new Date().toISOString();
 }
 
 // Productos FAT para referencia
