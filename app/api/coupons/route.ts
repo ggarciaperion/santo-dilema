@@ -316,55 +316,45 @@ export async function POST(request: Request) {
       });
     }
 
-    // Crear campaña con código compartido para todos los teléfonos registrados
-    if (action === "create-birthday-campaign") {
-      const { code, discount, expiresAt } = body;
-      if (!code || !discount || !expiresAt) {
-        return NextResponse.json({ error: "code, discount y expiresAt requeridos" }, { status: 400 });
+    // Crear cupón de campaña para un teléfono específico
+    if (action === "create-campaign-single") {
+      const { code, discount, expiresAt, phone, customerName } = body;
+      if (!code || !discount || !expiresAt || !phone) {
+        return NextResponse.json({ error: "code, discount, expiresAt y phone requeridos" }, { status: 400 });
       }
 
-      // Obtener todos los teléfonos únicos de pedidos entregados
-      const orders = await storage.getOrders();
-      const uniquePhones = [...new Set(
-        orders
-          .filter((o: any) =>
-            o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado"
-          )
-          .map((o: any) => o.phone)
-          .filter(Boolean)
-      )] as string[];
-
-      // Verificar cuáles ya tienen cupón con este código
       const existingCoupons = await storage.getCoupons();
-      const alreadyHas = new Set(
-        existingCoupons.filter((c: Coupon) => c.code === code).map((c: Coupon) => c.phone)
-      );
-
-      const toCreate = uniquePhones.filter(p => !alreadyHas.has(p));
-      const nameMap: Record<string, string> = {};
-      orders.forEach((o: any) => { if (o.phone && o.name) nameMap[o.phone] = o.name; });
-
-      for (const phone of toCreate) {
-        await storage.saveCoupon({
-          id: `campaign-${code}-${phone}-${Date.now()}`,
-          code,
-          phone,
-          customerName: nameMap[phone] || 'Cliente',
-          discount,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-          expiresAt,
-          orderId: 'CAMPAIGN',
-        });
+      const alreadyHas = existingCoupons.find((c: Coupon) => c.code === code && c.phone === phone);
+      if (alreadyHas) {
+        return NextResponse.json({ error: "Este cliente ya tiene un cupón con ese código", alreadyHas: true }, { status: 409 });
       }
 
-      return NextResponse.json({
-        success: true,
+      await storage.saveCoupon({
+        id: `campaign-${code}-${phone}-${Date.now()}`,
         code,
-        created: toCreate.length,
-        skipped: alreadyHas.size,
-        total: uniquePhones.length,
+        phone,
+        customerName: customerName || 'Cliente',
+        discount,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        expiresAt,
+        orderId: 'CAMPAIGN',
       });
+
+      return NextResponse.json({ success: true, code, phone });
+    }
+
+    // Eliminar todos los cupones de una campaña por código
+    if (action === "delete-by-code") {
+      const { code } = body;
+      if (!code) {
+        return NextResponse.json({ error: "code requerido" }, { status: 400 });
+      }
+      const existingCoupons = await storage.getCoupons();
+      const filtered = existingCoupons.filter((c: Coupon) => c.code !== code);
+      const deleted = existingCoupons.length - filtered.length;
+      await storage.updateCoupons(filtered);
+      return NextResponse.json({ success: true, deleted });
     }
 
     return NextResponse.json(

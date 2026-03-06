@@ -264,8 +264,8 @@ export default function AdminPage() {
   const [customersView, setCustomersView] = useState<'list' | 'dashboard' | 'birthdays'>('list');
   const [couponCampaignCode, setCouponCampaignCode] = useState('CUMPLE20');
   const [couponCampaignExpiry, setCouponCampaignExpiry] = useState('2026-03-08T23:00');
-  const [couponCampaignResult, setCouponCampaignResult] = useState<{ created: number; skipped: number; total: number } | null>(null);
-  const [couponCampaignLoading, setCouponCampaignLoading] = useState(false);
+  const [generatingCouponFor, setGeneratingCouponFor] = useState<string | null>(null);
+  const [generatedCoupons, setGeneratedCoupons] = useState<Record<string, boolean>>({});
   const [salesDateFrom, setSalesDateFrom] = useState<string>("");
   const [salesDateTo, setSalesDateTo] = useState<string>("");
   const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
@@ -3268,11 +3268,13 @@ export default function AdminPage() {
                               Última Compra <SortIcon col="lastOrderDate" />
                             </th>
                             <th className="text-center p-3 text-fuchsia-400 font-bold hidden lg:table-cell">Estado</th>
+                            <th className="text-center p-3 text-amber-400 font-bold">🎟️</th>
                           </tr>
                         </thead>
                         <tbody>
                           {sortedCustomers.map((customer: any, idx: number) => {
                             const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
+                            const hasCoupon = generatedCoupons[customer.phone];
                             return (
                               <tr
                                 key={customer.phone}
@@ -3300,6 +3302,35 @@ export default function AdminPage() {
                                     <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">⚠️ Inactivo</span>
                                   ) : (
                                     <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">🆕 Nuevo</span>
+                                  )}
+                                </td>
+                                <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
+                                  {hasCoupon ? (
+                                    <span className="text-xs text-green-400 font-bold">✓ Enviado</span>
+                                  ) : (
+                                    <button
+                                      disabled={generatingCouponFor === customer.phone}
+                                      onClick={async () => {
+                                        if (!couponCampaignCode || !couponCampaignExpiry) return;
+                                        setGeneratingCouponFor(customer.phone);
+                                        try {
+                                          const expiresAt = new Date(couponCampaignExpiry + ':00-05:00').toISOString();
+                                          const res = await fetch('/api/coupons', {
+                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ action: 'create-campaign-single', code: couponCampaignCode, discount: 20, expiresAt, phone: customer.phone, customerName: customer.name }),
+                                          });
+                                          const data = await res.json();
+                                          if (data.success || data.alreadyHas) {
+                                            setGeneratedCoupons(prev => ({ ...prev, [customer.phone]: true }));
+                                          } else {
+                                            alert(data.error || 'Error');
+                                          }
+                                        } finally { setGeneratingCouponFor(null); }
+                                      }}
+                                      className="bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-bold transition-all"
+                                    >
+                                      {generatingCouponFor === customer.phone ? '...' : 'Dar cupón'}
+                                    </button>
                                   )}
                                 </td>
                               </tr>
@@ -3382,13 +3413,13 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Generador de cupón campaña */}
+              {/* Configuración cupón campaña */}
               <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 p-5">
-                <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider mb-4">🎟️ Generar cupón campaña (código compartido)</h3>
-                <p className="text-xs text-gray-500 mb-4">Crea un cupón con un código único válido para todos los teléfonos registrados — un solo uso por teléfono.</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider mb-1">🎟️ Configuración cupón campaña</h3>
+                <p className="text-xs text-gray-500 mb-4">El cupón se genera individualmente por cliente desde la tabla "Clientes" → columna 🎟️.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-gray-400 uppercase mb-1">Código del cupón</label>
+                    <label className="block text-xs text-gray-400 uppercase mb-1">Código</label>
                     <input
                       type="text"
                       value={couponCampaignCode}
@@ -3406,34 +3437,7 @@ export default function AdminPage() {
                     />
                   </div>
                 </div>
-                {couponCampaignResult ? (
-                  <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-3 mb-3">
-                    <p className="text-green-400 font-black text-sm">✅ Campaña creada</p>
-                    <p className="text-white text-sm mt-1">Código: <span className="font-mono font-black text-amber-400">{couponCampaignCode}</span> — 20% descuento</p>
-                    <p className="text-gray-400 text-xs mt-1">{couponCampaignResult.created} cupones nuevos · {couponCampaignResult.skipped} ya tenían · {couponCampaignResult.total} clientes totales</p>
-                  </div>
-                ) : null}
-                <button
-                  onClick={async () => {
-                    if (!couponCampaignCode || !couponCampaignExpiry) return;
-                    setCouponCampaignLoading(true);
-                    setCouponCampaignResult(null);
-                    try {
-                      const expiresAt = new Date(couponCampaignExpiry + ':00-05:00').toISOString();
-                      const res = await fetch('/api/coupons', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'create-birthday-campaign', code: couponCampaignCode, discount: 20, expiresAt }),
-                      });
-                      const data = await res.json();
-                      if (data.success) setCouponCampaignResult({ created: data.created, skipped: data.skipped, total: data.total });
-                      else alert(data.error || 'Error al crear campaña');
-                    } finally { setCouponCampaignLoading(false); }
-                  }}
-                  disabled={couponCampaignLoading || !couponCampaignCode}
-                  className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
-                >
-                  {couponCampaignLoading ? 'Generando...' : `Generar cupones para ${allCustomers.length} clientes`}
-                </button>
+                <p className="text-xs text-gray-600 mt-3">El código activo es <span className="font-mono text-amber-400 font-bold">{couponCampaignCode}</span> · 20% desc · vence {couponCampaignExpiry.replace('T', ' ')}</p>
               </div>
             </section>
           )}
