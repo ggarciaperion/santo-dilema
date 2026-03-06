@@ -483,7 +483,12 @@ export default function AdminPage() {
           setTimeout(() => setDeliveryToast(null), 6000);
         }
       } else {
-        // Primera carga - solo guardar sin reproducir sonido
+        // Primera carga: pre-registrar todos los ya-entregados para que NUNCA disparen notificación
+        data.forEach((order: Order) => {
+          if (order.status === 'delivered') {
+            announcedDeliveredRef.current.add(order.id);
+          }
+        });
         console.log("📋 [ADMIN] Primera carga de pedidos (no reproducir sonido)");
       }
 
