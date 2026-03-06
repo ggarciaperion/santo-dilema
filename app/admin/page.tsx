@@ -1693,6 +1693,15 @@ export default function AdminPage() {
         body: JSON.stringify({ phone: crmEditPhone, birthday: birthdayForApi, tags: crmForm.tags, notes: crmForm.notes }),
       });
       await loadCustomerProfiles();
+      // Actualizar selectedCustomer para que el modal refleje los datos recién guardados
+      if (selectedCustomer?.phone === crmEditPhone) {
+        setSelectedCustomer((prev: any) => ({
+          ...prev,
+          birthday: birthdayForApi,
+          tags: crmForm.tags,
+          notes: crmForm.notes,
+        }));
+      }
       setShowCrmModal(false);
     } finally { setCrmSaving(false); }
   };
