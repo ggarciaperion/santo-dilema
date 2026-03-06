@@ -1684,9 +1684,13 @@ export default function AdminPage() {
   const handleCrmSave = async () => {
     setCrmSaving(true);
     try {
+      const parts = (crmForm.birthday || '').split('/');
+      const birthdayForApi = parts.length === 2 && parts[0].length === 2 && parts[1].length === 2
+        ? `${parts[1]}-${parts[0]}`
+        : undefined;
       await fetch('/api/customer-profiles', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: crmEditPhone, ...crmForm }),
+        body: JSON.stringify({ phone: crmEditPhone, birthday: birthdayForApi, tags: crmForm.tags, notes: crmForm.notes }),
       });
       await loadCustomerProfiles();
       setShowCrmModal(false);
@@ -3123,7 +3127,7 @@ export default function AdminPage() {
                         <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider">Perfil CRM</p>
                         <button onClick={() => {
                           setCrmEditPhone(selectedCustomer.phone);
-                          setCrmForm({ birthday: selectedCustomer.birthday || '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
+                          setCrmForm({ birthday: selectedCustomer.birthday ? `${selectedCustomer.birthday.split('-')[1]}/${selectedCustomer.birthday.split('-')[0]}` : '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
                           setShowCrmModal(true);
                         }} className="text-[10px] text-fuchsia-400 hover:text-fuchsia-200 underline">Editar</button>
                       </div>
@@ -8222,18 +8226,12 @@ _Valido por 30 dias._`;
               <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Cumpleaños (DD/MM)</label>
               <input
                 type="text"
-                value={crmForm.birthday ? `${crmForm.birthday.split('-')[1]}/${crmForm.birthday.split('-')[0]}` : ''}
+                value={crmForm.birthday}
                 onChange={e => {
-                  const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
-                  if (raw.length === 4) {
-                    const dd = raw.slice(0, 2);
-                    const mm = raw.slice(2, 4);
-                    setCrmForm(f => ({ ...f, birthday: `${mm}-${dd}` }));
-                  } else {
-                    setCrmForm(f => ({ ...f, birthday: '' }));
-                  }
+                  const val = e.target.value.replace(/[^\d/]/g, '').slice(0, 5);
+                  setCrmForm(f => ({ ...f, birthday: val }));
                 }}
-                placeholder="1503 → 15 de marzo"
+                placeholder="15/03"
                 maxLength={5}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-fuchsia-500"
               />
