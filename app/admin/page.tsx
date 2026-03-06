@@ -262,6 +262,10 @@ export default function AdminPage() {
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [campaignSegment, setCampaignSegment] = useState('inactive30');
   const [customersView, setCustomersView] = useState<'list' | 'dashboard' | 'birthdays'>('list');
+  const [couponCampaignCode, setCouponCampaignCode] = useState('CUMPLE20');
+  const [couponCampaignExpiry, setCouponCampaignExpiry] = useState('2026-03-08T23:00');
+  const [couponCampaignResult, setCouponCampaignResult] = useState<{ created: number; skipped: number; total: number } | null>(null);
+  const [couponCampaignLoading, setCouponCampaignLoading] = useState(false);
   const [salesDateFrom, setSalesDateFrom] = useState<string>("");
   const [salesDateTo, setSalesDateTo] = useState<string>("");
   const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
@@ -3376,6 +3380,60 @@ export default function AdminPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Generador de cupón campaña */}
+              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 p-5">
+                <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider mb-4">🎟️ Generar cupón campaña (código compartido)</h3>
+                <p className="text-xs text-gray-500 mb-4">Crea un cupón con un código único válido para todos los teléfonos registrados — un solo uso por teléfono.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label className="block text-xs text-gray-400 uppercase mb-1">Código del cupón</label>
+                    <input
+                      type="text"
+                      value={couponCampaignCode}
+                      onChange={e => setCouponCampaignCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 uppercase mb-1">Vence el</label>
+                    <input
+                      type="datetime-local"
+                      value={couponCampaignExpiry}
+                      onChange={e => setCouponCampaignExpiry(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                </div>
+                {couponCampaignResult ? (
+                  <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-3 mb-3">
+                    <p className="text-green-400 font-black text-sm">✅ Campaña creada</p>
+                    <p className="text-white text-sm mt-1">Código: <span className="font-mono font-black text-amber-400">{couponCampaignCode}</span> — 20% descuento</p>
+                    <p className="text-gray-400 text-xs mt-1">{couponCampaignResult.created} cupones nuevos · {couponCampaignResult.skipped} ya tenían · {couponCampaignResult.total} clientes totales</p>
+                  </div>
+                ) : null}
+                <button
+                  onClick={async () => {
+                    if (!couponCampaignCode || !couponCampaignExpiry) return;
+                    setCouponCampaignLoading(true);
+                    setCouponCampaignResult(null);
+                    try {
+                      const expiresAt = new Date(couponCampaignExpiry + ':00-05:00').toISOString();
+                      const res = await fetch('/api/coupons', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'create-birthday-campaign', code: couponCampaignCode, discount: 20, expiresAt }),
+                      });
+                      const data = await res.json();
+                      if (data.success) setCouponCampaignResult({ created: data.created, skipped: data.skipped, total: data.total });
+                      else alert(data.error || 'Error al crear campaña');
+                    } finally { setCouponCampaignLoading(false); }
+                  }}
+                  disabled={couponCampaignLoading || !couponCampaignCode}
+                  className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
+                >
+                  {couponCampaignLoading ? 'Generando...' : `Generar cupones para ${allCustomers.length} clientes`}
+                </button>
               </div>
             </section>
           )}

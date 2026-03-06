@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
-// Fecha de corte global: ningún cupón es válido después de esta fecha
-// CUPONES DESACTIVADOS - Todos expiraron el 1 de marzo
+// Fecha de corte para cupones de la campaña de febrero (ya expirados)
+// Los cupones creados DESPUÉS de esta fecha usan solo su propio expiresAt
 const COUPON_GLOBAL_EXPIRY = new Date("2026-03-01T00:00:00-05:00"); // Hora Perú (UTC-5)
 
 // IDs de salsas promocionales (Promoción 13%)
@@ -90,20 +90,17 @@ export async function POST(request: Request) {
       }
 
       const coupons = await storage.getCoupons();
-      const coupon = coupons.find((c: Coupon) => c.code === code);
+      // Buscar por código + teléfono (soporta campaña multi-teléfono con código compartido)
+      const coupon = coupons.find((c: Coupon) =>
+        c.code === code && (c.phone === phone || c.phone === "INTERNO")
+      );
 
       if (!coupon) {
+        // Distinguir entre "código no existe" y "código de otro teléfono"
+        const codeExists = coupons.some((c: Coupon) => c.code === code);
         return NextResponse.json(
-          { error: "Cupón no existe" },
-          { status: 404 }
-        );
-      }
-
-      // Los cupones internos (phone === "INTERNO") pueden ser usados por cualquier teléfono
-      if (coupon.phone !== "INTERNO" && coupon.phone !== phone) {
-        return NextResponse.json(
-          { error: "Este cupón no pertenece a tu teléfono" },
-          { status: 403 }
+          { error: codeExists ? "Este cupón no pertenece a tu teléfono" : "Cupón no existe" },
+          { status: codeExists ? 403 : 404 }
         );
       }
 
@@ -114,20 +111,17 @@ export async function POST(request: Request) {
         );
       }
 
-      // Verificar fecha de corte global (1 de marzo 2026)
-      // NOTA: Todos los cupones generados en febrero pueden canjearse hasta el 1 de marzo
-      if (new Date() > COUPON_GLOBAL_EXPIRY) {
+      // Aplicar fecha de corte global solo a cupones viejos (creados antes del 1 de marzo)
+      const couponCreatedAt = new Date(coupon.createdAt);
+      if (couponCreatedAt < COUPON_GLOBAL_EXPIRY && new Date() > COUPON_GLOBAL_EXPIRY) {
         return NextResponse.json(
           { error: "Los cupones promocionales vencieron el 1 de marzo" },
           { status: 400 }
         );
       }
 
-      // Validación individual de expiresAt - usar el máximo entre fecha individual y fecha global
-      const expiresAt = new Date(coupon.expiresAt);
-      const effectiveExpiry = expiresAt > COUPON_GLOBAL_EXPIRY ? expiresAt : COUPON_GLOBAL_EXPIRY;
-
-      if (effectiveExpiry < new Date()) {
+      // Verificar expiresAt individual
+      if (new Date(coupon.expiresAt) < new Date()) {
         return NextResponse.json(
           { error: "Cupón expirado" },
           { status: 400 }
@@ -319,6 +313,57 @@ export async function POST(request: Request) {
           code: coupons[couponIndex].code,
           status: coupons[couponIndex].status
         }
+      });
+    }
+
+    // Crear campaña con código compartido para todos los teléfonos registrados
+    if (action === "create-birthday-campaign") {
+      const { code, discount, expiresAt } = body;
+      if (!code || !discount || !expiresAt) {
+        return NextResponse.json({ error: "code, discount y expiresAt requeridos" }, { status: 400 });
+      }
+
+      // Obtener todos los teléfonos únicos de pedidos entregados
+      const orders = await storage.getOrders();
+      const uniquePhones = [...new Set(
+        orders
+          .filter((o: any) =>
+            o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado"
+          )
+          .map((o: any) => o.phone)
+          .filter(Boolean)
+      )] as string[];
+
+      // Verificar cuáles ya tienen cupón con este código
+      const existingCoupons = await storage.getCoupons();
+      const alreadyHas = new Set(
+        existingCoupons.filter((c: Coupon) => c.code === code).map((c: Coupon) => c.phone)
+      );
+
+      const toCreate = uniquePhones.filter(p => !alreadyHas.has(p));
+      const nameMap: Record<string, string> = {};
+      orders.forEach((o: any) => { if (o.phone && o.name) nameMap[o.phone] = o.name; });
+
+      for (const phone of toCreate) {
+        await storage.saveCoupon({
+          id: `campaign-${code}-${phone}-${Date.now()}`,
+          code,
+          phone,
+          customerName: nameMap[phone] || 'Cliente',
+          discount,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+          expiresAt,
+          orderId: 'CAMPAIGN',
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        code,
+        created: toCreate.length,
+        skipped: alreadyHas.size,
+        total: uniquePhones.length,
       });
     }
 
