@@ -28,6 +28,7 @@ let menuDiscountsFilePath: string = '';
 let yunzaParticipationsFilePath: string = '';
 let challengeFilePath: string = '';
 let salsaOffersFilePath: string = '';
+let customerProfilesFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -47,6 +48,7 @@ if (!isProduction) {
   yunzaParticipationsFilePath = path.join(dataDir, 'yunza-participations.json');
   challengeFilePath = path.join(dataDir, 'challenge.json');
   salsaOffersFilePath = path.join(dataDir, 'salsa-offers.json');
+  customerProfilesFilePath = path.join(dataDir, 'customer-profiles.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -93,6 +95,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(salsaOffersFilePath)) {
       fs.writeFileSync(salsaOffersFilePath, JSON.stringify({ 'pequeno-dilema': [], 'duo-dilema': [], 'santo-pecado': [] }, null, 2));
+    }
+    if (!fs.existsSync(customerProfilesFilePath)) {
+      fs.writeFileSync(customerProfilesFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -888,5 +893,30 @@ export const storage = {
       ensureDataDirectory();
       fs.writeFileSync(salsaOffersFilePath, JSON.stringify(data, null, 2));
     }
+  },
+
+  // ========== CUSTOMER PROFILES (CRM) ==========
+  async getCustomerProfiles(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any[]>('customerProfiles')) || [];
+    }
+    ensureDataDirectory();
+    return JSON.parse(fs.readFileSync(customerProfilesFilePath, 'utf-8'));
+  },
+  async upsertCustomerProfile(profile: any): Promise<any> {
+    const profiles = await this.getCustomerProfiles();
+    const idx = profiles.findIndex((p: any) => p.phone === profile.phone);
+    const updated = { ...profile, updatedAt: new Date().toISOString() };
+    if (idx >= 0) profiles[idx] = { ...profiles[idx], ...updated };
+    else profiles.unshift(updated);
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('customerProfiles', profiles);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(customerProfilesFilePath, JSON.stringify(profiles, null, 2));
+    }
+    return idx >= 0 ? profiles[idx] : profiles[0];
   },
 };

@@ -253,6 +253,15 @@ export default function AdminPage() {
   const [deliveryToast, setDeliveryToast] = useState<{ orderId: string; customerName: string } | null>(null);
   const [customerSortKey, setCustomerSortKey] = useState<string>("totalOrders");
   const [customerSortDir, setCustomerSortDir] = useState<"asc" | "desc">("desc");
+  // CRM
+  const [customerProfiles, setCustomerProfiles] = useState<any[]>([]);
+  const [showCrmModal, setShowCrmModal] = useState(false);
+  const [crmEditPhone, setCrmEditPhone] = useState('');
+  const [crmForm, setCrmForm] = useState({ birthday: '', tags: [] as string[], notes: '' });
+  const [crmSaving, setCrmSaving] = useState(false);
+  const [showCampaignModal, setShowCampaignModal] = useState(false);
+  const [campaignSegment, setCampaignSegment] = useState('inactive30');
+  const [customersView, setCustomersView] = useState<'list' | 'dashboard' | 'birthdays'>('list');
   const [salesDateFrom, setSalesDateFrom] = useState<string>("");
   const [salesDateTo, setSalesDateTo] = useState<string>("");
   const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
@@ -403,6 +412,7 @@ export default function AdminPage() {
     loadMenuDiscounts();
     loadChallengeData();
     checkHistoricalSale();
+    loadCustomerProfiles();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
       loadOrders();
@@ -769,6 +779,14 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error al cargar cupones:", error);
     }
+  };
+
+  const loadCustomerProfiles = async () => {
+    try {
+      const res = await fetch("/api/customer-profiles");
+      const data = await res.json();
+      setCustomerProfiles(Array.isArray(data) ? data : []);
+    } catch {}
   };
 
   const loadCatalogProducts = async () => {
@@ -1510,7 +1528,17 @@ export default function AdminPage() {
       }
     });
 
-    return Array.from(customersMap.values()).sort((a, b) => b.totalOrders - a.totalOrders);
+    const base = Array.from(customersMap.values()).sort((a, b) => b.totalOrders - a.totalOrders);
+    return base.map((c: any) => {
+      const profile = customerProfiles.find((p: any) => p.phone === c.phone);
+      return {
+        ...c,
+        avgTicket: c.totalOrders > 0 ? c.totalSpent / c.totalOrders : 0,
+        birthday: profile?.birthday,
+        tags: profile?.tags || [],
+        notes: profile?.notes,
+      };
+    });
   };
 
   const allCustomers = activeTab === "customers" || activeTab === "analytics" ? getCustomersData() : [];
@@ -1601,11 +1629,69 @@ export default function AdminPage() {
         return lastOrder < fifteenDaysAgo;
       }),
 
+      inactive30: allCustomers.filter((c: any) => {
+        const last = getPeruDate(c.lastOrderDate);
+        return last < new Date(now.getTime() - 30*24*60*60*1000) && last >= new Date(now.getTime() - 60*24*60*60*1000);
+      }),
+      inactive60: allCustomers.filter((c: any) => {
+        const last = getPeruDate(c.lastOrderDate);
+        return last < new Date(now.getTime() - 60*24*60*60*1000) && last >= new Date(now.getTime() - 90*24*60*60*1000);
+      }),
+      inactive90: allCustomers.filter((c: any) => {
+        const last = getPeruDate(c.lastOrderDate);
+        return last < new Date(now.getTime() - 90*24*60*60*1000);
+      }),
+
     };
   };
 
   const customerSegments = getCustomerSegments();
   const segmentCustomers = customerSegments[customerSegment as keyof typeof customerSegments] || allCustomers;
+
+  // CRM Dashboard
+  const getCrmDashboard = () => {
+    const now = getPeruDate();
+    const todayMD = `${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const total = allCustomers.length;
+    const repeaters = allCustomers.filter((c: any) => c.totalOrders >= 2).length;
+    const avgTicket = total > 0 ? allCustomers.reduce((s: number, c: any) => s + (c.avgTicket||0), 0) / total : 0;
+    const avgFrequency = total > 0 ? (allCustomers.reduce((s: number, c: any) => s + c.totalOrders, 0) / total).toFixed(1) : '0';
+    return {
+      total, repeaters,
+      repurchaseRate: total > 0 ? Math.round((repeaters/total)*100) : 0,
+      avgTicket, avgFrequency,
+      birthdaysToday: allCustomers.filter((c: any) => c.birthday === todayMD),
+    };
+  };
+  const crmDashboard = activeTab === 'customers' ? getCrmDashboard() : null;
+
+  const getCampaignTemplate = (segment: string, customer: any): string => {
+    const first = (customer?.name || 'amigo').split(' ')[0];
+    const msgs: Record<string, string> = {
+      vip:        `Hola ${first}! 👑 Eres uno de nuestros clientes más especiales en Santo Dilema.\nTenemos algo exclusivo para ti esta semana. Escríbenos y te contamos 🌶️\nwww.santodilema.com`,
+      new:        `Hola ${first}! Gracias por tu primer pedido en Santo Dilema 🔥\nEsperamos que hayas disfrutado. Vuelve cuando quieras 😊\nwww.santodilema.com`,
+      recurrent:  `Hola ${first}! 🙌 Eres de los que más nos visitan y lo apreciamos.\nTenemos novedades en carta — pide cuando quieras en www.santodilema.com`,
+      inactive30: `Hola ${first}! Hace un mes que no te vemos por Santo Dilema 😢\nTe extrañamos. Nuestras alitas siguen igual de buenas 🔥\nwww.santodilema.com`,
+      inactive60: `Hola ${first}! Han pasado 2 meses desde tu último pedido en Santo Dilema.\nTenemos novedades en carta 🌶️\nwww.santodilema.com`,
+      inactive90: `Hola ${first}! Te echamos de menos en Santo Dilema 🥺\nHace 3 meses que no sabemos de ti. Seguimos con el mismo sabor 🔥\nwww.santodilema.com`,
+      birthday:   `Hola ${first}! Hoy es tu día especial 🎉\nDesde Santo Dilema te deseamos un feliz cumpleaños!\nEscríbenos para reclamar tu regalo de cumpleaños 🎁\n🌶️ Santo Dilema`,
+    };
+    return msgs[segment] || msgs['inactive30'];
+  };
+  const buildWhatsApp = (phone: string, msg: string) =>
+    `https://wa.me/51${phone}?text=${encodeURIComponent(msg)}`;
+
+  const handleCrmSave = async () => {
+    setCrmSaving(true);
+    try {
+      await fetch('/api/customer-profiles', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: crmEditPhone, ...crmForm }),
+      });
+      await loadCustomerProfiles();
+      setShowCrmModal(false);
+    } finally { setCrmSaving(false); }
+  };
 
   // Filtrar clientes por búsqueda en tiempo real
   const customers = segmentCustomers.filter((customer: any) => {
@@ -2842,6 +2928,26 @@ export default function AdminPage() {
       ) : activeTab === "customers" ? (
         /* Customers Tab */
         <>
+          {/* Navegación CRM */}
+          <section className="container mx-auto px-4 pt-6 pb-0">
+            <div className="flex gap-2 flex-wrap border-b border-gray-800 pb-3">
+              <button onClick={() => setCustomersView('list')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${customersView==='list' ? 'bg-fuchsia-600 text-white' : 'bg-gray-900 text-gray-400 border border-gray-700 hover:bg-gray-800'}`}>
+                Clientes
+              </button>
+              <button onClick={() => setCustomersView('dashboard')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${customersView==='dashboard' ? 'bg-fuchsia-600 text-white' : 'bg-gray-900 text-gray-400 border border-gray-700 hover:bg-gray-800'}`}>
+                Dashboard CRM{crmDashboard && crmDashboard.birthdaysToday.length > 0 ? ' 🎂' : ''}
+              </button>
+              <button onClick={() => setCustomersView('birthdays')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${customersView==='birthdays' ? 'bg-fuchsia-600 text-white' : 'bg-gray-900 text-gray-400 border border-gray-700 hover:bg-gray-800'}`}>
+                Cumpleaños
+              </button>
+            </div>
+          </section>
+
+          {customersView === 'list' && (
+          <>
           {/* Customer Stats */}
           <section className="container mx-auto px-4 py-8">
             <div className="mb-6">
@@ -3010,6 +3116,38 @@ export default function AdminPage() {
                         ))}
                       </div>
                     </div>
+
+                    {/* CRM Profile */}
+                    <div className="px-4 pb-3 pt-3 border-t border-fuchsia-500/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider">Perfil CRM</p>
+                        <button onClick={() => {
+                          setCrmEditPhone(selectedCustomer.phone);
+                          setCrmForm({ birthday: selectedCustomer.birthday || '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
+                          setShowCrmModal(true);
+                        }} className="text-[10px] text-fuchsia-400 hover:text-fuchsia-200 underline">Editar</button>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {(selectedCustomer.tags || []).length === 0
+                          ? <span className="text-[10px] text-gray-600">Sin etiquetas — haz clic en Editar para añadir</span>
+                          : (selectedCustomer.tags || []).map((t: string) => (
+                              <span key={t} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">{t}</span>
+                            ))
+                        }
+                      </div>
+                      <div className="flex flex-wrap gap-3 text-[10px] text-gray-500 mb-2">
+                        <span>Ticket prom: <span className="text-amber-400 font-bold">S/ {(selectedCustomer.avgTicket||0).toFixed(0)}</span></span>
+                        {selectedCustomer.birthday && (
+                          <span>Cumpleaños: <span className="text-pink-400 font-bold">{selectedCustomer.birthday.split('-')[1]}/{selectedCustomer.birthday.split('-')[0]}</span></span>
+                        )}
+                      </div>
+                      {selectedCustomer.notes && <p className="text-[10px] text-gray-500 italic mb-2">&quot;{selectedCustomer.notes}&quot;</p>}
+                      <a href={buildWhatsApp(selectedCustomer.phone, getCampaignTemplate('inactive30', selectedCustomer))}
+                         target="_blank" rel="noopener noreferrer"
+                         className="inline-flex items-center gap-1 bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded text-[10px] font-bold">
+                        💬 WhatsApp
+                      </a>
+                    </div>
                   </div>
                 </div>
               );
@@ -3158,6 +3296,125 @@ export default function AdminPage() {
               </>
             )}
           </section>
+          </>
+          )}
+
+          {/* Dashboard CRM sub-view */}
+          {customersView === 'dashboard' && crmDashboard && (
+            <section className="container mx-auto px-4 py-6 space-y-6">
+              {/* 4 KPIs */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/40 p-4 text-center">
+                  <p className="text-3xl font-black text-fuchsia-400">{crmDashboard.total}</p>
+                  <p className="text-xs text-gray-400 uppercase mt-1">Clientes totales</p>
+                </div>
+                <div className="bg-gray-900 rounded-xl border-2 border-green-500/40 p-4 text-center">
+                  <p className="text-3xl font-black text-green-400">{crmDashboard.repurchaseRate}%</p>
+                  <p className="text-xs text-gray-400 uppercase mt-1">Tasa recompra</p>
+                </div>
+                <div className="bg-gray-900 rounded-xl border-2 border-amber-500/40 p-4 text-center">
+                  <p className="text-3xl font-black text-amber-400">S/ {crmDashboard.avgTicket.toFixed(0)}</p>
+                  <p className="text-xs text-gray-400 uppercase mt-1">Ticket promedio</p>
+                </div>
+                <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/40 p-4 text-center">
+                  <p className="text-3xl font-black text-cyan-400">{crmDashboard.avgFrequency}</p>
+                  <p className="text-xs text-gray-400 uppercase mt-1">Pedidos/cliente</p>
+                </div>
+              </div>
+
+              {/* Clientes en riesgo */}
+              <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-5">
+                <h3 className="text-sm font-black text-red-400 uppercase tracking-wider mb-4">Clientes en riesgo — Lanzar reactivación</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: '30 días', seg: 'inactive30' },
+                    { label: '60 días', seg: 'inactive60' },
+                    { label: '90+ días', seg: 'inactive90' },
+                  ].map(({ label, seg }) => (
+                    <button key={seg}
+                      onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
+                      className="bg-gray-800 border border-gray-700 hover:border-fuchsia-500 rounded-lg p-3 text-center transition-all">
+                      <p className="text-2xl font-black text-white">{(customerSegments as any)[seg]?.length ?? 0}</p>
+                      <p className="text-xs text-gray-400 mt-1">Inactivos {label}</p>
+                      <p className="text-xs text-fuchsia-400 mt-1">Enviar WhatsApp →</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Lanzar campaña por segmento */}
+              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-5">
+                <h3 className="text-sm font-black text-fuchsia-400 uppercase tracking-wider mb-4">Lanzar campaña WhatsApp</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { label: '👑 VIP', seg: 'vip' },
+                    { label: '✨ Nuevos', seg: 'new' },
+                    { label: '🔁 Recurrentes', seg: 'recurrent' },
+                    { label: '💤 Inactivos 30d', seg: 'inactive30' },
+                    { label: '💤 Inactivos 60d', seg: 'inactive60' },
+                    { label: '💀 Inactivos 90d', seg: 'inactive90' },
+                  ].map(({ label, seg }) => (
+                    <button key={seg}
+                      onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
+                      className="bg-gray-800 border border-gray-700 hover:border-fuchsia-500 rounded-lg p-3 text-left transition-all">
+                      <p className="text-white font-bold text-sm">{label}</p>
+                      <p className="text-gray-500 text-xs">{(customerSegments as any)[seg]?.length ?? 0} clientes</p>
+                      <p className="text-fuchsia-400 text-xs mt-1">Generar mensajes →</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Cumpleaños sub-view */}
+          {customersView === 'birthdays' && crmDashboard && (
+            <section className="container mx-auto px-4 py-6 space-y-4">
+              {crmDashboard.birthdaysToday.length > 0 && (
+                <div className="bg-pink-900/20 border-2 border-pink-500 rounded-xl p-4">
+                  <h3 className="text-pink-400 font-black text-sm uppercase mb-3">🎂 Cumpleaños hoy ({crmDashboard.birthdaysToday.length})</h3>
+                  {crmDashboard.birthdaysToday.map((c: any) => (
+                    <div key={c.phone} className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 mb-2">
+                      <div>
+                        <p className="text-white font-bold text-sm">{c.name}</p>
+                        <p className="text-gray-400 text-xs">{c.phone}</p>
+                      </div>
+                      <a href={buildWhatsApp(c.phone, getCampaignTemplate('birthday', c))}
+                         target="_blank" rel="noopener noreferrer"
+                         className="bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold">
+                        Felicitar 🎉
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="bg-gray-900 rounded-xl border border-gray-700 p-4">
+                <h3 className="text-fuchsia-400 font-black text-sm uppercase mb-3">
+                  Todos los cumpleaños registrados ({allCustomers.filter((c: any) => c.birthday).length})
+                </h3>
+                {allCustomers.filter((c: any) => c.birthday).length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center py-6">
+                    Sin cumpleaños registrados. Edita un cliente en &quot;Clientes&quot; para añadir su cumpleaños.
+                  </p>
+                ) : (
+                  [...allCustomers.filter((c: any) => c.birthday)]
+                    .sort((a: any, b: any) => a.birthday.localeCompare(b.birthday))
+                    .map((c: any) => {
+                      const [mm, dd] = c.birthday.split('-');
+                      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                      return (
+                        <div key={c.phone} className="flex items-center gap-3 py-2 border-b border-gray-800 last:border-0">
+                          <span className="text-xl font-black text-fuchsia-400 w-8 text-center">{dd}</span>
+                          <span className="text-gray-500 text-xs w-8">{meses[parseInt(mm)-1]}</span>
+                          <span className="flex-1 text-white text-sm">{c.name}</span>
+                          <span className="text-gray-500 text-xs">{c.phone}</span>
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+            </section>
+          )}
         </>
       ) : activeTab === "analytics" ? (
         /* Analytics Tab */
@@ -7946,6 +8203,147 @@ _Valido por 30 dias._`;
               >
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal CRM Edit */}
+      {showCrmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCrmModal(false)}>
+          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-black text-fuchsia-400">Perfil CRM</h2>
+              <button onClick={() => setShowCrmModal(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
+            </div>
+
+            {/* Cumpleaños */}
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Cumpleaños (DD/MM)</label>
+              <input
+                type="text"
+                value={crmForm.birthday ? `${crmForm.birthday.split('-')[1]}/${crmForm.birthday.split('-')[0]}` : ''}
+                onChange={e => {
+                  const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  if (raw.length === 4) {
+                    const dd = raw.slice(0, 2);
+                    const mm = raw.slice(2, 4);
+                    setCrmForm(f => ({ ...f, birthday: `${mm}-${dd}` }));
+                  } else {
+                    setCrmForm(f => ({ ...f, birthday: '' }));
+                  }
+                }}
+                placeholder="1503 → 15 de marzo"
+                maxLength={5}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-fuchsia-500"
+              />
+            </div>
+
+            {/* Etiquetas */}
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Etiquetas</label>
+              <div className="flex flex-wrap gap-2">
+                {['vip', 'influencer', 'corporativo', 'fiel', 'problematico'].map(tag => (
+                  <button key={tag}
+                    onClick={() => setCrmForm(f => ({
+                      ...f,
+                      tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag]
+                    }))}
+                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                      crmForm.tags.includes(tag)
+                        ? 'bg-fuchsia-600 text-white border-fuchsia-500'
+                        : 'bg-gray-800 text-gray-400 border-gray-600 hover:border-fuchsia-500'
+                    }`}>
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Notas */}
+            <div className="mb-5">
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Notas</label>
+              <textarea
+                value={crmForm.notes}
+                onChange={e => setCrmForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
+                placeholder="Preferencias, alergias, observaciones..."
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:outline-none focus:border-fuchsia-500"
+              />
+              <p className="text-[10px] text-gray-600 mt-1">{crmForm.notes.length}/500</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCrmSave}
+                disabled={crmSaving}
+                className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
+              >
+                {crmSaving ? 'Guardando...' : 'Guardar'}
+              </button>
+              <button onClick={() => setShowCrmModal(false)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-sm transition-all">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Campaña WhatsApp */}
+      {showCampaignModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCampaignModal(false)}>
+          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-lg p-5 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-black text-fuchsia-400">Campaña WhatsApp</h2>
+              <button onClick={() => setShowCampaignModal(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
+            </div>
+
+            {/* Selector de segmento */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[
+                { label: 'VIP', seg: 'vip' },
+                { label: 'Nuevos', seg: 'new' },
+                { label: 'Recurrentes', seg: 'recurrent' },
+                { label: 'Inac. 30d', seg: 'inactive30' },
+                { label: 'Inac. 60d', seg: 'inactive60' },
+                { label: 'Inac. 90d', seg: 'inactive90' },
+              ].map(({ label, seg }) => (
+                <button key={seg}
+                  onClick={() => setCampaignSegment(seg)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    campaignSegment === seg ? 'bg-fuchsia-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-fuchsia-500'
+                  }`}>
+                  {label} ({(customerSegments as any)[seg]?.length ?? 0})
+                </button>
+              ))}
+            </div>
+
+            {/* Preview del mensaje */}
+            <div className="bg-black/50 rounded-lg p-3 mb-4 border border-gray-700">
+              <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Vista previa del mensaje</p>
+              <p className="text-xs text-gray-300 whitespace-pre-wrap">{getCampaignTemplate(campaignSegment, { name: 'Cliente' })}</p>
+            </div>
+
+            {/* Lista de clientes */}
+            <div className="overflow-y-auto flex-1 max-h-72 space-y-2 pr-1">
+              {((customerSegments as any)[campaignSegment] || []).length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-8">Sin clientes en este segmento</p>
+              ) : (
+                ((customerSegments as any)[campaignSegment] || []).map((c: any) => (
+                  <div key={c.phone} className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
+                    <div>
+                      <p className="text-white text-sm font-bold">{c.name}</p>
+                      <p className="text-gray-500 text-xs">{c.phone}</p>
+                    </div>
+                    <a href={buildWhatsApp(c.phone, getCampaignTemplate(campaignSegment, c))}
+                       target="_blank" rel="noopener noreferrer"
+                       className="bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap">
+                      Enviar →
+                    </a>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
