@@ -158,7 +158,7 @@ export default function FitPage() {
     const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fatProducts.find(p => p.id === order.productId);
-      return product ? product.price : 0;
+      return product ? (menuPrices[product.id] || product.price) : 0;
     })();
     // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
     const unitPrice = (hasComboDiscount && order.discountApplied)
@@ -181,7 +181,8 @@ export default function FitPage() {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fatProducts.find(p => p.id === order.productId);
       if (product) {
-        const finalUnitPrice = order.finalPrice ?? product.price;
+        const basePrice = menuPrices[product.id] || product.price;
+        const finalUnitPrice = order.finalPrice ?? basePrice;
         const discountedProduct = { ...product, price: finalUnitPrice };
         addToCart(discountedProduct, order.quantity);
         order.complementIds.forEach(compId => {
@@ -407,9 +408,10 @@ export default function FitPage() {
 
   const handleCompleteOrder = (product: Product) => {
     const qty = orderQuantity[product.id] || 1;
+    const effectiveBasePrice = menuPrices[product.id] || product.price;
     // Si el producto tiene oldPrice, ese es el precio original (sin promo)
-    const orig = product.oldPrice || product.price;
-    const final = product.price;
+    const orig = product.oldPrice || effectiveBasePrice;
+    const final = effectiveBasePrice;
     const hasPromo = !!product.oldPrice;
 
     const completedOrder: CompletedOrder = {
@@ -1277,9 +1279,10 @@ export default function FitPage() {
                     </div>
                     <div className="text-amber-400 font-bold text-sm gold-glow">
                       S/ {(() => {
-                        const basePrice = order.finalPrice ?? product.price;
+                        const effectivePrice = menuPrices[product.id] || product.price;
+                        const basePrice = order.finalPrice ?? effectivePrice;
                         const unitPrice = (hasComboDiscount && order.discountApplied)
-                          ? (order.originalPrice ?? product.price)
+                          ? (order.originalPrice ?? effectivePrice)
                           : basePrice;
                         const productTotal = unitPrice * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
@@ -1376,9 +1379,10 @@ export default function FitPage() {
               {(() => {
                 if (!product) return null;
 
-              const basePrice = order.finalPrice ?? product.price;
+              const effectivePrice = menuPrices[product.id] || product.price;
+              const basePrice = order.finalPrice ?? effectivePrice;
               const unitPrice = (hasComboDiscount && order.discountApplied)
-                ? (order.originalPrice ?? product.price)
+                ? (order.originalPrice ?? effectivePrice)
                 : basePrice;
               const productTotal = unitPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {

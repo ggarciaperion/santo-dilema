@@ -227,7 +227,7 @@ export default function FatPage() {
     const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
-      return product ? product.price : 0;
+      return product ? (menuPrices[product.id] || product.price) : 0;
     })();
     // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
     const unitPrice = (hasComboDiscount && order.discountApplied)
@@ -250,7 +250,8 @@ export default function FatPage() {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
       if (product) {
-        const finalPrice = order.finalPrice ?? product.price;
+        const basePrice = menuPrices[product.id] || product.price;
+        const finalPrice = order.finalPrice ?? basePrice;
 
         addToCart({
           ...product,
@@ -718,17 +719,18 @@ export default function FatPage() {
     const qty = orderQuantity[product.id] || 1;
 
     // Precio de oferta por combinación de salsas hardcodeada
+    const effectiveBasePrice = menuPrices[product.id] || product.price;
     const offerC = SALSA_OFFERS[product.id];
     const offerApplies = offerC && offerC.salsas.every(sId => orderSalsas.includes(sId));
-    const finalPrice = offerApplies ? offerC.price : product.price;
-    const discountApplied = finalPrice < product.price;
+    const finalPrice = offerApplies ? offerC.price : effectiveBasePrice;
+    const discountApplied = finalPrice < effectiveBasePrice;
 
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: qty,
       salsas: orderSalsas,
       complementIds: complementsInCart[product.id] || [],
-      originalPrice: product.price,
+      originalPrice: effectiveBasePrice,
       finalPrice: finalPrice,
       discountApplied: discountApplied
     };
@@ -1730,11 +1732,11 @@ export default function FatPage() {
                               <span>• {product.name} x{order.quantity}</span>
                               {order.discountApplied && !hasComboDiscount ? (
                                 <span className="flex items-center gap-1.5">
-                                  <span className="text-gray-500 line-through text-[10px]">S/ {((order.originalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
-                                  <span className="text-amber-400 font-bold">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
+                                  <span className="text-gray-500 line-through text-[10px]">S/ {((order.originalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
+                                  <span className="text-amber-400 font-bold">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                                 </span>
                               ) : (
-                                <span className="text-amber-400/80">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? product.price) : (order.finalPrice ?? product.price)) * order.quantity).toFixed(2)}</span>
+                                <span className="text-amber-400/80">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? (menuPrices[product.id] || product.price)) : (order.finalPrice ?? (menuPrices[product.id] || product.price))) * order.quantity).toFixed(2)}</span>
                               )}
                             </div>
 
@@ -1784,9 +1786,10 @@ export default function FatPage() {
                     </div>
                     <div className="text-amber-400 font-bold text-sm md:text-base gold-glow">
                       S/ {(() => {
-                        const basePrice = order.finalPrice ?? product.price;
+                        const effectivePrice = menuPrices[product.id] || product.price;
+                        const basePrice = order.finalPrice ?? effectivePrice;
                         const unitPrice = (hasComboDiscount && order.discountApplied)
-                          ? (order.originalPrice ?? product.price)
+                          ? (order.originalPrice ?? effectivePrice)
                           : basePrice;
                         const productTotal = unitPrice * order.quantity;
                         const complementsTotal = order.complementIds.reduce((sum, compId) => {
@@ -1971,7 +1974,7 @@ export default function FatPage() {
               {(() => {
                 if (!product) return null;
 
-              const productPrice = order.finalPrice ?? product.price;
+              const productPrice = order.finalPrice ?? (menuPrices[product.id] || product.price);
               const productTotal = productPrice * order.quantity;
               const complementsTotal = order.complementIds.reduce((sum, compId) => {
                 return sum + (availableComplements[compId]?.price || 0);
@@ -2016,7 +2019,7 @@ export default function FatPage() {
                     <div className="space-y-1">
                       <div className={`flex justify-between items-center ${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} text-xs`}>
                         <span>• {product.name} x{order.quantity}</span>
-                        <span className="text-amber-400/80">S/ {((order.finalPrice ?? product.price) * order.quantity).toFixed(2)}</span>
+                        <span className="text-amber-400/80">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                       </div>
 
                       {/* Salsas (solo para órdenes fat) */}
