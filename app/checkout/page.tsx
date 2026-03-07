@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
-import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -204,9 +203,6 @@ export default function CheckoutPage() {
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [scheduleError, setScheduleError] = useState('');
-  const [isOpen, setIsOpen] = useState(isBusinessOpen());
-  const [isTestEnv, setIsTestEnv] = useState(false);
-
   // Estados para delivery
   const [deliveryOption] = useState<string>("otros");
 
@@ -216,12 +212,6 @@ export default function CheckoutPage() {
       playSuccessSound();
     }
   }, [orderPlaced]);
-
-  useEffect(() => {
-    const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
-    setIsTestEnv(window.location.hostname === 'santo-dilema-iota.vercel.app');
-    return () => clearInterval(interval);
-  }, []);
 
 
   // Cargar órdenes desde sessionStorage (vienen de /fat o /fit)
@@ -309,39 +299,73 @@ export default function CheckoutPage() {
 
   // Validar si el formulario está completo
   // ── PROGRAMAR COMPRA ─────────────────────────────────────────────
-  const getTodayPeruStr = () => {
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const OPEN_DAYS = [0, 4, 5, 6]; // Dom, Jue, Vie, Sáb
+  const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+  const getPeruNow = () => new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+
+  const dateToStr = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  // Retorna los días disponibles para programar (hoy si es día hábil, o los próximos 3 días hábiles)
+  const getScheduleDays = (): { dateStr: string; label: string }[] => {
+    const now = getPeruNow();
+    const todayDay = now.getDay();
+    const results: { dateStr: string; label: string }[] = [];
+
+    if (OPEN_DAYS.includes(todayDay)) {
+      // Es día hábil → solo hoy
+      results.push({ dateStr: dateToStr(now), label: 'Hoy' });
+    } else {
+      // No es día hábil → próximos días hábiles (hasta 3)
+      for (let i = 1; i <= 7 && results.length < 3; i++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + i);
+        if (OPEN_DAYS.includes(d.getDay())) {
+          const label = i === 1 ? 'Mañana' : DAY_NAMES[d.getDay()];
+          results.push({ dateStr: dateToStr(d), label });
+        }
+      }
+    }
+    return results;
   };
 
-  const getTodaySlots = (): string[] => {
+  // Slots de 18:30–23:00. Si la fecha es hoy, filtra los que ya pasaron (+ 30 min)
+  const getSlotsForDate = (dateStr: string): string[] => {
     const slots: string[] = [];
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+    const now = getPeruNow();
+    const todayStr = dateToStr(now);
+    const isToday = dateStr === todayStr;
     const minMs = now.getTime() + 30 * 60 * 1000;
+
     for (let h = 18; h <= 23; h++) {
       for (let m = 0; m < 60; m += 30) {
         if (h === 23 && m > 0) break;
         if (h === 18 && m === 0) continue; // sin opción 6:00 PM
-        const slot = new Date(now);
-        slot.setHours(h, m, 0, 0);
-        if (slot.getTime() >= minMs) {
-          slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+        if (isToday) {
+          const slot = new Date(now);
+          slot.setHours(h, m, 0, 0);
+          if (slot.getTime() < minMs) continue;
         }
+        slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
       }
     }
     return slots;
   };
 
   const formatScheduleDisplay = () => {
-    if (!scheduledTime) return null;
+    if (!scheduledDate || !scheduledTime) return null;
     const [hh, mm] = scheduledTime.split(':');
     const h = parseInt(hh);
-    return `Hoy – ${h > 12 ? h - 12 : h}:${mm} ${h >= 12 ? 'PM' : 'AM'}`;
+    const days = getScheduleDays();
+    const dayInfo = days.find(d => d.dateStr === scheduledDate);
+    const dayLabel = dayInfo?.label || scheduledDate;
+    return `${dayLabel} – ${h > 12 ? h - 12 : h}:${mm} ${h >= 12 ? 'PM' : 'AM'}`;
   };
 
   const handleConfirmSchedule = () => {
-    if (!scheduledTime) {
-      setScheduleError('Por favor selecciona una hora.');
+    if (!scheduledDate || !scheduledTime) {
+      setScheduleError('Por favor selecciona fecha y hora.');
       return;
     }
     setScheduleError('');
@@ -623,62 +647,6 @@ export default function CheckoutPage() {
     );
   }
 
-  if (!isOpen) {
-    return (
-      <div className="h-[100dvh] bg-black flex flex-col items-center justify-center relative overflow-hidden">
-        {/* Fondo decorativo */}
-        <div className="fixed inset-0 opacity-5 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-red-500 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-orange-500 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative z-10 flex flex-col items-center gap-6 px-8 text-center">
-          {/* Logo */}
-          <Image
-            src="/logo.png"
-            alt="Santo Dilema"
-            width={120}
-            height={120}
-            className="w-24 h-24 md:w-32 md:h-32 object-contain opacity-80"
-          />
-
-          {/* Candado */}
-          <div className="text-6xl md:text-8xl">🔒</div>
-
-          {/* Mensaje cerrado */}
-          <div className="flex flex-col gap-2">
-            <h1 className="text-white font-black text-2xl md:text-4xl tracking-wide">
-              Estamos Cerrados
-            </h1>
-            <p className="text-gray-400 text-sm md:text-base max-w-xs">
-              El horario de atención es de <span className="text-white font-bold">6:00 PM – 11:00 PM</span>,{" "}
-              <span className="text-white font-bold">Jueves a Domingo</span>.
-            </p>
-            <p className="text-amber-400 font-bold text-sm md:text-base mt-1">
-              {getNextOpenMessage()}
-            </p>
-          </div>
-
-          {/* Botones de navegación */}
-          <div className="flex flex-col sm:flex-row gap-3 mt-2">
-            <Link
-              href="/fat"
-              className="bg-red-600 hover:bg-red-500 text-white font-black px-6 py-3 rounded-xl text-sm md:text-base transition-all active:scale-95"
-            >
-              Ver carta FAT
-            </Link>
-            <Link
-              href="/fit"
-              className="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-6 py-3 rounded-xl text-sm md:text-base transition-all active:scale-95"
-            >
-              Ver carta FIT
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex flex-col">
       {/* Header mejorado */}
@@ -934,7 +902,13 @@ export default function CheckoutPage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => { setScheduleError(''); setScheduledDate(getTodayPeruStr()); setShowScheduleModal(true); }}
+                    onClick={() => {
+                      const days = getScheduleDays();
+                      setScheduleError('');
+                      setScheduledDate(days[0]?.dateStr || '');
+                      setScheduledTime('');
+                      setShowScheduleModal(true);
+                    }}
                     className="w-full flex items-center justify-center gap-2 bg-indigo-900/30 hover:bg-indigo-900/50 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-indigo-200 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm"
                   >
                     🗓 Programar compra
@@ -1138,19 +1112,53 @@ export default function CheckoutPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowScheduleModal(false); }}
         >
           <div className="bg-gray-900 border-2 border-indigo-500/50 rounded-2xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-black text-indigo-300">🗓 Programar entrega</h3>
               <button onClick={() => setShowScheduleModal(false)} className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-gray-300 text-lg transition-all">×</button>
             </div>
+
+            {/* Aviso YAPE */}
+            <div className="bg-purple-900/30 border border-purple-500/40 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2">
+              <span className="text-lg">📱</span>
+              <p className="text-purple-300 text-xs font-bold">Los pedidos programados solo aceptan pago con Yape/Plin</p>
+            </div>
+
+            {/* Selector de día (si hay más de 1 opción) */}
+            {(() => {
+              const days = getScheduleDays();
+              return days.length > 1 ? (
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Elige el día</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {days.map((d) => (
+                      <button
+                        key={d.dateStr}
+                        type="button"
+                        onClick={() => { setScheduledDate(d.dateStr); setScheduledTime(''); }}
+                        className={`px-4 py-2 rounded-xl border-2 text-sm font-bold transition-all active:scale-95 ${
+                          scheduledDate === d.dateStr
+                            ? 'border-indigo-500 bg-indigo-900/40 text-indigo-200'
+                            : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-indigo-500/50'
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+
             {/* Selector de hora */}
-            {getTodaySlots().length === 0 ? (
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Elige la hora</p>
+            {scheduledDate && getSlotsForDate(scheduledDate).length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-red-400 text-sm font-bold">No hay horarios disponibles por ahora.</p>
-                <p className="text-gray-500 text-xs mt-1">El horario de atención es de 6:00 PM a 11:00 PM.</p>
+                <p className="text-gray-500 text-xs mt-1">El horario de entrega es de 6:30 PM a 11:00 PM.</p>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-2 mb-5">
-                {getTodaySlots().map((slot) => {
+                {getSlotsForDate(scheduledDate).map((slot) => {
                   const [hh, mm] = slot.split(':');
                   const h = parseInt(hh);
                   const display = `${h > 12 ? h - 12 : h}:${mm} PM`;
@@ -1219,6 +1227,13 @@ export default function CheckoutPage() {
             </p>
 
             <div className="space-y-3">
+              {scheduledDate && scheduledTime && (
+                <div className="bg-indigo-900/30 border border-indigo-500/40 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                  <span className="text-lg">🗓</span>
+                  <p className="text-indigo-300 text-xs font-bold">Pedido programado — solo Yape/Plin</p>
+                </div>
+              )}
+
               <button
                 onClick={() => {
                   setPaymentMethod('anticipado');
@@ -1236,24 +1251,26 @@ export default function CheckoutPage() {
                 <span className="text-gray-500">›</span>
               </button>
 
-              <button
-                onClick={() => {
-                  setShowContraEntregaModal(true);
-                  setShowEfectivoOptions(false);
-                  setSelectedEfectivo(null);
-                  setCantoCancelo('');
-                }}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-700 bg-gray-800/40 hover:bg-gray-800/70 hover:border-fuchsia-500/50 transition-all active:scale-95"
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl flex-shrink-0">
-                  💵
-                </div>
-                <div className="text-left flex-1">
-                  <p className="text-white font-bold text-base">Pago contra entrega</p>
-                  <p className="text-gray-400 text-xs mt-0.5">Solo efectivo al recibir</p>
-                </div>
-                <span className="text-gray-500">›</span>
-              </button>
+              {!(scheduledDate && scheduledTime) && (
+                <button
+                  onClick={() => {
+                    setShowContraEntregaModal(true);
+                    setShowEfectivoOptions(false);
+                    setSelectedEfectivo(null);
+                    setCantoCancelo('');
+                  }}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-700 bg-gray-800/40 hover:bg-gray-800/70 hover:border-fuchsia-500/50 transition-all active:scale-95"
+                >
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl flex-shrink-0">
+                    💵
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="text-white font-bold text-base">Pago contra entrega</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Solo efectivo al recibir</p>
+                  </div>
+                  <span className="text-gray-500">›</span>
+                </button>
+              )}
             </div>
 
             <button

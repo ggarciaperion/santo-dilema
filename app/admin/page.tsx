@@ -2666,9 +2666,20 @@ export default function AdminPage() {
                         {(() => {
                           const [hh, mm] = ((order as any).scheduledTime as string).split(':');
                           const h = parseInt(hh);
+                          const schedDate = (order as any).scheduledDate as string | undefined;
+                          let dayLabel = 'Hoy';
+                          if (schedDate) {
+                            const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+                            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+                            if (schedDate !== todayStr) {
+                              const d = new Date(schedDate + 'T12:00:00');
+                              const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+                              dayLabel = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
+                            }
+                          }
                           return (
                             <p className="text-white font-black text-sm mt-0.5">
-                              Hoy – {h > 12 ? h - 12 : h}:{mm} {h >= 12 ? 'PM' : 'AM'}
+                              {dayLabel} – {h > 12 ? h - 12 : h}:{mm} {h >= 12 ? 'PM' : 'AM'}
                             </p>
                           );
                         })()}
