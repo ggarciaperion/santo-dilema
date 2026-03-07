@@ -2462,6 +2462,19 @@ export default function AdminPage() {
                   {dateFilteredOrders.filter((o) => o.status === "delivered").length}
                 </p>
               </button>
+              <button
+                onClick={() => setFilter("programado")}
+                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
+                  filter === "programado"
+                    ? "border-indigo-500 shadow-xl shadow-indigo-500/50"
+                    : "border-indigo-500/50 hover:border-indigo-500"
+                }`}
+              >
+                <p className="text-indigo-400 text-xs font-bold text-left">🗓 Programados</p>
+                <p className="text-3xl font-black text-indigo-400 mt-1 text-left">
+                  {dateFilteredOrders.filter((o) => o.status === "programado").length}
+                </p>
+              </button>
             </div>
           </section>
 
@@ -2647,17 +2660,15 @@ export default function AdminPage() {
                     </div>
 
                     {/* PEDIDO PROGRAMADO */}
-                    {order.status === 'programado' && order.scheduledDate && order.scheduledTime && (
+                    {(order as any).scheduledTime && (
                       <div className="mt-2 border-t border-indigo-500/30 pt-2">
                         <p className="text-[10px] font-black text-indigo-400 uppercase tracking-wider">🗓 Entrega programada</p>
                         {(() => {
-                          const d = new Date(order.scheduledDate + 'T12:00:00');
-                          const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-                          const [hh, mm] = order.scheduledTime.split(':');
+                          const [hh, mm] = ((order as any).scheduledTime as string).split(':');
                           const h = parseInt(hh);
                           return (
                             <p className="text-white font-black text-sm mt-0.5">
-                              {days[d.getDay()]} – {h > 12 ? h - 12 : h}:{mm} {h >= 12 ? 'PM' : 'AM'}
+                              Hoy – {h > 12 ? h - 12 : h}:{mm} {h >= 12 ? 'PM' : 'AM'}
                             </p>
                           );
                         })()}
@@ -2922,6 +2933,22 @@ export default function AdminPage() {
 
                   {/* BOTONES DE ACCIÓN */}
                   <div className="flex-shrink-0 flex gap-2 w-full md:w-auto">
+                    {order.status === "programado" && (
+                      <>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "confirmed")}
+                          className="flex-1 md:flex-initial bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
+                        >
+                          ✓ Aceptar pedido
+                        </button>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "cancelled")}
+                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    )}
                     {order.status === "pendiente-verificacion" && (
                       <>
                         <button
