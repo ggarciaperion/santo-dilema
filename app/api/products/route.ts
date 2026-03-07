@@ -87,7 +87,7 @@ export async function PATCH(request: Request) {
 
     const body = await request.json();
 
-    const updates = {
+    const rawUpdates: Record<string, any> = {
       productId: body.productId?.toUpperCase(),
       name: body.name?.toUpperCase(),
       category: body.category,
@@ -101,6 +101,11 @@ export async function PATCH(request: Request) {
       type: body.type,
       components: body.components,
     };
+
+    // Remove undefined values so they don't overwrite existing fields
+    const updates = Object.fromEntries(
+      Object.entries(rawUpdates).filter(([, v]) => v !== undefined)
+    );
 
     const updatedProduct = await storage.updateProduct(id, updates);
 
