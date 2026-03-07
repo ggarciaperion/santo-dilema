@@ -223,9 +223,13 @@ export default function FatPage() {
       p.salsas.every((sId: string) => selectedSalsaIds.includes(sId))
     );
     if (dynamic) return dynamic;
-    const hard = SALSA_OFFERS[productId];
-    if (hard && hard.salsas.every((sId: string) => selectedSalsaIds.includes(sId))) {
-      return { promoPrice: hard.price };
+    // Fallback hardcodeado SOLO si no hay ninguna promo dinámica para este producto
+    const hasDynamic = salsaPromos.some((p: any) => p.active && p.productId === productId);
+    if (!hasDynamic) {
+      const hard = SALSA_OFFERS[productId];
+      if (hard && hard.salsas.every((sId: string) => selectedSalsaIds.includes(sId))) {
+        return { promoPrice: hard.price };
+      }
     }
     return null;
   };
@@ -1179,10 +1183,10 @@ export default function FatPage() {
               const discountPrice = menuDiscounts[product.id];
               const effectivePrice = menuPrices[product.id] || product.price;
               const activePromo = findMatchingPromo(product.id, currentSalsas);
-              const allPromosForProduct = [
-                ...salsaPromos.filter((p: any) => p.active && p.productId === product.id),
-                ...(SALSA_OFFERS[product.id] ? [{ salsas: SALSA_OFFERS[product.id].salsas, promoPrice: SALSA_OFFERS[product.id].price }] : []),
-              ];
+              const dynamicPromosForProduct = salsaPromos.filter((p: any) => p.active && p.productId === product.id);
+              const allPromosForProduct = dynamicPromosForProduct.length > 0
+                ? dynamicPromosForProduct
+                : (SALSA_OFFERS[product.id] ? [{ salsas: SALSA_OFFERS[product.id].salsas, promoPrice: SALSA_OFFERS[product.id].price }] : []);
 
               return (
                 <div
