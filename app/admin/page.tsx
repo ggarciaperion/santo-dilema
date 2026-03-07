@@ -237,6 +237,9 @@ export default function AdminPage() {
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [discountInputs, setDiscountInputs] = useState<Record<string, string>>({});
   const [discountSaving, setDiscountSaving] = useState<string | null>(null);
+  const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
+  const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
+  const [priceSaving, setPriceSaving] = useState<string | null>(null);
   const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock">("dashboard");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   // Estados de filtro de fechas para la pestaña "Gestión de Pedidos"
@@ -414,6 +417,7 @@ export default function AdminPage() {
     loadCatalogProducts();
     loadMenuStock();
     loadMenuDiscounts();
+    loadMenuPrices();
     loadChallengeData();
     checkHistoricalSale();
     loadCustomerProfiles();
@@ -567,6 +571,43 @@ export default function AdminPage() {
       setDiscountInputs(inputs);
     } catch (error) {
       console.error("Error al cargar descuentos:", error);
+    }
+  };
+
+  const loadMenuPrices = async () => {
+    try {
+      const res = await fetch("/api/menu-prices");
+      const data = await res.json();
+      setMenuPrices(data);
+      const inputs: Record<string, string> = {};
+      Object.entries(data).forEach(([id, price]) => { inputs[id] = String(price); });
+      setPriceInputs(inputs);
+    } catch (error) {
+      console.error("Error al cargar precios:", error);
+    }
+  };
+
+  const savePrice = async (productId: string, defaultPrice: number) => {
+    const inputVal = priceInputs[productId] || '';
+    const price = parseFloat(inputVal);
+    const validPrice = !isNaN(price) && price > 0 ? price : 0;
+    setPriceSaving(productId);
+    try {
+      await fetch("/api/menu-prices", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, price: validPrice }),
+      });
+      setMenuPrices(prev => {
+        const next = { ...prev };
+        if (validPrice <= 0) { delete next[productId]; } else { next[productId] = validPrice; }
+        return next;
+      });
+      if (validPrice <= 0) setPriceInputs(prev => { const n = { ...prev }; delete n[productId]; return n; });
+    } catch (error) {
+      console.error("Error al guardar precio:", error);
+    } finally {
+      setPriceSaving(null);
     }
   };
 
@@ -7213,14 +7254,16 @@ _Valido por 30 dias._`;
             {/* Stock FAT */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {[
-                { id: "pequeno-dilema", name: "Pequeño Dilema", price: "S/ 20.00", originalPrice: 20.00 },
-                { id: "duo-dilema", name: "Dúo Dilema", price: "S/ 34.00", originalPrice: 34.00 },
-                { id: "santo-pecado", name: "Santo Pecado", price: "S/ 47.00", originalPrice: 47.00 },
+                { id: "pequeno-dilema", name: "Pequeño Dilema", defaultPrice: 20.00 },
+                { id: "duo-dilema", name: "Dúo Dilema", defaultPrice: 34.00 },
+                { id: "santo-pecado", name: "Santo Pecado", defaultPrice: 47.00 },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
                 const hasDiscount = !!menuDiscounts[item.id];
                 const isSavingDiscount = discountSaving === item.id;
+                const isSavingPrice = priceSaving === item.id;
+                const effectivePrice = menuPrices[item.id] || item.defaultPrice;
                 return (
                   <div
                     key={item.id}
@@ -7233,11 +7276,11 @@ _Valido por 30 dias._`;
                         <p className="text-white font-bold text-base">{item.name}</p>
                         {hasDiscount ? (
                           <p className="text-xs mt-0.5">
-                            <span className="text-gray-500 line-through">S/ {item.originalPrice.toFixed(2)}</span>
+                            <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
                             <span className="text-amber-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
                           </p>
                         ) : (
-                          <p className="text-gray-400 text-sm">{item.price}</p>
+                          <p className="text-amber-400 text-sm font-bold">S/ {effectivePrice.toFixed(2)}</p>
                         )}
                         {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
                       </div>
@@ -7251,21 +7294,38 @@ _Valido por 30 dias._`;
                         {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
                       </button>
                     </div>
-                    {/* Descuento inline */}
-                    <div className="flex gap-2 mt-1 pt-3 border-t border-gray-800">
+                    {/* Precio real */}
+                    <div className="flex gap-2 pt-3 border-t border-gray-800">
                       <input
-                        type="number" step="0.50" min="0" max={item.originalPrice - 0.5}
-                        placeholder="Precio oferta"
+                        type="number" step="0.50" min="0.50"
+                        placeholder={`Precio real (actual: S/ ${effectivePrice.toFixed(2)})`}
+                        value={priceInputs[item.id] || ''}
+                        onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-red-400 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => savePrice(item.id, item.defaultPrice)}
+                        disabled={isSavingPrice}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all bg-red-700 hover:bg-red-600 text-white ${isSavingPrice ? 'opacity-50' : ''}`}
+                      >
+                        {isSavingPrice ? '...' : '💰 Precio'}
+                      </button>
+                    </div>
+                    {/* Precio oferta */}
+                    <div className="flex gap-2 mt-2">
+                      <input
+                        type="number" step="0.50" min="0" max={effectivePrice - 0.5}
+                        placeholder="Precio oferta (menor al real)"
                         value={discountInputs[item.id] || ''}
                         onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
                         className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-amber-500 focus:outline-none"
                       />
                       <button
-                        onClick={() => saveDiscount(item.id, item.originalPrice)}
+                        onClick={() => saveDiscount(item.id, effectivePrice)}
                         disabled={isSavingDiscount}
                         className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
                       >
-                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Descuento'}
+                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Oferta'}
                       </button>
                     </div>
                   </div>
@@ -7282,15 +7342,17 @@ _Valido por 30 dias._`;
             {/* Stock FIT */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", price: "S/ 18.50", originalPrice: 18.50 },
-                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", price: "S/ 22.50", originalPrice: 22.50 },
-                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", price: "S/ 23.50", originalPrice: 23.50 },
-                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: "S/ 23.50", originalPrice: 23.50 },
+                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", defaultPrice: 18.50 },
+                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", defaultPrice: 22.50 },
+                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", defaultPrice: 23.50 },
+                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", defaultPrice: 23.50 },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
                 const hasDiscount = !!menuDiscounts[item.id];
                 const isSavingDiscount = discountSaving === item.id;
+                const isSavingPrice = priceSaving === item.id;
+                const effectivePrice = menuPrices[item.id] || item.defaultPrice;
                 return (
                   <div
                     key={item.id}
@@ -7303,11 +7365,11 @@ _Valido por 30 dias._`;
                         <p className="text-white font-bold text-base">{item.name}</p>
                         {hasDiscount ? (
                           <p className="text-xs mt-0.5">
-                            <span className="text-gray-500 line-through">S/ {item.originalPrice.toFixed(2)}</span>
+                            <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
                             <span className="text-cyan-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
                           </p>
                         ) : (
-                          <p className="text-gray-400 text-sm">{item.price}</p>
+                          <p className="text-cyan-400 text-sm font-bold">S/ {effectivePrice.toFixed(2)}</p>
                         )}
                         {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
                       </div>
@@ -7321,21 +7383,38 @@ _Valido por 30 dias._`;
                         {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
                       </button>
                     </div>
-                    {/* Descuento inline */}
-                    <div className="flex gap-2 mt-1 pt-3 border-t border-gray-800">
+                    {/* Precio real */}
+                    <div className="flex gap-2 pt-3 border-t border-gray-800">
                       <input
-                        type="number" step="0.50" min="0" max={item.originalPrice - 0.5}
-                        placeholder="Precio oferta"
+                        type="number" step="0.50" min="0.50"
+                        placeholder={`Precio real (actual: S/ ${effectivePrice.toFixed(2)})`}
+                        value={priceInputs[item.id] || ''}
+                        onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-cyan-400 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => savePrice(item.id, item.defaultPrice)}
+                        disabled={isSavingPrice}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all bg-cyan-700 hover:bg-cyan-600 text-white ${isSavingPrice ? 'opacity-50' : ''}`}
+                      >
+                        {isSavingPrice ? '...' : '💰 Precio'}
+                      </button>
+                    </div>
+                    {/* Precio oferta */}
+                    <div className="flex gap-2 mt-2">
+                      <input
+                        type="number" step="0.50" min="0" max={effectivePrice - 0.5}
+                        placeholder="Precio oferta (menor al real)"
                         value={discountInputs[item.id] || ''}
                         onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
                         className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-cyan-500 focus:outline-none"
                       />
                       <button
-                        onClick={() => saveDiscount(item.id, item.originalPrice)}
+                        onClick={() => saveDiscount(item.id, effectivePrice)}
                         disabled={isSavingDiscount}
                         className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
                       >
-                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Descuento'}
+                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Oferta'}
                       </button>
                     </div>
                   </div>

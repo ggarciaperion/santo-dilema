@@ -29,6 +29,7 @@ let yunzaParticipationsFilePath: string = '';
 let challengeFilePath: string = '';
 let salsaOffersFilePath: string = '';
 let customerProfilesFilePath: string = '';
+let menuPricesFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -49,6 +50,7 @@ if (!isProduction) {
   challengeFilePath = path.join(dataDir, 'challenge.json');
   salsaOffersFilePath = path.join(dataDir, 'salsa-offers.json');
   customerProfilesFilePath = path.join(dataDir, 'customer-profiles.json');
+  menuPricesFilePath = path.join(dataDir, 'menu-prices.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -98,6 +100,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(customerProfilesFilePath)) {
       fs.writeFileSync(customerProfilesFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(menuPricesFilePath)) {
+      fs.writeFileSync(menuPricesFilePath, JSON.stringify({}, null, 2));
     }
   }
 }
@@ -798,6 +803,30 @@ export const storage = {
     } else {
       ensureDataDirectory();
       fs.writeFileSync(menuDiscountsFilePath, JSON.stringify(data, null, 2));
+    }
+  },
+
+  // ========== MENU PRICES (precio real editable) ==========
+
+  async getMenuPrices(): Promise<Record<string, number>> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<Record<string, number>>('menuPrices');
+      return data || {};
+    } else {
+      ensureDataDirectory();
+      const data = fs.readFileSync(menuPricesFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  },
+
+  async saveMenuPrices(data: Record<string, number>): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('menuPrices', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(menuPricesFilePath, JSON.stringify(data, null, 2));
     }
   },
 

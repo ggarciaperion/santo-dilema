@@ -207,6 +207,7 @@ export default function FatPage() {
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
+  const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
   // salsaOffers eliminado — usar SALSA_OFFERS hardcodeado
   const router = useRouter();
 
@@ -290,6 +291,10 @@ export default function FatPage() {
     fetch("/api/menu-discounts")
       .then((r) => r.json())
       .then((data) => setMenuDiscounts(data))
+      .catch(() => {});
+    fetch("/api/menu-prices")
+      .then((r) => r.json())
+      .then((data) => setMenuPrices(data))
       .catch(() => {});
   }, []);
 
@@ -1156,6 +1161,7 @@ export default function FatPage() {
               const canAdd = canAddProduct(product.id);
               const isSoldOut = !!menuStock[product.id];
               const discountPrice = menuDiscounts[product.id];
+              const effectivePrice = menuPrices[product.id] || product.price;
 
               return (
                 <div
@@ -1164,7 +1170,7 @@ export default function FatPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink snap-center md:snap-none neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink snap-center md:snap-none ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
                       : 'w-[240px] md:w-[280px] lg:w-[300px]'
@@ -1225,9 +1231,14 @@ export default function FatPage() {
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
-                        <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
-                          S/ {product.price.toFixed(2)}
-                        </span>
+                      {discountPrice ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-bold text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                          <span className="text-sm md:text-lg font-black text-amber-400 promo-price-pulse">S/ {discountPrice.toFixed(2)}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ {effectivePrice.toFixed(2)}</span>
+                      )}
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
                           onClick={(e) => {
