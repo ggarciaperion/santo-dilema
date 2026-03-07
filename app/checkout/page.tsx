@@ -321,6 +321,7 @@ export default function CheckoutPage() {
     for (let h = 18; h <= 23; h++) {
       for (let m = 0; m < 60; m += 30) {
         if (h === 23 && m > 0) break;
+        if (h === 18 && m === 0) continue; // sin opción 6:00 PM
         const slot = new Date(now);
         slot.setHours(h, m, 0, 0);
         if (slot.getTime() >= minMs) {
