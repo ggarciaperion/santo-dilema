@@ -199,6 +199,7 @@ export default function CheckoutPage() {
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
   const [couponHasDeliveryFree, setCouponHasDeliveryFree] = useState(false);
+  const [deliveryAround, setDeliveryAround] = useState(false);
   const [isOpen, setIsOpen] = useState(isBusinessOpen());
   const [isTestEnv, setIsTestEnv] = useState(false);
 
@@ -299,7 +300,8 @@ export default function CheckoutPage() {
   // Si hay cupón válido, usar subtotalBase (elimina promociones)
   // Si NO hay cupón, usar subtotal (mantiene promociones)
   const baseForTotal = couponValid ? subtotalBase : subtotal;
-  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount;
+  const deliveryAroundCost = deliveryAround ? 4.00 : 0;
+  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount + deliveryAroundCost;
 
   // Validar si el formulario está completo
   const isFormValid = () => {
@@ -429,8 +431,8 @@ export default function CheckoutPage() {
         formDataToSend.append('cantoCancelo', cantoCancelo);
       }
       // Agregar delivery
-      formDataToSend.append('deliveryOption', 'otros');
-      formDataToSend.append('deliveryCost', '0');
+      formDataToSend.append('deliveryOption', deliveryAround ? 'alrededores' : 'otros');
+      formDataToSend.append('deliveryCost', deliveryAroundCost.toString());
       formDataToSend.append('timestamp', new Date().toISOString());
 
       // Agregar comprobante de pago si existe
@@ -907,6 +909,25 @@ export default function CheckoutPage() {
               </div>
 
 
+              {/* Delivery alrededores */}
+              <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
+                <label className="flex items-center justify-between gap-3 cursor-pointer group">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={deliveryAround}
+                      onChange={(e) => setDeliveryAround(e.target.checked)}
+                      className="w-4 h-4 rounded accent-fuchsia-500 cursor-pointer"
+                    />
+                    <div>
+                      <p className="text-white font-bold text-sm group-hover:text-fuchsia-300 transition-colors">Delivery alrededores</p>
+                      <p className="text-gray-500 text-xs">Puerto, Peralvillo, Balanza</p>
+                    </div>
+                  </div>
+                  <span className="text-sky-400 font-black text-sm font-mono">S/ 4.00</span>
+                </label>
+              </div>
+
               {/* Totales */}
               <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
                 {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
@@ -930,6 +951,13 @@ export default function CheckoutPage() {
                   </>
                 )}
 
+
+                {deliveryAround && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-sky-400 font-bold">🛵 Delivery alrededores:</span>
+                    <span className="text-sky-400 font-bold font-mono">+S/ 4.00</span>
+                  </div>
+                )}
 
                 <div className="flex justify-between items-center pt-2 border-t border-gray-700">
                   <span className="text-white font-black text-lg">Total:</span>
