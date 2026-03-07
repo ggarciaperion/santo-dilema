@@ -7703,13 +7703,13 @@ _Valido por 30 dias._`;
           {/* ==================== PROMOCIONES DE SALSAS FAT ==================== */}
           {(() => {
             const FAT_SALSAS = [
-              { id: 'barbecue', name: 'Barbecue' },
-              { id: 'buffalo-picante', name: 'Buffalo Picante' },
-              { id: 'ahumada', name: 'Ahumada' },
-              { id: 'parmesano-ajo', name: 'Parmesano Ajo' },
-              { id: 'anticuchos', name: 'Anticuchos' },
+              { id: 'barbecue', name: 'BBQ Ahumada' },
+              { id: 'buffalo-picante', name: 'Santo Picante' },
+              { id: 'ahumada', name: 'Acevichada Imperial' },
+              { id: 'parmesano-ajo', name: 'Crispy Celestial' },
+              { id: 'anticuchos', name: 'Parrillera' },
               { id: 'honey-mustard', name: 'Honey Mustard' },
-              { id: 'teriyaki', name: 'Teriyaki' },
+              { id: 'teriyaki', name: 'Oriental Teriyaki' },
               { id: 'macerichada', name: 'Sweet & Sour' },
             ];
             const FAT_PRODUCTS = [
