@@ -995,9 +995,9 @@ export default function CheckoutPage() {
 
       {/* Modal de Formulario Móvil - MEJORADO */}
       {showMobileFormModal && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end sm:items-center justify-center z-[100] sm:p-4">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div
-            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl sm:rounded-2xl border-t-2 sm:border-2 border-fuchsia-500/40 w-full sm:max-w-lg shadow-2xl max-h-[94vh] overflow-y-auto"
+            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl border-2 border-fuchsia-500/40 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header con logo */}
