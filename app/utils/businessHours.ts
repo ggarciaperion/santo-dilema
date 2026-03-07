@@ -1,9 +1,9 @@
 // Horario de atención: Jueves a Domingo, 6:00 PM - 11:00 PM (hora Perú, UTC-5)
 // Dominio de pruebas: siempre abierto
-const TEST_DOMAIN = "santo-dilema-iota.vercel.app";
+const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app", "www.santodilema.com", "santodilema.com"];
 
 export function isBusinessOpen(): boolean {
-  if (typeof window !== "undefined" && window.location.hostname === TEST_DOMAIN) {
+  if (typeof window !== "undefined" && ALWAYS_OPEN_DOMAINS.includes(window.location.hostname)) {
     return true;
   }
 
