@@ -696,8 +696,15 @@ export default function CheckoutPage() {
               ) : (
                 /* Estado vacío - invitar a completar */
                 <div className="text-center py-6">
-                  <p className="text-gray-400 text-sm mb-1">Completa tus datos para continuar</p>
-                  <p className="text-red-400 text-xs font-semibold">* Obligatorio</p>
+                  <p className="text-gray-400 text-sm mb-3">Completa tus datos para continuar</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowMobileFormModal(true)}
+                    className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all active:scale-95"
+                  >
+                    Ingresar datos de entrega
+                  </button>
+                  <p className="text-red-400 text-xs font-semibold mt-2">* Obligatorio</p>
                 </div>
               )}
             </div>
@@ -926,23 +933,18 @@ export default function CheckoutPage() {
                   <span>Volver</span>
                 </Link>
                 <button
-                  type="submit"
-                  form="checkout-form"
+                  type="button"
                   disabled={isSubmitting || !isFormValid()}
-                  onClick={(e) => {
-                    // En móvil, no hay form, así que manejamos el click directamente
-                    if (window.innerWidth < 1024) {
-                      e.preventDefault();
-                      if (!isFormValid()) {
-                        alert('Por favor completa todos los campos obligatorios');
-                        return;
-                      }
-                      if (isPreLaunch()) {
-                        setShowPreLaunchModal(true);
-                        return;
-                      }
-                      setShowPaymentModal(true);
+                  onClick={() => {
+                    if (!isFormValid()) {
+                      setShowMobileFormModal(true);
+                      return;
                     }
+                    if (isPreLaunch()) {
+                      setShowPreLaunchModal(true);
+                      return;
+                    }
+                    setShowPaymentModal(true);
                   }}
                   className="flex-[2] bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-fuchsia-500/30"
                 >
