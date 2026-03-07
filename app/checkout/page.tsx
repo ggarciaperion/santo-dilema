@@ -199,7 +199,7 @@ export default function CheckoutPage() {
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
   const [couponHasDeliveryFree, setCouponHasDeliveryFree] = useState(false);
-  const [deliveryAround, setDeliveryAround] = useState(false);
+  const [deliveryZone, setDeliveryZone] = useState<'centro' | 'alrededores' | ''>('');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
@@ -235,6 +235,8 @@ export default function CheckoutPage() {
       }
     }
     setIsLoadingOrders(false);
+    // Abrir modal de datos de entrega automáticamente
+    setShowMobileFormModal(true);
   }, []);
 
   // Detectar combo FAT + FIT para descuento S/ 5.00 (debe estar ANTES de subtotal)
@@ -304,8 +306,8 @@ export default function CheckoutPage() {
   // Si hay cupón válido, usar subtotalBase (elimina promociones)
   // Si NO hay cupón, usar subtotal (mantiene promociones)
   const baseForTotal = couponValid ? subtotalBase : subtotal;
-  const deliveryAroundCost = deliveryAround ? 4.00 : 0;
-  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount + deliveryAroundCost;
+  const deliveryZoneCost = deliveryZone === 'alrededores' ? 4.00 : 0;
+  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount + deliveryZoneCost;
 
   // Validar si el formulario está completo
   // ── PROGRAMAR COMPRA ─────────────────────────────────────────────
@@ -353,7 +355,8 @@ export default function CheckoutPage() {
     return (
       formData.name.trim() !== "" &&
       formData.phone.length === 9 &&
-      formData.address.trim() !== ""
+      formData.address.trim() !== "" &&
+      deliveryZone !== ""
     );
   };
 
@@ -476,8 +479,8 @@ export default function CheckoutPage() {
         formDataToSend.append('cantoCancelo', cantoCancelo);
       }
       // Agregar delivery
-      formDataToSend.append('deliveryOption', deliveryAround ? 'alrededores' : 'otros');
-      formDataToSend.append('deliveryCost', deliveryAroundCost.toString());
+      formDataToSend.append('deliveryOption', deliveryZone || 'centro');
+      formDataToSend.append('deliveryCost', deliveryZoneCost.toString());
       // Pedido programado
       if (scheduledDate && scheduledTime) {
         formDataToSend.append('scheduledDate', scheduledDate);
@@ -700,119 +703,37 @@ export default function CheckoutPage() {
       <main className="flex-1 container mx-auto px-3 md:px-6 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 max-w-7xl mx-auto">
 
-          {/* Columna Izquierda - Formulario (8 cols en desktop) */}
+          {/* Columna Izquierda - Datos de entrega */}
           <div className="lg:col-span-8">
             <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-fuchsia-500/20 p-4 md:p-6 shadow-xl">
-              <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 mb-6">
-                Finalizar Pedido
-              </h1>
-
-              {/* Vista móvil - Card compacta */}
-              <div className="lg:hidden mb-4">
-                {mobileFormCompleted ? (
-                  <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4 shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 border border-green-500/40">
-                          <span className="text-green-400 text-2xl">✓</span>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-white font-bold text-sm">Datos completados</p>
-                          <p className="text-green-400 text-xs mt-0.5 truncate">{formData.name}</p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowMobileFormModal(true)}
-                        className="w-11 h-11 bg-fuchsia-500/20 hover:bg-fuchsia-500/30 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0 ml-2 border border-fuchsia-500/30"
-                        title="Editar datos"
-                      >
-                        <span className="text-fuchsia-400 text-lg">✏️</span>
-                      </button>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-green-500/20 space-y-1.5 text-xs">
-                      <p className="text-gray-300 flex items-center gap-2">
-                        <span className="text-green-400">📱</span>
-                        <span className="font-mono">{formData.phone}</span>
-                      </p>
-                      <p className="text-gray-300 flex items-start gap-2">
-                        <span className="text-green-400 mt-0.5">📍</span>
-                        <span className="flex-1">{formData.address}</span>
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
+              {isFormValid() ? (
+                /* Card resumen de datos completados */
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-black text-fuchsia-400">Datos de entrega</h2>
                     <button
                       type="button"
                       onClick={() => setShowMobileFormModal(true)}
-                      className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-fuchsia-500/30"
-                    >
-                      <div className="flex items-center justify-center gap-3">
-                        <span className="text-2xl">📝</span>
-                        <span className="text-base">Ingresa tus datos</span>
-                      </div>
-                    </button>
-                    <p className="text-xs text-center">
-                      <span className="text-red-400 font-semibold">* Obligatorio</span>
+                      className="text-xs text-fuchsia-400 hover:text-fuchsia-300 underline transition-colors"
+                    >Editar</button>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <p className="text-gray-300 flex items-center gap-2"><span className="text-fuchsia-400 w-4">👤</span><span className="font-bold text-white">{formData.name}</span></p>
+                    <p className="text-gray-300 flex items-center gap-2"><span className="text-fuchsia-400 w-4">📱</span><span className="font-mono">{formData.phone}</span></p>
+                    <p className="text-gray-300 flex items-start gap-2"><span className="text-fuchsia-400 w-4 mt-0.5">📍</span><span>{formData.address}</span></p>
+                    <p className="text-gray-300 flex items-center gap-2">
+                      <span className="text-fuchsia-400 w-4">🛵</span>
+                      <span>{deliveryZone === 'centro' ? 'Chancay Centro — Gratis' : 'Chancay Alrededores — S/ 4.00'}</span>
                     </p>
                   </div>
-                )}
-              </div>
-
-              {/* Vista desktop - Formulario directo */}
-              <form id="checkout-form" onSubmit={handleSubmit} className="hidden lg:block space-y-5">
-                <div>
-                  <label className="block text-sm font-bold text-fuchsia-400 mb-2">
-                    Nombre completo <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => handleNameInput(e.target.value)}
-                    placeholder="Ingresa tu nombre completo"
-                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500"
-                  />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-fuchsia-400 mb-2">
-                    Teléfono <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => handlePhoneInput(e.target.value)}
-                    maxLength={9}
-                    placeholder="987654321"
-                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 font-mono"
-                  />
-                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                    <span>💬</span>
-                    <span>Te contactaremos por WhatsApp para coordinar la entrega</span>
-                  </p>
+              ) : (
+                /* Estado vacío - invitar a completar */
+                <div className="text-center py-6">
+                  <p className="text-gray-400 text-sm mb-1">Completa tus datos para continuar</p>
+                  <p className="text-red-400 text-xs font-semibold">* Obligatorio</p>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-fuchsia-400 mb-2">
-                    Dirección de entrega <span className="text-red-400">*</span>
-                  </label>
-                  <textarea
-                    required
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address: e.target.value })
-                    }
-                    placeholder="Ej: Av. Principal 123, Chancay"
-                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 resize-none"
-                    rows={3}
-                  />
-                </div>
-              </form>
+              )}
             </div>
           </div>
 
@@ -959,25 +880,6 @@ export default function CheckoutPage() {
               </div>
 
 
-              {/* Delivery alrededores */}
-              <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
-                <label className="flex items-center justify-between gap-3 cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={deliveryAround}
-                      onChange={(e) => setDeliveryAround(e.target.checked)}
-                      className="w-4 h-4 rounded accent-fuchsia-500 cursor-pointer"
-                    />
-                    <div>
-                      <p className="text-white font-bold text-sm group-hover:text-fuchsia-300 transition-colors">Delivery alrededores</p>
-                      <p className="text-gray-500 text-xs">Puerto, Peralvillo, Balanza</p>
-                    </div>
-                  </div>
-                  <span className="text-sky-400 font-black text-sm font-mono">S/ 4.00</span>
-                </label>
-              </div>
-
               {/* Totales */}
               <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
                 {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
@@ -1002,7 +904,7 @@ export default function CheckoutPage() {
                 )}
 
 
-                {deliveryAround && (
+                {deliveryZone === 'alrededores' && (
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-sky-400 font-bold">🛵 Delivery alrededores:</span>
                     <span className="text-sky-400 font-bold font-mono">+S/ 4.00</span>
@@ -1093,34 +995,29 @@ export default function CheckoutPage() {
 
       {/* Modal de Formulario Móvil - MEJORADO */}
       {showMobileFormModal && (
-        <div
-          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end md:items-center justify-center z-[100]"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowMobileFormModal(false);
-            }
-          }}
-        >
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end md:items-center justify-center z-[100]">
           <div
-            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl md:rounded-2xl border-t-2 md:border-2 border-fuchsia-500/40 w-full md:max-w-md p-6 pb-8 shadow-2xl"
+            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl md:rounded-2xl border-t-2 md:border-2 border-fuchsia-500/40 w-full md:max-w-md p-6 pb-8 shadow-2xl max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400">
                 Datos de Entrega
               </h3>
-              <button
-                onClick={() => setShowMobileFormModal(false)}
-                className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
-              >
-                <span className="text-gray-300 text-2xl leading-none">×</span>
-              </button>
+              {isFormValid() && (
+                <button
+                  onClick={() => setShowMobileFormModal(false)}
+                  className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
+                >
+                  <span className="text-gray-300 text-2xl leading-none">×</span>
+                </button>
+              )}
             </div>
 
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                if (formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "") {
+                if (isFormValid()) {
                   setMobileFormCompleted(true);
                   setShowMobileFormModal(false);
                 }
@@ -1156,10 +1053,9 @@ export default function CheckoutPage() {
                   placeholder="987654321"
                   className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 font-mono"
                 />
-                <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                  <span>💬</span>
-                  <span>Te contactaremos por WhatsApp</span>
-                </p>
+                {formData.phone.length > 0 && formData.phone.length < 9 && (
+                  <p className="text-red-400 text-xs mt-1">El teléfono debe tener 9 dígitos</p>
+                )}
               </div>
 
               <div>
@@ -1169,28 +1065,59 @@ export default function CheckoutPage() {
                 <textarea
                   required
                   value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="Ej: Av. Principal 123, Chancay"
                   className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 resize-none"
                   rows={3}
                 />
               </div>
 
+              {/* Zona de delivery */}
+              <div>
+                <label className="block text-sm font-bold text-fuchsia-400 mb-3">
+                  Zona de delivery <span className="text-red-400">*</span>
+                </label>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryZone('centro')}
+                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 transition-all active:scale-95 ${
+                      deliveryZone === 'centro'
+                        ? 'border-fuchsia-500 bg-fuchsia-900/30 text-white'
+                        : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-fuchsia-500/50'
+                    }`}
+                  >
+                    <div className="text-left">
+                      <p className="font-bold text-sm">Chancay Centro</p>
+                    </div>
+                    <span className={`font-black text-sm font-mono ${deliveryZone === 'centro' ? 'text-green-400' : 'text-green-500'}`}>Gratis</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryZone('alrededores')}
+                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 transition-all active:scale-95 ${
+                      deliveryZone === 'alrededores'
+                        ? 'border-fuchsia-500 bg-fuchsia-900/30 text-white'
+                        : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-fuchsia-500/50'
+                    }`}
+                  >
+                    <div className="text-left">
+                      <p className="font-bold text-sm">Chancay Alrededores</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Puerto · Peralvillo · La Balanza</p>
+                    </div>
+                    <span className={`font-black text-sm font-mono ${deliveryZone === 'alrededores' ? 'text-sky-400' : 'text-sky-500'}`}>S/ 4.00</span>
+                  </button>
+                </div>
+              </div>
+
               <button
                 type="submit"
-                disabled={!(formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "")}
+                disabled={!isFormValid()}
                 className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-fuchsia-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Guardar datos
+                Confirmar datos
               </button>
-
-              {formData.phone.length > 0 && formData.phone.length < 9 && (
-                <p className="text-red-400 text-xs text-center -mt-2">
-                  El teléfono debe tener 9 dígitos
-                </p>
-              )}
             </form>
           </div>
         </div>
