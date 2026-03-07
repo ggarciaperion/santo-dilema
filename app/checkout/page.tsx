@@ -203,9 +203,7 @@ export default function CheckoutPage() {
   const [isTestEnv, setIsTestEnv] = useState(false);
 
   // Estados para delivery
-  const [deliveryOption, setDeliveryOption] = useState<string>("");
-  const [deliveryCustomLocation, setDeliveryCustomLocation] = useState<string>("");
-  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [deliveryOption] = useState<string>("otros");
 
   // Reproducir sonido cuando el pedido se confirma
   useEffect(() => {
@@ -292,44 +290,23 @@ export default function CheckoutPage() {
     return total + productTotal + complementsTotal;
   }, 0);
 
-  // Calcular costo de delivery
-  const deliveryCost = (() => {
-    switch (deliveryOption) {
-      case 'chancay-centro': return 4;
-      case 'puerto': return 5;
-      case 'peralvillo': return 5;
-      case 'la-balanza': return 5;
-      case 'otros': return 0;
-      default: return 0;
-    }
-  })();
+  // Delivery siempre incluido — sin cobro de zona
+  const deliveryCost = 0;
 
   // Aplicar descuento de cupón si es válido (SIEMPRE sobre precio base, no promocional)
   const couponDiscountAmount = couponValid ? (subtotalBase * couponDiscount) / 100 : 0;
 
-  // Si el cupón tiene delivery gratis, el costo del delivery es 0
-  const finalDeliveryCost = couponHasDeliveryFree ? 0 : deliveryCost;
-
   // Si hay cupón válido, usar subtotalBase (elimina promociones)
   // Si NO hay cupón, usar subtotal (mantiene promociones)
   const baseForTotal = couponValid ? subtotalBase : subtotal;
-  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount + finalDeliveryCost;
+  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount;
 
   // Validar si el formulario está completo
   const isFormValid = () => {
-    // Si el cupón tiene delivery gratis, no es necesario seleccionar zona de entrega
-    if (couponHasDeliveryFree) {
-      return (
-        formData.name.trim() !== "" &&
-        formData.phone.length === 9 &&
-        formData.address.trim() !== ""
-      );
-    }
     return (
       formData.name.trim() !== "" &&
       formData.phone.length === 9 &&
-      formData.address.trim() !== "" &&
-      deliveryOption !== ""
+      formData.address.trim() !== ""
     );
   };
 
@@ -452,13 +429,8 @@ export default function CheckoutPage() {
         formDataToSend.append('cantoCancelo', cantoCancelo);
       }
       // Agregar delivery
-      if (deliveryOption) {
-        formDataToSend.append('deliveryOption', deliveryOption);
-        formDataToSend.append('deliveryCost', deliveryCost.toString());
-        if (deliveryOption === 'otros' && deliveryCustomLocation) {
-          formDataToSend.append('deliveryCustomLocation', deliveryCustomLocation);
-        }
-      }
+      formDataToSend.append('deliveryOption', 'otros');
+      formDataToSend.append('deliveryCost', '0');
       formDataToSend.append('timestamp', new Date().toISOString());
 
       // Agregar comprobante de pago si existe
@@ -934,62 +906,6 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              {/* Sección de Delivery */}
-              <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
-                <p className="text-white font-bold text-sm mb-2">Zona de entrega</p>
-
-                {couponHasDeliveryFree ? (
-                  // Cupón con delivery gratis - mostrar mensaje en lugar del selector
-                  <div className="w-full flex items-center justify-between bg-green-900/30 border-2 border-green-500/40 rounded-xl px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🏍️</span>
-                      <div className="text-left">
-                        <span className="text-green-400 font-bold text-sm block">Delivery Gratis</span>
-                        <span className="text-green-300 text-xs">Incluido en tu cupón</span>
-                      </div>
-                    </div>
-                    <span className="text-green-400 text-xl">✓</span>
-                  </div>
-                ) : (
-                  // Selector normal de zona de entrega
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setShowDeliveryModal(true)}
-                      className="w-full flex items-center justify-between bg-sky-900/30 border-2 border-sky-500/30 rounded-xl px-4 py-3 hover:bg-sky-900/50 hover:border-sky-500/50 transition-all active:scale-95 group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">🛵</span>
-                        <div className="text-left">
-                          <span className="text-white font-semibold text-sm block">
-                            {deliveryOption ? (
-                              deliveryOption === 'chancay-centro' ? 'Chancay Centro' :
-                              deliveryOption === 'puerto' ? 'Puerto' :
-                              deliveryOption === 'peralvillo' ? 'Peralvillo' :
-                              deliveryOption === 'la-balanza' ? 'La Balanza' :
-                              'Otros'
-                            ) : 'Seleccionar zona'}
-                          </span>
-                          {deliveryOption && deliveryCost > 0 && (
-                            <span className="text-sky-300 text-xs font-mono">S/ {deliveryCost.toFixed(2)}</span>
-                          )}
-                          {deliveryOption === 'otros' && (
-                            <span className="text-gray-400 text-xs">A coordinar</span>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-sky-400 group-hover:translate-x-1 transition-transform">›</span>
-                    </button>
-
-                    {!deliveryOption && (
-                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
-                        <span>⚠️</span>
-                        <span>Debes seleccionar una zona de entrega</span>
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
 
               {/* Totales */}
               <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
@@ -1014,16 +930,6 @@ export default function CheckoutPage() {
                   </>
                 )}
 
-                {(deliveryOption || couponHasDeliveryFree) && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className={couponHasDeliveryFree ? "text-green-400 font-semibold" : "text-sky-400 font-semibold"}>
-                      {couponHasDeliveryFree ? "🏍️ Delivery:" : "🛵 Delivery:"}
-                    </span>
-                    <span className={couponHasDeliveryFree ? "text-green-400 font-semibold font-mono" : "text-sky-400 font-semibold font-mono"}>
-                      {couponHasDeliveryFree ? "GRATIS" : `+S/ ${deliveryCost.toFixed(2)}`}
-                    </span>
-                  </div>
-                )}
 
                 <div className="flex justify-between items-center pt-2 border-t border-gray-700">
                   <span className="text-white font-black text-lg">Total:</span>
@@ -1183,207 +1089,6 @@ export default function CheckoutPage() {
                 </p>
               )}
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Selección de Delivery - MEJORADO */}
-      {showDeliveryModal && (
-        <div
-          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end md:items-center justify-center z-[100]"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowDeliveryModal(false);
-            }
-          }}
-        >
-          <div
-            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl md:rounded-2xl border-t-2 md:border-2 border-sky-500/40 w-full md:max-w-md p-6 pb-8 shadow-2xl max-h-[85vh] overflow-y-auto custom-scrollbar"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-400">
-                Zona de Entrega
-              </h3>
-              <button
-                onClick={() => setShowDeliveryModal(false)}
-                className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
-              >
-                <span className="text-gray-300 text-2xl leading-none">×</span>
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {/* Chancay Centro */}
-              <button
-                onClick={() => {
-                  setDeliveryOption('chancay-centro');
-                  setDeliveryCustomLocation('');
-                  setShowDeliveryModal(false);
-                }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
-                  deliveryOption === 'chancay-centro'
-                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
-                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    deliveryOption === 'chancay-centro' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
-                  }`}>
-                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
-                      deliveryOption === 'chancay-centro' ? 'opacity-100' : 'opacity-0'
-                    }`}></div>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-bold text-base">Chancay Centro</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Zona céntrica</p>
-                  </div>
-                </div>
-                <span className="text-sky-400 font-black text-base font-mono">S/ 4.00</span>
-              </button>
-
-              {/* Puerto */}
-              <button
-                onClick={() => {
-                  setDeliveryOption('puerto');
-                  setDeliveryCustomLocation('');
-                  setShowDeliveryModal(false);
-                }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
-                  deliveryOption === 'puerto'
-                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
-                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    deliveryOption === 'puerto' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
-                  }`}>
-                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
-                      deliveryOption === 'puerto' ? 'opacity-100' : 'opacity-0'
-                    }`}></div>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-bold text-base">Puerto</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Zona del puerto</p>
-                  </div>
-                </div>
-                <span className="text-sky-400 font-black text-base font-mono">S/ 5.00</span>
-              </button>
-
-              {/* Peralvillo */}
-              <button
-                onClick={() => {
-                  setDeliveryOption('peralvillo');
-                  setDeliveryCustomLocation('');
-                  setShowDeliveryModal(false);
-                }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
-                  deliveryOption === 'peralvillo'
-                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
-                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    deliveryOption === 'peralvillo' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
-                  }`}>
-                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
-                      deliveryOption === 'peralvillo' ? 'opacity-100' : 'opacity-0'
-                    }`}></div>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-bold text-base">Peralvillo</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Zona Peralvillo</p>
-                  </div>
-                </div>
-                <span className="text-sky-400 font-black text-base font-mono">S/ 5.00</span>
-              </button>
-
-              {/* La Balanza */}
-              <button
-                onClick={() => {
-                  setDeliveryOption('la-balanza');
-                  setDeliveryCustomLocation('');
-                  setShowDeliveryModal(false);
-                }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
-                  deliveryOption === 'la-balanza'
-                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
-                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    deliveryOption === 'la-balanza' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
-                  }`}>
-                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
-                      deliveryOption === 'la-balanza' ? 'opacity-100' : 'opacity-0'
-                    }`}></div>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-bold text-base">La Balanza</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Zona La Balanza</p>
-                  </div>
-                </div>
-                <span className="text-sky-400 font-black text-base font-mono">S/ 5.00</span>
-              </button>
-
-              {/* Otros */}
-              <button
-                onClick={() => {
-                  setDeliveryOption('otros');
-                }}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
-                  deliveryOption === 'otros'
-                    ? 'border-sky-500 bg-sky-900/40 shadow-lg shadow-sky-500/20'
-                    : 'border-gray-700 hover:border-sky-500/50 bg-gray-800/40 hover:bg-gray-800/70'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    deliveryOption === 'otros' ? 'border-sky-500 bg-sky-500/20' : 'border-gray-600'
-                  }`}>
-                    <div className={`w-3 h-3 rounded-full bg-sky-500 transition-opacity ${
-                      deliveryOption === 'otros' ? 'opacity-100' : 'opacity-0'
-                    }`}></div>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-bold text-base">Otros</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Especifica tu ubicación</p>
-                  </div>
-                </div>
-                <span className="text-gray-400 text-sm">A coordinar</span>
-              </button>
-
-              {/* Campo de ubicación personalizada */}
-              {deliveryOption === 'otros' && (
-                <div className="pt-3 border-t border-sky-500/20">
-                  <label className="block text-sm font-bold text-sky-400 mb-2">
-                    ¿Dónde te encuentras?
-                  </label>
-                  <textarea
-                    value={deliveryCustomLocation}
-                    onChange={(e) => setDeliveryCustomLocation(e.target.value)}
-                    placeholder="Ej: Urb. Los Jardines, Mz. A Lote 5"
-                    className="w-full px-4 py-3 text-base rounded-xl bg-gray-800/50 border-2 border-sky-500/30 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all placeholder:text-gray-500 resize-none"
-                    rows={3}
-                  />
-                  <button
-                    onClick={() => {
-                      if (deliveryCustomLocation.trim()) {
-                        setShowDeliveryModal(false);
-                      }
-                    }}
-                    disabled={!deliveryCustomLocation.trim()}
-                    className="w-full mt-3 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Confirmar ubicación
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       )}
