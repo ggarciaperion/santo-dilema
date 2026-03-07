@@ -995,24 +995,35 @@ export default function CheckoutPage() {
 
       {/* Modal de Formulario Móvil - MEJORADO */}
       {showMobileFormModal && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end md:items-center justify-center z-[100]">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-end sm:items-center justify-center z-[100] sm:p-4">
           <div
-            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl md:rounded-2xl border-t-2 md:border-2 border-fuchsia-500/40 w-full md:max-w-md p-6 pb-8 shadow-2xl max-h-[92vh] overflow-y-auto"
+            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-t-3xl sm:rounded-2xl border-t-2 sm:border-2 border-fuchsia-500/40 w-full sm:max-w-lg shadow-2xl max-h-[94vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
+            {/* Header con logo */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-fuchsia-500/20">
               <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400">
                 Datos de Entrega
               </h3>
-              {isFormValid() && (
-                <button
-                  onClick={() => setShowMobileFormModal(false)}
-                  className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
-                >
-                  <span className="text-gray-300 text-2xl leading-none">×</span>
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/logoprincipal.png"
+                  alt="Santo Dilema"
+                  width={100}
+                  height={28}
+                  className="h-7 w-auto"
+                />
+                {isFormValid() && (
+                  <button
+                    onClick={() => setShowMobileFormModal(false)}
+                    className="w-9 h-9 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
+                  >
+                    <span className="text-gray-300 text-xl leading-none">×</span>
+                  </button>
+                )}
+              </div>
             </div>
+            <div className="px-6 pb-8 pt-5">
 
             <form
               onSubmit={(e) => {
@@ -1074,40 +1085,38 @@ export default function CheckoutPage() {
 
               {/* Zona de delivery */}
               <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-3">
-                  Zona de delivery <span className="text-red-400">*</span>
-                </label>
+                <p className="text-sm font-bold text-fuchsia-400 mb-3">
+                  Elige la zona de delivery <span className="text-red-400">*</span>
+                </p>
                 <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => setDeliveryZone('centro')}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 transition-all active:scale-95 ${
-                      deliveryZone === 'centro'
-                        ? 'border-fuchsia-500 bg-fuchsia-900/30 text-white'
-                        : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-fuchsia-500/50'
-                    }`}
-                  >
-                    <div className="text-left">
-                      <p className="font-bold text-sm">Chancay Centro</p>
-                    </div>
-                    <span className={`font-black text-sm font-mono ${deliveryZone === 'centro' ? 'text-green-400' : 'text-green-500'}`}>Gratis</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDeliveryZone('alrededores')}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 transition-all active:scale-95 ${
-                      deliveryZone === 'alrededores'
-                        ? 'border-fuchsia-500 bg-fuchsia-900/30 text-white'
-                        : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-fuchsia-500/50'
-                    }`}
-                  >
-                    <div className="text-left">
-                      <p className="font-bold text-sm">Chancay Alrededores</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Puerto · Peralvillo · La Balanza</p>
-                    </div>
-                    <span className={`font-black text-sm font-mono ${deliveryZone === 'alrededores' ? 'text-sky-400' : 'text-sky-500'}`}>S/ 4.00</span>
-                  </button>
+                  {[
+                    { value: 'centro', label: 'Chancay Centro', sub: '', price: 'Gratis', priceColor: 'text-green-400' },
+                    { value: 'alrededores', label: 'Chancay Alrededores', sub: 'Puerto · Peralvillo · La Balanza', price: 'S/ 4.00', priceColor: 'text-sky-400' },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      onClick={() => setDeliveryZone(opt.value as 'centro' | 'alrededores')}
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                        deliveryZone === opt.value
+                          ? 'border-fuchsia-500 bg-fuchsia-900/30'
+                          : 'border-gray-700 bg-gray-800/40 hover:border-fuchsia-500/50'
+                      }`}
+                    >
+                      {/* Checkbox circular */}
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        deliveryZone === opt.value ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-500'
+                      }`}>
+                        {deliveryZone === opt.value && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-fuchsia-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-bold text-sm ${deliveryZone === opt.value ? 'text-white' : 'text-gray-300'}`}>{opt.label}</p>
+                        {opt.sub && <p className="text-xs text-gray-500 mt-0.5">{opt.sub}</p>}
+                      </div>
+                      <span className={`font-black text-sm font-mono flex-shrink-0 ${opt.priceColor}`}>{opt.price}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -1119,6 +1128,7 @@ export default function CheckoutPage() {
                 Confirmar datos
               </button>
             </form>
+            </div>
           </div>
         </div>
       )}
