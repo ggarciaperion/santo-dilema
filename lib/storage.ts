@@ -28,6 +28,7 @@ let menuDiscountsFilePath: string = '';
 let yunzaParticipationsFilePath: string = '';
 let challengeFilePath: string = '';
 let salsaOffersFilePath: string = '';
+let salsaPromosFilePath: string = '';
 let customerProfilesFilePath: string = '';
 let menuPricesFilePath: string = '';
 
@@ -49,6 +50,7 @@ if (!isProduction) {
   yunzaParticipationsFilePath = path.join(dataDir, 'yunza-participations.json');
   challengeFilePath = path.join(dataDir, 'challenge.json');
   salsaOffersFilePath = path.join(dataDir, 'salsa-offers.json');
+  salsaPromosFilePath = path.join(dataDir, 'salsa-promos.json');
   customerProfilesFilePath = path.join(dataDir, 'customer-profiles.json');
   menuPricesFilePath = path.join(dataDir, 'menu-prices.json');
 }
@@ -97,6 +99,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(salsaOffersFilePath)) {
       fs.writeFileSync(salsaOffersFilePath, JSON.stringify({ 'pequeno-dilema': [], 'duo-dilema': [], 'santo-pecado': [] }, null, 2));
+    }
+    if (!fs.existsSync(salsaPromosFilePath)) {
+      fs.writeFileSync(salsaPromosFilePath, JSON.stringify([], null, 2));
     }
     if (!fs.existsSync(customerProfilesFilePath)) {
       fs.writeFileSync(customerProfilesFilePath, JSON.stringify([], null, 2));
@@ -925,6 +930,59 @@ export const storage = {
       ensureDataDirectory();
       fs.writeFileSync(salsaOffersFilePath, JSON.stringify(data, null, 2));
     }
+  },
+
+  // ========== SALSA PROMOS (dinámicas) ==========
+  async getSalsaPromos(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any[]>('salsaPromos')) || [];
+    }
+    ensureDataDirectory();
+    if (!fs.existsSync(salsaPromosFilePath)) return [];
+    return JSON.parse(fs.readFileSync(salsaPromosFilePath, 'utf-8'));
+  },
+  async saveSalsaPromo(promo: any): Promise<any> {
+    const promos = await this.getSalsaPromos();
+    promo.id = Date.now().toString();
+    promo.createdAt = new Date().toISOString();
+    promos.unshift(promo);
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('salsaPromos', promos);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(salsaPromosFilePath, JSON.stringify(promos, null, 2));
+    }
+    return promo;
+  },
+  async updateSalsaPromo(id: string, updates: any): Promise<any | null> {
+    const promos = await this.getSalsaPromos();
+    const idx = promos.findIndex((p: any) => p.id === id);
+    if (idx === -1) return null;
+    promos[idx] = { ...promos[idx], ...updates, updatedAt: new Date().toISOString() };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('salsaPromos', promos);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(salsaPromosFilePath, JSON.stringify(promos, null, 2));
+    }
+    return promos[idx];
+  },
+  async deleteSalsaPromo(id: string): Promise<boolean> {
+    const promos = await this.getSalsaPromos();
+    const idx = promos.findIndex((p: any) => p.id === id);
+    if (idx === -1) return false;
+    promos.splice(idx, 1);
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('salsaPromos', promos);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(salsaPromosFilePath, JSON.stringify(promos, null, 2));
+    }
+    return true;
   },
 
   // ========== CUSTOMER PROFILES (CRM) ==========

@@ -208,7 +208,7 @@ export default function FatPage() {
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
-  // salsaOffers eliminado — usar SALSA_OFFERS hardcodeado
+  const [salsaPromos, setSalsaPromos] = useState<any[]>([]);
   const router = useRouter();
 
   // Salsas con estado agotado derivado del menuStock en tiempo real
@@ -216,6 +216,19 @@ export default function FatPage() {
     () => salsas.map(s => ({ ...s, soldOut: s.soldOut || !!menuStock[`salsa-${s.id}`] })),
     [menuStock]
   );
+
+  const findMatchingPromo = (productId: string, selectedSalsaIds: string[]): any | null => {
+    const dynamic = salsaPromos.find(
+      (p: any) => p.active && p.productId === productId &&
+      p.salsas.every((sId: string) => selectedSalsaIds.includes(sId))
+    );
+    if (dynamic) return dynamic;
+    const hard = SALSA_OFFERS[productId];
+    if (hard && hard.salsas.every((sId: string) => selectedSalsaIds.includes(sId))) {
+      return { promoPrice: hard.price };
+    }
+    return null;
+  };
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
   // PROMOCIÓN DESACTIVADA
@@ -296,6 +309,10 @@ export default function FatPage() {
     fetch("/api/menu-prices")
       .then((r) => r.json())
       .then((data) => setMenuPrices(data))
+      .catch(() => {});
+    fetch("/api/salsa-promos")
+      .then((r) => r.json())
+      .then((data) => setSalsaPromos(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
 
@@ -621,10 +638,9 @@ export default function FatPage() {
 
             const cartItemId = `${productId}-main`;
 
-            // Precio de oferta por combinación hardcodeada
-            const offerR = SALSA_OFFERS[productId];
-            const offerAppR = offerR && offerR.salsas.every(sId => newSalsas.includes(sId));
-            const finalPrice = offerAppR ? offerR.price : product.price;
+            // Precio de oferta por combinación (dinámica o hardcodeada)
+            const matchingPromoR = findMatchingPromo(productId, newSalsas);
+            const finalPrice = matchingPromoR ? matchingPromoR.promoPrice : product.price;
 
             const productWithSalsas: Product = {
               ...product,
@@ -672,10 +688,9 @@ export default function FatPage() {
 
             const cartItemId = `${productId}-main`;
 
-            // Precio de oferta por combinación hardcodeada
-            const offerA = SALSA_OFFERS[productId];
-            const offerAppA = offerA && offerA.salsas.every(sId => newSalsas.includes(sId));
-            const finalPrice = offerAppA ? offerA.price : product.price;
+            // Precio de oferta por combinación (dinámica o hardcodeada)
+            const matchingPromoA = findMatchingPromo(productId, newSalsas);
+            const finalPrice = matchingPromoA ? matchingPromoA.promoPrice : product.price;
 
             const productWithSalsas: Product = {
               ...product,
@@ -718,11 +733,10 @@ export default function FatPage() {
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
 
-    // Precio de oferta por combinación de salsas hardcodeada
+    // Precio de oferta por combinación (dinámica o hardcodeada)
     const effectiveBasePrice = menuPrices[product.id] || product.price;
-    const offerC = SALSA_OFFERS[product.id];
-    const offerApplies = offerC && offerC.salsas.every(sId => orderSalsas.includes(sId));
-    const finalPrice = offerApplies ? offerC.price : effectiveBasePrice;
+    const matchingPromoC = findMatchingPromo(product.id, orderSalsas);
+    const finalPrice = matchingPromoC ? matchingPromoC.promoPrice : effectiveBasePrice;
     const discountApplied = finalPrice < effectiveBasePrice;
 
     const completedOrder: CompletedOrder = {
