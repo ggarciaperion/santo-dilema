@@ -1178,6 +1178,7 @@ export default function FatPage() {
               const isSoldOut = !!menuStock[product.id];
               const discountPrice = menuDiscounts[product.id];
               const effectivePrice = menuPrices[product.id] || product.price;
+              const activePromo = findMatchingPromo(product.id, currentSalsas);
 
               return (
                 <div
@@ -1247,7 +1248,12 @@ export default function FatPage() {
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
-                      {discountPrice ? (
+                      {activePromo ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-bold text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                          <span className="text-sm md:text-lg font-black text-green-400 promo-price-pulse">S/ {activePromo.promoPrice.toFixed(2)}</span>
+                        </div>
+                      ) : discountPrice ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-xs font-bold text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
                           <span className="text-sm md:text-lg font-black text-amber-400 promo-price-pulse">S/ {discountPrice.toFixed(2)}</span>
