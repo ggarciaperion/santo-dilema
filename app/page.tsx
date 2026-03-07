@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import YunzaModal from "@/components/YunzaModal";
-import ChallengeSection from "./components/ChallengeSection";
+// import ChallengeSection from "./components/ChallengeSection";
 import CasaCampoModal from "./components/CasaCampoModal";
 
 // Fecha de lanzamiento: 13 Feb 2026 a las 18:30 hora Perú (UTC-5)
@@ -435,9 +435,6 @@ export default function Home() {
 
       {/* Modal de Ruleta */}
       <YunzaModal isOpen={showYunzaModal} onClose={() => setShowYunzaModal(false)} />
-
-      {/* Desafío del Cliente */}
-      <ChallengeSection />
 
       {/* Banner Casa de Campo */}
       <CasaCampoModal />

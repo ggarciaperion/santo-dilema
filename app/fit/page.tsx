@@ -46,7 +46,6 @@ const products: Product[] = [
     name: "CÉSAR POWER BOWL",
     description: "El clásico que no falla — acá lo hacemos mejor. Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. César cremosa de la casa incluida.",
     price: 20.00,
-    oldPrice: 22.50,
     image: "/2.png",
     category: "fit",
   },
@@ -55,7 +54,6 @@ const products: Product[] = [
     name: "PROTEIN FIT BOWL",
     description: "Para los que se cuidan sin aburrirse. Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Aderezo de yogurt griego que no te esperas.",
     price: 20.00,
-    oldPrice: 23.50,
     image: "/3.png",
     category: "fit",
   },
@@ -74,7 +72,7 @@ const fatProducts: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>8 alitas</span> acompañadas de papas y 01 salsa favorita.",
+    description: "8 alitas acompañadas de papas y 01 salsa favorita.",
     price: 20.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -82,7 +80,7 @@ const fatProducts: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>14 alitas</span> acompañadas de papas francesas y 02 de tus salsas favoritas.",
+    description: "14 alitas acompañadas de papas francesas y 02 de tus salsas favoritas.",
     price: 34.00,
     image: "/duo-dilema.png?v=3",
     category: "fat",
@@ -90,7 +88,7 @@ const fatProducts: Product[] = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>20 alitas</span> acompañadas de papas francesas y 03 de tus salsas favoritas.",
+    description: "20 alitas acompañadas de papas francesas y 03 de tus salsas favoritas.",
     price: 47.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",
@@ -835,15 +833,7 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none
-                    ${discountPrice
-                      ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40'
-                      : product.oldPrice
-                        ? product.id === 'ensalada-mediterranea'
-                          ? 'border-4 border-red-500 neon-red-border'
-                          : 'border-4 border-amber-400 super-promo-glow'
-                        : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'
-                    }
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
@@ -913,33 +903,9 @@ export default function FitPage() {
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
                       <div className="flex flex-col gap-0.5">
-                        {discountPrice ? (
-                          <>
-                            <span className="text-xs md:text-sm font-bold text-gray-500 line-through opacity-70">
-                              S/ {product.price.toFixed(2)}
-                            </span>
-                            <span className="text-lg md:text-2xl font-black text-amber-400 promo-price-pulse">
-                              S/ {discountPrice.toFixed(2)}
-                            </span>
-                          </>
-                        ) : product.oldPrice ? (
-                          <>
-                            <span className="text-xs md:text-sm font-bold text-gray-500 line-through opacity-70">
-                              S/ {product.oldPrice.toFixed(2)}
-                            </span>
-                            <span className={`text-lg md:text-2xl font-black ${
-                              product.id === 'ensalada-mediterranea'
-                                ? 'text-red-500 neon-red-price'
-                                : 'text-amber-400 promo-price-pulse'
-                            }`}>
-                              S/ {product.price.toFixed(2)}
-                            </span>
-                          </>
-                        ) : (
                           <span className="text-sm md:text-base font-black text-amber-400 gold-glow">
                             S/ {product.price.toFixed(2)}
                           </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
@@ -1316,26 +1282,6 @@ export default function FitPage() {
               })}
             </div>
 
-            {/* Aviso promos no acumulables */}
-            {hasComboDiscount && completedOrders.some(o => o.discountApplied) && (
-              <p className="text-center text-[10px] md:text-xs text-gray-400 italic mt-3 px-2">
-                * Las promociones no son acumulables. Se aplica el descuento más favorable.
-              </p>
-            )}
-
-            {/* Banner de descuento COMBO FAT + FIT */}
-            {hasComboDiscount && (
-              <div className="mt-4 bg-fuchsia-500/10 border-2 border-fuchsia-500/50 rounded-lg p-3 md:p-4">
-                <p className="text-fuchsia-300 text-xs md:text-sm text-center font-semibold flex items-center justify-center gap-2">
-                  <span className="text-base md:text-lg">🔥</span>
-                  ¡Combo FAT + FIT activado! <span className="font-black text-fuchsia-200">S/ 5.00 de descuento</span>
-                </p>
-                <div className="flex justify-center items-center gap-3 mt-1">
-                  <span className="text-gray-400 line-through text-xs">S/ {completedTotal.toFixed(2)}</span>
-                  <span className="text-amber-400 font-black text-sm gold-glow">S/ {comboTotal.toFixed(2)}</span>
-                </div>
-              </div>
-            )}
 
           </div>
         )}

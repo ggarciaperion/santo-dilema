@@ -41,7 +41,7 @@ const products: Product[] = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>8 alitas</span> crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa no vas a querer quedarte en solo <span style='text-decoration: line-through; opacity: 0.6;'>6</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700;'>8</span>.",
+    description: "8 alitas crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa, no vas a querer quedarte en solo 8.",
     price: 20.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
@@ -49,7 +49,7 @@ const products: Product[] = [
   {
     id: "duo-dilema",
     name: "Dúo Dilema",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>12</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>14 alitas</span> con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
+    description: "14 alitas con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
     price: 34.00,
     image: "/duo-dilema.png?v=3",
     category: "fat",
@@ -57,7 +57,7 @@ const products: Product[] = [
   {
     id: "santo-pecado",
     name: "Santo Pecado",
-    description: "<span style='text-decoration: line-through; opacity: 0.6;'>18</span> <span class='heartbeat-promo' style='color: #fbbf24; font-weight: 700; font-size: 1.1em;'>20 alitas</span>, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
+    description: "20 alitas, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
     price: 47.00,
     image: "/todos-pecan.png?v=3",
     category: "fat",
@@ -1164,7 +1164,7 @@ export default function FatPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink snap-center md:snap-none ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink snap-center md:snap-none neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
                       : 'w-[240px] md:w-[280px] lg:w-[300px]'
@@ -1225,20 +1225,9 @@ export default function FatPage() {
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
-                      {discountPrice ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-bold text-gray-500 line-through">
-                            S/ {product.price.toFixed(2)}
-                          </span>
-                          <span className="text-sm md:text-lg font-black text-amber-400 promo-price-pulse">
-                            S/ {discountPrice.toFixed(2)}
-                          </span>
-                        </div>
-                      ) : (
                         <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">
                           S/ {product.price.toFixed(2)}
                         </span>
-                      )}
                       <div className="flex items-center gap-0.5 md:gap-1">
                         <button
                           onClick={(e) => {
@@ -1353,11 +1342,7 @@ export default function FatPage() {
                                   className={`rounded p-1.5 md:p-2 border transition-all ${
                                     salsa.soldOut
                                       ? 'bg-gray-800/50 border-gray-600/30 opacity-60'
-                                      : isOfferSalsa
-                                        ? 'bg-orange-950/40 border-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.5)]'
-                                        : (isPromoSalsa || isPromoDuoDilemaSalsa || isPromoSantoPecadoSalsa)
-                                          ? 'bg-red-900/20 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.45)]'
-                                          : 'bg-gray-800/30 border-amber-500/10'
+                                      : 'bg-gray-800/30 border-amber-500/10'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
@@ -1365,24 +1350,10 @@ export default function FatPage() {
                                       <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : salsa.soldOut ? 'text-gray-500' : 'text-white'}`}>
                                         {salsa.name}
                                         {salsa.soldOut && <span className="ml-1.5 text-[8px] bg-gray-600 text-gray-300 px-1 py-0.5 rounded font-bold align-middle">AGOTADO</span>}
-                                        {!salsa.soldOut && isOfferSalsa && <span className="ml-1.5 text-[8px] bg-orange-500 text-white px-1.5 py-0.5 rounded font-black align-middle animate-pulse">🔥 OFERTA</span>}
-                                        {!salsa.soldOut && !isOfferSalsa && isPromoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
-                                        {!salsa.soldOut && !isOfferSalsa && isPromoDuoDilemaSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
-                                        {!salsa.soldOut && !isOfferSalsa && isPromoSantoPecadoSalsa && <span className="ml-1.5 text-[8px] bg-red-600 text-white px-1 py-0.5 rounded font-bold align-middle">🔥 PROMO</span>}
                                       </div>
                                       <p className={`text-[9px] md:text-[10px] italic mt-0.5 ${salsa.soldOut ? 'text-gray-600' : 'text-gray-400'}`}>
                                         {salsa.description}
                                       </p>
-                                      {!salsa.soldOut && isOfferSalsa && (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                          <span className="text-[9px] text-gray-500 line-through">S/ {products.find(p => p.id === product.id)?.price.toFixed(2)}</span>
-                                          <span className="text-[9px] text-orange-400 font-black">
-                                            {offerConfig && offerConfig.salsas.length > 1
-                                              ? `→ S/ ${offerPrice.toFixed(2)} eligiendo la combo oferta 🔥`
-                                              : `→ S/ ${offerPrice.toFixed(2)} eligiendo esta salsa 🔥`}
-                                          </span>
-                                        </div>
-                                      )}
                                       {!salsa.soldOut && !isOfferSalsa && isPromoSalsa && (
                                         <div className="flex items-center gap-1.5 mt-1">
                                           <span className="text-[9px] text-gray-500 line-through">S/ 20.00</span>
@@ -1818,26 +1789,6 @@ export default function FatPage() {
               })}
             </div>
 
-            {/* Aviso promos no acumulables */}
-            {hasComboDiscount && completedOrders.some(o => o.discountApplied) && (
-              <p className="text-center text-[10px] md:text-xs text-gray-400 italic mt-3 px-2">
-                * Las promociones no son acumulables. Se aplica el descuento más favorable.
-              </p>
-            )}
-
-            {/* Banner de descuento COMBO FAT + FIT */}
-            {hasComboDiscount && (
-              <div className="mt-4 bg-fuchsia-500/10 border-2 border-fuchsia-500/50 rounded-lg p-3 md:p-4">
-                <p className="text-fuchsia-300 text-xs md:text-sm text-center font-semibold flex items-center justify-center gap-2">
-                  <span className="text-base md:text-lg">🔥</span>
-                  ¡Combo FAT + FIT activado! <span className="font-black text-fuchsia-200">S/ 5.00 de descuento</span>
-                </p>
-                <div className="flex justify-center items-center gap-3 mt-1">
-                  <span className="text-gray-400 line-through text-xs">S/ {completedTotal.toFixed(2)}</span>
-                  <span className="text-amber-400 font-black text-sm gold-glow">S/ {comboTotal.toFixed(2)}</span>
-                </div>
-              </div>
-            )}
 
           </div>
         )}
