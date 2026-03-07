@@ -1211,6 +1211,7 @@ export default function AdminPage() {
     "en-camino": "bg-blue-500/20 text-blue-400 border-blue-500",
     delivered: "bg-green-500/20 text-green-400 border-green-500",
     cancelled: "bg-red-500/20 text-red-400 border-red-500",
+    programado: "bg-indigo-500/20 text-indigo-300 border-indigo-500",
   };
 
   const statusLabels = {
@@ -1220,6 +1221,7 @@ export default function AdminPage() {
     "en-camino": "En Camino",
     delivered: "Entregado",
     cancelled: "Cancelado",
+    programado: "Programado",
   };
 
   // Product CRUD functions
@@ -2610,6 +2612,7 @@ export default function AdminPage() {
                   order.status === 'confirmed' ? 'ring-2 ring-cyan-500/50' :
                   order.status === 'en-camino' ? 'ring-2 ring-blue-500/50' :
                   order.status === 'delivered' ? 'ring-2 ring-green-500/30 opacity-60' :
+                  order.status === 'programado' ? 'ring-2 ring-indigo-500/70' :
                   'ring-2 ring-red-500/30 opacity-50'
                 }`}
               >
@@ -2623,6 +2626,7 @@ export default function AdminPage() {
                     order.status === 'confirmed' ? 'bg-cyan-500/20' :
                     order.status === 'en-camino' ? 'bg-blue-500/20' :
                     order.status === 'delivered' ? 'bg-green-500/20' :
+                    order.status === 'programado' ? 'bg-indigo-500/20' :
                     'bg-red-500/20'
                   }`}>
                     <span className={`px-2 py-0.5 rounded text-xs font-black uppercase block mb-1 ${
@@ -2641,6 +2645,24 @@ export default function AdminPage() {
                     <div className="mt-2">
                       <TimeCounter createdAt={order.createdAt} orderId={order.id} status={order.status} />
                     </div>
+
+                    {/* PEDIDO PROGRAMADO */}
+                    {order.status === 'programado' && order.scheduledDate && order.scheduledTime && (
+                      <div className="mt-2 border-t border-indigo-500/30 pt-2">
+                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-wider">🗓 Entrega programada</p>
+                        {(() => {
+                          const d = new Date(order.scheduledDate + 'T12:00:00');
+                          const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+                          const [hh, mm] = order.scheduledTime.split(':');
+                          const h = parseInt(hh);
+                          return (
+                            <p className="text-white font-black text-sm mt-0.5">
+                              {days[d.getDay()]} – {h > 12 ? h - 12 : h}:{mm} {h >= 12 ? 'PM' : 'AM'}
+                            </p>
+                          );
+                        })()}
+                      </div>
+                    )}
 
                     {/* RASTRO DE TIEMPOS POR ETAPA */}
                     {(() => {

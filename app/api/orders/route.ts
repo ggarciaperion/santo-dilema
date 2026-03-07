@@ -120,6 +120,8 @@ export async function POST(request: Request) {
     const deliveryCustomLocation = formData.get('deliveryCustomLocation') as string || '';
     const paymentMethod = formData.get('paymentMethod') as string;
     const cantoCancelo = formData.get('cantoCancelo') as string | null;
+    const scheduledDate = formData.get('scheduledDate') as string | null;
+    const scheduledTime = formData.get('scheduledTime') as string | null;
     const timestamp = formData.get('timestamp') as string;
     const paymentProof = formData.get('paymentProof') as File | null;
 
@@ -149,8 +151,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Determinar estado del pedido según método de pago
-    const status = paymentMethod === 'anticipado' ? 'pendiente-verificacion' : 'pending';
+    // Determinar estado del pedido
+    const isScheduled = !!(scheduledDate && scheduledTime);
+    const status = isScheduled ? 'programado' : (paymentMethod === 'anticipado' ? 'pendiente-verificacion' : 'pending');
 
     // Generar ID con formato SD + correlativo + día + mes
     const today = new Date();
@@ -217,6 +220,8 @@ export async function POST(request: Request) {
       paymentMethod,
       cantoCancelo: cantoCancelo || undefined,
       paymentProofPath,
+      scheduledDate: scheduledDate || undefined,
+      scheduledTime: scheduledTime || undefined,
       timestamp: peruNow,
       status,
       createdAt: peruNow,
