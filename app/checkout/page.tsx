@@ -242,10 +242,8 @@ export default function CheckoutPage() {
   // Detectar combo FAT + FIT para descuento S/ 5.00 (debe estar ANTES de subtotal)
   const COMBO_FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
   const COMBO_FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
-  const hasComboDiscount =
-    completedOrders.some(o => COMBO_FAT_IDS.includes(o.productId)) &&
-    completedOrders.some(o => COMBO_FIT_IDS.includes(o.productId));
-  const comboDiscountAmount = hasComboDiscount ? 5 : 0;
+  const hasComboDiscount = false; // Promoción desactivada
+  const comboDiscountAmount = 0;
 
   // Detectar si hay productos con descuentos individuales (ej: promo S/ 16)
   const hasIndividualDiscount = completedOrders.some(o => o.discountApplied === true);
