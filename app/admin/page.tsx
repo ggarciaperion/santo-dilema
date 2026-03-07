@@ -1243,10 +1243,10 @@ export default function AdminPage() {
 
   const handleUpdateProduct = async () => {
     try {
-      await fetch("/api/products", {
+      await fetch(`/api/products?id=${editingProduct.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...productForm, id: editingProduct.id }),
+        body: JSON.stringify(productForm),
       });
       loadProducts();
       setShowProductModal(false);
