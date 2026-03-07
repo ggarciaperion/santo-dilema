@@ -309,62 +309,38 @@ export default function CheckoutPage() {
 
   // Validar si el formulario está completo
   // ── PROGRAMAR COMPRA ─────────────────────────────────────────────
-  const SCHEDULE_ALLOWED_DAYS = [0, 4, 5, 6]; // Dom, Jue, Vie, Sáb
-  const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-  const getAvailableDays = () => {
-    const results: Array<{ label: string; value: string }> = [];
+  const getTodayPeruStr = () => {
     const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-    for (let i = 0; i <= 14 && results.length < 5; i++) {
-      const d = new Date(now);
-      d.setDate(now.getDate() + i);
-      if (!SCHEDULE_ALLOWED_DAYS.includes(d.getDay())) continue;
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      const name = i === 0 ? `Hoy · ${DAY_NAMES[d.getDay()]}` : i === 1 ? `Mañana · ${DAY_NAMES[d.getDay()]}` : `${DAY_NAMES[d.getDay()]} ${dd}/${mm}`;
-      results.push({ label: name, value: `${yyyy}-${mm}-${dd}` });
-    }
-    return results;
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   };
 
-  const getAvailableSlots = (dateValue: string): string[] => {
+  const getTodaySlots = (): string[] => {
     const slots: string[] = [];
     const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const isToday = dateValue === todayStr;
     const minMs = now.getTime() + 30 * 60 * 1000;
     for (let h = 18; h <= 22; h++) {
       for (let m = 0; m < 60; m += 30) {
         if (h === 22 && m > 30) break;
-        if (isToday) {
-          const slotDate = new Date(now);
-          slotDate.setHours(h, m, 0, 0);
-          if (slotDate.getTime() < minMs) continue;
+        const slot = new Date(now);
+        slot.setHours(h, m, 0, 0);
+        if (slot.getTime() >= minMs) {
+          slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
         }
-        slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
       }
     }
     return slots;
   };
 
   const formatScheduleDisplay = () => {
-    if (!scheduledDate || !scheduledTime) return null;
-    const d = new Date(scheduledDate + 'T12:00:00');
+    if (!scheduledTime) return null;
     const [hh, mm] = scheduledTime.split(':');
     const h = parseInt(hh);
-    const label = `${h > 12 ? h - 12 : h}:${mm} ${h >= 12 ? 'PM' : 'AM'}`;
-    return `${DAY_NAMES[d.getDay()]} – ${label}`;
+    return `Hoy – ${h > 12 ? h - 12 : h}:${mm} ${h >= 12 ? 'PM' : 'AM'}`;
   };
 
   const handleConfirmSchedule = () => {
-    if (!scheduledDate || !scheduledTime) {
-      setScheduleError('Por favor selecciona día y hora.');
-      return;
-    }
-    const slots = getAvailableSlots(scheduledDate);
-    if (!slots.includes(scheduledTime)) {
-      setScheduleError('La hora seleccionada no está disponible. Por favor elige un horario dentro del rango de atención.');
+    if (!scheduledTime) {
+      setScheduleError('Por favor selecciona una hora.');
       return;
     }
     setScheduleError('');
@@ -1057,7 +1033,7 @@ export default function CheckoutPage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => { setScheduleError(''); setShowScheduleModal(true); }}
+                    onClick={() => { setScheduleError(''); setScheduledDate(getTodayPeruStr()); setShowScheduleModal(true); }}
                     className="w-full flex items-center justify-center gap-2 bg-indigo-900/30 hover:bg-indigo-900/50 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-indigo-200 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm"
                   >
                     🗓 Programar compra
@@ -1226,60 +1202,40 @@ export default function CheckoutPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowScheduleModal(false); }}
         >
           <div className="bg-gray-900 border-2 border-indigo-500/50 rounded-2xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-black text-indigo-300">🗓 Programar entrega</h3>
               <button onClick={() => setShowScheduleModal(false)} className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-gray-300 text-lg transition-all">×</button>
             </div>
-
-            {/* Selector de día */}
-            <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Día</p>
-            <div className="grid grid-cols-1 gap-2 mb-5">
-              {getAvailableDays().map((day) => (
-                <button
-                  key={day.value}
-                  type="button"
-                  onClick={() => { setScheduledDate(day.value); setScheduledTime(''); setScheduleError(''); }}
-                  className={`w-full text-left px-4 py-2.5 rounded-xl border-2 text-sm font-bold transition-all active:scale-95 ${
-                    scheduledDate === day.value
-                      ? 'border-indigo-500 bg-indigo-900/40 text-indigo-200'
-                      : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-indigo-500/50'
-                  }`}
-                >
-                  {day.label}
-                </button>
-              ))}
-            </div>
+            <p className="text-gray-500 text-xs mb-5">Selecciona la hora para hoy. Mínimo 30 min desde ahora, hasta las 11:00 PM.</p>
 
             {/* Selector de hora */}
-            {scheduledDate && (
-              <>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Hora de entrega</p>
-                {getAvailableSlots(scheduledDate).length === 0 ? (
-                  <p className="text-red-400 text-sm text-center py-3">No hay horarios disponibles para hoy. Selecciona otro día.</p>
-                ) : (
-                  <div className="grid grid-cols-3 gap-2 mb-5">
-                    {getAvailableSlots(scheduledDate).map((slot) => {
-                      const [hh, mm] = slot.split(':');
-                      const h = parseInt(hh);
-                      const display = `${h > 12 ? h - 12 : h}:${mm} ${h >= 12 ? 'PM' : 'AM'}`;
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => { setScheduledTime(slot); setScheduleError(''); }}
-                          className={`px-2 py-2 rounded-xl border-2 text-xs font-bold transition-all active:scale-95 ${
-                            scheduledTime === slot
-                              ? 'border-indigo-500 bg-indigo-900/40 text-indigo-200'
-                              : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-indigo-500/50'
-                          }`}
-                        >
-                          {display}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </>
+            {getTodaySlots().length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-red-400 text-sm font-bold">No hay horarios disponibles por ahora.</p>
+                <p className="text-gray-500 text-xs mt-1">El horario de atención es de 6:00 PM a 11:00 PM.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 mb-5">
+                {getTodaySlots().map((slot) => {
+                  const [hh, mm] = slot.split(':');
+                  const h = parseInt(hh);
+                  const display = `${h > 12 ? h - 12 : h}:${mm} PM`;
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => { setScheduledTime(slot); setScheduleError(''); }}
+                      className={`px-2 py-2.5 rounded-xl border-2 text-sm font-bold transition-all active:scale-95 ${
+                        scheduledTime === slot
+                          ? 'border-indigo-500 bg-indigo-900/40 text-indigo-200'
+                          : 'border-gray-700 bg-gray-800/40 text-gray-300 hover:border-indigo-500/50'
+                      }`}
+                    >
+                      {display}
+                    </button>
+                  );
+                })}
+              </div>
             )}
 
             {scheduleError && (
@@ -1289,10 +1245,10 @@ export default function CheckoutPage() {
             <button
               type="button"
               onClick={handleConfirmSchedule}
-              disabled={!scheduledDate || !scheduledTime}
+              disabled={!scheduledTime}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black py-3 rounded-xl transition-all active:scale-95"
             >
-              Confirmar programación
+              Confirmar hora
             </button>
           </div>
         </div>
