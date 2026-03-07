@@ -421,6 +421,45 @@ body {
   }
 }
 
+/* Borde neon verde para salsas con promo (hint) */
+@keyframes promoSalsaHint {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.3),
+                0 0 8px rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.7),
+                0 0 20px rgba(34, 197, 94, 0.35);
+    border-color: rgba(34, 197, 94, 0.9);
+  }
+}
+
+.promo-salsa-hint {
+  animation: promoSalsaHint 2s ease-in-out infinite;
+}
+
+/* Borde neon verde brillante cuando la promo está activa */
+@keyframes promoSalsaActive {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.7),
+                0 0 16px rgba(34, 197, 94, 0.4),
+                inset 0 0 8px rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.85);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(34, 197, 94, 1),
+                0 0 36px rgba(34, 197, 94, 0.7),
+                0 0 54px rgba(34, 197, 94, 0.35),
+                inset 0 0 14px rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 1);
+  }
+}
+
+.promo-salsa-active {
+  animation: promoSalsaActive 1.1s ease-in-out infinite;
+}
+
 /* Efecto neón rojo para TUNA FRESH BOWL */
 @keyframes neonRedGlow {
   0%, 100% {

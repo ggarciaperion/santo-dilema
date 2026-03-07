@@ -1179,6 +1179,10 @@ export default function FatPage() {
               const discountPrice = menuDiscounts[product.id];
               const effectivePrice = menuPrices[product.id] || product.price;
               const activePromo = findMatchingPromo(product.id, currentSalsas);
+              const allPromosForProduct = [
+                ...salsaPromos.filter((p: any) => p.active && p.productId === product.id),
+                ...(SALSA_OFFERS[product.id] ? [{ salsas: SALSA_OFFERS[product.id].salsas, promoPrice: SALSA_OFFERS[product.id].price }] : []),
+              ];
 
               return (
                 <div
@@ -1359,15 +1363,12 @@ export default function FatPage() {
                               const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
                               const canAddMore = count < maxSalsaCount && canSelect && !salsa.soldOut;
                               const showAddButton = canAddMore;
-                              // Salsa Oferta hardcodeada
-                              const offerConfig = SALSA_OFFERS[product.id];
-                              const isOfferSalsa = offerConfig ? offerConfig.salsas.includes(salsa.id) : false;
-                              const offerPrice = offerConfig?.price ?? 0;
-                              const isPromoSalsa = false;
-                              const isPromoDuoDilemaSalsa = false;
-                              const hasBothPromoDuoSalsas = false;
-                              const isPromoSantoPecadoSalsa = false;
-                              const hasAllPromoSantoPecadoSalsas = false;
+                              // Promo dinámica o hardcodeada para esta salsa
+                              const salsaPromoConfig = allPromosForProduct.find((p: any) => p.salsas.includes(salsa.id));
+                              const isSalsaInPromo = !!salsaPromoConfig;
+                              const isSalsaPromoActive = isSalsaInPromo
+                                ? salsaPromoConfig!.salsas.every((sId: string) => currentSalsas.includes(sId))
+                                : false;
 
                               return (
                                 <div
@@ -1375,7 +1376,11 @@ export default function FatPage() {
                                   className={`rounded p-1.5 md:p-2 border transition-all ${
                                     salsa.soldOut
                                       ? 'bg-gray-800/50 border-gray-600/30 opacity-60'
-                                      : 'bg-gray-800/30 border-amber-500/10'
+                                      : isSalsaPromoActive
+                                        ? 'bg-green-900/20 border-green-400 promo-salsa-active'
+                                        : isSalsaInPromo
+                                          ? 'bg-gray-800/30 border-green-500/30 promo-salsa-hint'
+                                          : 'bg-gray-800/30 border-amber-500/10'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between mb-1">
@@ -1387,32 +1392,21 @@ export default function FatPage() {
                                       <p className={`text-[9px] md:text-[10px] italic mt-0.5 ${salsa.soldOut ? 'text-gray-600' : 'text-gray-400'}`}>
                                         {salsa.description}
                                       </p>
-                                      {!salsa.soldOut && !isOfferSalsa && isPromoSalsa && (
+                                      {!salsa.soldOut && isSalsaInPromo && (
                                         <div className="flex items-center gap-1.5 mt-1">
-                                          <span className="text-[9px] text-gray-500 line-through">S/ 20.00</span>
-                                          <span className="text-[9px] text-amber-400 font-bold">→ S/ 16.00 con esta salsa</span>
-                                        </div>
-                                      )}
-                                      {!salsa.soldOut && isPromoDuoDilemaSalsa && (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                          <span className="text-[9px] text-gray-500 line-through">S/ 34.00</span>
-                                          <span className="text-[9px] text-amber-400 font-bold">
-                                            → S/ 30.00 {hasBothPromoDuoSalsas ? '✓ ACTIVO' : (
-                                              salsa.id === 'teriyaki' ? 'Combínala con Honey mustard' : 'Combínala con Oriental Teriyaki'
-                                            )}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {!salsa.soldOut && isPromoSantoPecadoSalsa && (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                          <span className="text-[9px] text-gray-500 line-through">S/ 47.00</span>
-                                          <span className="text-[9px] text-amber-400 font-bold">
-                                            → S/ 42.00 {hasAllPromoSantoPecadoSalsas ? '✓ ACTIVO' : (
-                                              salsa.id === 'barbecue' ? 'Combínala con Santo Picante + Sweet & Sour' :
-                                              salsa.id === 'buffalo-picante' ? 'Combínala con BBQ ahumada + Sweet & Sour' :
-                                              'Combínala con BBQ ahumada + Santo Picante'
-                                            )}
-                                          </span>
+                                          {isSalsaPromoActive ? (
+                                            <span className="text-[9px] text-green-400 font-bold">✓ PROMO ACTIVA — S/ {Number(salsaPromoConfig!.promoPrice).toFixed(2)}</span>
+                                          ) : (
+                                            <>
+                                              <span className="text-[9px] text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                                              <span className="text-[9px] text-amber-400 font-bold">
+                                                → S/ {Number(salsaPromoConfig!.promoPrice).toFixed(2)}
+                                                {salsaPromoConfig!.salsas.length > 1 && (
+                                                  <> con {salsaPromoConfig!.salsas.filter((s: string) => s !== salsa.id).map((sId: string) => salsas.find(s => s.id === sId)?.name || sId).join(' + ')}</>
+                                                )}
+                                              </span>
+                                            </>
+                                          )}
                                         </div>
                                       )}
                                     </div>
