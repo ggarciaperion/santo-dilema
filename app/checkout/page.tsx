@@ -318,9 +318,9 @@ export default function CheckoutPage() {
     const slots: string[] = [];
     const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
     const minMs = now.getTime() + 30 * 60 * 1000;
-    for (let h = 18; h <= 22; h++) {
+    for (let h = 18; h <= 23; h++) {
       for (let m = 0; m < 60; m += 30) {
-        if (h === 22 && m > 30) break;
+        if (h === 23 && m > 0) break;
         const slot = new Date(now);
         slot.setHours(h, m, 0, 0);
         if (slot.getTime() >= minMs) {
@@ -1206,8 +1206,6 @@ export default function CheckoutPage() {
               <h3 className="text-lg font-black text-indigo-300">🗓 Programar entrega</h3>
               <button onClick={() => setShowScheduleModal(false)} className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-gray-300 text-lg transition-all">×</button>
             </div>
-            <p className="text-gray-500 text-xs mb-5">Selecciona la hora para hoy. Mínimo 30 min desde ahora, hasta las 11:00 PM.</p>
-
             {/* Selector de hora */}
             {getTodaySlots().length === 0 ? (
               <div className="text-center py-6">
