@@ -315,6 +315,7 @@ export default function AdminPage() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
   const [inventoryCategoryFilter, setInventoryCategoryFilter] = useState<string>("all");
+  const [liquidadoFilter, setLiquidadoFilter] = useState<'all' | 'pendiente' | 'liquidado'>('all');
   const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
   const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
   const [showInventoryEditModal, setShowInventoryEditModal] = useState(false);
@@ -1399,6 +1400,19 @@ export default function AdminPage() {
       loadInventory();
     } catch (error) {
       console.error("Error al eliminar compra:", error);
+    }
+  };
+
+  const toggleLiquidado = async (purchaseId: string, currentValue: boolean) => {
+    try {
+      await fetch('/api/inventory', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: purchaseId, liquidado: !currentValue }),
+      });
+      loadInventory();
+    } catch (error) {
+      console.error('Error al actualizar estado de liquidación:', error);
     }
   };
 
@@ -4324,6 +4338,13 @@ export default function AdminPage() {
                     });
                   }
 
+                  // Filtro por estado de liquidación
+                  if (liquidadoFilter !== 'all') {
+                    filteredInventory = filteredInventory.filter((purchase: any) =>
+                      liquidadoFilter === 'liquidado' ? !!purchase.liquidado : !purchase.liquidado
+                    );
+                  }
+
                   return (
                     <>
                 <div className="mb-6">
@@ -4430,6 +4451,34 @@ export default function AdminPage() {
                       );
                     })()}
 
+                    {/* Cards reembolso: pendiente vs liquidado */}
+                    {(() => {
+                      const pendiente = filteredInventory.filter((p: any) => !p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
+                      const liquidadoTotal = filteredInventory.filter((p: any) => !!p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
+                      const nPendiente = filteredInventory.filter((p: any) => !p.liquidado).length;
+                      const nLiquidado = filteredInventory.filter((p: any) => !!p.liquidado).length;
+                      return (
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="bg-amber-900/20 rounded-lg border-2 border-amber-500/50 p-3 flex items-center gap-3">
+                            <span className="text-2xl">⏳</span>
+                            <div>
+                              <p className="text-amber-400 text-xs font-bold uppercase">Pendiente reembolso</p>
+                              <p className="text-xl font-black text-amber-400">S/ {pendiente.toFixed(2)}</p>
+                              <p className="text-xs text-gray-400">{nPendiente} gasto{nPendiente !== 1 ? 's' : ''} sin liquidar</p>
+                            </div>
+                          </div>
+                          <div className="bg-emerald-900/20 rounded-lg border-2 border-emerald-500/50 p-3 flex items-center gap-3">
+                            <span className="text-2xl">✅</span>
+                            <div>
+                              <p className="text-emerald-400 text-xs font-bold uppercase">Reembolsado</p>
+                              <p className="text-xl font-black text-emerald-400">S/ {liquidadoTotal.toFixed(2)}</p>
+                              <p className="text-xs text-gray-400">{nLiquidado} gasto{nLiquidado !== 1 ? 's' : ''} liquidado{nLiquidado !== 1 ? 's' : ''}</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {/* Filtros */}
                     <div className="flex flex-wrap gap-2 mb-4">
                       <button
@@ -4482,6 +4531,38 @@ export default function AdminPage() {
                       >
                         📢 Marketing
                       </button>
+                      {/* Separador visual */}
+                      <span className="w-px bg-gray-700 self-stretch mx-1" />
+                      <button
+                        onClick={() => setLiquidadoFilter('all')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          liquidadoFilter === 'all'
+                            ? "bg-gray-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        Todos los estados
+                      </button>
+                      <button
+                        onClick={() => setLiquidadoFilter('pendiente')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          liquidadoFilter === 'pendiente'
+                            ? "bg-amber-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        ⏳ Pendientes
+                      </button>
+                      <button
+                        onClick={() => setLiquidadoFilter('liquidado')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                          liquidadoFilter === 'liquidado'
+                            ? "bg-emerald-600 text-white"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        ✅ Liquidados
+                      </button>
                     </div>
 
                 {/* Buscador en tiempo real */}
@@ -4532,6 +4613,7 @@ export default function AdminPage() {
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ESTADO</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
                           </tr>
                         </thead>
@@ -4584,6 +4666,31 @@ export default function AdminPage() {
                                 <td className="border border-gray-700 px-3 py-2 text-right">
                                   <p className="text-xs font-bold text-amber-400">S/ {item.total.toFixed(2)}</p>
                                 </td>
+                                {itemIdx === 0 ? (
+                                  <td
+                                    className="border border-gray-700 px-2 py-2 text-center"
+                                    rowSpan={purchase.items.length}
+                                  >
+                                    <button
+                                      onClick={() => toggleLiquidado(purchase.id, !!(purchase as any).liquidado)}
+                                      title={(purchase as any).liquidado ? 'Marcar como pendiente' : 'Marcar como liquidado'}
+                                      className={`flex flex-col items-center gap-0.5 mx-auto px-2 py-1.5 rounded-lg border transition-all active:scale-95 min-w-[80px] ${
+                                        (purchase as any).liquidado
+                                          ? 'border-emerald-500/50 bg-emerald-900/20 hover:bg-emerald-900/40'
+                                          : 'border-amber-500/40 bg-amber-900/10 hover:bg-amber-900/30'
+                                      }`}
+                                    >
+                                      <span className="text-base leading-none">
+                                        {(purchase as any).liquidado ? '✅' : '⏳'}
+                                      </span>
+                                      <span className={`text-[10px] font-black uppercase leading-none mt-0.5 ${
+                                        (purchase as any).liquidado ? 'text-emerald-400' : 'text-amber-400'
+                                      }`}>
+                                        {(purchase as any).liquidado ? 'Liquidado' : 'Pendiente'}
+                                      </span>
+                                    </button>
+                                  </td>
+                                ) : null}
                                 <td className="border border-gray-700 px-3 py-2 text-center">
                                   {itemIdx === 0 && (
                                     <div className="flex items-center justify-center gap-2">
@@ -5673,6 +5780,7 @@ export default function AdminPage() {
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
+                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ESTADO</th>
                             <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
                           </tr>
                         </thead>
@@ -5725,6 +5833,31 @@ export default function AdminPage() {
                                 <td className="border border-gray-700 px-3 py-2 text-right">
                                   <p className="text-xs font-bold text-amber-400">S/ {item.total.toFixed(2)}</p>
                                 </td>
+                                {itemIdx === 0 ? (
+                                  <td
+                                    className="border border-gray-700 px-2 py-2 text-center"
+                                    rowSpan={purchase.items.length}
+                                  >
+                                    <button
+                                      onClick={() => toggleLiquidado(purchase.id, !!(purchase as any).liquidado)}
+                                      title={(purchase as any).liquidado ? 'Marcar como pendiente' : 'Marcar como liquidado'}
+                                      className={`flex flex-col items-center gap-0.5 mx-auto px-2 py-1.5 rounded-lg border transition-all active:scale-95 min-w-[80px] ${
+                                        (purchase as any).liquidado
+                                          ? 'border-emerald-500/50 bg-emerald-900/20 hover:bg-emerald-900/40'
+                                          : 'border-amber-500/40 bg-amber-900/10 hover:bg-amber-900/30'
+                                      }`}
+                                    >
+                                      <span className="text-base leading-none">
+                                        {(purchase as any).liquidado ? '✅' : '⏳'}
+                                      </span>
+                                      <span className={`text-[10px] font-black uppercase leading-none mt-0.5 ${
+                                        (purchase as any).liquidado ? 'text-emerald-400' : 'text-amber-400'
+                                      }`}>
+                                        {(purchase as any).liquidado ? 'Liquidado' : 'Pendiente'}
+                                      </span>
+                                    </button>
+                                  </td>
+                                ) : null}
                                 <td className="border border-gray-700 px-3 py-2 text-center">
                                   {itemIdx === 0 && (
                                     <div className="flex items-center justify-center gap-2">

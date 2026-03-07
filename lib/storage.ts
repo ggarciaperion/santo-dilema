@@ -163,6 +163,9 @@ interface InventoryPurchase {
   notes?: string;
   purchaseDate: string;
   createdAt: string;
+  liquidado?: boolean;
+  liquidadoAt?: string;
+  updatedAt?: string;
 }
 
 interface StockDeduction {

@@ -97,6 +97,31 @@ export async function PUT(request: Request) {
   }
 }
 
+// PATCH - Actualizar estado de liquidación
+export async function PATCH(request: Request) {
+  try {
+    const { id, liquidado } = await request.json();
+    if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+
+    const inventory = await storage.getInventory();
+    const idx = inventory.findIndex((p: any) => p.id === id);
+    if (idx === -1) return NextResponse.json({ error: "Compra no encontrada" }, { status: 404 });
+
+    inventory[idx] = {
+      ...inventory[idx],
+      liquidado,
+      liquidadoAt: liquidado ? new Date().toISOString() : undefined,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await storage.updateInventoryPurchase(inventory[idx]);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error al actualizar estado:", error);
+    return NextResponse.json({ error: "Error al actualizar estado" }, { status: 500 });
+  }
+}
+
 // DELETE - Eliminar registro de compra
 export async function DELETE(request: Request) {
   try {
