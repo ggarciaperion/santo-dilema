@@ -218,20 +218,10 @@ export default function FatPage() {
   );
 
   const findMatchingPromo = (productId: string, selectedSalsaIds: string[]): any | null => {
-    const dynamic = salsaPromos.find(
+    return salsaPromos.find(
       (p: any) => p.active && p.productId === productId &&
       p.salsas.every((sId: string) => selectedSalsaIds.includes(sId))
-    );
-    if (dynamic) return dynamic;
-    // Fallback hardcodeado SOLO si no hay ninguna promo dinámica para este producto
-    const hasDynamic = salsaPromos.some((p: any) => p.active && p.productId === productId);
-    if (!hasDynamic) {
-      const hard = SALSA_OFFERS[productId];
-      if (hard && hard.salsas.every((sId: string) => selectedSalsaIds.includes(sId))) {
-        return { promoPrice: hard.price };
-      }
-    }
-    return null;
+    ) || null;
   };
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
@@ -267,7 +257,7 @@ export default function FatPage() {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
       if (product) {
-        const basePrice = menuPrices[product.id] || product.price;
+        const basePrice = menuDiscounts[product.id] || menuPrices[product.id] || product.price;
         const finalPrice = order.finalPrice ?? basePrice;
 
         addToCart({
@@ -642,9 +632,10 @@ export default function FatPage() {
 
             const cartItemId = `${productId}-main`;
 
-            // Precio de oferta por combinación (dinámica o hardcodeada)
+            // Precio de oferta por combinación (dinámica) o precio oferta/real del admin
             const matchingPromoR = findMatchingPromo(productId, newSalsas);
-            const finalPrice = matchingPromoR ? matchingPromoR.promoPrice : product.price;
+            const effectivePriceR = menuDiscounts[productId] || menuPrices[productId] || product.price;
+            const finalPrice = matchingPromoR ? matchingPromoR.promoPrice : effectivePriceR;
 
             const productWithSalsas: Product = {
               ...product,
@@ -692,9 +683,10 @@ export default function FatPage() {
 
             const cartItemId = `${productId}-main`;
 
-            // Precio de oferta por combinación (dinámica o hardcodeada)
+            // Precio de oferta por combinación (dinámica) o precio oferta/real del admin
             const matchingPromoA = findMatchingPromo(productId, newSalsas);
-            const finalPrice = matchingPromoA ? matchingPromoA.promoPrice : product.price;
+            const effectivePriceA = menuDiscounts[productId] || menuPrices[productId] || product.price;
+            const finalPrice = matchingPromoA ? matchingPromoA.promoPrice : effectivePriceA;
 
             const productWithSalsas: Product = {
               ...product,
@@ -737,8 +729,8 @@ export default function FatPage() {
     const orderSalsas = selectedSalsas[product.id] || [];
     const qty = orderQuantity[product.id] || 1;
 
-    // Precio de oferta por combinación (dinámica o hardcodeada)
-    const effectiveBasePrice = menuPrices[product.id] || product.price;
+    // Precio oferta del admin o precio real, luego promo por salsas encima
+    const effectiveBasePrice = menuDiscounts[product.id] || menuPrices[product.id] || product.price;
     const matchingPromoC = findMatchingPromo(product.id, orderSalsas);
     const finalPrice = matchingPromoC ? matchingPromoC.promoPrice : effectiveBasePrice;
     const discountApplied = finalPrice < effectiveBasePrice;
@@ -1184,9 +1176,7 @@ export default function FatPage() {
               const effectivePrice = menuPrices[product.id] || product.price;
               const activePromo = findMatchingPromo(product.id, currentSalsas);
               const dynamicPromosForProduct = salsaPromos.filter((p: any) => p.active && p.productId === product.id);
-              const allPromosForProduct = dynamicPromosForProduct.length > 0
-                ? dynamicPromosForProduct
-                : (SALSA_OFFERS[product.id] ? [{ salsas: SALSA_OFFERS[product.id].salsas, promoPrice: SALSA_OFFERS[product.id].price }] : []);
+              const allPromosForProduct = dynamicPromosForProduct;
 
               return (
                 <div
