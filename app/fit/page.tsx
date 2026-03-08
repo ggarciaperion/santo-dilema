@@ -409,10 +409,11 @@ export default function FitPage() {
   const handleCompleteOrder = (product: Product) => {
     const qty = orderQuantity[product.id] || 1;
     const effectiveBasePrice = menuPrices[product.id] || product.price;
-    // Si el producto tiene oldPrice, ese es el precio original (sin promo)
-    const orig = product.oldPrice || effectiveBasePrice;
-    const final = effectiveBasePrice;
-    const hasPromo = !!product.oldPrice;
+    // Si hay descuento en menuDiscounts, ese es el precio final promocional
+    const discountPrice = menuDiscounts[product.id];
+    const final = discountPrice || effectiveBasePrice;
+    const orig = discountPrice ? effectiveBasePrice : (product.oldPrice || effectiveBasePrice);
+    const hasPromo = !!discountPrice || !!product.oldPrice;
 
     const completedOrder: CompletedOrder = {
       productId: product.id,
