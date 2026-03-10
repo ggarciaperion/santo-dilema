@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
+import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -374,11 +375,14 @@ export default function CheckoutPage() {
   // ─────────────────────────────────────────────────────────────────
 
   const isFormValid = () => {
+    const scheduleRequired = !isBusinessOpen();
+    const scheduleValid = !scheduleRequired || (!!scheduledDate && !!scheduledTime);
     return (
       formData.name.trim() !== "" &&
       formData.phone.length === 9 &&
       formData.address.trim() !== "" &&
-      deliveryZone !== ""
+      deliveryZone !== "" &&
+      scheduleValid
     );
   };
 
@@ -892,8 +896,16 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
+              {/* Aviso restaurante cerrado */}
+              {!isBusinessOpen() && !scheduledDate && (
+                <div className="mt-4 bg-amber-900/20 border border-amber-500/50 rounded-xl px-4 py-3">
+                  <p className="text-amber-400 font-bold text-sm">⏰ Estamos cerrados ahora</p>
+                  <p className="text-amber-300/80 text-xs mt-0.5">{getNextOpenMessage()} — Debes programar tu entrega.</p>
+                </div>
+              )}
+
               {/* Programar compra */}
-              <div className="mt-5">
+              <div className="mt-3">
                 {scheduledDate && scheduledTime ? (
                   <div className="flex items-center justify-between bg-indigo-900/30 border border-indigo-500/50 rounded-xl px-4 py-3">
                     <div>
@@ -916,9 +928,13 @@ export default function CheckoutPage() {
                       setScheduledTime('');
                       setShowScheduleModal(true);
                     }}
-                    className="w-full flex items-center justify-center gap-2 bg-indigo-900/30 hover:bg-indigo-900/50 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-indigo-200 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm"
+                    className={`w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm ${
+                      !isBusinessOpen()
+                        ? 'bg-amber-900/30 border-2 border-amber-500/60 text-amber-300 hover:bg-amber-900/50'
+                        : 'bg-indigo-900/30 hover:bg-indigo-900/50 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-indigo-200'
+                    }`}
                   >
-                    🗓 Programar compra
+                    {!isBusinessOpen() ? '⚠️ Programar entrega (obligatorio)' : '🗓 Programar compra'}
                   </button>
                 )}
               </div>
@@ -936,8 +952,17 @@ export default function CheckoutPage() {
                   type="button"
                   disabled={isSubmitting || !isFormValid()}
                   onClick={() => {
-                    if (!isFormValid()) {
+                    const baseValid = formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "" && deliveryZone !== "";
+                    if (!baseValid) {
                       setShowMobileFormModal(true);
+                      return;
+                    }
+                    if (!isBusinessOpen() && (!scheduledDate || !scheduledTime)) {
+                      const days = getScheduleDays();
+                      setScheduleError('');
+                      setScheduledDate(days[0]?.dateStr || '');
+                      setScheduledTime('');
+                      setShowScheduleModal(true);
                       return;
                     }
                     if (isPreLaunch()) {
@@ -1119,7 +1144,13 @@ export default function CheckoutPage() {
               <button onClick={() => setShowScheduleModal(false)} className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-gray-300 text-lg transition-all">×</button>
             </div>
 
-            {/* Aviso YAPE */}
+            {/* Aviso */}
+            {!isBusinessOpen() && (
+              <div className="bg-amber-900/20 border border-amber-500/40 rounded-xl px-4 py-2.5 mb-3 flex items-center gap-2">
+                <span className="text-lg">⏰</span>
+                <p className="text-amber-300 text-xs font-bold">Estamos cerrados — programa tu entrega para continuar</p>
+              </div>
+            )}
             <div className="bg-purple-900/30 border border-purple-500/40 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2">
               <span className="text-lg">📱</span>
               <p className="text-purple-300 text-xs font-bold">Los pedidos programados solo aceptan pago con Yape/Plin</p>
