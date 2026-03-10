@@ -61,6 +61,8 @@ interface Order {
   deliveredAt?: string;
   paymentMethod?: string;
   paymentProofPath?: string;
+  isCanje?: boolean;
+  canjeNote?: string;
 }
 
 // Componente para el contador de tiempo
@@ -240,7 +242,10 @@ export default function AdminPage() {
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
   const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
   const [priceSaving, setPriceSaving] = useState<string | null>(null);
-  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock">("dashboard");
+  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock" | "canjes">("dashboard");
+  const [canjeModal, setCanjeModal] = useState<{ orderId: string } | null>(null);
+  const [canjeNoteInput, setCanjeNoteInput] = useState("");
+  const [canjeSaving, setCanjeSaving] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   // Estados de filtro de fechas para la pestaña "Gestión de Pedidos"
   const [ordersDateFrom, setOrdersDateFrom] = useState<string>("");
@@ -981,6 +986,22 @@ export default function AdminPage() {
     }
   };
 
+  // Función para marcar/desmarcar una orden como canje
+  const handleToggleCanje = async (orderId: string, markAs: boolean, note: string) => {
+    setCanjeSaving(true);
+    try {
+      await fetch("/api/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, isCanje: markAs, canjeNote: note }),
+      });
+      await loadOrders();
+      setCanjeModal(null);
+    } finally {
+      setCanjeSaving(false);
+    }
+  };
+
   // Función para deducir stock automáticamente cuando se entrega un pedido
   const deductStockFromOrder = async (order: Order) => {
     try {
@@ -1137,7 +1158,9 @@ export default function AdminPage() {
       "Zona",
       "Método Pago",
       "Estado",
-      "Cupón Usado"
+      "Cupón Usado",
+      "Canje",
+      "Nota Canje"
     ];
 
     const rows = sortedOrders.map((order: any, index: number) => {
@@ -1185,6 +1208,8 @@ export default function AdminPage() {
         order.paymentMethod || '',
         estadoTraducido,
         order.couponCode || 'Sin cupón',
+        order.isCanje ? 'SÍ' : 'NO',
+        order.canjeNote || '',
       ];
     });
 
@@ -1841,11 +1866,32 @@ export default function AdminPage() {
     let todayOrders, dailySales, currentMonthOrders, monthlySales;
     let lastMonthOrders, lastMonthSales, progressPercentage, lastMonthAverageTicket, totalRevenue;
 
+    // Calcular métricas de canje (sobre TODOS los pedidos, sin filtro de fechas)
+    const allCanjeOrders = orders.filter((o: any) => o.isCanje);
+    const todayCanjeOrders = allCanjeOrders.filter((o: any) => isSameDayPeru(o.createdAt));
+    const nowForCanje = getPeruDate();
+    const firstDayCurrentMonthForCanje = new Date(nowForCanje.getFullYear(), nowForCanje.getMonth(), 1);
+    const lastDayCurrentMonthForCanje = new Date(nowForCanje.getFullYear(), nowForCanje.getMonth() + 1, 0, 23, 59, 59, 999);
+    const monthCanjeOrders = allCanjeOrders.filter((o: any) => {
+      const d = getPeruDate(o.createdAt);
+      return d >= firstDayCurrentMonthForCanje && d <= lastDayCurrentMonthForCanje;
+    });
+    const canjeStats = {
+      dailyCanjeCount: todayCanjeOrders.length,
+      dailyCanjeValue: todayCanjeOrders.reduce((s: number, o: any) => s + (o.totalPrice || 0), 0),
+      monthlyCanjeCount: monthCanjeOrders.length,
+      monthlyCanjeValue: monthCanjeOrders.reduce((s: number, o: any) => s + (o.totalPrice || 0), 0),
+      totalCanjeCount: allCanjeOrders.length,
+      totalCanjeValue: allCanjeOrders.reduce((s: number, o: any) => s + (o.totalPrice || 0), 0),
+    };
+
     if (isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo) {
       // MODO FILTRADO: usar deliveredOrders (ya filtrados) para todos los cálculos
-      todayOrders = deliveredOrders;
-      dailySales = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-      currentMonthOrders = deliveredOrders;
+      // Excluir canjes de las ventas reales
+      const realDelivered = deliveredOrders.filter((o: any) => !o.isCanje);
+      todayOrders = realDelivered;
+      dailySales = realDelivered.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+      currentMonthOrders = realDelivered;
       monthlySales = dailySales;
       lastMonthOrders = [];
       lastMonthSales = 0;
@@ -1863,19 +1909,22 @@ export default function AdminPage() {
       const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-      todayOrders = deliveredOrders.filter((order: any) => {
+      // Excluir canjes de ventas reales
+      const realDeliveredOrders = deliveredOrders.filter((o: any) => !o.isCanje);
+
+      todayOrders = realDeliveredOrders.filter((order: any) => {
         const orderDate = getPeruDate(order.createdAt);
         return orderDate >= startOfToday && orderDate <= endOfToday;
       });
       dailySales = todayOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
-      currentMonthOrders = deliveredOrders.filter((order: any) => {
+      currentMonthOrders = realDeliveredOrders.filter((order: any) => {
         const orderDate = getPeruDate(order.createdAt);
         return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
       });
       monthlySales = currentMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
 
-      lastMonthOrders = deliveredOrders.filter((order: any) => {
+      lastMonthOrders = realDeliveredOrders.filter((order: any) => {
         const orderDate = getPeruDate(order.createdAt);
         return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
       });
@@ -1883,7 +1932,7 @@ export default function AdminPage() {
 
       progressPercentage = lastMonthSales > 0 ? (monthlySales / lastMonthSales) * 100 : 0;
       lastMonthAverageTicket = lastMonthOrders.length > 0 ? lastMonthSales / lastMonthOrders.length : 0;
-      totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+      totalRevenue = realDeliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
     }
 
     // NUEVO: Productos vendidos en el MES ACTUAL (ordenados de mayor a menor)
@@ -2220,7 +2269,8 @@ export default function AdminPage() {
       complementsByCategory,
       conversionRate,
       menusSoldToday,
-      beveragesSoldToday
+      beveragesSoldToday,
+      ...canjeStats
     };
   };
 
@@ -2229,22 +2279,41 @@ export default function AdminPage() {
     monthlySales: 0,
     progressPercentage: 0,
     lastMonthAverageTicket: 0,
+    todayAverageTicket: 0,
     totalRevenue: 0,
     todayDeliveredOrdersCount: 0,
+    currentMonthOrdersCount: 0,
+    lastMonthOrdersCount: 0,
+    ordersProgressPercentage: 0,
+    lastMonthSales: 0,
+    topProducts: [],
+    leastSoldProducts: [],
+    allProducts: [],
     productsArray: [],
     currentMonthProductsArray: [],
-    topDaysLastMonth: [],
     lastMonthProductsWithComparison: [],
+    topDaysLastMonth: [],
+    topProductLastMonth: null,
+    leastProductLastMonth: null,
+    frequentCustomers: [],
+    inactiveCustomers: [],
     allComplementsList: [],
     paymentMethodsArray: [],
+    mostUsedPaymentMethod: { method: 'Sin datos', count: 0 },
     peakHour: "",
     peakHourCount: 0,
     mostSoldComplement: null,
     allComplements: [],
     complementsByCategory: {},
     conversionRate: 0,
-    menusSoldToday: 0,
-    beveragesSoldToday: 0
+    menusSoldToday: [],
+    beveragesSoldToday: [],
+    dailyCanjeCount: 0,
+    dailyCanjeValue: 0,
+    monthlyCanjeCount: 0,
+    monthlyCanjeValue: 0,
+    totalCanjeCount: 0,
+    totalCanjeValue: 0,
   };
 
   // Generar datos para la gráfica de órdenes entregadas en línea de tiempo
@@ -4005,6 +4074,16 @@ export default function AdminPage() {
               >
                 🍗 Productos de Venta
               </button>
+              <button
+                onClick={() => setFinancialSection("canjes")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  financialSection === "canjes"
+                    ? "text-orange-400 border-b-4 border-orange-500"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                🎁 Canjes / Cortesías
+              </button>
               {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
             </div>
 
@@ -4016,9 +4095,10 @@ export default function AdminPage() {
 
               const saleProducts = products.filter((p: any) => p.type === "sale");
 
-              // Filtrar pedidos entregados por fecha
+              // Filtrar pedidos entregados por fecha (excluir canjes de ventas reales)
               let deliveredOrders = orders.filter((o: any) =>
-                o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado"
+                !o.isCanje &&
+                (o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado")
               );
 
               if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
@@ -5045,9 +5125,10 @@ export default function AdminPage() {
 
               const saleProducts = products.filter((p: any) => p.type === "sale");
 
-              // --- Rendimiento: cruzar catálogo con pedidos entregados ---
+              // --- Rendimiento: cruzar catálogo con pedidos entregados (excluir canjes) ---
               let deliveredOrders = orders.filter((o: any) =>
-                o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado"
+                !o.isCanje &&
+                (o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado")
               );
 
               // Filtro por fechas
@@ -5677,6 +5758,127 @@ export default function AdminPage() {
             </div>
             );
           })()}
+
+            {/* CANJES / CORTESÍAS */}
+            {financialSection === "canjes" && (() => {
+              const canjeOrders = orders.filter((o: any) => o.isCanje);
+              const nonCanjeOrders = orders.filter((o: any) => !o.isCanje);
+
+              return (
+                <>
+                  <div className="mb-6">
+                    <h3 className="text-xl font-black text-orange-400 mb-1">🎁 Gestión de Canjes / Cortesías</h3>
+                    <p className="text-gray-500 text-sm">
+                      Las órdenes marcadas como canje <span className="text-orange-300 font-bold">no se contabilizan en las ventas</span>. Uso interno — el equipo de cocina no ve esta clasificación.
+                    </p>
+                  </div>
+
+                  {/* Resumen */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div className="bg-orange-500/10 rounded-xl border border-orange-500/30 p-4">
+                      <p className="text-orange-400 text-xs font-black uppercase tracking-wider mb-1">Canjes hoy</p>
+                      <p className="text-orange-400 text-3xl font-black">{analytics.dailyCanjeCount}</p>
+                      <p className="text-orange-300 text-sm font-bold mt-1">S/ {(analytics.dailyCanjeValue || 0).toFixed(2)} valor referencial</p>
+                    </div>
+                    <div className="bg-orange-500/10 rounded-xl border border-orange-500/30 p-4">
+                      <p className="text-orange-400 text-xs font-black uppercase tracking-wider mb-1">Canjes este mes</p>
+                      <p className="text-orange-400 text-3xl font-black">{analytics.monthlyCanjeCount}</p>
+                      <p className="text-orange-300 text-sm font-bold mt-1">S/ {(analytics.monthlyCanjeValue || 0).toFixed(2)} valor referencial</p>
+                    </div>
+                    <div className="bg-orange-500/10 rounded-xl border border-orange-500/30 p-4">
+                      <p className="text-orange-400 text-xs font-black uppercase tracking-wider mb-1">Total histórico</p>
+                      <p className="text-orange-400 text-3xl font-black">{analytics.totalCanjeCount}</p>
+                      <p className="text-orange-300 text-sm font-bold mt-1">S/ {(analytics.totalCanjeValue || 0).toFixed(2)} valor referencial</p>
+                    </div>
+                  </div>
+
+                  {/* Lista de canjes */}
+                  {canjeOrders.length > 0 && (
+                    <div className="mb-10">
+                      <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider mb-3">Órdenes marcadas como canje ({canjeOrders.length})</h4>
+                      <div className="space-y-2">
+                        {canjeOrders.map((order: any) => (
+                          <div key={order.id} className="bg-gray-900 rounded-xl border border-orange-500/40 p-4 flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="text-orange-400 font-black text-xs">🎁 CANJE</span>
+                                <span className="text-gray-400 text-xs font-mono">{order.id}</span>
+                                <span className="text-gray-500 text-xs">
+                                  {new Date(order.createdAt).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}
+                                </span>
+                              </div>
+                              <p className="text-white font-bold text-sm truncate">{order.name}</p>
+                              {order.canjeNote && (
+                                <p className="text-orange-300 text-xs mt-0.5 italic">"{order.canjeNote}"</p>
+                              )}
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {(order.cart || []).slice(0, 3).map((item: any, idx: number) => (
+                                  <span key={idx} className="text-xs text-gray-400 bg-gray-800 px-1.5 py-0.5 rounded">
+                                    {item.name || item.product?.name} x{item.quantity}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-orange-400 font-black text-lg">S/ {(order.totalPrice || 0).toFixed(2)}</p>
+                              <button
+                                onClick={() => handleToggleCanje(order.id, false, "")}
+                                className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-3 py-1 rounded-lg mt-1 font-bold"
+                              >
+                                ↩ Desmarcar
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Marcar órdenes como canje */}
+                  <div>
+                    <h4 className="text-sm font-black text-gray-400 uppercase tracking-wider mb-3">Marcar una orden como canje</h4>
+                    <p className="text-gray-600 text-xs mb-4">Selecciona la orden y confirma para excluirla de las ventas.</p>
+                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                      {nonCanjeOrders.slice(0, 50).map((order: any) => (
+                        <div key={order.id} className="bg-gray-900 rounded-xl border border-gray-700 p-4 flex items-center justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span className="text-gray-400 text-xs font-mono">{order.id}</span>
+                              <span className="text-gray-500 text-xs">
+                                {new Date(order.createdAt).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}
+                              </span>
+                              <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${
+                                order.status === 'delivered' ? 'bg-green-500/20 text-green-400' :
+                                order.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+                                'bg-yellow-500/20 text-yellow-400'
+                              }`}>{order.status}</span>
+                            </div>
+                            <p className="text-white font-bold text-sm truncate">{order.name}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {(order.cart || []).slice(0, 3).map((item: any, idx: number) => (
+                                <span key={idx} className="text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">
+                                  {item.name || item.product?.name} x{item.quantity}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-gray-300 font-black text-sm">S/ {(order.totalPrice || 0).toFixed(2)}</p>
+                            <button
+                              onClick={() => { setCanjeModal({ orderId: order.id }); setCanjeNoteInput(""); }}
+                              className="text-xs text-orange-400 border border-orange-500/40 hover:border-orange-400 px-3 py-1 rounded-lg mt-1 font-bold"
+                            >
+                              🎁 Marcar canje
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+
         </>
       ) : activeTab === "marketing-OLD-DELETE" ? (
         /* OLD INVENTORY SECTION - TO BE DELETED */
@@ -8882,6 +9084,40 @@ _Valido por 30 dias._`;
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: confirmar canje */}
+      {canjeModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
+          <div className="bg-gray-900 rounded-xl border-2 border-orange-500 p-5 max-w-sm w-full">
+            <h3 className="text-lg font-black text-orange-400 mb-1">🎁 Marcar como Canje</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Esta orden <span className="text-orange-300 font-bold">no se contará en las ventas</span>. Quedará registrada en el módulo financiero para auditoría interna.
+            </p>
+            <input
+              type="text"
+              value={canjeNoteInput}
+              onChange={e => setCanjeNoteInput(e.target.value)}
+              placeholder="Motivo: Influencer @usuario, Cortesía proveedor..."
+              className="w-full px-3 py-2 mb-4 rounded-lg bg-black border border-gray-700 text-white text-sm focus:outline-none focus:border-orange-500/50"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleToggleCanje(canjeModal.orderId, true, canjeNoteInput)}
+                disabled={canjeSaving}
+                className="flex-1 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white py-2 rounded-lg font-bold text-sm"
+              >
+                {canjeSaving ? "Guardando..." : "Confirmar Canje"}
+              </button>
+              <button
+                onClick={() => setCanjeModal(null)}
+                className="px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-sm hover:border-gray-500"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>

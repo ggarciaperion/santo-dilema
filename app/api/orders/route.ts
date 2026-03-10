@@ -246,22 +246,27 @@ export async function POST(request: Request) {
   }
 }
 
-// PATCH - Actualizar estado de un pedido
+// PATCH - Actualizar estado de un pedido (o marcar como canje)
 export async function PATCH(request: Request) {
   try {
-    const { id, status } = await request.json();
+    const { id, status, isCanje, canjeNote } = await request.json();
 
     const now = getPeruTimestamp();
-    const timestampField: Record<string, string> = {};
-    if (status === 'confirmed') timestampField.confirmedAt = now;
-    else if (status === 'en-camino') timestampField.enCaminoAt = now;
-    else if (status === 'delivered') timestampField.deliveredAt = now;
+    const updates: Record<string, any> = { updatedAt: now };
 
-    const updatedOrder = await storage.updateOrder(id, {
-      status,
-      updatedAt: now,
-      ...timestampField,
-    });
+    if (status !== undefined) {
+      updates.status = status;
+      if (status === 'confirmed') updates.confirmedAt = now;
+      else if (status === 'en-camino') updates.enCaminoAt = now;
+      else if (status === 'delivered') updates.deliveredAt = now;
+    }
+
+    if (isCanje !== undefined) {
+      updates.isCanje = isCanje;
+      updates.canjeNote = canjeNote ?? "";
+    }
+
+    const updatedOrder = await storage.updateOrder(id, updates);
 
     if (!updatedOrder) {
       return NextResponse.json(

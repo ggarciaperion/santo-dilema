@@ -125,6 +125,8 @@ interface Order {
   status: string;
   createdAt: string;
   timestamp?: string;
+  isCanje?: boolean;
+  canjeNote?: string;
 }
 
 interface Product {
