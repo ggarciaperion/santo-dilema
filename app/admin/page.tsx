@@ -4776,12 +4776,23 @@ export default function AdminPage() {
                                   {purchase.paymentMethod === 'transferencia' && 'TRANSFERENCIA'}
                                   {purchase.paymentMethod === 'tarjeta' && 'TARJETA'}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-right">
-                                  <p className="text-xs font-bold text-fuchsia-400">S/ {item.unitCost.toFixed(2)}</p>
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-right">
-                                  <p className="text-xs font-bold text-amber-400">S/ {item.total.toFixed(2)}</p>
-                                </td>
+                                {(() => {
+                                  // Operativos: unitCost=total pagado, total=costo/unidad (fórmula inversa)
+                                  // Marketing/Personal/Fijos: unitCost=costo/unidad, total=total pagado
+                                  const isOperativos = (purchase.category || "operativos") === "operativos";
+                                  const displayTotal = isOperativos ? item.unitCost : item.total;
+                                  const displayUnit  = isOperativos ? item.total    : item.unitCost;
+                                  return (
+                                    <>
+                                      <td className="border border-gray-700 px-3 py-2 text-right">
+                                        <p className="text-xs font-bold text-fuchsia-400">S/ {displayTotal.toFixed(2)}</p>
+                                      </td>
+                                      <td className="border border-gray-700 px-3 py-2 text-right">
+                                        <p className="text-xs font-bold text-amber-400">S/ {displayUnit.toFixed(2)}</p>
+                                      </td>
+                                    </>
+                                  );
+                                })()}
                                 {itemIdx === 0 ? (
                                   <td
                                     className="border border-gray-700 px-2 py-2 text-center"
@@ -4894,17 +4905,22 @@ export default function AdminPage() {
                       <div className="bg-black/50 rounded-lg p-4 mb-4 border border-cyan-500/30">
                         <h4 className="text-sm font-bold text-cyan-400 mb-3">🛒 Productos Comprados</h4>
                         <div className="space-y-2">
-                          {selectedPurchaseDetail.items.map((item: any, idx: number) => (
-                            <div key={idx} className="flex justify-between items-center bg-gray-900 rounded px-3 py-2">
-                              <div className="flex-1">
-                                <p className="text-white font-bold text-sm">{item.productName}</p>
-                                <p className="text-xs text-gray-400">
-                                  {item.originalQuantity || item.quantity} {item.unit} x S/ {item.unitCost.toFixed(2)}
-                                </p>
+                          {selectedPurchaseDetail.items.map((item: any, idx: number) => {
+                            const isOperativos = (selectedPurchaseDetail.category || "operativos") === "operativos";
+                            const displayTotal = isOperativos ? item.unitCost : item.total;
+                            const displayUnit  = isOperativos ? item.total    : item.unitCost;
+                            return (
+                              <div key={idx} className="flex justify-between items-center bg-gray-900 rounded px-3 py-2">
+                                <div className="flex-1">
+                                  <p className="text-white font-bold text-sm">{item.productName}</p>
+                                  <p className="text-xs text-gray-400">
+                                    {item.originalQuantity || item.quantity} {item.unit} x S/ {displayUnit.toFixed(2)}
+                                  </p>
+                                </div>
+                                <p className="text-fuchsia-400 font-bold">S/ {displayTotal.toFixed(2)}</p>
                               </div>
-                              <p className="text-fuchsia-400 font-bold">S/ {item.total.toFixed(2)}</p>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -6065,12 +6081,23 @@ export default function AdminPage() {
                                   {purchase.paymentMethod === 'transferencia' && 'TRANSFERENCIA'}
                                   {purchase.paymentMethod === 'tarjeta' && 'TARJETA'}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-right">
-                                  <p className="text-xs font-bold text-fuchsia-400">S/ {item.unitCost.toFixed(2)}</p>
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-right">
-                                  <p className="text-xs font-bold text-amber-400">S/ {item.total.toFixed(2)}</p>
-                                </td>
+                                {(() => {
+                                  // Operativos: unitCost=total pagado, total=costo/unidad (fórmula inversa)
+                                  // Marketing/Personal/Fijos: unitCost=costo/unidad, total=total pagado
+                                  const isOperativos = (purchase.category || "operativos") === "operativos";
+                                  const displayTotal = isOperativos ? item.unitCost : item.total;
+                                  const displayUnit  = isOperativos ? item.total    : item.unitCost;
+                                  return (
+                                    <>
+                                      <td className="border border-gray-700 px-3 py-2 text-right">
+                                        <p className="text-xs font-bold text-fuchsia-400">S/ {displayTotal.toFixed(2)}</p>
+                                      </td>
+                                      <td className="border border-gray-700 px-3 py-2 text-right">
+                                        <p className="text-xs font-bold text-amber-400">S/ {displayUnit.toFixed(2)}</p>
+                                      </td>
+                                    </>
+                                  );
+                                })()}
                                 {itemIdx === 0 ? (
                                   <td
                                     className="border border-gray-700 px-2 py-2 text-center"
@@ -6203,19 +6230,24 @@ export default function AdminPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {selectedPurchaseDetail.items.map((item: any, idx: number) => (
-                                <tr key={idx}>
-                                  <td className="border border-gray-700 px-2 py-2 text-xs text-white">{item.productName}</td>
-                                  <td className="border border-gray-700 px-2 py-2 text-xs text-center text-white">{item.originalQuantity || item.quantity}</td>
-                                  <td className="border border-gray-700 px-2 py-2 text-xs text-center text-gray-300">{item.unit}</td>
-                                  <td className="border border-gray-700 px-2 py-2 text-xs text-right text-fuchsia-400 font-bold">
-                                    S/ {item.unitCost.toFixed(2)}
-                                  </td>
-                                  <td className="border border-gray-700 px-2 py-2 text-xs text-right text-amber-400 font-bold">
-                                    S/ {item.total.toFixed(2)}
-                                  </td>
-                                </tr>
-                              ))}
+                              {selectedPurchaseDetail.items.map((item: any, idx: number) => {
+                                const isOperativos = (selectedPurchaseDetail.category || "operativos") === "operativos";
+                                const displayTotal = isOperativos ? item.unitCost : item.total;
+                                const displayUnit  = isOperativos ? item.total    : item.unitCost;
+                                return (
+                                  <tr key={idx}>
+                                    <td className="border border-gray-700 px-2 py-2 text-xs text-white">{item.productName}</td>
+                                    <td className="border border-gray-700 px-2 py-2 text-xs text-center text-white">{item.originalQuantity || item.quantity}</td>
+                                    <td className="border border-gray-700 px-2 py-2 text-xs text-center text-gray-300">{item.unit}</td>
+                                    <td className="border border-gray-700 px-2 py-2 text-xs text-right text-fuchsia-400 font-bold">
+                                      S/ {displayTotal.toFixed(2)}
+                                    </td>
+                                    <td className="border border-gray-700 px-2 py-2 text-xs text-right text-amber-400 font-bold">
+                                      S/ {displayUnit.toFixed(2)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
