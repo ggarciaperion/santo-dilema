@@ -524,7 +524,8 @@ export default function AdminPage() {
       previousOrderStatusRef.current = new Map(data.map((o: Order) => [o.id, o.status]));
       console.log(`💾 [ADMIN] Refs actualizados - IDs: ${previousOrderIdsRef.current.size}, Status: ${previousOrderStatusRef.current.size}`);
 
-      setOrders(data);
+      const unique = data.filter((o: Order, i: number, arr: Order[]) => arr.findIndex((x: Order) => x.id === o.id) === i);
+      setOrders(unique);
     } catch (error) {
       console.error("❌ [ADMIN] Error al cargar pedidos:", error);
     } finally {
@@ -1209,14 +1210,8 @@ export default function AdminPage() {
   if (isOrdersDateFiltered && ordersDateFrom && ordersDateTo) {
     // Filtro por rango de fechas personalizado
     dateFilteredOrders = orders.filter((order) => {
-      const orderDate = getPeruDate(order.createdAt);
-
-      // Crear fechas en zona horaria de Perú (UTC-5)
-      // Interpretamos las fechas del selector como fechas en Perú, no en UTC
-      const fromDatePeru = new Date(ordersDateFrom + "T00:00:00-05:00");
-      const toDatePeru = new Date(ordersDateTo + "T23:59:59-05:00");
-
-      return orderDate >= fromDatePeru && orderDate <= toDatePeru;
+      const orderDateStr = new Date(order.createdAt).toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+      return orderDateStr >= ordersDateFrom && orderDateStr <= ordersDateTo;
     });
   } else {
     // Por defecto, solo pedidos de hoy
@@ -2650,7 +2645,7 @@ export default function AdminPage() {
               {isOrdersDateFiltered && ordersDateFrom && ordersDateTo && (
                 <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
                   <p className="text-sm text-gray-400">
-                    📊 Filtrando desde <span className="text-white font-bold">{new Date(ordersDateFrom).toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(ordersDateTo).toLocaleDateString('es-PE')}</span>
+                    📊 Filtrando desde <span className="text-white font-bold">{new Date(ordersDateFrom + 'T12:00:00').toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(ordersDateTo + 'T12:00:00').toLocaleDateString('es-PE')}</span>
                   </p>
                 </div>
               )}
