@@ -62,6 +62,18 @@ const fitProducts = [
     price: 23.50,
     category: "fit",
   },
+  {
+    id: "cobb-supreme-bowl",
+    name: "COBB SUPREME BOWL",
+    price: 23.50,
+    category: "fit",
+  },
+  {
+    id: "crispy-chicken-bowl",
+    name: "CRISPY CHICKEN BOWL",
+    price: 22.50,
+    category: "fit",
+  },
 ];
 
 const allProducts = [...fatProducts, ...fitProducts];
