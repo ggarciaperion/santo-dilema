@@ -410,7 +410,12 @@ export default function DeliveryPage() {
 
                   <div className="space-y-1">
                     <p className="text-white font-bold text-lg">📍 {order.name}</p>
-                    <p className="text-gray-300 text-sm">📞 {order.phone}</p>
+                    <a
+                      href={`tel:${order.phone}`}
+                      className="text-blue-300 text-sm font-bold underline underline-offset-2 active:text-blue-100"
+                    >
+                      📞 {order.phone}
+                    </a>
                     <p className="text-gray-300 text-sm">🏠 {order.address}</p>
                   </div>
                 </div>
