@@ -224,6 +224,7 @@ export default function FatPage() {
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
+  const [horaLocaActive, setHoraLocaActive] = useState(false);
   const [salsaPromos, setSalsaPromos] = useState<any[]>([]);
   const router = useRouter();
 
@@ -324,6 +325,19 @@ export default function FatPage() {
       .then((r) => r.json())
       .then((data) => setSalsaPromos(Array.isArray(data) ? data : []))
       .catch(() => {});
+  }, []);
+
+  // Hora Loca: chequea cada 30 s si estamos en el rango 7–8 PM Lima
+  useEffect(() => {
+    const check = () => {
+      fetch('/api/hora-loca')
+        .then(r => r.json())
+        .then(d => setHoraLocaActive(d.active))
+        .catch(() => {});
+    };
+    check();
+    const interval = setInterval(check, 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -746,17 +760,19 @@ export default function FatPage() {
     const qty = orderQuantity[product.id] || 1;
 
     // Precio oferta del admin o precio real, luego promo por salsas encima
-    const effectiveBasePrice = menuDiscounts[product.id] || menuPrices[product.id] || product.price;
+    const isHoraLocaProduct = horaLocaActive && product.id === 'duo-dilema';
+    const regularPrice      = menuPrices[product.id] || product.price;
+    const effectiveBasePrice = isHoraLocaProduct ? 30 : (menuDiscounts[product.id] || regularPrice);
     const matchingPromoC = findMatchingPromo(product.id, orderSalsas);
     const finalPrice = matchingPromoC ? matchingPromoC.promoPrice : effectiveBasePrice;
-    const discountApplied = finalPrice < effectiveBasePrice;
+    const discountApplied = isHoraLocaProduct || finalPrice < effectiveBasePrice;
 
     const completedOrder: CompletedOrder = {
       productId: product.id,
       quantity: qty,
       salsas: orderSalsas,
       complementIds: complementsInCart[product.id] || [],
-      originalPrice: effectiveBasePrice,
+      originalPrice: isHoraLocaProduct ? 36 : effectiveBasePrice,
       finalPrice: finalPrice,
       discountApplied: discountApplied
     };
@@ -1188,7 +1204,8 @@ export default function FatPage() {
               const currentSalsas = selectedSalsas[product.id] || [];
               const canAdd = canAddProduct(product.id);
               const isSoldOut = !!menuStock[product.id];
-              const discountPrice = menuDiscounts[product.id];
+              const isHoraLoca    = horaLocaActive && product.id === 'duo-dilema';
+              const discountPrice = isHoraLoca ? 30 : menuDiscounts[product.id];
               const effectivePrice = menuPrices[product.id] || product.price;
               const activePromo = findMatchingPromo(product.id, currentSalsas);
               const dynamicPromosForProduct = salsaPromos.filter((p: any) => p.active && p.productId === product.id);
@@ -1201,7 +1218,7 @@ export default function FatPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink snap-center md:snap-none ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink snap-center md:snap-none ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
                       : 'w-[240px] md:w-[280px] lg:w-[300px]'
@@ -1230,6 +1247,13 @@ export default function FatPage() {
                         <div className="border-4 border-red-500 rounded-sm px-3 py-1 select-none" style={{ transform: 'rotate(-20deg)', boxShadow: '0 0 12px rgba(239,68,68,0.7)' }}>
                           <span className="text-red-500 font-black text-xl md:text-2xl tracking-widest uppercase" style={{ textShadow: '0 0 8px rgba(239,68,68,0.8)' }}>AGOTADO</span>
                         </div>
+                      </div>
+                    )}
+                    {isHoraLoca && !isSoldOut && (
+                      <div className="absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
+                        <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider hora-loca-badge shadow-lg shadow-purple-900/60">
+                          🎉 HORA LOCA
+                        </span>
                       </div>
                     )}
                     {product.image.startsWith('/') ? (
