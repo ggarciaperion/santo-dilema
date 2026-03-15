@@ -842,7 +842,7 @@ export default function FitPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex flex-wrap justify-center items-center gap-2 md:gap-6 lg:gap-8 px-1 md:px-4 py-4 md:py-8 lg:py-10 select-none md:cursor-default overflow-visible`}
+            className={`flex md:flex-wrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-x-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowY: 'visible' }}
           >
             {products.map((product, productIndex) => {
@@ -861,11 +861,11 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 md:flex-shrink shadow-xl ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
-                      ? 'w-[90vw] md:w-[340px] lg:w-[360px] z-20'
-                      : 'w-[44vw] md:w-[240px] lg:w-[260px]'
+                      ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
+                      : 'w-[240px] md:w-[240px] lg:w-[260px]'
                     }
                     ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 z-10'
