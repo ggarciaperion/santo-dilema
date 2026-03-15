@@ -162,6 +162,7 @@ export default function FitPage() {
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
+  const [horaLocaActive, setHoraLocaActive] = useState(false);
   const router = useRouter();
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
@@ -318,6 +319,19 @@ export default function FitPage() {
       .catch(() => {});
   }, []);
 
+  // Hora Loca: chequea cada 30 s si estamos en el rango 7–8 PM Lima
+  useEffect(() => {
+    const check = () => {
+      fetch('/api/hora-loca')
+        .then(r => r.json())
+        .then(d => setHoraLocaActive(d.active))
+        .catch(() => {});
+    };
+    check();
+    const interval = setInterval(check, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
 
   const handleExpandCard = (productId: string) => {
@@ -425,11 +439,13 @@ export default function FitPage() {
   const handleCompleteOrder = (product: Product) => {
     const qty = orderQuantity[product.id] || 1;
     const effectiveBasePrice = menuPrices[product.id] || product.price;
+    // Hora Loca: S/20 para todas las ensaladas excepto CLÁSICA FRESH BOWL
+    const isHoraLocaProduct = horaLocaActive && product.id !== 'ensalada-clasica';
     // Si hay descuento en menuDiscounts, ese es el precio final promocional
     const discountPrice = menuDiscounts[product.id];
-    const final = discountPrice || effectiveBasePrice;
-    const orig = discountPrice ? effectiveBasePrice : (product.oldPrice || effectiveBasePrice);
-    const hasPromo = !!discountPrice || !!product.oldPrice;
+    const final = isHoraLocaProduct ? 20 : (discountPrice || effectiveBasePrice);
+    const orig = (isHoraLocaProduct || discountPrice) ? effectiveBasePrice : (product.oldPrice || effectiveBasePrice);
+    const hasPromo = isHoraLocaProduct || !!discountPrice || !!product.oldPrice;
 
     const completedOrder: CompletedOrder = {
       productId: product.id,
@@ -848,7 +864,8 @@ export default function FitPage() {
             {products.map((product, productIndex) => {
               const isExpanded = expandedCard === product.id;
               const isSoldOut = !!menuStock[product.id];
-              const discountPrice = menuDiscounts[product.id];
+              const isHoraLoca    = horaLocaActive && product.id !== 'ensalada-clasica';
+              const discountPrice = isHoraLoca ? 20 : menuDiscounts[product.id];
               const effectivePrice = menuPrices[product.id] || product.price;
 
               return (
@@ -861,7 +878,7 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
@@ -918,6 +935,13 @@ export default function FitPage() {
                             AGOTADO
                           </span>
                         </div>
+                      </div>
+                    )}
+                    {isHoraLoca && !isSoldOut && (
+                      <div className="absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
+                        <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider hora-loca-badge shadow-lg shadow-purple-900/60">
+                          🎉 HORA LOCA
+                        </span>
                       </div>
                     )}
                   </div>
