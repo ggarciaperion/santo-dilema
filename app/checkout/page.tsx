@@ -163,6 +163,18 @@ const fitProducts = [
     price: 23.50,
     image: "/4.png",
   },
+  {
+    id: "cobb-supreme-bowl",
+    name: "COBB SUPREME BOWL",
+    price: 23.50,
+    image: "/cobb.png",
+  },
+  {
+    id: "crispy-chicken-bowl",
+    name: "CRISPY CHICKEN BOWL",
+    price: 22.50,
+    image: "/crispy.png",
+  },
 ];
 
 

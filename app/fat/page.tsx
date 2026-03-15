@@ -98,6 +98,22 @@ const fitProducts: Product[] = [
     image: "/4.png",
     category: "fit",
   },
+  {
+    id: "cobb-supreme-bowl",
+    name: "COBB SUPREME BOWL",
+    description: "Lechuga fresca con pollo grillado, tocino ahumado crocante, queso fresco, tomate en dados, huevo cocido y palta en cubos, acompañado de vinagreta de la casa.",
+    price: 23.50,
+    image: "/cobb.png",
+    category: "fit",
+  },
+  {
+    id: "crispy-chicken-bowl",
+    name: "CRISPY CHICKEN BOWL",
+    description: "Mix de hojas verdes con pollo crispy dorado, maíz americano, queso mozzarella, tomate cherry y slices de palta, acompañado de aderezo honey mustard.",
+    price: 22.50,
+    image: "/crispy.png",
+    category: "fit",
+  },
 ];
 
 const salsas: Salsa[] = [
