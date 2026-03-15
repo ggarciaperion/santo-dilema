@@ -1184,7 +1184,14 @@ export default function FatPage() {
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
-        {/* Banners promocionales desactivados */}
+        {/* Banners promocionales */}
+        <BannerCarousel
+          slides={[
+            { movil: '/22.png',  web: '/222.png' },
+            { movil: '/11.png',  web: '/111.png' },
+          ]}
+          intervalMs={5000}
+        />
         <div className="h-2" />
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible">
