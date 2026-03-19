@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState, useRef, useEffect } from "react";
 import { useCart } from "../context/CartContext";
-import BannerCarousel from "../components/BannerCarousel";
 import WhatsAppButton from "../components/WhatsAppButton";
 import ChallengeSection from "../components/ChallengeSection";
 import CasaCampoModal from "../components/CasaCampoModal";
@@ -849,15 +848,6 @@ export default function FitPage() {
 
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
-        {/* Banners promocionales */}
-        <BannerCarousel
-          slides={[
-            { movil: '/11.png',  web: '/111.png' },
-            { movil: '/22.png',  web: '/222.png' },
-          ]}
-          intervalMs={5000}
-        />
-        <div className="h-2" />
         <div className="relative flex items-center justify-center overflow-visible">
           <div
             ref={scrollContainerRef}
