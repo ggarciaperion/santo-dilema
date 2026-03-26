@@ -113,6 +113,14 @@ const fitProducts: Product[] = [
     image: "/crispy.png",
     category: "fit",
   },
+  {
+    id: "pasta-power-bowl",
+    name: "PASTA POWER BOWL",
+    description: "Fideos tipo tornillo combinados con zanahoria en cubos, maíz americano, arvejitas, jamón y brócoli, acompañados de jugosos dados de pollo grillado y bañados con nuestro aderezo especial de la casa.",
+    price: 22.50,
+    image: "/pasta.png",
+    category: "fit",
+  },
 ];
 
 const salsas: Salsa[] = [
@@ -243,7 +251,7 @@ export default function FatPage() {
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
   // PROMOCIÓN DESACTIVADA
   const FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
-  const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
+  const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea", "cobb-supreme-bowl", "crispy-chicken-bowl", "pasta-power-bowl"];
   const hasComboDiscount = false; // Promoción combo desactivada
 
   const completedTotal = completedOrders.reduce((total, order) => {
