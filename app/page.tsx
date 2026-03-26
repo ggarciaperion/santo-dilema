@@ -3,28 +3,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import YunzaModal from "@/components/YunzaModal";
 // import ChallengeSection from "./components/ChallengeSection";
-import CasaCampoModal from "./components/CasaCampoModal";
 
 // Fecha de lanzamiento: 13 Feb 2026 a las 18:30 hora Perú (UTC-5)
 const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
-  const [showYunzaModal, setShowYunzaModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
-
-  useEffect(() => {
-    // YUNZA DESACTIVADA - Promoción finalizada
-    /*
-    const timer = setTimeout(() => {
-      setShowYunzaModal(true);
-    }, 800);
-    return () => clearTimeout(timer);
-    */
-  }, []);
 
   useEffect(() => {
     const update = () => {
@@ -433,11 +420,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Modal de Ruleta */}
-      <YunzaModal isOpen={showYunzaModal} onClose={() => setShowYunzaModal(false)} />
-
-      {/* Banner Casa de Campo */}
-      <CasaCampoModal />
     </main>
   );
 }

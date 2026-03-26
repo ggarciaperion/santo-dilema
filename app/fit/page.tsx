@@ -169,7 +169,7 @@ export default function FitPage() {
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
-  const [horaLocaActive, setHoraLocaActive] = useState(false);
+  const horaLocaActive = false;
   const router = useRouter();
 
   // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
@@ -326,18 +326,6 @@ export default function FitPage() {
       .catch(() => {});
   }, []);
 
-  // Hora Loca: chequea cada 30 s si estamos en el rango 7–8 PM Lima
-  useEffect(() => {
-    const check = () => {
-      fetch('/api/hora-loca')
-        .then(r => r.json())
-        .then(d => setHoraLocaActive(d.active))
-        .catch(() => {});
-    };
-    check();
-    const interval = setInterval(check, 30_000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
 
