@@ -36,6 +36,15 @@
     "type": "sale"
   },
   {
+    "id": "pasta-power-bowl",
+    "name": "Pasta Power Bowl",
+    "category": "fit",
+    "price": 22.50,
+    "cost": 10.0,
+    "active": true,
+    "type": "sale"
+  },
+  {
     "id": "pequeno-dilema",
     "name": "Pequeño Dilema",
     "category": "fat",

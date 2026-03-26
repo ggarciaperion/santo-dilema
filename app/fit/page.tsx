@@ -80,6 +80,14 @@ const products: Product[] = [
     image: "/crispy.png",
     category: "fit",
   },
+  {
+    id: "pasta-power-bowl",
+    name: "PASTA POWER BOWL",
+    description: "Fideos tipo tornillo combinados con zanahoria en cubos, maíz americano, arvejitas, jamón y brócoli, acompañados de jugosos dados de pollo grillado y bañados con nuestro aderezo especial de la casa.",
+    price: 22.50,
+    image: "/pasta.png",
+    category: "fit",
+  },
 ];
 
 // Productos de FAT para visualización de órdenes cruzadas
