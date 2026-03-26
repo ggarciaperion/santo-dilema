@@ -242,9 +242,10 @@ export default function FatPage() {
   );
 
   const findMatchingPromo = (productId: string, selectedSalsaIds: string[]): any | null => {
+    if (selectedSalsaIds.length === 0) return null;
     return salsaPromos.find(
       (p: any) => p.active && p.productId === productId &&
-      p.salsas.every((sId: string) => selectedSalsaIds.includes(sId))
+      selectedSalsaIds.every((sId: string) => p.salsas.includes(sId))
     ) || null;
   };
 
@@ -1406,7 +1407,7 @@ export default function FatPage() {
                               const salsaPromoConfig = allPromosForProduct.find((p: any) => p.salsas.includes(salsa.id));
                               const isSalsaInPromo = !!salsaPromoConfig;
                               const isSalsaPromoActive = isSalsaInPromo
-                                ? salsaPromoConfig!.salsas.every((sId: string) => currentSalsas.includes(sId))
+                                ? currentSalsas.length > 0 && currentSalsas.every((sId: string) => salsaPromoConfig!.salsas.includes(sId))
                                 : false;
 
                               return (
@@ -1439,10 +1440,7 @@ export default function FatPage() {
                                             <>
                                               <span className="text-[9px] text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
                                               <span className="text-[9px] text-amber-400 font-bold">
-                                                → S/ {Number(salsaPromoConfig!.promoPrice).toFixed(2)}
-                                                {salsaPromoConfig!.salsas.length > 1 && (
-                                                  <> con {salsaPromoConfig!.salsas.filter((s: string) => s !== salsa.id).map((sId: string) => salsas.find(s => s.id === sId)?.name || sId).join(' + ')}</>
-                                                )}
+                                                → S/ {Number(salsaPromoConfig!.promoPrice).toFixed(2)} eligiendo salsas del set promo
                                               </span>
                                             </>
                                           )}
