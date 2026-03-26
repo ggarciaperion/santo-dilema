@@ -7811,6 +7811,7 @@ _Valido por 30 dias._`;
                 { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", defaultPrice: 23.50 },
                 { id: "cobb-supreme-bowl", name: "COBB SUPREME BOWL", defaultPrice: 23.50 },
                 { id: "crispy-chicken-bowl", name: "CRISPY CHICKEN BOWL", defaultPrice: 22.50 },
+                { id: "pasta-power-bowl", name: "PASTA POWER BOWL", defaultPrice: 22.50 },
               ].map((item) => {
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
