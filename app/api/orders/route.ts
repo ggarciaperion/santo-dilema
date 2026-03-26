@@ -74,6 +74,12 @@ const fitProducts = [
     price: 22.50,
     category: "fit",
   },
+  {
+    id: "pasta-power-bowl",
+    name: "PASTA POWER BOWL",
+    price: 22.50,
+    category: "fit",
+  },
 ];
 
 const allProducts = [...fatProducts, ...fitProducts];
@@ -120,7 +126,7 @@ export async function POST(request: Request) {
     const name = formData.get('name') as string;
     const phone = formData.get('phone') as string;
     const address = formData.get('address') as string;
-    const cart = JSON.parse(formData.get('cart') as string);
+    const cart = JSON.parse(formData.get('cart') as string || 'null');
     const completedOrders = JSON.parse(formData.get('completedOrders') as string || '[]');
     const totalItems = parseInt(formData.get('totalItems') as string);
     const totalPrice = parseFloat(formData.get('totalPrice') as string);

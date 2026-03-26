@@ -175,6 +175,12 @@ const fitProducts = [
     price: 22.50,
     image: "/crispy.png",
   },
+  {
+    id: "pasta-power-bowl",
+    name: "PASTA POWER BOWL",
+    price: 22.50,
+    image: "/pasta.png",
+  },
 ];
 
 
