@@ -883,7 +883,7 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl snap-center md:snap-none ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : product.id === 'pasta-power-bowl' ? 'border-4 border-red-500 neon-red-border shadow-red-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
@@ -946,6 +946,13 @@ export default function FitPage() {
                       <div className="absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
                         <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider hora-loca-badge shadow-lg shadow-purple-900/60">
                           🎉 HORA LOCA
+                        </span>
+                      </div>
+                    )}
+                    {product.id === 'pasta-power-bowl' && !isSoldOut && (
+                      <div className="absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
+                        <span className="bg-red-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider shadow-lg shadow-red-900/60" style={{ animation: 'promoBorderPulse 1.6s ease-in-out infinite' }}>
+                          🔥 NUEVO INGRESO
                         </span>
                       </div>
                     )}
