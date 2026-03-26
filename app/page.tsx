@@ -34,6 +34,7 @@ export default function Home() {
   }, []);
 
   return (
+    <>
     <main className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-x-hidden bg-black relative">
 
       {/* Contenido principal */}
@@ -424,5 +425,6 @@ export default function Home() {
     </main>
 
     <Sorteo2Modal />
+    </>
   );
 }
