@@ -106,11 +106,14 @@ function TimeCounter({ createdAt, status, onOvertime }: { createdAt: string; ord
       // Corrección para timestamps en formato antiguo (Lima-hora almacenada como UTC, 5h offset)
       if (diff > 4 * 60 * 60) diff -= 5 * 60 * 60;
 
-      // Si diff sigue negativo (desfase de reloj servidor > browser), contar desde
-      // que el pedido apareció en pantalla — el contador arranca en 0 inmediatamente
-      if (diff < 0) {
-        diff = Math.floor((Date.now() - mountTimeRef.current) / 1000);
-      }
+      // Tiempo local desde que el pedido apareció en pantalla
+      const localDiff = Math.floor((Date.now() - mountTimeRef.current) / 1000);
+
+      // Usar siempre el mayor de los dos valores:
+      // - si diff < 0 (reloj server adelantado): localDiff arranca desde 0 sin congelarse
+      // - cuando los relojes se sincronizan: evita que el contador retroceda (no-jump)
+      // - para pedidos pre-existentes cargados al abrir admin: diff real es mayor, se usa ese
+      diff = Math.max(diff, localDiff);
 
       const minutes = Math.floor(diff / 60);
       const seconds = diff % 60;
