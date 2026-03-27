@@ -66,24 +66,27 @@ interface Order {
 }
 
 // Componente para el contador de tiempo
-function TimeCounter({ createdAt, status, onOvertime }: { createdAt: string; orderId: string; status: string; onOvertime?: () => void }) {
+function TimeCounter({ createdAt, status, onOvertime, audioCtx }: { createdAt: string; orderId: string; status: string; onOvertime?: () => void; audioCtx?: AudioContext | null }) {
   const [elapsed, setElapsed] = useState("");
   const [isOvertime, setIsOvertime] = useState(false);
   const alertedRef = useRef(false);
   // Momento en que este pedido apareció en pantalla — fallback ante desfase de reloj
   const mountTimeRef = useRef<number>(Date.now());
-  // Evitar que onOvertime (referencia nueva en cada render) dispare re-montajes del efecto
+  // Evitar que callbacks (referencia nueva en cada render) disparen re-montajes del efecto
   const onOvertimeRef = useRef(onOvertime);
+  const audioCtxRef = useRef(audioCtx);
   useEffect(() => { onOvertimeRef.current = onOvertime; }, [onOvertime]);
+  useEffect(() => { audioCtxRef.current = audioCtx; }, [audioCtx]);
 
   useEffect(() => {
     if (status === 'cancelled' || status === 'delivered') return;
 
     const playAlert = () => {
       try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioCtx) return;
-        const ctx = new AudioCtx();
+        // Usar el AudioContext ya inicializado por el admin (requiere interacción previa del usuario)
+        const ctx = audioCtxRef.current;
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
         [0, 0.35, 0.7].forEach(delay => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -91,10 +94,10 @@ function TimeCounter({ createdAt, status, onOvertime }: { createdAt: string; ord
           gain.connect(ctx.destination);
           osc.frequency.value = 880;
           osc.type = 'square';
-          gain.gain.setValueAtTime(0.25, ctx.currentTime + delay);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
           osc.start(ctx.currentTime + delay);
-          osc.stop(ctx.currentTime + delay + 0.25);
+          osc.stop(ctx.currentTime + delay + 0.3);
         });
       } catch {}
     };
@@ -966,6 +969,11 @@ export default function AdminPage() {
     try {
       // Buscar el pedido para obtener su información
       const order = orders.find((o) => o.id === orderId);
+
+      // Si el nuevo estado es "delivered" o "cancelled", quitar borde overtime
+      if (newStatus === "delivered" || newStatus === "cancelled") {
+        setOvertimeOrderIds(prev => { const next = new Set(prev); next.delete(orderId); return next; });
+      }
 
       // Si el nuevo estado es "delivered", deducir stock automáticamente
       if (newStatus === "delivered" && order && order.status !== "delivered") {
@@ -2738,7 +2746,7 @@ export default function AdminPage() {
               <div
                 key={order.id}
                 className={`bg-gray-900 rounded-lg overflow-hidden shadow-2xl transition-all ${
-                  overtimeOrderIds.has(order.id) ? 'ring-4 ring-red-500 overtime-pulse' :
+                  overtimeOrderIds.has(order.id) && order.status !== 'delivered' && order.status !== 'cancelled' ? 'ring-4 ring-red-500 overtime-pulse' :
                   order.status === 'pending' ? 'ring-2 ring-yellow-500/50' :
                   order.status === 'pendiente-verificacion' ? 'ring-2 ring-purple-500/50' :
                   order.status === 'confirmed' ? 'ring-2 ring-cyan-500/50' :
@@ -2779,6 +2787,7 @@ export default function AdminPage() {
                         createdAt={order.createdAt}
                         orderId={order.id}
                         status={order.status}
+                        audioCtx={audioContext}
                         onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))}
                       />
                     </div>
