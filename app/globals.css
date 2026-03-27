@@ -515,6 +515,23 @@ body {
   animation: neonRedGlow 2s ease-in-out infinite;
 }
 
+/* Palpito rojo para pedidos con +20 minutos en admin */
+@keyframes overtimePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.9),
+                0 0 16px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 1),
+                0 0 32px rgba(239, 68, 68, 0.8),
+                0 0 48px rgba(239, 68, 68, 0.4);
+  }
+}
+
+.overtime-pulse {
+  animation: overtimePulse 1.2s ease-in-out infinite;
+}
+
 @keyframes neonRedPricePulse {
   0%, 100% {
     text-shadow: 0 0 10px rgba(239, 68, 68, 0.8),

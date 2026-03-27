@@ -66,82 +66,62 @@ interface Order {
 }
 
 // Componente para el contador de tiempo
-function TimeCounter({ createdAt, orderId, status }: { createdAt: string; orderId: string; status: string }) {
+function TimeCounter({ createdAt, status, onOvertime }: { createdAt: string; orderId: string; status: string; onOvertime?: () => void }) {
   const [elapsed, setElapsed] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
+  const [isOvertime, setIsOvertime] = useState(false);
   const [alerted, setAlerted] = useState(false);
 
   useEffect(() => {
-    // Si el pedido está cancelado o entregado, detener el contador y cerrar alerta
-    if (status === 'cancelled' || status === 'delivered') {
-      setShowAlert(false); // Cerrar alerta si está abierta
-      return; // No iniciar el interval
-    }
+    if (status === 'cancelled' || status === 'delivered') return;
+
+    const playAlert = () => {
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        [0, 0.35, 0.7].forEach(delay => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 880;
+          osc.type = 'square';
+          gain.gain.setValueAtTime(0.25, ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 0.25);
+        });
+      } catch {}
+    };
 
     const updateElapsed = () => {
       const created = new Date(createdAt);
       let diff = Math.floor((Date.now() - created.getTime()) / 1000);
-
-      // Corrección para timestamps en formato antiguo (Lima-hora almacenada como UTC, 5h de offset)
-      // Si diff > 4h, el timestamp tiene el formato viejo: restar 5h para corregirlo
-      if (diff > 4 * 60 * 60) {
-        diff -= 5 * 60 * 60;
-      }
-
-      if (diff < 0) {
-        diff = 0;
-      }
+      if (diff > 4 * 60 * 60) diff -= 5 * 60 * 60;
+      if (diff < 0) diff = 0;
 
       const minutes = Math.floor(diff / 60);
       const seconds = diff % 60;
 
-      // Alerta a los 20 minutos SOLO si el pedido está pendiente o confirmado
       if (minutes >= 20 && !alerted && (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed' || status === 'en-camino')) {
-        setShowAlert(true);
+        setIsOvertime(true);
         setAlerted(true);
+        playAlert();
+        onOvertime?.();
       }
 
-      if (minutes > 0) {
-        setElapsed(`${minutes}m ${seconds}s`);
-      } else {
-        setElapsed(`${seconds}s`);
-      }
+      setElapsed(minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`);
     };
 
     updateElapsed();
     const interval = setInterval(updateElapsed, 1000);
-
     return () => clearInterval(interval);
-  }, [createdAt, alerted, status]);
+  }, [createdAt, alerted, status, onOvertime]);
 
   return (
-    <>
-      <span className="font-mono text-lg font-black text-yellow-400">{elapsed}</span>
-
-      {/* Alerta de 20 minutos */}
-      {showAlert && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowAlert(false)}>
-          <div className="bg-red-600 rounded-xl p-8 max-w-md mx-4 shadow-2xl animate-pulse" onClick={(e) => e.stopPropagation()}>
-            <div className="text-center">
-              <div className="text-6xl mb-4">⚠️</div>
-              <h3 className="text-3xl font-black text-white mb-4">¡ALERTA DE TIEMPO!</h3>
-              <p className="text-xl text-white mb-2">
-                El pedido <span className="font-mono font-black">#{orderId}</span>
-              </p>
-              <p className="text-2xl font-black text-yellow-300 mb-6">
-                ¡Lleva más de 20 minutos en cola!
-              </p>
-              <button
-                onClick={() => setShowAlert(false)}
-                className="bg-white text-red-600 px-8 py-3 rounded-lg font-black text-lg hover:bg-gray-100 transition-all"
-              >
-                ENTENDIDO
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <span className={`font-mono text-lg font-black ${isOvertime ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
+      {isOvertime ? '⚠️ ' : ''}{elapsed}
+    </span>
   );
 }
 
@@ -230,6 +210,7 @@ export default function AdminPage() {
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing" | "carta">("orders");
+  const [overtimeOrderIds, setOvertimeOrderIds] = useState<Set<string>>(new Set());
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
   const [showPromo13, setShowPromo13] = useState(false);
@@ -2739,6 +2720,7 @@ export default function AdminPage() {
               <div
                 key={order.id}
                 className={`bg-gray-900 rounded-lg overflow-hidden shadow-2xl transition-all ${
+                  overtimeOrderIds.has(order.id) ? 'ring-4 ring-red-500 overtime-pulse' :
                   order.status === 'pending' ? 'ring-2 ring-yellow-500/50' :
                   order.status === 'pendiente-verificacion' ? 'ring-2 ring-purple-500/50' :
                   order.status === 'confirmed' ? 'ring-2 ring-cyan-500/50' :
@@ -2775,7 +2757,12 @@ export default function AdminPage() {
                     </p>
                     {/* CONTADOR DE TIEMPO EN COLA */}
                     <div className="mt-2">
-                      <TimeCounter createdAt={order.createdAt} orderId={order.id} status={order.status} />
+                      <TimeCounter
+                        createdAt={order.createdAt}
+                        orderId={order.id}
+                        status={order.status}
+                        onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))}
+                      />
                     </div>
 
                     {/* PEDIDO PROGRAMADO */}
