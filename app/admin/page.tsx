@@ -69,7 +69,12 @@ interface Order {
 function TimeCounter({ createdAt, status, onOvertime }: { createdAt: string; orderId: string; status: string; onOvertime?: () => void }) {
   const [elapsed, setElapsed] = useState("");
   const [isOvertime, setIsOvertime] = useState(false);
-  const [alerted, setAlerted] = useState(false);
+  const alertedRef = useRef(false);
+  // Momento en que este pedido apareció en pantalla — fallback ante desfase de reloj
+  const mountTimeRef = useRef<number>(Date.now());
+  // Evitar que onOvertime (referencia nueva en cada render) dispare re-montajes del efecto
+  const onOvertimeRef = useRef(onOvertime);
+  useEffect(() => { onOvertimeRef.current = onOvertime; }, [onOvertime]);
 
   useEffect(() => {
     if (status === 'cancelled' || status === 'delivered') return;
@@ -97,17 +102,25 @@ function TimeCounter({ createdAt, status, onOvertime }: { createdAt: string; ord
     const updateElapsed = () => {
       const created = new Date(createdAt);
       let diff = Math.floor((Date.now() - created.getTime()) / 1000);
+
+      // Corrección para timestamps en formato antiguo (Lima-hora almacenada como UTC, 5h offset)
       if (diff > 4 * 60 * 60) diff -= 5 * 60 * 60;
-      if (diff < 0) diff = 0;
+
+      // Si diff sigue negativo (desfase de reloj servidor > browser), contar desde
+      // que el pedido apareció en pantalla — el contador arranca en 0 inmediatamente
+      if (diff < 0) {
+        diff = Math.floor((Date.now() - mountTimeRef.current) / 1000);
+      }
 
       const minutes = Math.floor(diff / 60);
       const seconds = diff % 60;
 
-      if (minutes >= 20 && !alerted && (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed' || status === 'en-camino')) {
+      if (minutes >= 20 && !alertedRef.current &&
+          (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed' || status === 'en-camino')) {
         setIsOvertime(true);
-        setAlerted(true);
+        alertedRef.current = true;
         playAlert();
-        onOvertime?.();
+        onOvertimeRef.current?.();
       }
 
       setElapsed(minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`);
@@ -116,7 +129,9 @@ function TimeCounter({ createdAt, status, onOvertime }: { createdAt: string; ord
     updateElapsed();
     const interval = setInterval(updateElapsed, 1000);
     return () => clearInterval(interval);
-  }, [createdAt, alerted, status, onOvertime]);
+  // onOvertime excluido de deps — se accede vía ref para evitar reinicios del intervalo
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createdAt, status]);
 
   return (
     <span className={`font-mono text-lg font-black ${isOvertime ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
