@@ -7,7 +7,6 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
 import ChallengeSection from "../components/ChallengeSection";
-import CasaCampoModal from "../components/CasaCampoModal";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 interface Product {
@@ -2124,7 +2123,6 @@ export default function FatPage() {
 
       <WhatsAppButton />
       <ChallengeSection />
-      <CasaCampoModal />
     </div>
   );
 }
