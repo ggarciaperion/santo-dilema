@@ -55,7 +55,7 @@ export default function MaintenanceModal({ isOpen }: MaintenanceModalProps) {
             </h2>
             <p className="text-amber-200/80 text-base mb-5 leading-relaxed">
               Implementando algo <span className="text-yellow-300 font-bold">nuevo</span> para ti.<br />
-              Volvemos el <span className="text-yellow-300 font-bold">jueves 2 de abril</span> 🚀
+              Volvemos el <span className="text-yellow-300 font-bold">jueves 2 de abril a las 6pm</span> 🚀
             </p>
 
             {/* Dots loader */}
@@ -68,7 +68,7 @@ export default function MaintenanceModal({ isOpen }: MaintenanceModalProps) {
             {/* Ícono tuercas adicional */}
             <div className="bg-black/40 border border-yellow-400/30 rounded-2xl px-6 py-4">
               <p className="text-white/50 text-xs uppercase tracking-widest font-semibold mb-1">Regresamos</p>
-              <p className="text-yellow-300 font-black text-2xl">Jueves 2 abril · 1:00 pm</p>
+              <p className="text-yellow-300 font-black text-2xl">Jueves 2 abril · 6:00 pm</p>
               <p className="text-white/40 text-xs mt-1">⚙️ &nbsp;Tuercas y pernos en acción</p>
             </div>
           </div>
