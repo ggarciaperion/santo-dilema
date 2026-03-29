@@ -2,36 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 // import ChallengeSection from "./components/ChallengeSection";
-import Sorteo2Modal from "./components/Sorteo2Modal";
-
-// Fecha de lanzamiento: 13 Feb 2026 a las 18:30 hora Perú (UTC-5)
-const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
-
 export default function Home() {
   const [hoveredSide, setHoveredSide] = useState<"fit" | "fat" | null>(null);
-  const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [isPreLaunch, setIsPreLaunch] = useState(false);
-
-  useEffect(() => {
-    const update = () => {
-      const diff = LAUNCH_DATE.getTime() - Date.now();
-      if (diff > 0) {
-        setIsPreLaunch(true);
-        setCountdown({
-          hours: Math.floor(diff / (1000 * 60 * 60)),
-          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((diff % (1000 * 60)) / 1000),
-        });
-      } else {
-        setIsPreLaunch(false);
-      }
-    };
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <>
@@ -424,7 +398,6 @@ export default function Home() {
 
     </main>
 
-    <Sorteo2Modal />
-    </>
+</>
   );
 }

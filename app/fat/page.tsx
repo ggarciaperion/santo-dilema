@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
-import ChallengeSection from "../components/ChallengeSection";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 interface Product {
@@ -2122,7 +2121,6 @@ export default function FatPage() {
       })()}
 
       <WhatsAppButton />
-      <ChallengeSection />
     </div>
   );
 }

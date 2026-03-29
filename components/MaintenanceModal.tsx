@@ -51,11 +51,11 @@ export default function MaintenanceModal({ isOpen }: MaintenanceModalProps) {
           {/* Tarjeta principal */}
           <div className="maint-card bg-gradient-to-b from-amber-500/15 to-yellow-500/5 border-2 border-amber-500/40 rounded-3xl px-8 py-8 mb-6">
             <h2 className="text-2xl md:text-3xl font-black text-white mb-3 leading-tight">
-              Actualizando promociones
+              Estamos trabajando en<br />algo mejor para ti
             </h2>
             <p className="text-amber-200/80 text-base mb-5 leading-relaxed">
-              Estamos preparando <span className="text-yellow-300 font-bold">grandes novedades</span> para ti.<br />
-              Volvemos en breve 🚀
+              Implementando algo <span className="text-yellow-300 font-bold">nuevo</span> para ti.<br />
+              Volvemos el <span className="text-yellow-300 font-bold">jueves 2 de abril</span> 🚀
             </p>
 
             {/* Dots loader */}
@@ -65,11 +65,11 @@ export default function MaintenanceModal({ isOpen }: MaintenanceModalProps) {
               <div className="dot3 w-2.5 h-2.5 bg-yellow-400 rounded-full" />
             </div>
 
-            {/* Horario hoy */}
+            {/* Ícono tuercas adicional */}
             <div className="bg-black/40 border border-yellow-400/30 rounded-2xl px-6 py-4">
-              <p className="text-white/50 text-xs uppercase tracking-widest font-semibold mb-1">Hoy sí atendemos</p>
-              <p className="text-yellow-300 font-black text-2xl">6:00 pm — 11:00 pm</p>
-              <p className="text-white/40 text-xs mt-1">Pedidos por WhatsApp</p>
+              <p className="text-white/50 text-xs uppercase tracking-widest font-semibold mb-1">Regresamos</p>
+              <p className="text-yellow-300 font-black text-2xl">Jueves 2 abril · 1:00 pm</p>
+              <p className="text-white/40 text-xs mt-1">⚙️ &nbsp;Tuercas y pernos en acción</p>
             </div>
           </div>
 
