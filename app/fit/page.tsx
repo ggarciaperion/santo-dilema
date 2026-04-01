@@ -836,6 +836,18 @@ export default function FitPage() {
             >
               Ver menú Placer
             </Link>
+            <Link
+              href="/tacos"
+              className="text-xs md:text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 md:px-3 py-1 md:py-1.5 rounded border border-emerald-500/30 hover:border-emerald-400 hidden sm:block"
+            >
+              Ver menú Tacos →
+            </Link>
+            <Link
+              href="/tacos"
+              className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 py-1 rounded border border-emerald-500/30 hover:border-emerald-400 sm:hidden"
+            >
+              Ver menú Tacos
+            </Link>
           </div>
         </div>
       </header>
