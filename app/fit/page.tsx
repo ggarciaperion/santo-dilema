@@ -828,13 +828,13 @@ export default function FitPage() {
               href="/fat"
               className="text-xs md:text-sm font-bold text-red-400 hover:text-red-300 transition-colors neon-glow-fat px-2 md:px-3 py-1 md:py-1.5 rounded border border-red-500/30 hover:border-red-400 hidden sm:block"
             >
-              Ver menú Placer →
+              Ver menú Alitas →
             </Link>
             <Link
               href="/fat"
               className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors neon-glow-fat px-2 py-1 rounded border border-red-500/30 hover:border-red-400 sm:hidden"
             >
-              Ver menú Placer
+              Ver menú Alitas
             </Link>
             <Link
               href="/tacos"

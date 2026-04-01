@@ -1175,13 +1175,25 @@ export default function FatPage() {
               href="/fit"
               className="text-xs md:text-sm font-bold text-cyan-400 hover:text-cyan-300 transition-colors neon-glow-fit px-2 md:px-3 py-1 md:py-1.5 rounded border border-cyan-500/30 hover:border-cyan-400 hidden sm:block"
             >
-              Ver menú Balance →
+              Ver menú Ensaladas →
             </Link>
             <Link
               href="/fit"
               className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors neon-glow-fit px-2 py-1 rounded border border-cyan-500/30 hover:border-cyan-400 sm:hidden"
             >
-              Ver menú Balance
+              Ver menú Ensaladas
+            </Link>
+            <Link
+              href="/tacos"
+              className="text-xs md:text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 md:px-3 py-1 md:py-1.5 rounded border border-emerald-500/30 hover:border-emerald-400 hidden sm:block"
+            >
+              Ver menú Tacos →
+            </Link>
+            <Link
+              href="/tacos"
+              className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 py-1 rounded border border-emerald-500/30 hover:border-emerald-400 sm:hidden"
+            >
+              Ver menú Tacos
             </Link>
           </div>
         </div>
