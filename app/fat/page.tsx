@@ -14,7 +14,7 @@ interface Product {
   description: string;
   price: number;
   image: string;
-  category: "fit" | "fat" | "bebida";
+  category: "fit" | "fat" | "bebida" | "taco";
 }
 
 interface Salsa {
@@ -118,6 +118,34 @@ const fitProducts: Product[] = [
     price: 22.50,
     image: "/pasta.png",
     category: "fit",
+  },
+];
+
+// Productos de TACOS para visualización de órdenes cruzadas
+const tacoProducts: Product[] = [
+  {
+    id: "trio-taco-classico",
+    name: "Trío Taco Clásico",
+    description: "3 tacos auténticos con tortilla recién hecha, carne marinada al estilo tradicional.",
+    price: 22.90,
+    image: "/tacoinicio.png",
+    category: "taco",
+  },
+  {
+    id: "taco-fiesta-mix",
+    name: "Taco Fiesta Mix",
+    description: "5 tacos variados con diferentes proteínas.",
+    price: 32.90,
+    image: "/tacoinicio.png",
+    category: "taco",
+  },
+  {
+    id: "mega-taco-combo",
+    name: "Mega Taco Combo",
+    description: "7 tacos épicos con mix de proteínas premium.",
+    price: 42.90,
+    image: "/tacoinicio.png",
+    category: "taco",
   },
 ];
 
@@ -257,6 +285,7 @@ export default function FatPage() {
     const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
+      if (!product) product = tacoProducts.find(p => p.id === order.productId);
       return product ? (menuPrices[product.id] || product.price) : 0;
     })();
     // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
@@ -279,6 +308,7 @@ export default function FatPage() {
     completedOrders.forEach(order => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
+      if (!product) product = tacoProducts.find(p => p.id === order.productId);
       if (product) {
         const basePrice = menuDiscounts[product.id] || menuPrices[product.id] || product.price;
         const finalPrice = order.finalPrice ?? basePrice;
@@ -817,12 +847,16 @@ export default function FatPage() {
     const order = completedOrders[orderIndex];
     if (!order) return;
 
-    // Verificar si la orden pertenece al menú fit
+    // Verificar si la orden pertenece al menú fit o tacos
     const isFitOrder = fitProducts.some(p => p.id === order.productId);
+    const isTacoOrderEdit = tacoProducts.some(p => p.id === order.productId);
 
-    // Si es una orden fit, redirigir a la página fit con el índice de orden
     if (isFitOrder) {
       router.push(`/fit?editOrder=${orderIndex}`);
+      return;
+    }
+    if (isTacoOrderEdit) {
+      router.push(`/tacos?editOrder=${orderIndex}`);
       return;
     }
 
@@ -1751,11 +1785,18 @@ export default function FatPage() {
                 // Buscar producto en fat products
                 let product = products.find((p) => p.id === order.productId);
                 let isFitOrder = false;
+                let isTacoOrder = false;
 
                 // Si no se encuentra, buscar en fit products
                 if (!product) {
                   product = fitProducts.find((p) => p.id === order.productId);
                   isFitOrder = true;
+                }
+                // Si no se encuentra, buscar en taco products
+                if (!product) {
+                  product = tacoProducts.find((p) => p.id === order.productId);
+                  isFitOrder = false;
+                  isTacoOrder = true;
                 }
 
                 if (!product) return null;
@@ -1763,7 +1804,7 @@ export default function FatPage() {
                 return (
                   <div
                     key={`${order.productId}-${index}`}
-                    className={`bg-gray-900 rounded-lg border-2 ${isFitOrder ? 'border-cyan-400/30' : 'border-red-400/30'} p-2 md:p-4 relative`}
+                    className={`bg-gray-900 rounded-lg border-2 ${isTacoOrder ? 'border-emerald-400/30' : isFitOrder ? 'border-cyan-400/30' : 'border-red-400/30'} p-2 md:p-4 relative`}
                   >
                     <div className="flex items-start justify-between mb-1 md:mb-2">
                       <div className="flex items-start gap-2 md:gap-3 flex-1">
@@ -1789,7 +1830,7 @@ export default function FatPage() {
 
                           <div className="text-[11px] md:text-xs space-y-0.5 md:space-y-1">
                             {/* Precio del menú */}
-                            <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
+                            <div className={`${isTacoOrder ? 'text-emerald-300/80' : isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
                               {order.discountApplied && !hasComboDiscount ? (
                                 <span className="flex items-center gap-1.5">
@@ -1801,8 +1842,8 @@ export default function FatPage() {
                               )}
                             </div>
 
-                            {/* Salsas seleccionadas - solo para ordenes de fat */}
-                            {!isFitOrder && order.salsas && order.salsas.length > 0 && (
+                            {/* Salsas seleccionadas - para ordenes de fat y tacos */}
+                            {(isTacoOrder || !isFitOrder) && order.salsas && order.salsas.length > 0 && (
                               <div className="text-amber-300/80">
                                 🌶️ Salsas: {order.salsas
                                   .map((sId) => salsas.find((s) => s.id === sId)?.name)
@@ -1818,7 +1859,7 @@ export default function FatPage() {
                                   const complement = availableComplements[compId];
                                   if (!complement) return null;
                                   return (
-                                    <div key={`${compId}-${idx}`} className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between`}>
+                                    <div key={`${compId}-${idx}`} className={`${isTacoOrder ? 'text-emerald-300/80' : isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between`}>
                                       <span>• {complement.name}</span>
                                       <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
                                     </div>
@@ -2021,15 +2062,21 @@ export default function FatPage() {
         // Buscar producto para determinar el tipo de orden
         let product = products.find((p) => p.id === order.productId);
         let isFitOrder = false;
+        let isTacoOrder = false;
         if (!product) {
           product = fitProducts.find((p) => p.id === order.productId);
           isFitOrder = true;
         }
+        if (!product) {
+          product = tacoProducts.find((p) => p.id === order.productId);
+          isFitOrder = false;
+          isTacoOrder = true;
+        }
 
         return (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-            <div className={`bg-gray-900 border-2 ${isFitOrder ? 'border-cyan-500 neon-border-fit' : 'border-red-500 neon-border-fat'} rounded-lg p-6 max-w-md w-full`}>
-              <h3 className={`text-xl font-black ${isFitOrder ? 'text-cyan-400 neon-glow-fit' : 'text-red-400 gold-glow'} mb-4 text-center`}>
+            <div className={`bg-gray-900 border-2 ${isTacoOrder ? 'border-emerald-500 neon-border-taco' : isFitOrder ? 'border-cyan-500 neon-border-fit' : 'border-red-500 neon-border-fat'} rounded-lg p-6 max-w-md w-full`}>
+              <h3 className={`text-xl font-black ${isTacoOrder ? 'text-emerald-400 neon-glow-taco' : isFitOrder ? 'text-cyan-400 neon-glow-fit' : 'text-red-400 gold-glow'} mb-4 text-center`}>
                 ¡Qué dilema!
               </h3>
               {(() => {

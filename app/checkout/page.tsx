@@ -183,6 +183,28 @@ const fitProducts = [
   },
 ];
 
+// Productos tacos para referencia
+const tacoProducts = [
+  {
+    id: "trio-taco-classico",
+    name: "Trío Taco Clásico",
+    price: 22.90,
+    image: "/tacoinicio.png",
+  },
+  {
+    id: "taco-fiesta-mix",
+    name: "Taco Fiesta Mix",
+    price: 32.90,
+    image: "/tacoinicio.png",
+  },
+  {
+    id: "mega-taco-combo",
+    name: "Mega Taco Combo",
+    price: 42.90,
+    image: "/tacoinicio.png",
+  },
+];
+
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -264,7 +286,8 @@ export default function CheckoutPage() {
   const subtotalBase = completedOrders.reduce((total, order) => {
     const fatProduct = fatProducts.find((p) => p.id === order.productId);
     const fitProduct = fitProducts.find((p) => p.id === order.productId);
-    const product = fatProduct || fitProduct;
+    const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
+    const product = fatProduct || fitProduct || tacoProduct;
 
     if (!product) return total;
 
@@ -285,7 +308,8 @@ export default function CheckoutPage() {
     // Buscar el producto en los arrays
     const fatProduct = fatProducts.find((p) => p.id === order.productId);
     const fitProduct = fitProducts.find((p) => p.id === order.productId);
-    const product = fatProduct || fitProduct;
+    const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
+    const product = fatProduct || fitProduct || tacoProduct;
 
     if (!product) return total;
 

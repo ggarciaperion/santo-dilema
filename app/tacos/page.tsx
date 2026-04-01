@@ -98,6 +98,34 @@ const fitProducts: Product[] = [
   },
 ];
 
+// Productos de FAT para visualización de órdenes cruzadas
+const fatProducts: Product[] = [
+  {
+    id: "pequeno-dilema",
+    name: "Pequeño Dilema",
+    description: "8 alitas acompañadas de papas y 01 salsa favorita.",
+    price: 20.00,
+    image: "/pequeno-dilema.png?v=3",
+    category: "fat",
+  },
+  {
+    id: "duo-dilema",
+    name: "Dúo Dilema",
+    description: "14 alitas acompañadas de papas francesas y 02 de tus salsas favoritas.",
+    price: 34.00,
+    image: "/duo-dilema.png?v=3",
+    category: "fat",
+  },
+  {
+    id: "santo-pecado",
+    name: "Santo Pecado",
+    description: "20 alitas acompañadas de papas francesas y 03 de tus salsas favoritas.",
+    price: 47.00,
+    image: "/todos-pecan.png?v=3",
+    category: "fat",
+  },
+];
+
 const salsas: Salsa[] = [
   {
     id: "nachos",
@@ -184,6 +212,7 @@ export default function FatPage() {
     const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
+      if (!product) product = fatProducts.find(p => p.id === order.productId);
       return product ? product.price : 0;
     })();
     // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
@@ -206,6 +235,7 @@ export default function FatPage() {
     completedOrders.forEach(order => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
+      if (!product) product = fatProducts.find(p => p.id === order.productId);
       if (product) {
         const finalPrice = order.finalPrice ?? product.price;
 
@@ -252,11 +282,11 @@ export default function FatPage() {
     if (savedOrders) {
       try {
         const allOrders = JSON.parse(savedOrders);
-        // Mantener solo las órdenes que NO son "fat"
-        const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "fat");
+        // Mantener solo las órdenes que NO son "taco"
+        const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "taco");
         setCompletedOrders(otherOrders);
 
-        // Si había órdenes fat, las limpiamos del sessionStorage
+        // Si había órdenes taco, las limpiamos del sessionStorage
         if (otherOrders.length !== allOrders.length) {
           sessionStorage.setItem("santo-dilema-orders", JSON.stringify(otherOrders));
         }
@@ -289,7 +319,7 @@ export default function FatPage() {
 
       if (!isNaN(orderIndex) && orderIndex >= 0 && orderIndex < completedOrders.length) {
         // Limpiar el parámetro de la URL
-        window.history.replaceState({}, '', '/fat');
+        window.history.replaceState({}, '', '/tacos');
 
         // Ejecutar la edición después de un pequeño delay para asegurar que todo esté cargado
         setTimeout(() => {
@@ -713,12 +743,16 @@ export default function FatPage() {
     const order = completedOrders[orderIndex];
     if (!order) return;
 
-    // Verificar si la orden pertenece al menú fit
+    // Verificar si la orden pertenece al menú fit o fat
     const isFitOrder = fitProducts.some(p => p.id === order.productId);
+    const isFatOrderEdit = fatProducts.some(p => p.id === order.productId);
 
-    // Si es una orden fit, redirigir a la página fit con el índice de orden
     if (isFitOrder) {
       router.push(`/fit?editOrder=${orderIndex}`);
+      return;
+    }
+    if (isFatOrderEdit) {
+      router.push(`/fat?editOrder=${orderIndex}`);
       return;
     }
 
@@ -1625,14 +1659,21 @@ export default function FatPage() {
             </h3>
             <div className="space-y-2 md:space-y-4">
               {completedOrders.map((order, index) => {
-                // Buscar producto en fat products
+                // Buscar producto en taco products
                 let product = products.find((p) => p.id === order.productId);
                 let isFitOrder = false;
+                let isFatOrder = false;
 
                 // Si no se encuentra, buscar en fit products
                 if (!product) {
                   product = fitProducts.find((p) => p.id === order.productId);
                   isFitOrder = true;
+                }
+                // Si no se encuentra, buscar en fat products
+                if (!product) {
+                  product = fatProducts.find((p) => p.id === order.productId);
+                  isFitOrder = false;
+                  isFatOrder = true;
                 }
 
                 if (!product) return null;
@@ -1640,7 +1681,7 @@ export default function FatPage() {
                 return (
                   <div
                     key={`${order.productId}-${index}`}
-                    className={`bg-gray-900 rounded-lg border-2 ${isFitOrder ? 'border-cyan-400/30' : 'border-emerald-500/30'} p-2 md:p-4 relative`}
+                    className={`bg-gray-900 rounded-lg border-2 ${isFatOrder ? 'border-red-400/30' : isFitOrder ? 'border-cyan-400/30' : 'border-emerald-500/30'} p-2 md:p-4 relative`}
                   >
                     <div className="flex items-start justify-between mb-1 md:mb-2">
                       <div className="flex items-start gap-2 md:gap-3 flex-1">
@@ -1666,7 +1707,7 @@ export default function FatPage() {
 
                           <div className="text-[11px] md:text-xs space-y-0.5 md:space-y-1">
                             {/* Precio del menú */}
-                            <div className={`${isFitOrder ? 'text-cyan-300/80' : 'text-emerald-300/80'} flex justify-between items-center`}>
+                            <div className={`${isFatOrder ? 'text-red-300/80' : isFitOrder ? 'text-cyan-300/80' : 'text-emerald-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
                               {order.discountApplied && !hasComboDiscount ? (
                                 <span className="flex items-center gap-1.5">
@@ -1695,7 +1736,7 @@ export default function FatPage() {
                                   const complement = availableComplements[compId];
                                   if (!complement) return null;
                                   return (
-                                    <div key={`${compId}-${idx}`} className={`${isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between`}>
+                                    <div key={`${compId}-${idx}`} className={`${isFatOrder ? 'text-red-300/80' : isFitOrder ? 'text-cyan-300/80' : 'text-emerald-300/80'} flex justify-between`}>
                                       <span>• {complement.name}</span>
                                       <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
                                     </div>
@@ -1917,15 +1958,21 @@ export default function FatPage() {
         // Buscar producto para determinar el tipo de orden
         let product = products.find((p) => p.id === order.productId);
         let isFitOrder = false;
+        let isFatOrder = false;
         if (!product) {
           product = fitProducts.find((p) => p.id === order.productId);
           isFitOrder = true;
         }
+        if (!product) {
+          product = fatProducts.find((p) => p.id === order.productId);
+          isFitOrder = false;
+          isFatOrder = true;
+        }
 
         return (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-            <div className={`bg-gray-900 border-2 ${isFitOrder ? 'border-cyan-500 neon-border-fit' : 'border-red-500 neon-border-fat'} rounded-lg p-6 max-w-md w-full`}>
-              <h3 className={`text-xl font-black ${isFitOrder ? 'text-cyan-400 neon-glow-fit' : 'text-red-400 gold-glow'} mb-4 text-center`}>
+            <div className={`bg-gray-900 border-2 ${isFatOrder ? 'border-red-500 neon-border-fat' : isFitOrder ? 'border-cyan-500 neon-border-fit' : 'border-emerald-500 neon-border-taco'} rounded-lg p-6 max-w-md w-full`}>
+              <h3 className={`text-xl font-black ${isFatOrder ? 'text-red-400 gold-glow' : isFitOrder ? 'text-cyan-400 neon-glow-fit' : 'text-emerald-400 neon-glow-taco'} mb-4 text-center`}>
                 ¡Qué dilema!
               </h3>
               {(() => {
