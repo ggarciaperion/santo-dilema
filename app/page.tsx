@@ -89,8 +89,8 @@ export default function Home() {
           }`}>DILEMA</span>
         </h1>
 
-        {/* Taglines debajo - animados según hover en desktop, siempre visibles en móvil */}
-        <div className="flex items-center gap-2 md:gap-4 lg:gap-6 mt-1 md:mt-2 overflow-hidden">
+        {/* Taglines debajo - solo visibles en desktop */}
+        <div className="hidden md:flex items-center gap-2 md:gap-4 lg:gap-6 mt-1 md:mt-2 overflow-hidden">
           <p className={`text-cyan-400/80 text-[8px] md:text-xs lg:text-sm font-bold tracking-wider neon-glow-fit whitespace-nowrap md:transition-all md:duration-500 ${
             hoveredSide === "fat" || hoveredSide === "taco" ? "md:opacity-0 md:-translate-x-8" : "opacity-100 translate-x-0"
           }`}>
@@ -125,10 +125,12 @@ export default function Home() {
         onMouseLeave={() => setHoveredSide(null)}
       >
         <div
-          className={`absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-teal-600/20 to-black transition-all duration-500 ${
-            hoveredSide === "fit" ? "opacity-100" : "opacity-60"
+          className={`absolute inset-0 bg-gradient-to-br from-cyan-500/30 via-teal-600/15 to-black transition-all duration-500 ${
+            hoveredSide === "fit" ? "opacity-100" : "opacity-80 md:opacity-60"
           }`}
         />
+        {/* Acento neon izquierdo - solo mobile */}
+        <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-cyan-400 to-transparent shadow-sm shadow-cyan-400/50" />
 
         {/* Iconos decorativos FIT - Vegetales en líneas neón */}
         <div className="absolute inset-0 overflow-hidden opacity-15">
@@ -233,29 +235,28 @@ export default function Home() {
           <div className="absolute inset-0 bg-cyan-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 pt-10 pb-4 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
-          <div className="mb-1 md:mb-2">
-            <div className="mb-1 md:mb-1.5 filter drop-shadow-lg">
-              <Image
-                src="/balance.png?v=1"
-                alt="Ensalada Premium"
-                width={120}
-                height={120}
-                className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
-              />
-            </div>
+        <div className="relative z-10 text-center text-white px-4 md:px-6 flex flex-col items-center justify-center h-full md:h-auto pt-10 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
+          <div className="hidden md:block mb-1 md:mb-2 filter drop-shadow-lg">
+            <Image
+              src="/balance.png?v=1"
+              alt="Ensalada Premium"
+              width={120}
+              height={120}
+              className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
+            />
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-1 md:mb-2 tracking-tight text-cyan-400 neon-glow-fit">
-            BALANCE
+          <h2 className="text-5xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-2 tracking-tight text-cyan-400 neon-glow-fit">
+            ENSALADAS
           </h2>
-          <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-cyan-200">
+          <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-cyan-200">
             Ensaladas Saludables
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fit" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-cyan-400 rounded-full neon-border-fit">
-              <span className="text-cyan-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2 md:px-5 md:py-2 border-2 border-cyan-400 rounded-full neon-border-fit">
+              <span className="text-cyan-400 font-bold text-sm md:text-sm">VER MENÚ</span>
+              <span className="text-cyan-400 text-sm">→</span>
             </div>
           </div>
         </div>
@@ -265,7 +266,7 @@ export default function Home() {
       </Link>
 
       {/* Línea divisoria central con efecto neón púrpura */}
-      <div className="h-1 md:h-auto md:w-1 bg-gradient-to-r md:bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent z-10 shadow-lg shadow-fuchsia-500/50" />
+      <div className="h-[2px] md:h-auto md:w-1 bg-gradient-to-r md:bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent z-10 shadow-md shadow-fuchsia-500/60" />
 
       {/* Lado FAT - Alitas */}
       <Link
@@ -277,10 +278,12 @@ export default function Home() {
         onMouseLeave={() => setHoveredSide(null)}
       >
         <div
-          className={`absolute inset-0 bg-gradient-to-br from-red-500/20 via-orange-600/20 to-black transition-all duration-500 ${
-            hoveredSide === "fat" ? "opacity-100" : "opacity-60"
+          className={`absolute inset-0 bg-gradient-to-br from-red-500/30 via-orange-600/15 to-black transition-all duration-500 ${
+            hoveredSide === "fat" ? "opacity-100" : "opacity-80 md:opacity-60"
           }`}
         />
+        {/* Acento neon izquierdo - solo mobile */}
+        <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-red-400 to-transparent shadow-sm shadow-red-400/50" />
 
         {/* Iconos decorativos FAT - Comida indulgente en líneas neón */}
         <div className="absolute inset-0 overflow-hidden opacity-15">
@@ -389,29 +392,28 @@ export default function Home() {
           <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 pt-6 pb-4 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
-          <div className="mb-0 md:mb-1">
-            <div className="mb-0 md:mb-1 filter drop-shadow-lg">
-              <Image
-                src="/placer.png?v=4"
-                alt="Alitas Premium"
-                width={140}
-                height={140}
-                className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
-              />
-            </div>
+        <div className="relative z-10 text-center text-white px-4 md:px-6 flex flex-col items-center justify-center h-full md:h-auto md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
+          <div className="hidden md:block mb-0 md:mb-1 filter drop-shadow-lg">
+            <Image
+              src="/placer.png?v=4"
+              alt="Alitas Premium"
+              width={140}
+              height={140}
+              className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
+            />
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-0 md:mb-1 -mt-2 md:mt-0 tracking-tight text-red-400 neon-glow-fat">
-            PLACER
+          <h2 className="text-5xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-tight text-red-400 neon-glow-fat">
+            ALITAS
           </h2>
-          <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
+          <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
             Alitas Irresistibles
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "fat" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-red-400 rounded-full neon-border-fat">
-              <span className="text-red-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2 md:px-5 md:py-2 border-2 border-red-400 rounded-full neon-border-fat">
+              <span className="text-red-400 font-bold text-sm md:text-sm">VER MENÚ</span>
+              <span className="text-red-400 text-sm">→</span>
             </div>
           </div>
         </div>
@@ -421,7 +423,7 @@ export default function Home() {
       </Link>
 
       {/* Línea divisoria con efecto neón */}
-      <div className="h-1 md:h-auto md:w-1 bg-gradient-to-r md:bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent z-10 shadow-lg shadow-fuchsia-500/50" />
+      <div className="h-[2px] md:h-auto md:w-1 bg-gradient-to-r md:bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent z-10 shadow-md shadow-fuchsia-500/60" />
 
       {/* Lado TACO - Tacos Mexicanos */}
       <Link
@@ -433,10 +435,12 @@ export default function Home() {
         onMouseLeave={() => setHoveredSide(null)}
       >
         <div
-          className={`absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-green-700/20 to-black transition-all duration-500 ${
-            hoveredSide === "taco" ? "opacity-100" : "opacity-60"
+          className={`absolute inset-0 bg-gradient-to-br from-emerald-600/30 via-green-700/15 to-black transition-all duration-500 ${
+            hoveredSide === "taco" ? "opacity-100" : "opacity-80 md:opacity-60"
           }`}
         />
+        {/* Acento neon izquierdo - solo mobile */}
+        <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-emerald-400 to-transparent shadow-sm shadow-emerald-400/50" />
 
         {/* Iconos decorativos TACO - Elementos mexicanos */}
         <div className="absolute inset-0 overflow-hidden opacity-15">
@@ -504,29 +508,28 @@ export default function Home() {
           <div className="absolute inset-0 bg-emerald-500/10 animate-pulse" />
         )}
 
-        <div className="relative z-10 text-center text-white px-3 md:px-6 pt-6 pb-4 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
-          <div className="mb-0 md:mb-1">
-            <div className="mb-0 md:mb-1 filter drop-shadow-lg">
-              <Image
-                src="/tacoinicio.png"
-                alt="Tacos Auténticos"
-                width={140}
-                height={140}
-                className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
-              />
-            </div>
+        <div className="relative z-10 text-center text-white px-4 md:px-6 flex flex-col items-center justify-center h-full md:h-auto md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
+          <div className="hidden md:block mb-0 md:mb-1 filter drop-shadow-lg">
+            <Image
+              src="/tacoinicio.png"
+              alt="Tacos Auténticos"
+              width={140}
+              height={140}
+              className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
+            />
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-0 md:mb-1 -mt-2 md:mt-0 tracking-tight text-emerald-400 neon-glow-taco">
-            FIESTA
+          <h2 className="text-5xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-tight text-emerald-400 neon-glow-taco">
+            TACOS
           </h2>
-          <p className="text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
+          <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
             Tacos Auténticos
           </p>
           <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
             hoveredSide === "taco" ? "md:opacity-100 md:translate-y-0" : ""
           }`}>
-            <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 border-2 border-emerald-400 rounded-full neon-border-taco">
-              <span className="text-emerald-400 font-bold text-xs md:text-sm">VER MENÚ →</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2 md:px-5 md:py-2 border-2 border-emerald-400 rounded-full neon-border-taco">
+              <span className="text-emerald-400 font-bold text-sm md:text-sm">VER MENÚ</span>
+              <span className="text-emerald-400 text-sm">→</span>
             </div>
           </div>
         </div>
