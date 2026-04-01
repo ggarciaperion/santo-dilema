@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import MaintenanceModal from "@/components/MaintenanceModal";
 
 export default function MaintenanceWrapper({ children }: { children: React.ReactNode }) {
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     // Ventana de mantenimiento: 11pm Lima (2026-03-29T04:00Z) → 1pm Lima Jueves (2026-04-02T18:00Z)
@@ -23,6 +25,11 @@ export default function MaintenanceWrapper({ children }: { children: React.React
         <div className="text-yellow-400 text-xl font-bold animate-pulse">Cargando...</div>
       </div>
     );
+  }
+
+  // /admin siempre accesible aunque haya mantenimiento
+  if (pathname?.startsWith("/admin")) {
+    return <>{children}</>;
   }
 
   // Si estamos en modo mantenimiento, mostrar el modal
