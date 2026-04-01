@@ -41,7 +41,7 @@ const products: Product[] = [
     name: "Trío Taco Clásico",
     description: "3 tacos auténticos con tortilla recién hecha, carne marinada al estilo tradicional, cilantro fresco, cebolla y tu salsa favorita. El sabor de México en cada bocado.",
     price: 22.90,
-    image: "/pequeno-dilema.png?v=3",
+    image: "/tacoinicio.png",
     category: "taco",
   },
   {
@@ -49,7 +49,7 @@ const products: Product[] = [
     name: "Taco Fiesta Mix",
     description: "5 tacos variados con diferentes proteínas: carne asada, pollo al pastor y carnitas. Incluye guacamole, pico de gallo y crema mexicana. ¡La fiesta en tu mesa!",
     price: 32.90,
-    image: "/duo-dilema.png?v=3",
+    image: "/tacoinicio.png",
     category: "taco",
   },
   {
@@ -57,7 +57,7 @@ const products: Product[] = [
     name: "Mega Taco Combo",
     description: "7 tacos épicos con mix de proteínas premium, queso derretido, jalapeños, guacamole casero y todas las salsas. Para los que no conocen límites cuando se trata de tacos.",
     price: 42.90,
-    image: "/todos-pecan.png?v=3",
+    image: "/tacoinicio.png",
     category: "taco",
   },
 ];
