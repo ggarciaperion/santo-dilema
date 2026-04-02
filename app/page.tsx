@@ -132,8 +132,25 @@ export default function Home() {
         {/* Acento neon izquierdo - solo mobile */}
         <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-cyan-400 to-transparent shadow-sm shadow-cyan-400/50" />
 
+        {/* Icono de fondo grande - solo mobile */}
+        <div className="md:hidden absolute right-3 top-1/2 -translate-y-1/2 opacity-[0.12] pointer-events-none">
+          <svg viewBox="0 0 120 120" className="w-40 h-40 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <ellipse cx="60" cy="68" rx="48" ry="12" />
+            <path d="M12 68 Q12 102 60 110 Q108 102 108 68" />
+            <path d="M32 65 Q24 50 32 37 Q42 30 50 44 Q57 30 66 37 Q74 50 66 65" strokeWidth="1.5"/>
+            <path d="M57 62 Q50 47 57 35 Q67 27 74 42 Q80 27 88 35 Q96 48 88 62" strokeWidth="1.5"/>
+            <circle cx="47" cy="53" r="7" fill="currentColor" opacity="0.35"/>
+            <path d="M44 46 Q47 41 50 46" strokeWidth="1.5"/>
+            <circle cx="80" cy="50" r="5" fill="currentColor" opacity="0.3"/>
+            <line x1="20" y1="18" x2="20" y2="65" strokeWidth="2.5"/>
+            <line x1="16" y1="18" x2="16" y2="30" strokeWidth="2"/>
+            <line x1="20" y1="18" x2="20" y2="30" strokeWidth="2"/>
+            <line x1="24" y1="18" x2="24" y2="30" strokeWidth="2"/>
+          </svg>
+        </div>
+
         {/* Iconos decorativos FIT - Vegetales en líneas neón */}
-        <div className="absolute inset-0 overflow-hidden opacity-15">
+        <div className="absolute inset-0 overflow-hidden opacity-[0.12] md:opacity-[0.15]">
           {/* Aguacates */}
           <svg className="absolute top-16 left-8 w-24 h-24 text-cyan-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
             <ellipse cx="50" cy="55" rx="28" ry="35" />
@@ -245,7 +262,10 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2 className="text-5xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-2 tracking-tight text-cyan-400 neon-glow-fit">
+          <h2
+            className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-2 tracking-widest md:tracking-tight text-cyan-400 neon-glow-fit"
+            style={{ textShadow: '0 0 4px #fff8, 0 0 10px #22d3ee, 0 0 25px #22d3ee, 0 0 50px #22d3ee80', WebkitTextStroke: '1px #22d3ee' }}
+          >
             ENSALADAS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-cyan-200">
@@ -285,8 +305,23 @@ export default function Home() {
         {/* Acento neon izquierdo - solo mobile */}
         <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-red-400 to-transparent shadow-sm shadow-red-400/50" />
 
+        {/* Icono de fondo grande - solo mobile: pierna de pollo */}
+        <div className="md:hidden absolute right-3 top-1/2 -translate-y-1/2 opacity-[0.12] pointer-events-none">
+          <svg viewBox="0 0 100 140" className="w-32 h-44 text-red-400" fill="none" stroke="currentColor" strokeWidth="2">
+            <ellipse cx="50" cy="45" rx="30" ry="34" fill="currentColor" fillOpacity="0.12"/>
+            <ellipse cx="50" cy="45" rx="30" ry="34"/>
+            <path d="M34 34 Q44 26 52 36 Q60 26 68 34 Q76 26 80 40" strokeWidth="1.5"/>
+            <path d="M32 50 Q42 42 52 50 Q62 42 70 50 Q78 42 82 54" strokeWidth="1.5"/>
+            <rect x="43" y="76" width="14" height="44" rx="7" fill="currentColor" fillOpacity="0.1"/>
+            <rect x="43" y="76" width="14" height="44" rx="7"/>
+            <ellipse cx="50" cy="120" rx="15" ry="9" fill="currentColor" fillOpacity="0.12"/>
+            <ellipse cx="50" cy="120" rx="15" ry="9"/>
+            <ellipse cx="50" cy="76" rx="10" ry="6" fill="currentColor" fillOpacity="0.15"/>
+          </svg>
+        </div>
+
         {/* Iconos decorativos FAT - Comida indulgente en líneas neón */}
-        <div className="absolute inset-0 overflow-hidden opacity-15">
+        <div className="absolute inset-0 overflow-hidden opacity-[0.12] md:opacity-[0.15]">
           {/* Alitas de pollo detalladas */}
           <svg className="absolute top-20 right-16 w-28 h-28 text-red-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M25 50 Q30 40, 40 38 L50 37 Q60 38, 65 42 L75 45 Q82 48, 82 55 Q82 62, 75 65 L65 68 Q60 70, 50 70 L40 69 Q30 67, 25 60 Q20 55, 25 50Z"/>
@@ -402,7 +437,10 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2 className="text-5xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-tight text-red-400 neon-glow-fat">
+          <h2
+            className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-red-400 neon-glow-fat"
+            style={{ textShadow: '0 0 4px #fff8, 0 0 10px #f87171, 0 0 25px #f87171, 0 0 50px #f8717180', WebkitTextStroke: '1px #f87171' }}
+          >
             ALITAS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
@@ -442,8 +480,23 @@ export default function Home() {
         {/* Acento neon izquierdo - solo mobile */}
         <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-emerald-400 to-transparent shadow-sm shadow-emerald-400/50" />
 
+        {/* Icono de fondo grande - solo mobile: taco */}
+        <div className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 opacity-[0.12] pointer-events-none">
+          <svg viewBox="0 0 140 100" className="w-44 h-32 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M8 78 Q8 22 70 10 Q132 22 132 78" strokeWidth="3"/>
+            <line x1="8" y1="78" x2="132" y2="78" strokeWidth="3"/>
+            <path d="M20 75 Q32 60 45 67 Q58 56 70 63 Q82 52 95 60 Q108 56 120 75" strokeWidth="1.8"/>
+            <circle cx="42" cy="63" r="8" fill="currentColor" opacity="0.3"/>
+            <circle cx="70" cy="57" r="8" fill="currentColor" opacity="0.3"/>
+            <circle cx="98" cy="62" r="8" fill="currentColor" opacity="0.3"/>
+            <path d="M16 76 Q35 66 55 70 Q75 66 95 70 Q115 66 124 76" strokeWidth="1.5"/>
+            <path d="M45 55 Q52 48 58 55" strokeWidth="1.5"/>
+            <path d="M73 50 Q80 44 86 50" strokeWidth="1.5"/>
+          </svg>
+        </div>
+
         {/* Iconos decorativos TACO - Elementos mexicanos */}
-        <div className="absolute inset-0 overflow-hidden opacity-15">
+        <div className="absolute inset-0 overflow-hidden opacity-[0.12] md:opacity-[0.15]">
           {/* Tacos */}
           <svg className="absolute top-20 left-16 w-28 h-28 text-emerald-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M20 60 Q25 30, 50 20 Q75 30, 80 60 L70 80 Q50 70, 30 80 Z"/>
@@ -518,7 +571,10 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2 className="text-5xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-tight text-emerald-400 neon-glow-taco">
+          <h2
+            className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-emerald-400 neon-glow-taco"
+            style={{ textShadow: '0 0 4px #fff8, 0 0 10px #34d399, 0 0 25px #34d399, 0 0 50px #34d39980', WebkitTextStroke: '1px #34d399' }}
+          >
             TACOS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
