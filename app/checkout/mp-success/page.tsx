@@ -94,7 +94,7 @@ export default function MpSuccessPage() {
           <h2 className="text-white font-black text-xl mb-2">Pago exitoso</h2>
           <p className="text-gray-400 text-sm mb-4">{error}</p>
           <a
-            href="https://wa.me/51999999999"
+            href="https://wa.me/51910677186"
             className="block w-full bg-green-600 hover:bg-green-500 text-white font-black py-3 rounded-xl transition-all"
           >
             Contactar por WhatsApp
