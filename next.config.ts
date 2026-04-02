@@ -7,6 +7,15 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/tacos',
+        destination: '/',
+        permanent: false,
+      },
+    ];
+  },
   // Deshabilitar caché para forzar rebuild completo
   generateBuildId: async () => {
     return `build-${Date.now()}`;
