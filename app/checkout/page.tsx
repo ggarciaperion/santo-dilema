@@ -229,6 +229,7 @@ export default function CheckoutPage() {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
+  const [isRedirectingToMp, setIsRedirectingToMp] = useState(false);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -612,6 +613,83 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  const handleMercadoPago = async () => {
+    setShowPaymentModal(false);
+    setIsRedirectingToMp(true);
+
+    try {
+      // Construir items para la preferencia
+      const mpItems = completedOrders.map((order) => {
+        const allProducts = [...fatProducts, ...fitProducts, ...tacoProducts];
+        const product = allProducts.find((p) => p.id === order.productId);
+        const unitPrice = order.finalPrice ?? product?.price ?? 0;
+        const complementsCost = order.complementIds.reduce((sum, compId) => {
+          return sum + (availableComplements[compId]?.price || 0);
+        }, 0);
+        return {
+          title: product?.name || order.productId,
+          quantity: order.quantity,
+          unit_price: unitPrice + complementsCost,
+        };
+      });
+
+      if (deliveryZoneCost > 0) {
+        mpItems.push({ title: "Delivery alrededores", quantity: 1, unit_price: deliveryZoneCost });
+      }
+
+      const externalReference = `SD-${Date.now()}`;
+
+      // Guardar datos del pedido en sessionStorage para usar en la página de éxito
+      sessionStorage.setItem("santo-dilema-mp-pending", JSON.stringify({
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+        completedOrders,
+        totalPrice: realTotal,
+        couponDiscount: couponValid ? couponDiscount.toString() : "0",
+        couponCode: couponValid ? couponCode.trim().toUpperCase() : "",
+        deliveryOption: deliveryZone || "centro",
+        deliveryCost: deliveryZoneCost.toString(),
+        externalReference,
+      }));
+
+      const res = await fetch("/api/mercadopago", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: mpItems,
+          customerName: formData.name,
+          externalReference,
+          origin: window.location.origin,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        throw new Error(data.error || "Sin init_point");
+      }
+    } catch (err) {
+      console.error("MP error:", err);
+      alert("Error al conectar con Mercado Pago. Intenta otro método de pago.");
+      setIsRedirectingToMp(false);
+      setShowPaymentModal(true);
+    }
+  };
+
+  if (isRedirectingToMp) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-blue-400 font-bold animate-pulse">Redirigiendo a Mercado Pago...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isSubmitting && !orderPlaced) {
     return (
@@ -1342,6 +1420,24 @@ export default function CheckoutPage() {
                   <div className="text-left flex-1">
                     <p className="text-white font-bold text-base">Pago contra entrega</p>
                     <p className="text-gray-400 text-xs mt-0.5">Solo efectivo al recibir</p>
+                  </div>
+                  <span className="text-gray-500">›</span>
+                </button>
+              )}
+
+              {!(scheduledDate && scheduledTime) && (
+                <button
+                  onClick={handleMercadoPago}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-blue-700/60 bg-blue-900/20 hover:bg-blue-900/40 hover:border-blue-400/70 transition-all active:scale-95"
+                >
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+                      <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                    </svg>
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="text-white font-bold text-base">Pagar con tarjeta</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Visa, Mastercard · Mercado Pago</p>
                   </div>
                   <span className="text-gray-500">›</span>
                 </button>
