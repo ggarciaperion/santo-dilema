@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 import MaintenanceWrapper from "./maintenance-wrapper";
-import { Permanent_Marker } from "next/font/google";
+import { Lilita_One } from "next/font/google";
 
-const permanentMarker = Permanent_Marker({
+const lilitaOne = Lilita_One({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-graffiti",
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`antialiased ${permanentMarker.variable}`}>
+      <body className={`antialiased ${lilitaOne.variable}`}>
         <Providers>
           <MaintenanceWrapper>
             {children}
