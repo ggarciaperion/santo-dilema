@@ -1305,10 +1305,8 @@ export default function FatPage() {
                     transformOrigin: 'center center',
                     borderRadius: 0,
                     overflow: 'visible',
-                    position: isSafari && isLastOdd && isMobile ? 'static' : 'relative',
-                    zIndex: isExpanded ? 50 : isMobile && !(isSafari && isLastOdd) ? index + 1 : undefined,
-                    marginTop: isSafari && isLastOdd && isMobile ? '3rem' : undefined,
-                    paddingTop: isSafari && isLastOdd && isMobile ? '2rem' : undefined,
+                    position: 'relative',
+                    zIndex: isExpanded ? 50 : isMobile ? index + 1 : undefined,
                   }}
                 >
                   {/* Card Header */}
@@ -1339,9 +1337,9 @@ export default function FatPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
-                          width: isSafari && isLastOdd && isMobile ? '120%' : '150%',
-                          height: isSafari && isLastOdd && isMobile ? '120%' : '160%',
-                          top: isSafari && isLastOdd && isMobile ? '0%' : '-30%',
+                          width: '150%',
+                          height: '160%',
+                          top: '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
