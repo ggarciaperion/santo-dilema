@@ -3019,6 +3019,7 @@ export default function AdminPage() {
                   <div className={`flex-shrink-0 rounded px-3 py-2 w-full md:w-auto md:min-w-[110px] ${
                     order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
                     order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
+                    order.paymentMethod === 'tarjeta-mp' ? 'bg-gradient-to-br from-blue-600 to-cyan-600' :
                     'bg-gradient-to-br from-orange-600 to-red-600'
                   }`}>
                     <p className="text-[10px] text-white/80 font-bold uppercase mb-0.5">Pago</p>
@@ -3061,6 +3062,11 @@ export default function AdminPage() {
                             </p>
                           </>
                         )}
+                      </div>
+                    ) : order.paymentMethod === 'tarjeta-mp' ? (
+                      <div>
+                        <p className="text-sm font-black text-white">✓ PAGADO</p>
+                        <p className="text-[10px] text-white/80">Mercado Pago</p>
                       </div>
                     ) : (
                       <p className="text-sm font-black text-white">Contraentrega</p>
