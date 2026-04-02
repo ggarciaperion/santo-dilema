@@ -132,20 +132,45 @@ export default function Home() {
         {/* Acento neon izquierdo - solo mobile */}
         <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-cyan-400 to-transparent shadow-sm shadow-cyan-400/50" />
 
-        {/* Icono de fondo grande - solo mobile */}
-        <div className="md:hidden absolute right-3 top-1/2 -translate-y-1/2 opacity-[0.12] pointer-events-none">
-          <svg viewBox="0 0 120 120" className="w-40 h-40 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <ellipse cx="60" cy="68" rx="48" ry="12" />
-            <path d="M12 68 Q12 102 60 110 Q108 102 108 68" />
-            <path d="M32 65 Q24 50 32 37 Q42 30 50 44 Q57 30 66 37 Q74 50 66 65" strokeWidth="1.5"/>
-            <path d="M57 62 Q50 47 57 35 Q67 27 74 42 Q80 27 88 35 Q96 48 88 62" strokeWidth="1.5"/>
-            <circle cx="47" cy="53" r="7" fill="currentColor" opacity="0.35"/>
-            <path d="M44 46 Q47 41 50 46" strokeWidth="1.5"/>
-            <circle cx="80" cy="50" r="5" fill="currentColor" opacity="0.3"/>
-            <line x1="20" y1="18" x2="20" y2="65" strokeWidth="2.5"/>
-            <line x1="16" y1="18" x2="16" y2="30" strokeWidth="2"/>
-            <line x1="20" y1="18" x2="20" y2="30" strokeWidth="2"/>
-            <line x1="24" y1="18" x2="24" y2="30" strokeWidth="2"/>
+        {/* Iconos mobile ensaladas - distribuidos en sección */}
+        <div className="md:hidden absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Bowl grande centro-derecha */}
+          <svg viewBox="0 0 120 120" className="absolute right-2 top-1/2 -translate-y-1/2 w-36 h-36 text-cyan-400 opacity-[0.13]" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <ellipse cx="60" cy="68" rx="48" ry="12"/>
+            <path d="M12 68 Q12 102 60 110 Q108 102 108 68"/>
+            <path d="M30 64 Q22 48 32 35 Q42 28 50 44 Q57 28 66 35 Q76 48 66 64" strokeWidth="1.5"/>
+            <path d="M56 61 Q50 46 57 34 Q66 26 74 42 Q80 26 88 34 Q96 47 88 61" strokeWidth="1.5"/>
+            <circle cx="46" cy="52" r="7" fill="currentColor" opacity="0.3"/>
+            <circle cx="80" cy="49" r="5" fill="currentColor" opacity="0.25"/>
+            <line x1="18" y1="16" x2="18" y2="65" strokeWidth="2.5"/>
+            <line x1="14" y1="16" x2="14" y2="30" strokeWidth="2"/>
+            <line x1="18" y1="16" x2="18" y2="30" strokeWidth="2"/>
+            <line x1="22" y1="16" x2="22" y2="30" strokeWidth="2"/>
+          </svg>
+          {/* Aguacate esquina superior izq */}
+          <svg viewBox="0 0 100 100" className="absolute top-1 left-2 w-14 h-14 text-teal-400 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2">
+            <ellipse cx="50" cy="55" rx="28" ry="35"/>
+            <ellipse cx="50" cy="55" rx="14" ry="17"/>
+            <circle cx="50" cy="50" r="8" fill="currentColor" opacity="0.3"/>
+            <path d="M48 22 Q50 17 52 22" strokeWidth="2.5"/>
+          </svg>
+          {/* Tomate cherry esquina inf izq */}
+          <svg viewBox="0 0 100 100" className="absolute bottom-2 left-4 w-12 h-12 text-red-300 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="50" cy="58" r="24"/>
+            <path d="M38 34 Q44 28 50 28 Q56 28 62 34" strokeWidth="2.5"/>
+            <path d="M44 33 L44 39 M50 30 L50 36 M56 33 L56 39"/>
+          </svg>
+          {/* Hoja superior derecha */}
+          <svg viewBox="0 0 100 100" className="absolute top-1 right-2 w-12 h-12 text-emerald-400 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M20 80 Q30 40 50 20 Q70 40 80 80"/>
+            <path d="M50 20 L50 80 M50 40 Q35 50 30 65 M50 40 Q65 50 70 65"/>
+          </svg>
+          {/* Zanahoria inf derecha */}
+          <svg viewBox="0 0 100 100" className="absolute bottom-1 right-3 w-11 h-11 text-orange-300 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M50 28 L44 82 L56 82 Z"/>
+            <line x1="41" y1="42" x2="37" y2="42"/>
+            <line x1="59" y1="42" x2="63" y2="42"/>
+            <path d="M45 26 L40 20 M50 23 L50 16 M55 26 L60 20"/>
           </svg>
         </div>
 
@@ -262,10 +287,7 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2
-            className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-2 tracking-widest md:tracking-tight text-cyan-400 neon-glow-fit"
-            style={{ textShadow: '0 0 4px #fff8, 0 0 10px #22d3ee, 0 0 25px #22d3ee, 0 0 50px #22d3ee80', WebkitTextStroke: '1px #22d3ee' }}
-          >
+          <h2 className="text-[3.2rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-2 tracking-widest md:tracking-tight text-cyan-400 neon-glow-fit">
             ENSALADAS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-cyan-200">
@@ -305,18 +327,43 @@ export default function Home() {
         {/* Acento neon izquierdo - solo mobile */}
         <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-red-400 to-transparent shadow-sm shadow-red-400/50" />
 
-        {/* Icono de fondo grande - solo mobile: pierna de pollo */}
-        <div className="md:hidden absolute right-3 top-1/2 -translate-y-1/2 opacity-[0.12] pointer-events-none">
-          <svg viewBox="0 0 100 140" className="w-32 h-44 text-red-400" fill="none" stroke="currentColor" strokeWidth="2">
-            <ellipse cx="50" cy="45" rx="30" ry="34" fill="currentColor" fillOpacity="0.12"/>
+        {/* Iconos mobile alitas - distribuidos en sección */}
+        <div className="md:hidden absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Pierna de pollo grande centro-derecha */}
+          <svg viewBox="0 0 100 140" className="absolute right-2 top-1/2 -translate-y-[55%] w-28 h-40 text-red-400 opacity-[0.13]" fill="none" stroke="currentColor" strokeWidth="2">
+            <ellipse cx="50" cy="45" rx="30" ry="34" fill="currentColor" fillOpacity="0.1"/>
             <ellipse cx="50" cy="45" rx="30" ry="34"/>
             <path d="M34 34 Q44 26 52 36 Q60 26 68 34 Q76 26 80 40" strokeWidth="1.5"/>
             <path d="M32 50 Q42 42 52 50 Q62 42 70 50 Q78 42 82 54" strokeWidth="1.5"/>
-            <rect x="43" y="76" width="14" height="44" rx="7" fill="currentColor" fillOpacity="0.1"/>
+            <rect x="43" y="76" width="14" height="44" rx="7" fill="currentColor" fillOpacity="0.08"/>
             <rect x="43" y="76" width="14" height="44" rx="7"/>
-            <ellipse cx="50" cy="120" rx="15" ry="9" fill="currentColor" fillOpacity="0.12"/>
+            <ellipse cx="50" cy="120" rx="15" ry="9" fill="currentColor" fillOpacity="0.1"/>
             <ellipse cx="50" cy="120" rx="15" ry="9"/>
-            <ellipse cx="50" cy="76" rx="10" ry="6" fill="currentColor" fillOpacity="0.15"/>
+          </svg>
+          {/* Alita sup izq */}
+          <svg viewBox="0 0 100 100" className="absolute top-1 left-2 w-16 h-16 text-orange-400 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M22 52 Q28 40 40 38 L52 37 Q63 38 68 44 L76 48 Q82 52 82 58 Q82 64 76 67 L68 70 Q62 72 52 72 L40 71 Q28 68 22 60 Q18 56 22 52Z"/>
+            <circle cx="34" cy="57" r="2.5" fill="currentColor" opacity="0.4"/>
+            <circle cx="56" cy="59" r="2.5" fill="currentColor" opacity="0.4"/>
+            <path d="M40 38 Q38 34 38 30 M52 37 Q52 33 52 29 M62 39 Q64 34 64 30"/>
+          </svg>
+          {/* Fuego inf izq */}
+          <svg viewBox="0 0 100 100" className="absolute bottom-1 left-3 w-12 h-12 text-orange-500 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M50 18 Q44 30 42 42 Q40 54 44 64 Q47 72 50 74 Q53 72 56 64 Q60 54 58 42 Q56 30 50 18Z"/>
+            <path d="M50 36 Q48 44 47 50 Q46 56 48 60 Q50 62 52 60 Q54 56 53 50 Q52 44 50 36Z"/>
+          </svg>
+          {/* Segunda pierna sup derecha */}
+          <svg viewBox="0 0 100 140" className="absolute top-0 right-1 w-10 h-14 text-red-300 opacity-[0.12]" fill="none" stroke="currentColor" strokeWidth="2">
+            <ellipse cx="50" cy="42" rx="26" ry="30"/>
+            <rect x="44" y="70" width="12" height="38" rx="6"/>
+            <ellipse cx="50" cy="108" rx="13" ry="8"/>
+          </svg>
+          {/* Papas fritas inf derecha */}
+          <svg viewBox="0 0 100 100" className="absolute bottom-1 right-2 w-13 h-13 text-amber-400 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M32 32 L30 76 L37 78 L39 35 Z"/>
+            <path d="M42 26 L40 76 L47 78 L49 29 Z"/>
+            <path d="M52 29 L50 76 L57 78 L59 32 Z"/>
+            <path d="M27 30 L62 34 L60 27 L25 23 Z" fill="currentColor" opacity="0.2"/>
           </svg>
         </div>
 
@@ -437,10 +484,7 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2
-            className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-red-400 neon-glow-fat"
-            style={{ textShadow: '0 0 4px #fff8, 0 0 10px #f87171, 0 0 25px #f87171, 0 0 50px #f8717180', WebkitTextStroke: '1px #f87171' }}
-          >
+          <h2 className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-red-400 neon-glow-fat">
             ALITAS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
@@ -480,18 +524,43 @@ export default function Home() {
         {/* Acento neon izquierdo - solo mobile */}
         <div className="md:hidden absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-emerald-400 to-transparent shadow-sm shadow-emerald-400/50" />
 
-        {/* Icono de fondo grande - solo mobile: taco */}
-        <div className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 opacity-[0.12] pointer-events-none">
-          <svg viewBox="0 0 140 100" className="w-44 h-32 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2">
+        {/* Iconos mobile tacos - distribuidos en sección */}
+        <div className="md:hidden absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Taco grande centro-derecha */}
+          <svg viewBox="0 0 140 100" className="absolute right-0 top-1/2 -translate-y-1/2 w-44 h-32 text-emerald-400 opacity-[0.13]" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M8 78 Q8 22 70 10 Q132 22 132 78" strokeWidth="3"/>
             <line x1="8" y1="78" x2="132" y2="78" strokeWidth="3"/>
-            <path d="M20 75 Q32 60 45 67 Q58 56 70 63 Q82 52 95 60 Q108 56 120 75" strokeWidth="1.8"/>
-            <circle cx="42" cy="63" r="8" fill="currentColor" opacity="0.3"/>
-            <circle cx="70" cy="57" r="8" fill="currentColor" opacity="0.3"/>
-            <circle cx="98" cy="62" r="8" fill="currentColor" opacity="0.3"/>
-            <path d="M16 76 Q35 66 55 70 Q75 66 95 70 Q115 66 124 76" strokeWidth="1.5"/>
-            <path d="M45 55 Q52 48 58 55" strokeWidth="1.5"/>
-            <path d="M73 50 Q80 44 86 50" strokeWidth="1.5"/>
+            <path d="M18 75 Q32 60 46 67 Q60 56 70 63 Q82 52 95 60 Q108 56 122 75" strokeWidth="1.8"/>
+            <circle cx="44" cy="63" r="8" fill="currentColor" opacity="0.28"/>
+            <circle cx="70" cy="57" r="8" fill="currentColor" opacity="0.28"/>
+            <circle cx="96" cy="62" r="8" fill="currentColor" opacity="0.28"/>
+            <path d="M14 76 Q35 66 55 70 Q75 66 95 70 Q115 66 126 76" strokeWidth="1.5"/>
+          </svg>
+          {/* Aguacate sup izq */}
+          <svg viewBox="0 0 100 100" className="absolute top-1 left-2 w-13 h-13 text-lime-400 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2">
+            <ellipse cx="50" cy="55" rx="27" ry="34"/>
+            <ellipse cx="50" cy="55" rx="14" ry="17"/>
+            <circle cx="50" cy="50" r="7" fill="currentColor" opacity="0.3"/>
+            <path d="M48 23 Q50 18 52 23" strokeWidth="2.5"/>
+          </svg>
+          {/* Chile inf izq */}
+          <svg viewBox="0 0 100 100" className="absolute bottom-1 left-3 w-11 h-11 text-red-500 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M50 24 Q48 32 46 44 Q44 56 44 66 Q44 76 48 82 Q52 82 56 76 Q56 66 56 56 Q54 44 52 32 Q50 24 50 24Z"/>
+            <path d="M50 21 Q52 17 56 17 Q59 17 60 20" strokeWidth="2"/>
+          </svg>
+          {/* Taco pequeño sup derecha */}
+          <svg viewBox="0 0 100 72" className="absolute top-1 right-2 w-16 h-11 text-green-400 opacity-[0.14]" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/>
+            <line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
+            <circle cx="30" cy="47" r="6" fill="currentColor" opacity="0.25"/>
+            <circle cx="50" cy="42" r="6" fill="currentColor" opacity="0.25"/>
+            <circle cx="70" cy="47" r="6" fill="currentColor" opacity="0.25"/>
+          </svg>
+          {/* Limón inf derecha */}
+          <svg viewBox="0 0 100 100" className="absolute bottom-1 right-3 w-11 h-11 text-lime-300 opacity-[0.15]" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="50" cy="50" r="22"/>
+            <path d="M50 28 L50 72 M28 50 L72 50" strokeWidth="1" opacity="0.6"/>
+            <circle cx="50" cy="50" r="14" opacity="0.3"/>
           </svg>
         </div>
 
@@ -571,10 +640,7 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2
-            className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-emerald-400 neon-glow-taco"
-            style={{ textShadow: '0 0 4px #fff8, 0 0 10px #34d399, 0 0 25px #34d399, 0 0 50px #34d39980', WebkitTextStroke: '1px #34d399' }}
-          >
+          <h2 className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-emerald-400 neon-glow-taco">
             TACOS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
