@@ -1188,6 +1188,7 @@ export default function FatPage() {
                     position: isSafari && isLastOdd && isMobile ? 'static' : 'relative',
                     zIndex: isExpanded ? 50 : isMobile && !(isSafari && isLastOdd) ? index + 1 : undefined,
                     marginTop: isSafari && isLastOdd && isMobile ? '3rem' : undefined,
+                    paddingTop: isSafari && isLastOdd && isMobile ? '2rem' : undefined,
                   }}
                 >
                   {/* Card Header */}
@@ -1211,9 +1212,9 @@ export default function FatPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
-                          width: product.id === 'mega-taco-combo' && isMobile ? '100%' : isSafari && isLastOdd && isMobile ? '120%' : '150%',
-                          height: product.id === 'mega-taco-combo' && isMobile ? '110%' : isSafari && isLastOdd && isMobile ? '130%' : '160%',
-                          top: product.id === 'mega-taco-combo' && isMobile ? '-5%' : isSafari && isLastOdd && isMobile ? '-15%' : '-30%',
+                          width: product.id === 'mega-taco-combo' && isMobile ? '80%' : isSafari && isLastOdd && isMobile ? '120%' : '150%',
+                          height: product.id === 'mega-taco-combo' && isMobile ? '88%' : isSafari && isLastOdd && isMobile ? '120%' : '160%',
+                          top: product.id === 'mega-taco-combo' && isMobile ? '6%' : isSafari && isLastOdd && isMobile ? '0%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',

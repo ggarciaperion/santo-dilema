@@ -955,6 +955,7 @@ export default function FitPage() {
                     position: isSafari && isLastOdd && isMobile ? 'static' : 'relative',
                     zIndex: isExpanded ? 50 : isMobile && !(isSafari && isLastOdd) ? productIndex + 1 : undefined,
                     marginTop: isSafari && isLastOdd && isMobile ? '3rem' : undefined,
+                    paddingTop: isSafari && isLastOdd && isMobile ? '2rem' : undefined,
                   }}
                 >
                   <div className={`relative flex items-center justify-center overflow-visible ${
@@ -970,9 +971,9 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: product.id === 'pasta-power-bowl' && isMobile ? '100%' : isSafari && isLastOdd && isMobile ? '120%' : '150%',
-                          height: product.id === 'pasta-power-bowl' && isMobile ? '110%' : isSafari && isLastOdd && isMobile ? '130%' : '160%',
-                          top: product.id === 'pasta-power-bowl' && isMobile ? '-5%' : isSafari && isLastOdd && isMobile ? '-15%' : '-30%',
+                          width: product.id === 'pasta-power-bowl' && isMobile ? '80%' : isSafari && isLastOdd && isMobile ? '120%' : '150%',
+                          height: product.id === 'pasta-power-bowl' && isMobile ? '88%' : isSafari && isLastOdd && isMobile ? '120%' : '160%',
+                          top: product.id === 'pasta-power-bowl' && isMobile ? '6%' : isSafari && isLastOdd && isMobile ? '0%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
