@@ -176,6 +176,10 @@ export default function FatPage() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedSalsas, setSelectedSalsas] = useState<Record<string, string[]>>({});
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
+  const [isSafari, setIsSafari] = useState(false);
+  useEffect(() => {
+    setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+  }, []);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -1178,6 +1182,7 @@ export default function FatPage() {
                     overflow: 'visible',
                     position: 'relative',
                     zIndex: isExpanded ? 50 : index + 1,
+                    marginTop: isSafari && isLastOdd ? '3rem' : undefined,
                   }}
                 >
                   {/* Card Header */}
@@ -1201,9 +1206,9 @@ export default function FatPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
-                          width: '150%',
-                          height: '160%',
-                          top: '-30%',
+                          width: isSafari && isLastOdd ? '120%' : '150%',
+                          height: isSafari && isLastOdd ? '130%' : '160%',
+                          top: isSafari && isLastOdd ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',

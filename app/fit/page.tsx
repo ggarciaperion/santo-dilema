@@ -172,6 +172,10 @@ export default function FitPage() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [isSafari, setIsSafari] = useState(false);
+  useEffect(() => {
+    setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+  }, []);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -945,6 +949,7 @@ export default function FitPage() {
                     overflow: 'visible',
                     position: 'relative',
                     zIndex: isExpanded ? 50 : productIndex + 1,
+                    marginTop: isSafari && isLastOdd ? '3rem' : undefined,
                   }}
                 >
                   <div className={`relative flex items-center justify-center overflow-visible ${
@@ -960,9 +965,9 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: '150%',
-                          height: '160%',
-                          top: '-30%',
+                          width: isSafari && isLastOdd ? '120%' : '150%',
+                          height: isSafari && isLastOdd ? '130%' : '160%',
+                          top: isSafari && isLastOdd ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
