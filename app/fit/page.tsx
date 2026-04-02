@@ -55,19 +55,19 @@ const products: Product[] = [
     category: "fit",
   },
   {
-    id: "ensalada-mediterranea",
-    name: "TUNA FRESH BOWL",
-    description: "El mar en un bowl. Atún en trozos, lechuga romana, tomate cherry, pepino, maíz americano, palta y huevo. Con aderezo cremoso especial de la casa.",
-    price: 23.50,
-    image: "/4.png",
-    category: "fit",
-  },
-  {
     id: "cobb-supreme-bowl",
     name: "COBB SUPREME BOWL",
     description: "Lechuga fresca con pollo grillado, tocino ahumado crocante, queso fresco, tomate en dados, huevo cocido y palta en cubos, acompañado de vinagreta de la casa.",
     price: 23.50,
     image: "/cobb.png",
+    category: "fit",
+  },
+  {
+    id: "ensalada-mediterranea",
+    name: "TUNA FRESH BOWL",
+    description: "El mar en un bowl. Atún en trozos, lechuga romana, tomate cherry, pepino, maíz americano, palta y huevo. Con aderezo cremoso especial de la casa.",
+    price: 23.50,
+    image: "/4.png",
     category: "fit",
   },
   {
