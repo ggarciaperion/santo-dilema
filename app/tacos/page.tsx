@@ -1206,9 +1206,9 @@ export default function FatPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
-                          width: isSafari && isLastOdd ? '120%' : '150%',
-                          height: isSafari && isLastOdd ? '130%' : '160%',
-                          top: isSafari && isLastOdd ? '-15%' : '-30%',
+                          width: product.id === 'mega-taco-combo' ? '100%' : isSafari && isLastOdd ? '120%' : '150%',
+                          height: product.id === 'mega-taco-combo' ? '110%' : isSafari && isLastOdd ? '130%' : '160%',
+                          top: product.id === 'mega-taco-combo' ? '-5%' : isSafari && isLastOdd ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',

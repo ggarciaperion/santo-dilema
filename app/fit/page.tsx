@@ -930,7 +930,7 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`${productIndex === products.length - 1 && products.length % 2 !== 0 ? 'col-span-2 md:col-auto justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : product.id === 'pasta-power-bowl' ? 'border-4 border-red-500 neon-red-border shadow-red-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
+                  className={`${productIndex === products.length - 1 && products.length % 2 !== 0 ? 'col-span-2 md:col-auto justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[340px] lg:w-[360px] z-20'
@@ -965,9 +965,9 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: isSafari && isLastOdd ? '120%' : '150%',
-                          height: isSafari && isLastOdd ? '130%' : '160%',
-                          top: isSafari && isLastOdd ? '-15%' : '-30%',
+                          width: product.id === 'pasta-power-bowl' ? '100%' : isSafari && isLastOdd ? '120%' : '150%',
+                          height: product.id === 'pasta-power-bowl' ? '110%' : isSafari && isLastOdd ? '130%' : '160%',
+                          top: product.id === 'pasta-power-bowl' ? '-5%' : isSafari && isLastOdd ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
@@ -996,13 +996,6 @@ export default function FitPage() {
                       <div className="absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
                         <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider hora-loca-badge shadow-lg shadow-purple-900/60">
                           🎉 HORA LOCA
-                        </span>
-                      </div>
-                    )}
-                    {product.id === 'pasta-power-bowl' && !isSoldOut && (
-                      <div className="absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
-                        <span className="bg-red-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full tracking-wider shadow-lg shadow-red-900/60" style={{ animation: 'promoBorderPulse 1.6s ease-in-out infinite' }}>
-                          🔥 NUEVO INGRESO
                         </span>
                       </div>
                     )}
