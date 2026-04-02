@@ -1245,10 +1245,10 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex md:flex-wrap md:justify-center items-center gap-2 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-12 md:py-8 lg:py-10 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} md:cursor-default snap-x snap-mandatory md:snap-none overflow-x-auto md:overflow-visible`}
+            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-6 md:gap-6 lg:gap-8 scrollbar-hide px-4 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
-            {products.map((product) => {
+            {products.map((product, index) => {
               const isExpanded = expandedCard === product.id;
               const requiredSalsas = getRequiredSalsasCount(product.id);
               const currentSalsas = selectedSalsas[product.id] || [];
@@ -1260,6 +1260,7 @@ export default function FatPage() {
               const activePromo = findMatchingPromo(product.id, currentSalsas);
               const dynamicPromosForProduct = salsaPromos.filter((p: any) => p.active && p.productId === product.id);
               const allPromosForProduct = dynamicPromosForProduct;
+              const isLastOdd = index === products.length - 1 && products.length % 2 !== 0;
 
               return (
                 <div
@@ -1268,7 +1269,7 @@ export default function FatPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink snap-center md:snap-none ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`${isLastOdd ? 'col-span-2 md:col-span-0 justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
                       : 'w-[240px] md:w-[280px] lg:w-[300px]'

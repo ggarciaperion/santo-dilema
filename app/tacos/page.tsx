@@ -1131,15 +1131,16 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex flex-col md:grid md:grid-cols-3 items-center md:items-stretch gap-10 md:gap-6 lg:gap-8 w-full px-4 md:px-4 pt-14 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`grid grid-cols-2 md:grid md:grid-cols-3 items-center md:items-stretch gap-6 md:gap-6 lg:gap-8 w-full px-4 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
-            {products.map((product) => {
+            {products.map((product, index) => {
               const isExpanded = expandedCard === product.id;
               const requiredSalsas = getRequiredSalsasCount(product.id);
               const currentSalsas = selectedSalsas[product.id] || [];
               const canAdd = canAddProduct(product.id);
               const isSoldOut = !!menuStock[product.id];
+              const isLastOdd = index === products.length - 1 && products.length % 2 !== 0;
 
               return (
                 <div
@@ -1148,7 +1149,7 @@ export default function FatPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-taco shadow-xl shadow-emerald-600/30 snap-center md:snap-none border-2 md:border-0 border-emerald-500 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`${isLastOdd ? 'col-span-2 md:col-span-1 justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-taco shadow-xl shadow-emerald-600/30 border-2 md:border-0 border-emerald-500 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
                       : 'w-[240px] md:w-[280px] lg:w-[300px]'
