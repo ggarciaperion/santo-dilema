@@ -1165,11 +1165,15 @@ export default function FatPage() {
               return (
                 <div
                   key={product.id}
+                  className={isLastOdd ? 'col-span-2 md:contents flex justify-center overflow-visible' : 'contents'}
+                  style={isLastOdd ? { overflow: 'visible' } : undefined}
+                >
+                <div
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`${isLastOdd ? 'col-span-2 md:col-span-1 justify-self-center md:justify-self-auto' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-taco shadow-xl shadow-emerald-600/30 border-2 md:border-0 border-emerald-500 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-taco shadow-xl shadow-emerald-600/30 border-2 md:border-0 border-emerald-500 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[400px] lg:w-[420px] z-20'
                       : isLastOdd ? 'w-[65%] md:w-[280px] lg:w-[300px]' : 'w-full md:w-[280px] lg:w-[300px]'
@@ -1667,6 +1671,7 @@ export default function FatPage() {
                       </button>
                     </div>
                   </div>
+                </div>
                 </div>
               );
             })}

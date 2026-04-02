@@ -930,12 +930,13 @@ export default function FitPage() {
                   {productIndex === 4 && (
                     <div className="basis-full hidden md:block" />
                   )}
+                  <div className={isLastOdd ? 'col-span-2 md:contents flex justify-center overflow-visible' : 'contents'} style={isLastOdd ? { overflow: 'visible' } : undefined}>
                   <div
                   ref={(el) => { cardRefs.current[product.id] = el; }}
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`${productIndex === products.length - 1 && products.length % 2 !== 0 ? 'col-span-2 md:col-auto justify-self-center md:justify-self-auto' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[340px] lg:w-[360px] z-20'
@@ -1276,6 +1277,7 @@ export default function FitPage() {
                       </button>
                     </div>
                   </div>
+                </div>
                 </div>
                 </React.Fragment>
               );
