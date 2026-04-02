@@ -1256,7 +1256,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-3 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-12 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
             {products.map((product, index) => {
@@ -1296,6 +1296,8 @@ export default function FatPage() {
                     transformOrigin: 'center center',
                     borderRadius: 0,
                     overflow: 'visible',
+                    position: 'relative',
+                    zIndex: isExpanded ? 50 : index + 1,
                   }}
                 >
                   {/* Card Header */}
