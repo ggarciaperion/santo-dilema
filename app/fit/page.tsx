@@ -940,7 +940,7 @@ export default function FitPage() {
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[340px] lg:w-[360px] z-20'
-                      : 'w-full md:w-[240px] lg:w-[260px]'
+                      : isLastOdd ? 'w-[calc(50%-0.375rem)] md:w-[240px] lg:w-[260px]' : 'w-full md:w-[240px] lg:w-[260px]'
                     }
                     ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 z-10'
