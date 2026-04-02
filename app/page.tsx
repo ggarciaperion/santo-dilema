@@ -289,7 +289,7 @@ export default function Home() {
           </div>
           <h2
             className="mb-3 md:mb-2 text-cyan-400 neon-glow-fit tracking-[0.12em] leading-none"
-            style={{ fontFamily: 'var(--font-bebas)', fontSize: 'clamp(3rem, 12vw, 3.4rem)' }}
+            style={{ fontFamily: 'var(--font-bangers)', fontSize: 'clamp(3rem, 12vw, 3.4rem)' }}
           >
             ENSALADAS
           </h2>
@@ -489,7 +489,7 @@ export default function Home() {
           </div>
           <h2
             className="mb-3 md:mb-1 text-red-400 neon-glow-fat tracking-[0.14em] leading-none"
-            style={{ fontFamily: 'var(--font-bebas)', fontSize: 'clamp(3.6rem, 16vw, 4.5rem)' }}
+            style={{ fontFamily: 'var(--font-bangers)', fontSize: 'clamp(3.6rem, 16vw, 4.5rem)' }}
           >
             ALITAS
           </h2>
@@ -648,7 +648,7 @@ export default function Home() {
           </div>
           <h2
             className="mb-3 md:mb-1 text-emerald-400 neon-glow-taco tracking-[0.14em] leading-none"
-            style={{ fontFamily: 'var(--font-bebas)', fontSize: 'clamp(3.6rem, 16vw, 4.5rem)' }}
+            style={{ fontFamily: 'var(--font-bangers)', fontSize: 'clamp(3.6rem, 16vw, 4.5rem)' }}
           >
             TACOS
           </h2>

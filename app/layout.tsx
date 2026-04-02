@@ -2,12 +2,12 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 import MaintenanceWrapper from "./maintenance-wrapper";
-import { Bebas_Neue } from "next/font/google";
+import { Bangers } from "next/font/google";
 
-const bebasNeue = Bebas_Neue({
+const bangers = Bangers({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-bebas",
+  variable: "--font-bangers",
   display: "swap",
 });
 
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`antialiased ${bebasNeue.variable}`}>
+      <body className={`antialiased ${bangers.variable}`}>
         <Providers>
           <MaintenanceWrapper>
             {children}
