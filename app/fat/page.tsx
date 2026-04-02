@@ -477,6 +477,17 @@ export default function FatPage() {
     return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
   }, []);
 
+  useEffect(() => {
+    if (expandedCard && window.innerWidth < 768) {
+      const el = cardRefs.current[expandedCard];
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 80);
+      }
+    }
+  }, [expandedCard]);
+
   // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
 
   const getRequiredSalsasCount = (productId: string): number => {
