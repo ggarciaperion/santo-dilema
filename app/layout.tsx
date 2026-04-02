@@ -2,6 +2,14 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 import MaintenanceWrapper from "./maintenance-wrapper";
+import { Bebas_Neue } from "next/font/google";
+
+const bebasNeue = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-bebas",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Santo Dilema - Fit o Fat",
@@ -21,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="antialiased">
+      <body className={`antialiased ${bebasNeue.variable}`}>
         <Providers>
           <MaintenanceWrapper>
             {children}

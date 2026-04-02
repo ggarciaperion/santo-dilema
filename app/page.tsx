@@ -287,7 +287,10 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2 className="text-[3.2rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-2 tracking-widest md:tracking-tight text-cyan-400 neon-glow-fit">
+          <h2
+            className="mb-3 md:mb-2 text-cyan-400 neon-glow-fit tracking-[0.12em] leading-none"
+            style={{ fontFamily: 'var(--font-bebas)', fontSize: 'clamp(3rem, 12vw, 3.4rem)' }}
+          >
             ENSALADAS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-cyan-200">
@@ -484,7 +487,10 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2 className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-red-400 neon-glow-fat">
+          <h2
+            className="mb-3 md:mb-1 text-red-400 neon-glow-fat tracking-[0.14em] leading-none"
+            style={{ fontFamily: 'var(--font-bebas)', fontSize: 'clamp(3.6rem, 16vw, 4.5rem)' }}
+          >
             ALITAS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-orange-200">
@@ -640,7 +646,10 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
-          <h2 className="text-[4.5rem] md:text-5xl lg:text-6xl font-black mb-3 md:mb-1 tracking-widest md:tracking-tight text-emerald-400 neon-glow-taco">
+          <h2
+            className="mb-3 md:mb-1 text-emerald-400 neon-glow-taco tracking-[0.14em] leading-none"
+            style={{ fontFamily: 'var(--font-bebas)', fontSize: 'clamp(3.6rem, 16vw, 4.5rem)' }}
+          >
             TACOS
           </h2>
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
