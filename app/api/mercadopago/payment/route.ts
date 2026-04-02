@@ -33,10 +33,13 @@ export async function POST(req: NextRequest) {
       id: response.id,
     });
   } catch (error: any) {
-    const detail = error?.cause ?? error?.message ?? String(error);
-    console.error("MP Payment error:", detail);
+    const cause = error?.cause;
+    const detail = typeof cause === "object"
+      ? JSON.stringify(cause)
+      : (cause ?? error?.message ?? String(error));
+    console.error("MP Payment error full:", JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: String(detail), status: "error", status_detail: String(detail) },
+      { error: detail, status: "error", status_detail: detail },
       { status: 500 }
     );
   }
