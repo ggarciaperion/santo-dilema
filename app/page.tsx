@@ -13,6 +13,7 @@ export default function Home() {
   const [showYunzaModal, setShowYunzaModal] = useState(false);
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
+  const [showTarjetaBanner, setShowTarjetaBanner] = useState(false);
 
   useEffect(() => {
     // YUNZA DESACTIVADA - Promoción finalizada
@@ -22,6 +23,14 @@ export default function Home() {
     }, 800);
     return () => clearTimeout(timer);
     */
+  }, []);
+
+  useEffect(() => {
+    const seen = localStorage.getItem("sd-tarjeta-banner-seen");
+    if (!seen) {
+      const timer = setTimeout(() => setShowTarjetaBanner(true), 600);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   useEffect(() => {
@@ -704,6 +713,40 @@ export default function Home() {
 
       {/* Modal de Ruleta */}
       <YunzaModal isOpen={showYunzaModal} onClose={() => setShowYunzaModal(false)} />
+
+      {/* Banner tarjeta - primera visita */}
+      {showTarjetaBanner && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => {
+            setShowTarjetaBanner(false);
+            localStorage.setItem("sd-tarjeta-banner-seen", "1");
+          }}
+        >
+          <div
+            className="relative max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src="/tarjeta.png"
+              alt="Paga con tarjeta"
+              width={500}
+              height={500}
+              className="w-full h-auto rounded-2xl shadow-2xl"
+              priority
+            />
+            <button
+              onClick={() => {
+                setShowTarjetaBanner(false);
+                localStorage.setItem("sd-tarjeta-banner-seen", "1");
+              }}
+              className="absolute top-3 right-3 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-lg font-black transition-all"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
