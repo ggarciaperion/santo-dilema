@@ -1134,7 +1134,7 @@ export default function FatPage() {
         {/* Banners promocionales desactivados */}
         <div className="h-2" />
         {/* Carousel Container */}
-        <div className="relative flex items-center justify-center overflow-visible">
+        <div className="relative flex items-center justify-center overflow-visible" style={{ overflow: 'visible' }}>
           {/* Scrollable Products - Carrusel en móvil, grilla en desktop */}
           <div
             ref={scrollContainerRef}
@@ -1143,7 +1143,7 @@ export default function FatPage() {
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
             className={`grid grid-cols-2 md:grid md:grid-cols-3 items-center md:items-stretch gap-3 md:gap-6 lg:gap-8 w-full px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
             {products.map((product, index) => {
               const isExpanded = expandedCard === product.id;
@@ -1183,7 +1183,7 @@ export default function FatPage() {
                     product.image.startsWith('/')
                       ? 'bg-black h-40 md:h-48 border-0'
                       : 'bg-gradient-to-br from-emerald-900/40 to-green-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-emerald-600/30'
-                  }`}>
+                  }`} style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}>
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
                         <div className="border-4 border-red-500 rounded-sm px-3 py-1 select-none" style={{ transform: 'rotate(-20deg)', boxShadow: '0 0 12px rgba(239,68,68,0.7)' }}>

@@ -898,7 +898,7 @@ export default function FitPage() {
 
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
-        <div className="relative flex items-center justify-center overflow-visible">
+        <div className="relative flex items-center justify-center overflow-visible" style={{ overflow: 'visible' }}>
           <div
             ref={scrollContainerRef}
             onMouseDown={handleMouseDown}
@@ -906,7 +906,7 @@ export default function FitPage() {
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
             className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-3 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-x-visible`}
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowY: 'visible' }}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
             {products.map((product, productIndex) => {
               const isExpanded = expandedCard === product.id;
@@ -949,7 +949,7 @@ export default function FitPage() {
                     product.image.startsWith('/')
                       ? 'bg-black h-40 md:h-40 border-0'
                       : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
-                  }`}>
+                  }`} style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}>
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
