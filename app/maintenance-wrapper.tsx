@@ -10,11 +10,7 @@ export default function MaintenanceWrapper({ children }: { children: React.React
   const pathname = usePathname();
 
   useEffect(() => {
-    // Ventana de mantenimiento cerrada
-    const MAINTENANCE_START = new Date('2026-03-28T00:00:00Z');
-    const MAINTENANCE_END   = new Date('2026-04-01T00:00:00Z');
-    const now = new Date();
-    setIsMaintenanceMode(now >= MAINTENANCE_START && now < MAINTENANCE_END);
+    setIsMaintenanceMode(false);
     setIsChecking(false);
   }, []);
 
