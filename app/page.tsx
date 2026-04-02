@@ -513,10 +513,9 @@ export default function Home() {
       {/* Línea divisoria con efecto neón */}
       <div className="h-[2px] md:h-auto md:w-1 bg-gradient-to-r md:bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent z-10 shadow-md shadow-fuchsia-500/60" />
 
-      {/* Lado TACO - Tacos Mexicanos */}
-      <Link
-        href="/tacos"
-        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[33.33dvh] md:min-h-screen ${
+      {/* Lado TACO - Tacos Mexicanos - PRÓXIMAMENTE */}
+      <div
+        className={`relative flex-1 flex items-center justify-center transition-all duration-500 h-[33.33dvh] md:min-h-screen cursor-not-allowed select-none ${
           hoveredSide === "fit" || hoveredSide === "fat" ? "md:flex-[0.2]" : hoveredSide === "taco" ? "md:flex-[1.6]" : "flex-1"
         }`}
         onMouseEnter={() => setHoveredSide("taco")}
@@ -636,6 +635,29 @@ export default function Home() {
           <div className="absolute inset-0 bg-emerald-500/10 animate-pulse" />
         )}
 
+        {/* Sello Próximamente */}
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+          <div
+            className="relative flex items-center justify-center w-32 h-32 md:w-44 md:h-44 rounded-full border-4 border-emerald-400 bg-black/65"
+            style={{
+              transform: 'rotate(-12deg)',
+              boxShadow: '0 0 24px rgba(52, 211, 153, 0.55), 0 0 48px rgba(52, 211, 153, 0.2)',
+            }}
+          >
+            <div className="absolute inset-2 rounded-full border-2 border-dashed border-emerald-400/60" />
+            <p
+              className="text-emerald-400 font-black tracking-widest uppercase text-center leading-tight px-3"
+              style={{
+                fontFamily: 'var(--font-graffiti)',
+                fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+                textShadow: '0 0 14px rgba(52, 211, 153, 0.9)',
+              }}
+            >
+              PRÓXIMAMENTE
+            </p>
+          </div>
+        </div>
+
         <div className="relative z-10 text-center text-white px-4 md:px-6 flex flex-col items-center justify-center h-full md:h-auto md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="hidden md:block mb-0 md:mb-1 filter drop-shadow-lg">
             <Image
@@ -655,19 +677,11 @@ export default function Home() {
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
             Tacos Auténticos
           </p>
-          <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
-            hoveredSide === "taco" ? "md:opacity-100 md:translate-y-0" : ""
-          }`}>
-            <div className="inline-flex items-center gap-2 px-5 py-2 md:px-5 md:py-2 border-2 border-emerald-400 rounded-full neon-border-taco">
-              <span className="text-emerald-400 font-bold text-sm md:text-sm">VER MENÚ</span>
-              <span className="text-emerald-400 text-sm">→</span>
-            </div>
-          </div>
         </div>
 
         {/* Línea decorativa con efecto neón */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent neon-glow-taco" />
-      </Link>
+      </div>
 
       {/* Dark Kitchen Label - Parte inferior */}
       <div className={`absolute bottom-1 md:bottom-3 z-20 transform -translate-x-1/2 transition-all duration-700 ease-out px-4 ${
