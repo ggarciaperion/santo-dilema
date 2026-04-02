@@ -79,7 +79,7 @@ export default function MpCardModal({
                 style: { theme: "dark" },
                 hideFormTitle: true,
               },
-              paymentMethods: { maxInstallments: 1 },
+              paymentMethods: { maxInstallments: 1, types: { excluded: [] } },
             },
             callbacks: {
               onReady: () => {

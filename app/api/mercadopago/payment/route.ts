@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
         transaction_amount: Number(body.transaction_amount),
         installments: Number(body.installments) || 1,
         description: "Santo Dilema - Pedido",
+        three_d_secure_mode: "optional",
         payer: {
           email: body.payer?.email || "cliente@santodilema.com",
           identification: body.payer?.identification,
