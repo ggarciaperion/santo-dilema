@@ -1123,7 +1123,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-6 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 py-6 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-10 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 pt-14 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
             {products.map((product) => {
