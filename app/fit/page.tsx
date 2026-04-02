@@ -969,9 +969,9 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: '150%',
-                          height: '160%',
-                          top: '-30%',
+                          width: product.id === 'pasta-power-bowl' ? '110%' : '150%',
+                          height: product.id === 'pasta-power-bowl' ? '115%' : '160%',
+                          top: product.id === 'pasta-power-bowl' ? '-5%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
