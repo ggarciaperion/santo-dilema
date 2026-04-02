@@ -96,13 +96,15 @@ export default function MpCardModal({
                     }),
                   });
                   const data = await res.json();
+                  console.log("MP payment response:", data);
 
                   if (data.status === "approved") {
                     onSuccess(data.id);
                   } else if (data.status === "in_process" || data.status === "pending") {
                     onSuccess(data.id);
                   } else {
-                    onPaymentError(data.status_detail || "Pago rechazado. Verifica los datos.");
+                    const detail = data.status_detail || data.error || `status: ${data.status}`;
+                    onPaymentError(detail);
                   }
                 } catch {
                   onPaymentError("Error al procesar el pago. Intenta nuevamente.");

@@ -33,9 +33,10 @@ export async function POST(req: NextRequest) {
       id: response.id,
     });
   } catch (error: any) {
-    console.error("MP Payment error:", error?.cause || error);
+    const detail = error?.cause ?? error?.message ?? String(error);
+    console.error("MP Payment error:", detail);
     return NextResponse.json(
-      { error: "Error al procesar el pago", status: "error" },
+      { error: String(detail), status: "error", status_detail: String(detail) },
       { status: 500 }
     );
   }
