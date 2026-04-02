@@ -1163,7 +1163,7 @@ export default function FatPage() {
                   className={`${isLastOdd ? 'col-span-2 md:col-span-1 justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-taco shadow-xl shadow-emerald-600/30 border-2 md:border-0 border-emerald-500 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[400px] lg:w-[420px] z-20'
-                      : 'w-full md:w-[280px] lg:w-[300px]'
+                      : isLastOdd ? 'w-[calc(50%-0.375rem)] md:w-[280px] lg:w-[300px]' : 'w-full md:w-[280px] lg:w-[300px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-emerald-600/50 z-10'
