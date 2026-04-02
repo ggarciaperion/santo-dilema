@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
+import MpCardModal from "../components/MpCardModal";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -229,7 +230,7 @@ export default function CheckoutPage() {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
-  const [isRedirectingToMp, setIsRedirectingToMp] = useState(false);
+  const [showMpCardModal, setShowMpCardModal] = useState(false);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -614,82 +615,21 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleMercadoPago = async () => {
+  const handleMercadoPago = () => {
     setShowPaymentModal(false);
-    setIsRedirectingToMp(true);
-
-    try {
-      // Construir items para la preferencia
-      const mpItems = completedOrders.map((order) => {
-        const allProducts = [...fatProducts, ...fitProducts, ...tacoProducts];
-        const product = allProducts.find((p) => p.id === order.productId);
-        const unitPrice = order.finalPrice ?? product?.price ?? 0;
-        const complementsCost = order.complementIds.reduce((sum, compId) => {
-          return sum + (availableComplements[compId]?.price || 0);
-        }, 0);
-        return {
-          title: product?.name || order.productId,
-          quantity: order.quantity,
-          unit_price: unitPrice + complementsCost,
-        };
-      });
-
-      if (deliveryZoneCost > 0) {
-        mpItems.push({ title: "Delivery alrededores", quantity: 1, unit_price: deliveryZoneCost });
-      }
-
-      const externalReference = `SD-${Date.now()}`;
-
-      // Guardar datos del pedido en sessionStorage para usar en la página de éxito
-      sessionStorage.setItem("santo-dilema-mp-pending", JSON.stringify({
-        name: formData.name,
-        phone: formData.phone,
-        address: formData.address,
-        completedOrders,
-        totalPrice: realTotal,
-        couponDiscount: couponValid ? couponDiscount.toString() : "0",
-        couponCode: couponValid ? couponCode.trim().toUpperCase() : "",
-        deliveryOption: deliveryZone || "centro",
-        deliveryCost: deliveryZoneCost.toString(),
-        externalReference,
-      }));
-
-      const res = await fetch("/api/mercadopago", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: mpItems,
-          customerName: formData.name,
-          externalReference,
-          origin: window.location.origin,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      } else {
-        throw new Error(data.error || "Sin init_point");
-      }
-    } catch (err) {
-      console.error("MP error:", err);
-      alert("Error al conectar con Mercado Pago. Intenta otro método de pago.");
-      setIsRedirectingToMp(false);
-      setShowPaymentModal(true);
-    }
+    setShowMpCardModal(true);
   };
 
-  if (isRedirectingToMp) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-blue-400 font-bold animate-pulse">Redirigiendo a Mercado Pago...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleMpSuccess = (paymentId: string | number) => {
+    setShowMpCardModal(false);
+    confirmOrder('tarjeta-mp');
+  };
+
+  const handleMpError = (detail: string) => {
+    setShowMpCardModal(false);
+    setShowPaymentModal(true);
+    alert(`Pago rechazado: ${detail}`);
+  };
 
   if (isSubmitting && !orderPlaced) {
     return (
@@ -1793,6 +1733,14 @@ export default function CheckoutPage() {
           </div>
         </div>
       )}
+
+      <MpCardModal
+        isOpen={showMpCardModal}
+        amount={realTotal}
+        onClose={() => { setShowMpCardModal(false); setShowPaymentModal(true); }}
+        onSuccess={handleMpSuccess}
+        onPaymentError={handleMpError}
+      />
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
