@@ -1185,8 +1185,8 @@ export default function FatPage() {
                     transformOrigin: 'center center',
                     borderRadius: 0,
                     overflow: 'visible',
-                    position: 'relative',
-                    zIndex: isExpanded ? 50 : isMobile ? index + 1 : undefined,
+                    position: isSafari && isLastOdd && isMobile ? 'static' : 'relative',
+                    zIndex: isExpanded ? 50 : isMobile && !(isSafari && isLastOdd) ? index + 1 : undefined,
                     marginTop: isSafari && isLastOdd && isMobile ? '3rem' : undefined,
                   }}
                 >
