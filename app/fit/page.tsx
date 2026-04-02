@@ -173,8 +173,13 @@ export default function FitPage() {
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [isSafari, setIsSafari] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -930,7 +935,7 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`${productIndex === products.length - 1 && products.length % 2 !== 0 ? 'col-span-2 md:col-auto justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
+                  className={`${productIndex === products.length - 1 && products.length % 2 !== 0 ? 'col-span-2 md:col-auto justify-self-center md:justify-self-auto' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[340px] lg:w-[360px] z-20'
@@ -948,8 +953,8 @@ export default function FitPage() {
                     borderRadius: 0,
                     overflow: 'visible',
                     position: 'relative',
-                    zIndex: isExpanded ? 50 : productIndex + 1,
-                    marginTop: isSafari && isLastOdd ? '3rem' : undefined,
+                    zIndex: isExpanded ? 50 : isMobile ? productIndex + 1 : undefined,
+                    marginTop: isSafari && isLastOdd && isMobile ? '3rem' : undefined,
                   }}
                 >
                   <div className={`relative flex items-center justify-center overflow-visible ${
@@ -965,9 +970,9 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: product.id === 'pasta-power-bowl' ? '100%' : isSafari && isLastOdd ? '120%' : '150%',
-                          height: product.id === 'pasta-power-bowl' ? '110%' : isSafari && isLastOdd ? '130%' : '160%',
-                          top: product.id === 'pasta-power-bowl' ? '-5%' : isSafari && isLastOdd ? '-15%' : '-30%',
+                          width: product.id === 'pasta-power-bowl' && isMobile ? '100%' : isSafari && isLastOdd && isMobile ? '120%' : '150%',
+                          height: product.id === 'pasta-power-bowl' && isMobile ? '110%' : isSafari && isLastOdd && isMobile ? '130%' : '160%',
+                          top: product.id === 'pasta-power-bowl' && isMobile ? '-5%' : isSafari && isLastOdd && isMobile ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',

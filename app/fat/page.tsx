@@ -233,8 +233,13 @@ export default function FatPage() {
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [isSafari, setIsSafari] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -1284,7 +1289,7 @@ export default function FatPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`${isLastOdd ? 'col-span-2 md:col-span-0 justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`${isLastOdd ? 'col-span-2 md:col-auto justify-self-center md:justify-self-auto' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[400px] lg:w-[420px] z-20'
                       : isLastOdd ? 'w-[65%] md:w-[280px] lg:w-[300px]' : 'w-full md:w-[280px] lg:w-[300px]'
@@ -1301,8 +1306,8 @@ export default function FatPage() {
                     borderRadius: 0,
                     overflow: 'visible',
                     position: 'relative',
-                    zIndex: isExpanded ? 50 : index + 1,
-                    marginTop: isSafari && isLastOdd ? '3rem' : undefined,
+                    zIndex: isExpanded ? 50 : isMobile ? index + 1 : undefined,
+                    marginTop: isSafari && isLastOdd && isMobile ? '3rem' : undefined,
                   }}
                 >
                   {/* Card Header */}
@@ -1333,9 +1338,9 @@ export default function FatPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
-                          width: isSafari && isLastOdd ? '120%' : '150%',
-                          height: isSafari && isLastOdd ? '130%' : '160%',
-                          top: isSafari && isLastOdd ? '-15%' : '-30%',
+                          width: isSafari && isLastOdd && isMobile ? '120%' : '150%',
+                          height: isSafari && isLastOdd && isMobile ? '130%' : '160%',
+                          top: isSafari && isLastOdd && isMobile ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',

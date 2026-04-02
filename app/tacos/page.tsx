@@ -177,8 +177,13 @@ export default function FatPage() {
   const [selectedSalsas, setSelectedSalsas] = useState<Record<string, string[]>>({});
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [isSafari, setIsSafari] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -1164,7 +1169,7 @@ export default function FatPage() {
                   onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`${isLastOdd ? 'col-span-2 md:col-span-1 justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-taco shadow-xl shadow-emerald-600/30 border-2 md:border-0 border-emerald-500 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
+                  className={`${isLastOdd ? 'col-span-2 md:col-span-1 justify-self-center md:justify-self-auto' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink neon-border-taco shadow-xl shadow-emerald-600/30 border-2 md:border-0 border-emerald-500 ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
                       ? 'w-full md:w-[400px] lg:w-[420px] z-20'
                       : isLastOdd ? 'w-[65%] md:w-[280px] lg:w-[300px]' : 'w-full md:w-[280px] lg:w-[300px]'
@@ -1181,8 +1186,8 @@ export default function FatPage() {
                     borderRadius: 0,
                     overflow: 'visible',
                     position: 'relative',
-                    zIndex: isExpanded ? 50 : index + 1,
-                    marginTop: isSafari && isLastOdd ? '3rem' : undefined,
+                    zIndex: isExpanded ? 50 : isMobile ? index + 1 : undefined,
+                    marginTop: isSafari && isLastOdd && isMobile ? '3rem' : undefined,
                   }}
                 >
                   {/* Card Header */}
@@ -1206,9 +1211,9 @@ export default function FatPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl md:w-[140%] md:h-[150%]"
                         style={{
-                          width: product.id === 'mega-taco-combo' ? '100%' : isSafari && isLastOdd ? '120%' : '150%',
-                          height: product.id === 'mega-taco-combo' ? '110%' : isSafari && isLastOdd ? '130%' : '160%',
-                          top: product.id === 'mega-taco-combo' ? '-5%' : isSafari && isLastOdd ? '-15%' : '-30%',
+                          width: product.id === 'mega-taco-combo' && isMobile ? '100%' : isSafari && isLastOdd && isMobile ? '120%' : '150%',
+                          height: product.id === 'mega-taco-combo' && isMobile ? '110%' : isSafari && isLastOdd && isMobile ? '130%' : '160%',
+                          top: product.id === 'mega-taco-combo' && isMobile ? '-5%' : isSafari && isLastOdd && isMobile ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
