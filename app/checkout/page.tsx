@@ -1737,6 +1737,7 @@ export default function CheckoutPage() {
       <MpCardModal
         isOpen={showMpCardModal}
         amount={realTotal}
+        payerPhone={formData.phone}
         onClose={() => { setShowMpCardModal(false); setShowPaymentModal(true); }}
         onSuccess={handleMpSuccess}
         onPaymentError={handleMpError}

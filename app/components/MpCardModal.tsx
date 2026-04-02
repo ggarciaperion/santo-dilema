@@ -8,6 +8,7 @@ const MP_PUBLIC_KEY = "APP_USR-10a4a6b8-b93e-4f68-86bd-2c1ffa8b7ec2";
 interface MpCardModalProps {
   isOpen: boolean;
   amount: number;
+  payerPhone?: string;
   onClose: () => void;
   onSuccess: (paymentId: string | number) => void;
   onPaymentError: (detail: string) => void;
@@ -16,6 +17,7 @@ interface MpCardModalProps {
 export default function MpCardModal({
   isOpen,
   amount,
+  payerPhone,
   onClose,
   onSuccess,
   onPaymentError,
@@ -73,7 +75,12 @@ export default function MpCardModal({
           "cardPayment",
           "mp-brick-container",
           {
-            initialization: { amount },
+            initialization: {
+              amount,
+              payer: {
+                email: payerPhone ? `${payerPhone}@santodilema.com` : "cliente@santodilema.com",
+              },
+            },
             customization: {
               visual: {
                 style: { theme: "dark" },
