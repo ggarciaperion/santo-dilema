@@ -2,12 +2,12 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 import MaintenanceWrapper from "./maintenance-wrapper";
-import { Bangers } from "next/font/google";
+import { Permanent_Marker } from "next/font/google";
 
-const bangers = Bangers({
+const permanentMarker = Permanent_Marker({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-bangers",
+  variable: "--font-graffiti",
   display: "swap",
 });
 
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`antialiased ${bangers.variable}`}>
+      <body className={`antialiased ${permanentMarker.variable}`}>
         <Providers>
           <MaintenanceWrapper>
             {children}
