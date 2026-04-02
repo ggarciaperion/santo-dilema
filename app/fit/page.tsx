@@ -905,7 +905,7 @@ export default function FitPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-6 md:gap-6 lg:gap-8 scrollbar-hide px-4 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-x-visible`}
+            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-3 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-x-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflowY: 'visible' }}
           >
             {products.map((product, productIndex) => {
@@ -928,8 +928,8 @@ export default function FitPage() {
                   className={`${productIndex === products.length - 1 && products.length % 2 !== 0 ? 'col-span-2 md:col-auto justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : product.id === 'pasta-power-bowl' ? 'border-4 border-red-500 neon-red-border shadow-red-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
-                      ? 'w-[260px] md:w-[340px] lg:w-[360px] z-20'
-                      : 'w-[240px] md:w-[240px] lg:w-[260px]'
+                      ? 'w-full md:w-[340px] lg:w-[360px] z-20'
+                      : 'w-full md:w-[240px] lg:w-[260px]'
                     }
                     ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 z-10'

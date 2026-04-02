@@ -1256,7 +1256,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-6 md:gap-6 lg:gap-8 scrollbar-hide px-4 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-3 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
             {products.map((product, index) => {
@@ -1282,8 +1282,8 @@ export default function FatPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`${isLastOdd ? 'col-span-2 md:col-span-0 justify-self-center' : ''} bg-gray-900 flex-shrink-0 md:flex-shrink ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
-                      ? 'w-[260px] md:w-[400px] lg:w-[420px] z-20'
-                      : 'w-[240px] md:w-[280px] lg:w-[300px]'
+                      ? 'w-full md:w-[400px] lg:w-[420px] z-20'
+                      : 'w-full md:w-[280px] lg:w-[300px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
