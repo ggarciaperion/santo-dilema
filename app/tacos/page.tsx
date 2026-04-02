@@ -52,6 +52,14 @@ const products: Product[] = [
     image: "/tacoinicio.png",
     category: "taco",
   },
+  {
+    id: "mega-taco-combo",
+    name: "Mega Taco Combo",
+    description: "7 tacos épicos con mix de proteínas premium, queso derretido, jalapeños, guacamole casero y todas las salsas. Para los que no conocen límites cuando se trata de tacos.",
+    price: 42.90,
+    image: "/tacoinicio.png",
+    category: "taco",
+  },
 ];
 
 // Productos de FIT para visualización de órdenes cruzadas
@@ -1123,7 +1131,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-10 md:gap-6 lg:gap-8 scrollbar-hide px-1 md:px-4 pt-14 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`flex flex-col md:grid md:grid-cols-3 items-center md:items-stretch gap-10 md:gap-6 lg:gap-8 w-full px-4 md:px-4 pt-14 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none' }}
           >
             {products.map((product) => {
