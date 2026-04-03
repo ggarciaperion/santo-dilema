@@ -1006,12 +1006,20 @@ export default function FitPage() {
                   }}
                 >
                   <div
-                    className={`relative flex items-center justify-center overflow-visible ${
+                    className={`relative flex items-center justify-center ${
                       product.image.startsWith('/')
-                        ? 'bg-black h-40 md:h-40 border-0'
+                        ? `bg-black h-40 md:h-40 border-0 ${
+                            (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl')
+                              ? 'overflow-hidden rounded-t-lg md:rounded-t-xl'
+                              : 'overflow-visible'
+                          }`
                         : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
                     } ${isExpanded ? 'cursor-pointer' : ''}`}
-                    style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}
+                    style={
+                      product.image.startsWith('/') && product.id !== 'cobb-supreme-bowl' && product.id !== 'pasta-power-bowl'
+                        ? { overflow: 'visible' }
+                        : undefined
+                    }
                     onClick={(e) => {
                       if (isExpanded && !isSoldOut) {
                         e.stopPropagation();
@@ -1021,6 +1029,17 @@ export default function FitPage() {
                     }}
                   >
                     {product.image.startsWith('/') ? (
+                      (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl') ? (
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-cover drop-shadow-2xl"
+                          style={{
+                            objectPosition: product.id === 'cobb-supreme-bowl' ? 'center 30%' : 'center 25%',
+                          }}
+                        />
+                      ) : (
                       <Image
                         src={product.image}
                         alt={product.name}
@@ -1028,15 +1047,16 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: product.id === 'pasta-power-bowl' ? '110%' : '150%',
-                          height: product.id === 'pasta-power-bowl' ? '115%' : '160%',
-                          top: product.id === 'pasta-power-bowl' ? '-5%' : '-30%',
+                          width: '150%',
+                          height: '160%',
+                          top: '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 55%',
                           zIndex: 10
                         }}
                       />
+                      )
                     ) : (
                       <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
                     )}
