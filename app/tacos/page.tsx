@@ -350,10 +350,7 @@ export default function TacosPage() {
                     <p className="text-emerald-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2">
                       {flavor.description}
                     </p>
-                    <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                      <span className="text-sm md:text-base font-black text-emerald-400 neon-glow-taco">
-                        S/ 24.90
-                      </span>
+                    <div className="flex items-center justify-end mb-1.5 md:mb-2">
                       {!isSoldOut && (
                         <button
                           onClick={(e) => {
