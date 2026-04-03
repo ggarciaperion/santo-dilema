@@ -931,12 +931,27 @@ export default function TacosPage() {
           {/* Duo preview */}
           {bothSelected && (
             <div className="mt-5 bg-gray-900 border border-emerald-500/30 rounded-2xl p-4">
-              <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">
+              <p className="text-gray-400 text-xs uppercase tracking-widest mb-3">
                 Tu dúo
               </p>
-              <p className="text-white font-bold text-sm">
-                {getFlavorName(taco1!)} + {getFlavorName(taco2!)}
-              </p>
+              <div className="flex items-center gap-3">
+                {/* Taco 1 thumbnail */}
+                <div className="flex flex-col items-center gap-1.5 flex-1">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/40 relative">
+                    <Image src={flavors.find(f => f.id === taco1!)!.image} alt={getFlavorName(taco1!)} fill className="object-cover" />
+                  </div>
+                  <p className="text-emerald-400 text-[10px] font-bold text-center leading-tight">{getFlavorName(taco1!)}</p>
+                </div>
+                {/* Plus separator */}
+                <span className="text-emerald-500 font-black text-xl">+</span>
+                {/* Taco 2 thumbnail */}
+                <div className="flex flex-col items-center gap-1.5 flex-1">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/40 relative">
+                    <Image src={flavors.find(f => f.id === taco2!)!.image} alt={getFlavorName(taco2!)} fill className="object-cover" />
+                  </div>
+                  <p className="text-emerald-400 text-[10px] font-bold text-center leading-tight">{getFlavorName(taco2!)}</p>
+                </div>
+              </div>
             </div>
           )}
 
