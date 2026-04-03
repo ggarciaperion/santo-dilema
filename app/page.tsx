@@ -27,17 +27,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Comunicado activo hasta el 3 de abril 2026 a las 12:00 hora Perú (UTC-5 = 17:00 UTC)
-    const DEADLINE = new Date('2026-04-03T17:00:00Z');
+    // Comunicado activo hasta el 3 de abril 2026 a las 23:59 hora Perú (UTC-5 = 04:59 UTC del día 4)
+    const DEADLINE = new Date('2026-04-04T04:59:00Z');
     if (new Date() < DEADLINE) {
       setShowComunicado(true);
     }
   }, []);
 
   useEffect(() => {
-    const seen = localStorage.getItem("sd-tarjeta-banner-seen");
+    // Mostrar banner tarjeta una vez por sesión (sessionStorage)
+    const seen = sessionStorage.getItem("sd-tarjeta-banner-seen");
     if (!seen) {
-      const timer = setTimeout(() => setShowTarjetaBanner(true), 600);
+      const timer = setTimeout(() => setShowTarjetaBanner(true), 1200);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -736,7 +737,7 @@ export default function Home() {
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           onClick={() => {
             setShowTarjetaBanner(false);
-            localStorage.setItem("sd-tarjeta-banner-seen", "1");
+            sessionStorage.setItem("sd-tarjeta-banner-seen", "1");
           }}
         >
           <div
@@ -754,7 +755,7 @@ export default function Home() {
             <button
               onClick={() => {
                 setShowTarjetaBanner(false);
-                localStorage.setItem("sd-tarjeta-banner-seen", "1");
+                sessionStorage.setItem("sd-tarjeta-banner-seen", "1");
               }}
               className="absolute top-3 right-3 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-lg font-black transition-all"
             >
