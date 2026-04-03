@@ -219,74 +219,280 @@ export default function TacosPage() {
 
       {/* ── Iconos decorativos de fondo - México/Tacos ──────────────────────── */}
       <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
-        {/* Taco grande izquierda */}
-        <svg className="absolute top-16 left-8 w-24 h-24 md:w-28 md:h-28 text-emerald-400 float-slow" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/>
-          <line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
+
+        {/* === TACOS === */}
+        {/* Taco XL izquierda arriba */}
+        <svg className="absolute top-16 left-8 w-28 h-28 text-emerald-400 float-slow" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/><line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
           <path d="M15 55 Q28 44 42 50 Q56 42 68 50 Q80 44 85 55" strokeWidth="1.8"/>
-          <circle cx="35" cy="46" r="6" fill="currentColor" opacity="0.3"/>
-          <circle cx="55" cy="42" r="6" fill="currentColor" opacity="0.3"/>
-          <circle cx="72" cy="47" r="5" fill="currentColor" opacity="0.3"/>
+          <circle cx="35" cy="46" r="6" fill="currentColor" opacity="0.3"/><circle cx="55" cy="42" r="6" fill="currentColor" opacity="0.3"/><circle cx="72" cy="47" r="5" fill="currentColor" opacity="0.3"/>
         </svg>
 
-        {/* Chile picante derecha arriba */}
-        <svg className="absolute top-20 right-16 w-20 h-20 md:w-24 md:h-24 text-emerald-500 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+        {/* Taco mediano centro-arriba */}
+        <svg className="absolute top-28 left-1/3 w-20 h-20 text-teal-400 sway-right" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M8 58 Q8 20 50 10 Q92 20 92 58" strokeWidth="2.5"/><line x1="8" y1="58" x2="92" y2="58" strokeWidth="2.5"/>
+          <circle cx="38" cy="47" r="5" fill="currentColor" opacity="0.3"/><circle cx="58" cy="43" r="5" fill="currentColor" opacity="0.3"/><circle cx="72" cy="48" r="4" fill="currentColor" opacity="0.3"/>
+        </svg>
+
+        {/* Taco pequeño derecha tercio */}
+        <svg className="absolute top-1/3 right-24 w-14 h-14 text-emerald-300 bounce-subtle" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M8 58 Q8 20 50 10 Q92 20 92 58" strokeWidth="2.5"/><line x1="8" y1="58" x2="92" y2="58" strokeWidth="2.5"/>
+          <circle cx="40" cy="46" r="5" fill="currentColor" opacity="0.3"/>
+        </svg>
+
+        {/* Taco XL abajo derecha */}
+        <svg className="absolute bottom-16 right-8 w-32 h-32 text-emerald-400 sway-left" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/><line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
+          <circle cx="30" cy="48" r="7" fill="currentColor" opacity="0.25"/><circle cx="52" cy="43" r="7" fill="currentColor" opacity="0.25"/><circle cx="72" cy="48" r="6" fill="currentColor" opacity="0.25"/>
+        </svg>
+
+        {/* Taco mediano centro izquierda */}
+        <svg className="absolute top-1/2 left-4 w-18 h-18 text-emerald-500 float-medium" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M8 58 Q8 20 50 10 Q92 20 92 58" strokeWidth="2.5"/><line x1="8" y1="58" x2="92" y2="58" strokeWidth="2.5"/>
+          <circle cx="38" cy="47" r="6" fill="currentColor" opacity="0.3"/><circle cx="62" cy="43" r="5" fill="currentColor" opacity="0.3"/>
+        </svg>
+
+        {/* Taco chico centro derecha */}
+        <svg className="absolute top-2/3 right-16 w-12 h-12 text-teal-300 pulse-slow" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M8 58 Q8 20 50 10 Q92 20 92 58" strokeWidth="2.5"/><line x1="8" y1="58" x2="92" y2="58" strokeWidth="2.5"/>
+        </svg>
+
+        {/* Taco grande abajo centro */}
+        <svg className="absolute bottom-24 left-1/4 w-24 h-24 text-emerald-300 float-slow" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/><line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
+          <path d="M15 55 Q30 45 45 51 Q60 43 75 51 Q85 45 88 55" strokeWidth="1.8"/>
+          <circle cx="42" cy="45" r="6" fill="currentColor" opacity="0.25"/><circle cx="62" cy="41" r="5" fill="currentColor" opacity="0.25"/>
+        </svg>
+
+        {/* Taco tiny top center */}
+        <svg className="absolute top-10 left-1/2 w-10 h-10 text-emerald-400 bounce-subtle" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="3">
+          <path d="M8 58 Q8 20 50 10 Q92 20 92 58" strokeWidth="3"/><line x1="8" y1="58" x2="92" y2="58" strokeWidth="3"/>
+        </svg>
+
+        {/* === CHILES === */}
+        {/* Chile XL derecha arriba */}
+        <svg className="absolute top-20 right-16 w-24 h-24 text-emerald-500 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M50 24 Q48 32 46 44 Q44 56 44 66 Q44 76 48 82 Q52 82 56 76 Q56 66 56 56 Q54 44 52 32 Q50 24 50 24Z"/>
           <path d="M50 21 Q52 17 56 17 Q59 17 60 20" strokeWidth="2"/>
         </svg>
 
-        {/* Aguacate / guacamole centro izquierda */}
-        <svg className="absolute top-1/2 left-12 w-22 h-22 md:w-26 md:h-26 text-emerald-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
-          <ellipse cx="50" cy="55" rx="28" ry="35"/>
-          <ellipse cx="50" cy="55" rx="14" ry="17"/>
+        {/* Chile mediano izquierda centro */}
+        <svg className="absolute top-2/5 left-24 w-16 h-16 text-teal-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M50 28 Q48 35 46 46 Q44 58 44 68 Q44 78 48 82 Q52 82 56 78 Q56 68 56 58 Q54 46 52 35 Q50 28 50 28Z"/>
+          <path d="M50 25 Q53 20 57 20" strokeWidth="2"/>
+        </svg>
+
+        {/* Chile chico top derecha */}
+        <svg className="absolute top-2/3 right-1/3 w-12 h-12 text-emerald-300 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M50 28 Q48 35 46 46 Q44 58 44 68 Q44 78 48 82 Q52 82 56 78 Q56 68 56 58 Q54 46 52 35 Q50 28 50 28Z"/>
+          <path d="M50 25 Q53 20 57 20" strokeWidth="2"/>
+        </svg>
+
+        {/* Chile grande abajo izquierda */}
+        <svg className="absolute bottom-28 left-8 w-20 h-20 text-emerald-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M50 24 Q48 32 46 44 Q44 56 44 66 Q44 76 48 82 Q52 82 56 76 Q56 66 56 56 Q54 44 52 32 Q50 24 50 24Z"/>
+          <path d="M50 21 Q52 17 56 17 Q59 17 60 20" strokeWidth="2"/>
+        </svg>
+
+        {/* Chile tiny centro abajo */}
+        <svg className="absolute bottom-1/3 right-1/4 w-8 h-8 text-teal-500 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <path d="M50 28 Q47 38 45 52 Q44 65 44 74 Q44 80 48 83 Q52 83 56 80 Q56 74 56 65 Q55 52 53 38 Q50 28 50 28Z"/>
+        </svg>
+
+        {/* === AGUACATES === */}
+        {/* Aguacate XL centro izquierda */}
+        <svg className="absolute top-1/2 left-12 w-24 h-24 text-emerald-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="55" rx="28" ry="35"/><ellipse cx="50" cy="55" rx="14" ry="17"/>
           <circle cx="50" cy="50" r="7" fill="currentColor" opacity="0.3"/>
           <path d="M48 23 Q50 18 52 23" strokeWidth="2.5"/>
         </svg>
 
-        {/* Taco pequeño derecha medio */}
-        <svg className="absolute top-1/3 right-24 w-20 h-20 md:w-24 md:h-24 text-teal-400 bounce-subtle" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M8 58 Q8 20 50 10 Q92 20 92 58" strokeWidth="2.5"/>
-          <line x1="8" y1="58" x2="92" y2="58" strokeWidth="2.5"/>
-          <circle cx="38" cy="47" r="5" fill="currentColor" opacity="0.3"/>
-          <circle cx="58" cy="43" r="5" fill="currentColor" opacity="0.3"/>
+        {/* Aguacate mediano arriba centro */}
+        <svg className="absolute top-24 right-1/3 w-16 h-16 text-teal-300 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="55" rx="28" ry="35"/><ellipse cx="50" cy="55" rx="12" ry="15"/>
+          <circle cx="50" cy="50" r="6" fill="currentColor" opacity="0.3"/>
         </svg>
 
-        {/* Limón / lima izquierda abajo */}
-        <svg className="absolute bottom-32 left-20 w-18 h-18 md:w-22 md:h-22 text-lime-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="50" cy="50" r="24"/>
-          <path d="M50 26 L50 74 M26 50 L74 50" strokeWidth="1" opacity="0.6"/>
+        {/* Aguacate chico abajo derecha */}
+        <svg className="absolute bottom-36 right-28 w-12 h-12 text-emerald-300 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <ellipse cx="50" cy="55" rx="28" ry="35"/><circle cx="50" cy="52" r="8" fill="currentColor" opacity="0.3"/>
+        </svg>
+
+        {/* === LIMAS / LIMONES === */}
+        {/* Lima XL izquierda abajo */}
+        <svg className="absolute bottom-32 left-20 w-20 h-20 text-lime-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="50" cy="50" r="24"/><path d="M50 26 L50 74 M26 50 L74 50" strokeWidth="1" opacity="0.6"/>
           <circle cx="50" cy="50" r="14" opacity="0.3"/>
           <path d="M46 24 Q50 18 54 24" strokeWidth="2"/>
         </svg>
 
-        {/* Cactus derecha abajo */}
-        <svg className="absolute bottom-40 right-14 w-20 h-20 md:w-24 md:h-24 text-emerald-500 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+        {/* Lima mediana arriba izquierda */}
+        <svg className="absolute top-36 left-1/4 w-14 h-14 text-lime-300 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="50" cy="50" r="24"/><path d="M50 26 L50 74 M26 50 L74 50" strokeWidth="1" opacity="0.5"/>
+          <path d="M46 24 Q50 18 54 24" strokeWidth="2"/>
+        </svg>
+
+        {/* Lima chica centro */}
+        <svg className="absolute top-3/5 left-2/5 w-10 h-10 text-lime-400 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <circle cx="50" cy="50" r="24"/><path d="M50 26 L50 74 M26 50 L74 50" strokeWidth="1" opacity="0.5"/>
+        </svg>
+
+        {/* Lima tiny top right */}
+        <svg className="absolute top-8 right-8 w-8 h-8 text-lime-300 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <circle cx="50" cy="50" r="24"/><path d="M50 26 L50 74 M26 50 L74 50" strokeWidth="1.5" opacity="0.5"/>
+        </svg>
+
+        {/* === CACTUS === */}
+        {/* Cactus XL derecha abajo */}
+        <svg className="absolute bottom-40 right-14 w-24 h-24 text-emerald-500 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
           <line x1="50" y1="80" x2="50" y2="20"/>
           <path d="M50 45 Q35 45 35 35 Q35 25 40 25"/>
           <path d="M50 55 Q65 55 65 43 Q65 32 60 32"/>
         </svg>
 
-        {/* Sombrero centro derecha */}
-        <svg className="absolute bottom-1/4 left-1/3 w-24 h-24 md:w-28 md:h-28 text-emerald-300 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+        {/* Cactus mediano izquierda */}
+        <svg className="absolute top-1/4 left-6 w-16 h-16 text-emerald-400 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="50" y1="82" x2="50" y2="22"/><path d="M50 48 Q38 48 38 38 Q38 28 42 28"/>
+          <path d="M50 58 Q62 58 62 46 Q62 34 58 34"/>
+        </svg>
+
+        {/* Cactus chico centro alto */}
+        <svg className="absolute top-1/3 left-1/2 w-12 h-12 text-teal-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <line x1="50" y1="80" x2="50" y2="24"/><path d="M50 50 Q38 50 38 40 Q38 30 43 30"/>
+          <path d="M50 60 Q62 60 62 48 Q62 36 57 36"/>
+        </svg>
+
+        {/* Cactus tiny abajo centro */}
+        <svg className="absolute bottom-16 left-1/2 w-8 h-8 text-emerald-300 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <line x1="50" y1="80" x2="50" y2="24"/><path d="M50 50 Q38 50 38 40 Q38 30 42 30"/>
+        </svg>
+
+        {/* === SOMBREROS === */}
+        {/* Sombrero XL centro */}
+        <svg className="absolute bottom-1/4 left-1/3 w-28 h-28 text-emerald-300 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
           <ellipse cx="50" cy="65" rx="40" ry="10"/>
           <path d="M25 65 Q30 35 50 28 Q70 35 75 65"/>
           <ellipse cx="50" cy="65" rx="20" ry="5"/>
+          <path d="M30 63 Q40 56 50 58 Q60 56 70 63" strokeWidth="1.5" opacity="0.5"/>
         </svg>
 
-        {/* Chile pequeño centro */}
-        <svg className="absolute top-2/3 right-1/3 w-16 h-16 md:w-18 md:h-18 text-teal-300 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M50 28 Q48 35 46 46 Q44 58 44 68 Q44 78 48 82 Q52 82 56 78 Q56 68 56 58 Q54 46 52 35 Q50 28 50 28Z"/>
-          <path d="M50 25 Q53 20 57 20" strokeWidth="2"/>
+        {/* Sombrero mediano arriba derecha */}
+        <svg className="absolute top-12 right-1/4 w-18 h-18 text-teal-300 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="65" rx="40" ry="10"/><path d="M25 65 Q30 35 50 28 Q70 35 75 65"/>
+          <ellipse cx="50" cy="65" rx="20" ry="5"/>
         </svg>
 
-        {/* Taco grande abajo derecha */}
-        <svg className="absolute bottom-16 right-8 w-24 h-24 md:w-28 md:h-28 text-emerald-400 sway-right" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/>
-          <line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
-          <circle cx="30" cy="48" r="7" fill="currentColor" opacity="0.25"/>
-          <circle cx="52" cy="43" r="7" fill="currentColor" opacity="0.25"/>
-          <circle cx="72" cy="48" r="6" fill="currentColor" opacity="0.25"/>
+        {/* Sombrero chico bottom right */}
+        <svg className="absolute bottom-8 right-1/3 w-14 h-14 text-emerald-400 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <ellipse cx="50" cy="65" rx="40" ry="10"/><path d="M25 65 Q30 35 50 28 Q70 35 75 65"/>
+          <ellipse cx="50" cy="65" rx="20" ry="5"/>
         </svg>
+
+        {/* Sombrero tiny top left */}
+        <svg className="absolute top-6 left-1/4 w-10 h-10 text-teal-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <ellipse cx="50" cy="65" rx="40" ry="10"/><path d="M25 65 Q30 35 50 28 Q70 35 75 65"/>
+        </svg>
+
+        {/* === ESTRELLAS / STARS === */}
+        {/* Estrella XL */}
+        <svg className="absolute top-1/4 right-6 w-16 h-16 text-emerald-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <polygon points="50,8 61,35 90,35 68,57 76,85 50,68 24,85 32,57 10,35 39,35"/>
+        </svg>
+
+        {/* Estrella mediana */}
+        <svg className="absolute bottom-1/2 left-8 w-12 h-12 text-teal-300 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <polygon points="50,10 61,37 90,37 68,57 76,84 50,68 24,84 32,57 10,37 39,37"/>
+        </svg>
+
+        {/* Estrella chica centro abajo */}
+        <svg className="absolute bottom-20 left-2/5 w-8 h-8 text-emerald-300 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <polygon points="50,10 61,37 90,37 68,57 76,84 50,68 24,84 32,57 10,37 39,37"/>
+        </svg>
+
+        {/* Estrella tiny scattered */}
+        <svg className="absolute top-3/4 right-2 w-6 h-6 text-lime-300 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <polygon points="50,10 61,37 90,37 68,57 76,84 50,68 24,84 32,57 10,37 39,37"/>
+        </svg>
+        <svg className="absolute top-1/4 left-2 w-6 h-6 text-teal-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <polygon points="50,10 61,37 90,37 68,57 76,84 50,68 24,84 32,57 10,37 39,37"/>
+        </svg>
+
+        {/* === MAÍZ / CORN === */}
+        {/* Maíz grande arriba */}
+        <svg className="absolute top-32 right-6 w-20 h-20 text-emerald-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="56" rx="18" ry="28"/>
+          <line x1="50" y1="28" x2="50" y2="84"/><line x1="34" y1="40" x2="66" y2="40"/>
+          <line x1="33" y1="50" x2="67" y2="50"/><line x1="33" y1="60" x2="67" y2="60"/>
+          <line x1="34" y1="70" x2="66" y2="70"/>
+          <path d="M50 28 Q62 20 68 24" strokeWidth="2"/><path d="M50 28 Q38 18 32 22" strokeWidth="2"/>
+        </svg>
+
+        {/* Maíz chico abajo */}
+        <svg className="absolute bottom-12 right-1/2 w-12 h-12 text-lime-400 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <ellipse cx="50" cy="56" rx="18" ry="28"/>
+          <line x1="50" y1="28" x2="50" y2="84"/><line x1="34" y1="48" x2="66" y2="48"/>
+          <line x1="33" y1="60" x2="67" y2="60"/>
+          <path d="M50 28 Q62 20 68 24" strokeWidth="2"/>
+        </svg>
+
+        {/* === LLAMAS / FUEGO === */}
+        {/* Llama grande centro */}
+        <svg className="absolute top-2/5 right-8 w-16 h-16 text-emerald-300 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 90 Q30 75 28 58 Q26 44 36 38 Q32 52 40 55 Q36 40 44 28 Q42 42 52 46 Q48 34 55 22 Q60 36 58 50 Q66 44 64 36 Q72 46 70 60 Q68 75 50 90Z"/>
+        </svg>
+
+        {/* Llama chica top */}
+        <svg className="absolute top-16 left-2/3 w-10 h-10 text-teal-400 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M50 90 Q30 75 28 58 Q26 44 36 38 Q32 52 40 55 Q36 40 44 28 Q42 42 52 46 Q48 34 55 22 Q60 36 58 50 Q66 44 64 36 Q72 46 70 60 Q68 75 50 90Z"/>
+        </svg>
+
+        {/* Llama tiny scattered */}
+        <svg className="absolute bottom-1/3 left-1/3 w-8 h-8 text-emerald-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
+          <path d="M50 90 Q30 75 28 58 Q26 44 36 38 Q32 52 40 55 Q44 38 54 26 Q52 42 60 48 Q64 36 72 46 Q70 60 68 72 Q60 82 50 90Z"/>
+        </svg>
+
+        {/* === TORTILLAS === */}
+        {/* Tortilla grande */}
+        <svg className="absolute top-3/4 left-16 w-18 h-18 text-emerald-300 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="50" rx="38" ry="12"/>
+          <path d="M12 50 Q15 44 22 44 Q26 50 30 44 Q34 50 38 44 Q42 50 46 44 Q50 50 54 44 Q58 50 62 44 Q66 50 70 44 Q74 50 78 44 Q85 44 88 50" strokeWidth="1.5"/>
+        </svg>
+
+        {/* Tortilla chica */}
+        <svg className="absolute bottom-48 right-4 w-12 h-12 text-teal-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <ellipse cx="50" cy="50" rx="38" ry="12"/>
+        </svg>
+
+        {/* === MARACAS === */}
+        {/* Maraca grande */}
+        <svg className="absolute top-1/2 right-4 w-16 h-16 text-emerald-400 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="50" cy="30" r="18"/><line x1="50" y1="48" x2="50" y2="82"/>
+          <ellipse cx="50" cy="82" rx="8" ry="4"/>
+          <circle cx="44" cy="26" r="2" fill="currentColor"/><circle cx="56" cy="26" r="2" fill="currentColor"/>
+          <circle cx="50" cy="34" r="2" fill="currentColor"/>
+        </svg>
+
+        {/* Maraca chica */}
+        <svg className="absolute top-5/6 left-1/4 w-10 h-10 text-lime-400 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <circle cx="50" cy="30" r="18"/><line x1="50" y1="48" x2="50" y2="80"/>
+          <ellipse cx="50" cy="80" rx="7" ry="3.5"/>
+        </svg>
+
+        {/* === CALAVERA MEXICANA === */}
+        {/* Calavera mediana */}
+        <svg className="absolute top-56 left-1/2 w-14 h-14 text-teal-300 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M25 60 Q22 38 35 26 Q50 14 65 26 Q78 38 75 60 Q75 70 70 74 L70 82 L30 82 L30 74 Q25 70 25 60Z"/>
+          <circle cx="38" cy="54" r="9"/><circle cx="62" cy="54" r="9"/>
+          <line x1="50" y1="63" x2="50" y2="70"/>
+          <line x1="36" y1="82" x2="36" y2="74"/><line x1="50" y1="82" x2="50" y2="74"/><line x1="64" y1="82" x2="64" y2="74"/>
+        </svg>
+
+        {/* Calavera chica */}
+        <svg className="absolute bottom-64 right-1/3 w-10 h-10 text-emerald-400 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M25 60 Q22 38 35 26 Q50 14 65 26 Q78 38 75 60 Q75 70 70 74 L70 82 L30 82 L30 74 Q25 70 25 60Z"/>
+          <circle cx="38" cy="54" r="9"/><circle cx="62" cy="54" r="9"/>
+        </svg>
+
       </div>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
