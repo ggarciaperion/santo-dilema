@@ -909,20 +909,9 @@ export default function FitPage() {
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
-          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
-            Ensaladas
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
+            ENSALADAS PARA EL BALANCE
           </h1>
-          <div
-            className="inline-block mt-3 px-5 py-3 rounded-xl border border-cyan-500/60 bg-cyan-950/40"
-            style={{ boxShadow: "0 0 16px rgba(34,211,238,0.25), inset 0 0 12px rgba(34,211,238,0.06)" }}
-          >
-            <p className="text-white text-sm md:text-base font-bold">
-              🥗{" "}
-              <span className="text-cyan-300 font-black text-base md:text-lg" style={{ textShadow: "0 0 10px rgba(34,211,238,0.8)" }}>
-                ENSALADAS PARA EL BALANCE
-              </span>
-            </p>
-          </div>
         </div>
 
         <div className="relative flex items-center justify-center overflow-visible" style={{ overflow: 'visible' }}>

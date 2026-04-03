@@ -1258,20 +1258,9 @@ export default function FatPage() {
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
-          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
-            Alitas
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
+            ALITAS PREMIUM
           </h1>
-          <div
-            className="inline-block mt-3 px-5 py-3 rounded-xl border border-red-500/60 bg-red-950/40"
-            style={{ boxShadow: "0 0 16px rgba(239,68,68,0.25), inset 0 0 12px rgba(239,68,68,0.06)" }}
-          >
-            <p className="text-white text-sm md:text-base font-bold">
-              🍗{" "}
-              <span className="text-red-300 font-black text-base md:text-lg" style={{ textShadow: "0 0 10px rgba(239,68,68,0.8)" }}>
-                ALITAS PREMIUM
-              </span>
-            </p>
-          </div>
         </div>
 
         {/* Carousel Container */}
