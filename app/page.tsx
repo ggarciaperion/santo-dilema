@@ -14,6 +14,7 @@ export default function Home() {
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isPreLaunch, setIsPreLaunch] = useState(false);
   const [showTarjetaBanner, setShowTarjetaBanner] = useState(false);
+  const [showComunicado, setShowComunicado] = useState(false);
 
   useEffect(() => {
     // YUNZA DESACTIVADA - Promoción finalizada
@@ -23,6 +24,14 @@ export default function Home() {
     }, 800);
     return () => clearTimeout(timer);
     */
+  }, []);
+
+  useEffect(() => {
+    // Comunicado activo hasta el 3 de abril 2026 a las 12:00 hora Perú (UTC-5 = 17:00 UTC)
+    const DEADLINE = new Date('2026-04-03T17:00:00Z');
+    if (new Date() < DEADLINE) {
+      setShowComunicado(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -692,6 +701,34 @@ export default function Home() {
 
       {/* Modal de Ruleta */}
       <YunzaModal isOpen={showYunzaModal} onClose={() => setShowYunzaModal(false)} />
+
+      {/* Comunicado urgente - activo hasta 3 abril 2026 12pm Perú */}
+      {showComunicado && (
+        <div
+          className="fixed inset-0 z-[210] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
+          onClick={() => setShowComunicado(false)}
+        >
+          <div
+            className="relative max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src="/comunica.png"
+              alt="Comunicado"
+              width={500}
+              height={500}
+              className="w-full h-auto rounded-2xl shadow-2xl"
+              priority
+            />
+            <button
+              onClick={() => setShowComunicado(false)}
+              className="absolute top-3 right-3 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-lg font-black transition-all"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Banner tarjeta - primera visita */}
       {showTarjetaBanner && (
