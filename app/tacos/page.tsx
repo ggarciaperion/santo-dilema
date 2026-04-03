@@ -1166,29 +1166,6 @@ export default function TacosPage() {
                     <p className="text-emerald-400 text-[10px] font-bold text-center leading-tight">{getFlavorName(taco2!)}</p>
                   </div>
                 </div>
-                {selectedComplemento && (
-                  <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 rounded-xl px-3 py-2">
-                    <span className="text-gray-400 text-[10px] uppercase tracking-widest flex-shrink-0">Acomp.:</span>
-                    {selectedComplemento === "nachos" && (
-                      <svg viewBox="0 0 48 42" className="w-5 h-4 flex-shrink-0" fill="none">
-                        <polygon points="24,3 45,39 3,39" fill="#F5C842" stroke="#C99B20" strokeWidth="1.5" strokeLinejoin="round"/>
-                        <circle cx="18" cy="30" r="2.5" fill="#C99B20" opacity="0.55"/>
-                        <circle cx="27" cy="24" r="2" fill="#C99B20" opacity="0.5"/>
-                        <circle cx="32" cy="32" r="2" fill="#C99B20" opacity="0.5"/>
-                      </svg>
-                    )}
-                    {selectedComplemento === "chifles" && (
-                      <svg viewBox="0 0 52 32" className="w-5 h-3.5 flex-shrink-0" fill="none">
-                        <ellipse cx="26" cy="16" rx="23" ry="12" fill="#E8C43A" stroke="#B8910A" strokeWidth="1.5"/>
-                        <ellipse cx="20" cy="13" rx="6" ry="3" fill="#B8910A" opacity="0.35" transform="rotate(-12 20 13)"/>
-                        <ellipse cx="33" cy="18" rx="5" ry="2.5" fill="#B8910A" opacity="0.3" transform="rotate(8 33 18)"/>
-                      </svg>
-                    )}
-                    {selectedComplemento === "papas-fritas" && <span className="text-sm flex-shrink-0">🍟</span>}
-                    <span className="text-emerald-400 text-xs font-bold">{getComplementoName(selectedComplemento)}</span>
-                    <span className="text-emerald-600 text-[10px] ml-auto">incluido</span>
-                  </div>
-                )}
               </div>
 
               {/* Tablet + Desktop: thumbnail + description side by side */}
