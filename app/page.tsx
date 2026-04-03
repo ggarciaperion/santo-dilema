@@ -296,6 +296,12 @@ export default function Home() {
           <div className="absolute inset-0 bg-cyan-500/10 animate-pulse" />
         )}
 
+        <div className="fit-section-glow absolute inset-0 pointer-events-none z-[1]" />
+        <div
+          className="fit-sweep absolute inset-0 pointer-events-none z-[2]"
+          style={{ background: 'linear-gradient(108deg, transparent 25%, rgba(34,211,238,0.11) 50%, transparent 75%)' }}
+        />
+
         <div className="relative z-10 text-center text-white px-4 md:px-6 flex flex-col items-center justify-center h-full md:h-auto pt-10 md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="hidden md:block mb-1 md:mb-2 filter drop-shadow-lg">
             <Image
@@ -496,6 +502,12 @@ export default function Home() {
           <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
         )}
 
+        <div className="fat-section-glow absolute inset-0 pointer-events-none z-[1]" />
+        <div
+          className="fat-sweep absolute inset-0 pointer-events-none z-[2]"
+          style={{ background: 'linear-gradient(108deg, transparent 25%, rgba(248,113,113,0.10) 50%, transparent 75%)' }}
+        />
+
         <div className="relative z-10 text-center text-white px-4 md:px-6 flex flex-col items-center justify-center h-full md:h-auto md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="hidden md:block mb-0 md:mb-1 filter drop-shadow-lg">
             <Image
@@ -676,9 +688,6 @@ export default function Home() {
             />
           </div>
           {/* Badge NUEVO */}
-          <span className="nuevo-badge inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-400/70 text-emerald-400 text-[10px] md:text-[11px] font-black px-3 py-1 rounded-full tracking-[0.2em] uppercase mb-2 md:mb-3">
-            ✦ Nuevo
-          </span>
 
           <h2
             className="mb-3 md:mb-1 text-emerald-400 neon-glow-taco tracking-[0.14em] leading-none"

@@ -753,3 +753,47 @@ body {
 .taco-section-glow {
   animation: tacoSectionGlow 3s ease-in-out infinite;
 }
+
+/* ── FIT (cyan) animations ───────────────────────────────────────────────── */
+@keyframes fitSweep {
+  0%, 65%  { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  5%       { opacity: 1; }
+  30%      { opacity: 0.8; }
+  35%      { transform: translateX(230%) skewX(-18deg); opacity: 0; }
+  100%     { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes fitSectionGlow {
+  0%, 100% { box-shadow: inset 0 0 40px rgba(34,211,238,0.04); }
+  50%      { box-shadow: inset 0 0 80px rgba(34,211,238,0.10); }
+}
+
+.fit-sweep {
+  animation: fitSweep 5.5s ease-in-out infinite;
+}
+
+.fit-section-glow {
+  animation: fitSectionGlow 3.2s ease-in-out infinite;
+}
+
+/* ── FAT (red) animations ────────────────────────────────────────────────── */
+@keyframes fatSweep {
+  0%, 65%  { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  5%       { opacity: 1; }
+  30%      { opacity: 0.8; }
+  35%      { transform: translateX(230%) skewX(-18deg); opacity: 0; }
+  100%     { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes fatSectionGlow {
+  0%, 100% { box-shadow: inset 0 0 40px rgba(248,113,113,0.04); }
+  50%      { box-shadow: inset 0 0 80px rgba(248,113,113,0.10); }
+}
+
+.fat-sweep {
+  animation: fatSweep 6s ease-in-out infinite;
+}
+
+.fat-section-glow {
+  animation: fatSectionGlow 3.5s ease-in-out infinite;
+}
