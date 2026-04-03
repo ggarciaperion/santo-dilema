@@ -91,9 +91,9 @@ const salsas: { id: string; name: string }[] = [
 
 // Sabores de tacos para mostrar en el resumen del pedido
 const tacoFlavors: Record<string, string> = {
-  "santo-crujiente": "Santo Crujiente",
-  "tex-dilema": "Tex Dilema",
-  "santo-bacon": "Santo Bacon",
+  "santo-crujiente": "Crunch Supreme Taco",
+  "tex-dilema": "Tex Supreme Taco",
+  "santo-bacon": "Bacon Deluxe Taco",
 };
 
 // Generar dinámicamente el diccionario de complementos disponibles

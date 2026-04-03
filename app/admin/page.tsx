@@ -2899,7 +2899,7 @@ export default function AdminPage() {
                                     <>
                                       <span className="font-bold">🌮 Sabores: </span>
                                       {itemSalsas.map((id: string) => (
-                                        { 'santo-crujiente': 'Santo Crujiente', 'tex-dilema': 'Tex Dilema', 'santo-bacon': 'Santo Bacon' }[id] || id
+                                        { 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' }[id] || id
                                       )).join(' + ')}
                                     </>
                                   ) : (
