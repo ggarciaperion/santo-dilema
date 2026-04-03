@@ -587,17 +587,33 @@ export default function FatPage() {
   const handleCardClick = (productId: string) => {
     const currentQty = orderQuantity[productId] || 0;
 
+    // Helper: reset previous card qty to 0 if it has no completed order
+    const resetPreviousCard = (prevId: string) => {
+      const hasOrder = completedOrders.some(o => o.productId === prevId);
+      if (!hasOrder) {
+        setOrderQuantity((prev) => ({ ...prev, [prevId]: 0 }));
+        setShowSalsas((prev) => ({ ...prev, [prevId]: false }));
+        setShowBebidas((prev) => ({ ...prev, [prevId]: false }));
+        setShowExtras((prev) => ({ ...prev, [prevId]: false }));
+      }
+    };
+
     // Si qty = 0, permitir expandir/colapsar con clic
     if (currentQty === 0) {
       if (expandedCard === productId) {
-        // Colapsar
+        // Colapsar: volver a 0
         setExpandedCard(null);
+        setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
         setShowSalsas((prev) => ({ ...prev, [productId]: false }));
         setShowBebidas((prev) => ({ ...prev, [productId]: false }));
         setShowExtras((prev) => ({ ...prev, [productId]: false }));
       } else {
-        // Expandir
+        // Si había otro cartel expandido, resetear su contador
+        if (expandedCard) resetPreviousCard(expandedCard);
+
+        // Expandir y poner qty = 1 automáticamente
         setExpandedCard(productId);
+        setOrderQuantity((prev) => ({ ...prev, [productId]: 1 }));
         setShowSalsas((prev) => ({ ...prev, [productId]: true }));
         if (!selectedSalsas[productId]) {
           setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
@@ -619,6 +635,7 @@ export default function FatPage() {
       }
     } else if (currentQty > 0 && expandedCard !== productId) {
       // Si qty > 0, solo expandir si no está expandido
+      if (expandedCard) resetPreviousCard(expandedCard);
       setExpandedCard(productId);
       setShowSalsas((prev) => ({ ...prev, [productId]: true }));
 
