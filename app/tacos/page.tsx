@@ -217,6 +217,78 @@ export default function TacosPage() {
   return (
     <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
 
+      {/* ── Iconos decorativos de fondo - México/Tacos ──────────────────────── */}
+      <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
+        {/* Taco grande izquierda */}
+        <svg className="absolute top-16 left-8 w-24 h-24 md:w-28 md:h-28 text-emerald-400 float-slow" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/>
+          <line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
+          <path d="M15 55 Q28 44 42 50 Q56 42 68 50 Q80 44 85 55" strokeWidth="1.8"/>
+          <circle cx="35" cy="46" r="6" fill="currentColor" opacity="0.3"/>
+          <circle cx="55" cy="42" r="6" fill="currentColor" opacity="0.3"/>
+          <circle cx="72" cy="47" r="5" fill="currentColor" opacity="0.3"/>
+        </svg>
+
+        {/* Chile picante derecha arriba */}
+        <svg className="absolute top-20 right-16 w-20 h-20 md:w-24 md:h-24 text-emerald-500 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M50 24 Q48 32 46 44 Q44 56 44 66 Q44 76 48 82 Q52 82 56 76 Q56 66 56 56 Q54 44 52 32 Q50 24 50 24Z"/>
+          <path d="M50 21 Q52 17 56 17 Q59 17 60 20" strokeWidth="2"/>
+        </svg>
+
+        {/* Aguacate / guacamole centro izquierda */}
+        <svg className="absolute top-1/2 left-12 w-22 h-22 md:w-26 md:h-26 text-emerald-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="55" rx="28" ry="35"/>
+          <ellipse cx="50" cy="55" rx="14" ry="17"/>
+          <circle cx="50" cy="50" r="7" fill="currentColor" opacity="0.3"/>
+          <path d="M48 23 Q50 18 52 23" strokeWidth="2.5"/>
+        </svg>
+
+        {/* Taco pequeño derecha medio */}
+        <svg className="absolute top-1/3 right-24 w-20 h-20 md:w-24 md:h-24 text-teal-400 bounce-subtle" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M8 58 Q8 20 50 10 Q92 20 92 58" strokeWidth="2.5"/>
+          <line x1="8" y1="58" x2="92" y2="58" strokeWidth="2.5"/>
+          <circle cx="38" cy="47" r="5" fill="currentColor" opacity="0.3"/>
+          <circle cx="58" cy="43" r="5" fill="currentColor" opacity="0.3"/>
+        </svg>
+
+        {/* Limón / lima izquierda abajo */}
+        <svg className="absolute bottom-32 left-20 w-18 h-18 md:w-22 md:h-22 text-lime-400 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="50" cy="50" r="24"/>
+          <path d="M50 26 L50 74 M26 50 L74 50" strokeWidth="1" opacity="0.6"/>
+          <circle cx="50" cy="50" r="14" opacity="0.3"/>
+          <path d="M46 24 Q50 18 54 24" strokeWidth="2"/>
+        </svg>
+
+        {/* Cactus derecha abajo */}
+        <svg className="absolute bottom-40 right-14 w-20 h-20 md:w-24 md:h-24 text-emerald-500 pulse-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="50" y1="80" x2="50" y2="20"/>
+          <path d="M50 45 Q35 45 35 35 Q35 25 40 25"/>
+          <path d="M50 55 Q65 55 65 43 Q65 32 60 32"/>
+        </svg>
+
+        {/* Sombrero centro derecha */}
+        <svg className="absolute bottom-1/4 left-1/3 w-24 h-24 md:w-28 md:h-28 text-emerald-300 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="65" rx="40" ry="10"/>
+          <path d="M25 65 Q30 35 50 28 Q70 35 75 65"/>
+          <ellipse cx="50" cy="65" rx="20" ry="5"/>
+        </svg>
+
+        {/* Chile pequeño centro */}
+        <svg className="absolute top-2/3 right-1/3 w-16 h-16 md:w-18 md:h-18 text-teal-300 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M50 28 Q48 35 46 46 Q44 58 44 68 Q44 78 48 82 Q52 82 56 78 Q56 68 56 58 Q54 46 52 35 Q50 28 50 28Z"/>
+          <path d="M50 25 Q53 20 57 20" strokeWidth="2"/>
+        </svg>
+
+        {/* Taco grande abajo derecha */}
+        <svg className="absolute bottom-16 right-8 w-24 h-24 md:w-28 md:h-28 text-emerald-400 sway-right" viewBox="0 0 100 72" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 58 Q5 16 50 7 Q95 16 95 58" strokeWidth="2.5"/>
+          <line x1="5" y1="58" x2="95" y2="58" strokeWidth="2.5"/>
+          <circle cx="30" cy="48" r="7" fill="currentColor" opacity="0.25"/>
+          <circle cx="52" cy="43" r="7" fill="currentColor" opacity="0.25"/>
+          <circle cx="72" cy="48" r="6" fill="currentColor" opacity="0.25"/>
+        </svg>
+      </div>
+
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="bg-gray-900 border-b-2 border-emerald-500 sticky top-0 z-30 overflow-visible neon-border-taco">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-1.5 flex justify-between items-center overflow-visible">
@@ -276,9 +348,6 @@ export default function TacosPage() {
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
-          <p className="text-emerald-400 text-xs font-bold tracking-widest uppercase mb-2">
-            Dark Kitchen · Lima
-          </p>
           <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
             Tacos
           </h1>
