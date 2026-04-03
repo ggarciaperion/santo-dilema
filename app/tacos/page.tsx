@@ -541,7 +541,7 @@ export default function TacosPage() {
       </div>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="bg-gray-900 border-b-2 border-emerald-500 sticky top-0 z-30 overflow-visible neon-border-taco">
+      <header className="bg-gray-900 border-b-2 border-emerald-500 fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto z-30 overflow-visible neon-border-taco">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-1.5 flex justify-between items-center overflow-visible">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">
             <Image
@@ -583,6 +583,8 @@ export default function TacosPage() {
           </div>
         </div>
       </header>
+      {/* Spacer for fixed header on mobile */}
+      <div className="h-14 md:hidden" />
 
       {/* ── Business closed banner ─────────────────────────────────────────── */}
       {!isOpen && (

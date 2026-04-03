@@ -1262,7 +1262,7 @@ export default function FatPage() {
       </div>
 
       {/* Header */}
-      <header className="bg-gray-900 md:bg-transparent border-b-2 md:border-b-0 border-red-500 neon-border-fat sticky top-0 z-30 overflow-visible">
+      <header className="bg-gray-900 md:bg-transparent border-b-2 md:border-b-0 border-red-500 neon-border-fat fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto z-30 overflow-visible">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-1.5 flex justify-between items-center overflow-visible">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">
             <Image
@@ -1302,6 +1302,8 @@ export default function FatPage() {
           </div>
         </div>
       </header>
+      {/* Spacer for fixed header on mobile */}
+      <div className="h-14 md:hidden" />
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
