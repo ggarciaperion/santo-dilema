@@ -2892,14 +2892,25 @@ export default function AdminPage() {
                                 </div>
                               </div>
 
-                              {/* Mostrar salsas si existen */}
+                              {/* Mostrar salsas / sabores de taco si existen */}
                               {itemSalsas.length > 0 && (
                                 <div className="mt-1 ml-8 text-[10px] text-yellow-300">
-                                  <span className="font-bold">🌶️ Salsas: </span>
-                                  {itemSalsas.map((salsaId: string) => {
-                                    const salsa = salsas.find(s => s.id === salsaId);
-                                    return salsa?.name || salsaId;
-                                  }).join(', ')}
+                                  {item.productId === 'taco-duo' ? (
+                                    <>
+                                      <span className="font-bold">🌮 Sabores: </span>
+                                      {itemSalsas.map((id: string) => (
+                                        { 'santo-crujiente': 'Santo Crujiente', 'tex-dilema': 'Tex Dilema', 'santo-bacon': 'Santo Bacon' }[id] || id
+                                      )).join(' + ')}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="font-bold">🌶️ Salsas: </span>
+                                      {itemSalsas.map((salsaId: string) => {
+                                        const salsa = salsas.find(s => s.id === salsaId);
+                                        return salsa?.name || salsaId;
+                                      }).join(', ')}
+                                    </>
+                                  )}
                                 </div>
                               )}
 

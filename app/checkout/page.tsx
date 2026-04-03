@@ -89,6 +89,13 @@ const salsas: { id: string; name: string }[] = [
   { id: "macerichada", name: "Sweet & Sour" },
 ];
 
+// Sabores de tacos para mostrar en el resumen del pedido
+const tacoFlavors: Record<string, string> = {
+  "santo-crujiente": "Santo Crujiente",
+  "tex-dilema": "Tex Dilema",
+  "santo-bacon": "Santo Bacon",
+};
+
 // Generar dinámicamente el diccionario de complementos disponibles
 const generateAvailableComplements = () => {
   const complements: Record<string, { name: string; price: number }> = {
@@ -187,23 +194,15 @@ const fitProducts = [
 // Productos tacos para referencia
 const tacoProducts = [
   {
-    id: "trio-taco-classico",
-    name: "Trío Taco Clásico",
-    price: 22.90,
+    id: "taco-duo",
+    name: "Dúo de Tacos",
+    price: 24.90,
     image: "/tacoinicio.png",
   },
-  {
-    id: "taco-fiesta-mix",
-    name: "Taco Fiesta Mix",
-    price: 32.90,
-    image: "/tacoinicio.png",
-  },
-  {
-    id: "mega-taco-combo",
-    name: "Mega Taco Combo",
-    price: 42.90,
-    image: "/tacoinicio.png",
-  },
+  // legacy — por si hay órdenes antiguas en sessionStorage
+  { id: "trio-taco-classico", name: "Trío Taco Clásico", price: 22.90, image: "/tacoinicio.png" },
+  { id: "taco-fiesta-mix", name: "Taco Fiesta Mix", price: 32.90, image: "/tacoinicio.png" },
+  { id: "mega-taco-combo", name: "Mega Taco Combo", price: 42.90, image: "/tacoinicio.png" },
 ];
 
 
@@ -824,12 +823,14 @@ export default function CheckoutPage() {
 
                           {order.salsas && order.salsas.length > 0 && (
                             <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
-                              <span>🌶️</span>
+                              <span>{order.productId === "taco-duo" ? "🌮" : "🌶️"}</span>
                               <span className="flex-1">
-                                {order.salsas
-                                  .map((sId) => salsas.find((s) => s.id === sId)?.name)
-                                  .filter((name) => name)
-                                  .join(", ")}
+                                {order.productId === "taco-duo"
+                                  ? order.salsas.map((id) => tacoFlavors[id] || id).join(" + ")
+                                  : order.salsas
+                                      .map((sId) => salsas.find((s) => s.id === sId)?.name)
+                                      .filter((name) => name)
+                                      .join(", ")}
                               </span>
                             </div>
                           )}

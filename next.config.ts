@@ -8,13 +8,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   async redirects() {
-    return [
-      {
-        source: '/tacos',
-        destination: '/',
-        permanent: false,
-      },
-    ];
+    return [];
   },
   // Deshabilitar caché para forzar rebuild completo
   generateBuildId: async () => {
