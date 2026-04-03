@@ -633,10 +633,6 @@ export default function FatPage() {
           }
         }, 600);
       }
-    } else if (currentQty > 0 && expandedCard === productId) {
-      // Mismo cartel expandido clickeado de nuevo → colapsar y resetear
-      resetPreviousCard(productId);
-      setExpandedCard(null);
     } else if (currentQty > 0 && expandedCard !== productId) {
       // Si qty > 0, solo expandir si no está expandido
       if (expandedCard) resetPreviousCard(expandedCard);
@@ -1348,7 +1344,7 @@ export default function FatPage() {
                 >
                 <div
                   ref={(el) => { cardRefs.current[product.id] = el; }}
-                  onClick={(e) => { e.stopPropagation(); if (!isSoldOut) handleCardClick(product.id); }}
+                  onClick={(e) => { e.stopPropagation(); if (!isSoldOut && !isExpanded) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
@@ -1372,11 +1368,21 @@ export default function FatPage() {
                   }}
                 >
                   {/* Card Header */}
-                  <div className={`relative flex items-center justify-center overflow-visible ${
-                    product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-48 border-0'
-                      : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
-                  }`} style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}>
+                  <div
+                    className={`relative flex items-center justify-center overflow-visible ${
+                      product.image.startsWith('/')
+                        ? 'bg-black h-40 md:h-48 border-0'
+                        : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
+                    } ${isExpanded ? 'cursor-pointer' : ''}`}
+                    style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}
+                    onClick={(e) => {
+                      if (isExpanded && !isSoldOut) {
+                        e.stopPropagation();
+                        resetExpandedCard(product.id);
+                        setExpandedCard(null);
+                      }
+                    }}
+                  >
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
                         <div className="border-4 border-red-500 rounded-sm px-3 py-1 select-none" style={{ transform: 'rotate(-20deg)', boxShadow: '0 0 12px rgba(239,68,68,0.7)' }}>
