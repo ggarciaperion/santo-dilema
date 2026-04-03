@@ -658,72 +658,64 @@ export default function TacosPage() {
         )}
       </section>
 
-      {/* ── Orders list (injected above the bottom bar) ────────────────────── */}
+      {/* ── Orders list ─────────────────────────────────────────────────────── */}
       {completedOrders.length > 0 && (
-        <div className="container mx-auto px-3 md:px-4 pb-24">
-          <div
-            className="bg-gray-900 border-2 border-emerald-500/40 rounded-lg p-4 md:p-5"
-            style={{ boxShadow: "0 0 10px rgba(52,211,153,0.2)" }}
-          >
-            <h3 className="text-white font-bold uppercase tracking-wide text-sm mb-3 border-b border-emerald-500/20 pb-2">
-              Tu pedido
-            </h3>
-            <div className="space-y-2">
-              {completedOrders.map((order, index) => {
-                const f1 = flavors.find(f => f.id === order.salsas[0]);
-                const f2 = flavors.find(f => f.id === order.salsas[1]);
-                return (
+        <div className="container mx-auto px-3 md:px-4 pb-28 -mt-2 md:mt-0 lg:mt-2">
+          <h3 className="text-base md:text-lg lg:text-xl font-black text-emerald-400 mb-2 md:mb-3 neon-glow-taco">
+            Tu orden
+          </h3>
+          <div className="space-y-2 md:space-y-3">
+            {completedOrders.map((order, index) => {
+              const f1 = flavors.find(f => f.id === order.salsas[0]);
+              const f2 = flavors.find(f => f.id === order.salsas[1]);
+              return (
                 <div
                   key={index}
-                  className="bg-gray-800/50 border border-emerald-500/20 rounded-lg px-3 py-2.5 flex items-center justify-between gap-2"
+                  className="bg-gray-900 rounded-lg border-2 border-emerald-400/30 p-2 md:p-3 relative"
                 >
-                  {/* Thumbnails */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    {f1 && (
-                      <div className="w-9 h-9 rounded-lg overflow-hidden border border-emerald-500/40 relative flex-shrink-0">
-                        <Image src={f1.image} alt={f1.name} fill className="object-cover" />
+                  <div className="flex items-start justify-between mb-1 md:mb-2">
+                    <div className="flex items-start gap-2 flex-1">
+                      {/* Duo thumbnails */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {f1 && (
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border border-emerald-400/30 relative">
+                            <Image src={f1.image} alt={f1.name} fill className="object-cover" />
+                          </div>
+                        )}
+                        <span className="text-emerald-500 font-black text-[10px]">+</span>
+                        {f2 && (
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border border-emerald-400/30 relative">
+                            <Image src={f2.image} alt={f2.name} fill className="object-cover" />
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <span className="text-emerald-500 font-black text-xs">+</span>
-                    {f2 && (
-                      <div className="w-9 h-9 rounded-lg overflow-hidden border border-emerald-500/40 relative flex-shrink-0">
-                        <Image src={f2.image} alt={f2.name} fill className="object-cover" />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-white mb-1">
+                          Dúo de Tacos
+                        </h4>
+                        <div className="text-[11px] space-y-0.5">
+                          <div className="text-emerald-300/80 flex justify-between items-center">
+                            <span>🌮 {getFlavorName(order.salsas[0])} + {getFlavorName(order.salsas[1])}</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                    </div>
+                    <div className="flex flex-col items-center gap-2 ml-2">
+                      <button
+                        onClick={() => handleDeleteOrder(index)}
+                        className="text-emerald-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100"
+                        title="Eliminar orden"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
-                      Dúo #{index + 1}
-                    </p>
-                    <p className="text-white text-xs font-medium mt-0.5 truncate">
-                      {getFlavorName(order.salsas[0])} + {getFlavorName(order.salsas[1])}
-                    </p>
-                    <p className="text-gray-500 text-xs mt-0.5">S/ 24.90</p>
+                  <div className="text-amber-400 font-bold text-sm">
+                    S/ 24.90
                   </div>
-                  <button
-                    onClick={() => handleDeleteOrder(index)}
-                    className="text-gray-600 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-400/10 flex-shrink-0"
-                    aria-label="Eliminar dúo"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
                 </div>
-                );
-              })}
-            </div>
-
-            {/* Running total */}
-            <div className="mt-3 flex justify-between items-center px-1 border-t border-emerald-500/20 pt-3">
-              <span className="text-gray-400 text-sm font-bold">Total</span>
-              <span className="text-emerald-400 font-black text-xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
-                S/ {total.toFixed(2)}
-              </span>
-            </div>
+              );
+            })}
           </div>
         </div>
       )}
