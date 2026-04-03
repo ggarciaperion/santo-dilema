@@ -788,7 +788,8 @@ export default function CheckoutPage() {
                 {completedOrders.map((order, index) => {
                   const fatProduct = fatProducts.find((p) => p.id === order.productId);
                   const fitProduct = fitProducts.find((p) => p.id === order.productId);
-                  const product = fatProduct || fitProduct;
+                  const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
+                  const product = fatProduct || fitProduct || tacoProduct;
 
                   if (!product) return null;
 
