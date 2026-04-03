@@ -1259,7 +1259,7 @@ export default function FatPage() {
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
           <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
-            ALITAS PREMIUM
+            ALITAS PREMIUM PARA EL PLACER
           </h1>
         </div>
 
