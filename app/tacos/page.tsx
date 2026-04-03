@@ -53,15 +53,39 @@ const flavors = [
 const TACO_DUO_PRODUCT = {
   id: "taco-duo",
   name: "Dúo de Tacos",
+  description: "Dúo de Tacos",
   price: 24.9,
   image: "/tacoinicio.png",
   category: "fat" as const,
 };
 
+const complementos = [
+  { id: "nachos", name: "Nachos", emoji: "🌽" },
+  { id: "chifles", name: "Chifles", emoji: "🍌" },
+  { id: "papas-fritas", name: "Papas fritas", emoji: "🍟" },
+];
+
+const bebidas = [
+  { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
+  { id: "inka-cola", name: "Inka Cola 500ml", emoji: "🥤", price: 4.00 },
+  { id: "sprite", name: "Sprite 500ml", emoji: "🥤", price: 4.00 },
+  { id: "fanta", name: "Fanta 500ml", emoji: "🥤", price: 4.00 },
+  { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
+];
+
 const SESSION_KEY = "santo-dilema-orders";
+const BEBIDAS_KEY = "santo-dilema-tacos-bebidas";
 
 function getFlavorName(id: string): string {
   return flavors.find((f) => f.id === id)?.name ?? id;
+}
+
+function getComplementoName(id: string): string {
+  return complementos.find((c) => c.id === id)?.name ?? id;
+}
+
+function getComplementoEmoji(id: string): string {
+  return complementos.find((c) => c.id === id)?.emoji ?? "";
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -78,10 +102,14 @@ export default function TacosPage() {
   // Taco orders managed on this page
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
 
+  // Bebidas
+  const [bebidaQty, setBebidaQty] = useState<Record<string, number>>({});
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [taco1, setTaco1] = useState<string | null>(null);
   const [taco2, setTaco2] = useState<string | null>(null);
+  const [selectedComplemento, setSelectedComplemento] = useState<string | null>(null);
 
   // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -115,6 +143,19 @@ export default function TacosPage() {
     }
   }, []);
 
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(BEBIDAS_KEY);
+      if (raw) setBebidaQty(JSON.parse(raw));
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(BEBIDAS_KEY, JSON.stringify(bebidaQty));
+    } catch { /* ignore */ }
+  }, [bebidaQty]);
+
   // ── Persist orders to sessionStorage when they change ────────────────────
   useEffect(() => {
     try {
@@ -136,6 +177,7 @@ export default function TacosPage() {
     setModalOpen(false);
     setTaco1(null);
     setTaco2(null);
+    setSelectedComplemento(null);
   }, []);
 
   const handleFlavorClick = useCallback(
@@ -155,19 +197,19 @@ export default function TacosPage() {
   );
 
   const handleAddOrder = useCallback(() => {
-    if (!taco1 || !taco2) return;
+    if (!taco1 || !taco2 || !selectedComplemento) return;
     const newOrder: CompletedOrder = {
       productId: "taco-duo",
       quantity: 1,
       salsas: [taco1, taco2],
-      complementIds: [],
+      complementIds: [selectedComplemento],
       finalPrice: 24.9,
       originalPrice: 24.9,
       category: "taco",
     };
     setCompletedOrders((prev) => [...prev, newOrder]);
     closeModal();
-  }, [taco1, taco2, closeModal]);
+  }, [taco1, taco2, selectedComplemento, closeModal]);
 
   const handleDeleteOrder = useCallback((index: number) => {
     setDeleteOrderIndex(index);
@@ -193,18 +235,27 @@ export default function TacosPage() {
     completedOrders.forEach((order) => {
       addToCart(TACO_DUO_PRODUCT, order.quantity);
     });
+    bebidas.forEach((b) => {
+      const qty = bebidaQty[b.id] || 0;
+      if (qty > 0) {
+        addToCart({ id: b.id, name: b.name, description: b.name, price: b.price, image: b.emoji, category: "bebida" as const }, qty);
+      }
+    });
     router.push("/checkout");
-  }, [crossCategoryOrders, completedOrders, clearCart, addToCart, router]);
+  }, [crossCategoryOrders, completedOrders, bebidaQty, clearCart, addToCart, router]);
 
   // ── Derived values ────────────────────────────────────────────────────────
-  const total = completedOrders.length * 24.9;
+  const bebidasTotal = bebidas.reduce((acc, b) => acc + (bebidaQty[b.id] || 0) * b.price, 0);
+  const total = completedOrders.length * 24.9 + bebidasTotal;
   const duoCount = completedOrders.length;
+  const hasAnyOrder = completedOrders.length > 0 || bebidasTotal > 0;
 
   // ── Step indicator for modal ──────────────────────────────────────────────
   const step1Done = taco1 !== null;
   const step2Active = step1Done && taco2 === null;
   const step2Done = taco2 !== null;
   const bothSelected = step1Done && step2Done;
+  const allSelected = bothSelected && selectedComplemento !== null;
 
   return (
     <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
@@ -542,7 +593,7 @@ export default function TacosPage() {
       )}
 
       {/* ── Products grid section ─────────────────────────────────────────── */}
-      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? "pb-20 md:pb-16" : "pb-3 md:pb-3"}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${hasAnyOrder ? "pb-20 md:pb-16" : "pb-3 md:pb-3"}`}>
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
@@ -652,14 +703,58 @@ export default function TacosPage() {
           </div>
         )}
 
+        {/* ── Bebidas section ─────────────────────────────────────────────── */}
+        <div className="px-3 md:px-4 mt-8 mb-2">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">🥤</span>
+            <h2 className="text-base md:text-lg font-black text-emerald-400 uppercase tracking-wide neon-glow-taco">
+              Bebidas
+            </h2>
+            <span className="text-gray-600 text-xs font-normal normal-case ml-1">— agrega a tu pedido</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
+            {bebidas.map((b) => {
+              const qty = bebidaQty[b.id] || 0;
+              return (
+                <div
+                  key={b.id}
+                  className={`bg-gray-900 rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-200 ${
+                    qty > 0 ? "border-emerald-500/60" : "border-gray-800"
+                  }`}
+                  style={qty > 0 ? { boxShadow: "0 0 10px rgba(52,211,153,0.15)" } : {}}
+                >
+                  <span className="text-2xl">{b.emoji}</span>
+                  <p className="text-white text-[11px] md:text-xs font-bold text-center leading-tight">{b.name}</p>
+                  <p className="text-amber-400 text-xs font-black">S/ {b.price.toFixed(2)}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <button
+                      onClick={() => setBebidaQty(prev => ({ ...prev, [b.id]: Math.max(0, (prev[b.id] || 0) - 1) }))}
+                      className="w-6 h-6 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold text-sm flex items-center justify-center transition-all"
+                    >
+                      −
+                    </button>
+                    <span className="text-white font-bold text-sm w-5 text-center">{qty}</span>
+                    <button
+                      onClick={() => setBebidaQty(prev => ({ ...prev, [b.id]: (prev[b.id] || 0) + 1 }))}
+                      className="w-6 h-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold text-sm flex items-center justify-center transition-all"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* ── Spacer for fixed bottom bar ─────────────────────────────────── */}
-        {completedOrders.length > 0 && (
+        {hasAnyOrder && (
           <div className="h-3 md:h-4" />
         )}
       </section>
 
       {/* ── Orders list ─────────────────────────────────────────────────────── */}
-      {completedOrders.length > 0 && (
+      {hasAnyOrder && (
         <div className="container mx-auto px-3 md:px-4 pb-28 -mt-2 md:mt-0 lg:mt-2">
           <h3 className="text-base md:text-lg lg:text-xl font-black text-emerald-400 mb-2 md:mb-3 neon-glow-taco">
             Tu orden
@@ -694,9 +789,14 @@ export default function TacosPage() {
                           Dúo de Tacos
                         </h4>
                         <div className="text-[11px] space-y-0.5">
-                          <div className="text-emerald-300/80 flex justify-between items-center">
+                          <div className="text-emerald-300/80">
                             <span>🌮 {getFlavorName(order.salsas[0])} + {getFlavorName(order.salsas[1])}</span>
                           </div>
+                          {order.complementIds?.[0] && (
+                            <div className="text-gray-400">
+                              {getComplementoEmoji(order.complementIds[0])} {getComplementoName(order.complementIds[0])}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -717,11 +817,35 @@ export default function TacosPage() {
               );
             })}
           </div>
+
+          {/* Bebidas en la orden */}
+          {bebidasTotal > 0 && (
+            <div className="mt-3">
+              {bebidas.filter(b => (bebidaQty[b.id] || 0) > 0).map(b => (
+                <div key={b.id} className="flex items-center justify-between bg-gray-900 rounded-lg border border-emerald-400/20 px-3 py-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{b.emoji}</span>
+                    <span className="text-white text-xs font-bold">{b.name}</span>
+                    <span className="text-gray-500 text-xs">×{bebidaQty[b.id]}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-amber-400 font-bold text-xs">S/ {((bebidaQty[b.id] || 0) * b.price).toFixed(2)}</span>
+                    <button
+                      onClick={() => setBebidaQty(prev => ({ ...prev, [b.id]: 0 }))}
+                      className="text-gray-600 hover:text-red-400 text-sm font-bold transition-all"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* ── Sticky bottom bar ──────────────────────────────────────────────── */}
-      {completedOrders.length > 0 && (
+      {hasAnyOrder && (
         <div
           className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-emerald-500/50 shadow-2xl z-50"
           style={{ boxShadow: "0 0 20px rgba(52,211,153,0.3)" }}
@@ -763,7 +887,7 @@ export default function TacosPage() {
       )}
 
       {/* ── Add first duo bottom bar (when no orders yet) ──────────────────── */}
-      {completedOrders.length === 0 && isOpen && (
+      {!hasAnyOrder && isOpen && (
         <div
           className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-emerald-500/50 shadow-2xl z-50"
           style={{ boxShadow: "0 0 20px rgba(52,211,153,0.3)" }}
@@ -939,6 +1063,38 @@ export default function TacosPage() {
             })}
           </div>
 
+          {/* Complemento selector */}
+          {bothSelected && (
+            <div className="mt-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-base">🍟</span>
+                <p className="text-white font-black text-sm uppercase tracking-wide">Elige tu acompañante</p>
+                <span className="text-emerald-400/60 text-[10px]">· incluido</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {complementos.map((c) => {
+                  const isChosen = selectedComplemento === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedComplemento(c.id)}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl py-3 px-2 border-2 transition-all duration-200 ${
+                        isChosen
+                          ? "border-emerald-500 bg-emerald-500/15"
+                          : "border-gray-800 bg-gray-900 hover:border-gray-600"
+                      }`}
+                      style={isChosen ? { boxShadow: "0 0 12px rgba(52,211,153,0.2)" } : {}}
+                    >
+                      <span className="text-2xl">{c.emoji}</span>
+                      <span className={`text-xs font-bold ${isChosen ? "text-emerald-400" : "text-gray-400"}`}>{c.name}</span>
+                      {isChosen && <span className="text-emerald-500 text-[10px] font-black">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Duo preview */}
           {bothSelected && (
             <div className="mt-5 bg-gray-900 border border-emerald-500/30 rounded-2xl p-4">
@@ -985,19 +1141,15 @@ export default function TacosPage() {
           {/* CTA */}
           <button
             onClick={handleAddOrder}
-            disabled={!bothSelected}
+            disabled={!allSelected}
             className={`mt-4 w-full font-black text-base uppercase tracking-widest rounded-2xl py-4 transition-all duration-200 ${
-              bothSelected
+              allSelected
                 ? "bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black hover:scale-[1.02] active:scale-[0.98]"
                 : "bg-gray-800 text-gray-600 cursor-not-allowed"
             }`}
-            style={
-              bothSelected
-                ? { boxShadow: "0 0 20px rgba(52,211,153,0.4)" }
-                : {}
-            }
+            style={allSelected ? { boxShadow: "0 0 20px rgba(52,211,153,0.4)" } : {}}
           >
-            {bothSelected ? "Agregar al pedido ✓" : "Elige 2 sabores"}
+            {!bothSelected ? "Elige 2 sabores" : !selectedComplemento ? "Elige tu acompañante" : "Agregar al pedido ✓"}
           </button>
         </div>
       </div>
