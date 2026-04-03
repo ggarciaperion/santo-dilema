@@ -218,9 +218,7 @@ export default function TacosPage() {
     <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="bg-gray-900 border-b-2 border-amber-500 sticky top-0 z-30 overflow-visible"
-        style={{ boxShadow: "0 0 10px rgba(245,158,11,0.4), 0 0 20px rgba(245,158,11,0.2)" }}
-      >
+      <header className="bg-gray-900 border-b-2 border-emerald-500 sticky top-0 z-30 overflow-visible neon-border-taco">
         <div className="container mx-auto px-3 md:px-4 py-2 md:py-1.5 flex justify-between items-center overflow-visible">
           <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">
             <Image
@@ -265,8 +263,8 @@ export default function TacosPage() {
 
       {/* ── Business closed banner ─────────────────────────────────────────── */}
       {!isOpen && (
-        <div className="bg-gray-900 border-b-2 border-amber-500/30 px-4 py-3 text-center">
-          <p className="text-amber-400 text-sm font-bold">
+        <div className="bg-gray-900 border-b-2 border-emerald-500/30 px-4 py-3 text-center">
+          <p className="text-emerald-400 text-sm font-bold">
             ⏰ Estamos cerrados por ahora
           </p>
           <p className="text-gray-400 text-xs mt-0.5">{getNextOpenMessage()}</p>
@@ -278,7 +276,7 @@ export default function TacosPage() {
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
-          <p className="text-amber-400 text-xs font-bold tracking-widest uppercase mb-2">
+          <p className="text-emerald-400 text-xs font-bold tracking-widest uppercase mb-2">
             Dark Kitchen · Lima
           </p>
           <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
@@ -286,7 +284,7 @@ export default function TacosPage() {
           </h1>
           <p className="text-gray-400 text-sm mt-2">
             Elige tus 2 sabores y arma tu dúo por{" "}
-            <span className="text-amber-400 font-bold">S/ 24.90</span>
+            <span className="text-emerald-400 font-bold">S/ 24.90</span>
           </p>
         </div>
 
@@ -306,11 +304,11 @@ export default function TacosPage() {
                 style={isLastOdd ? { overflow: "visible" } : undefined}
               >
                 <div
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl border-2 md:border-2 border-amber-400 ${isSoldOut ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl border-2 md:border-2 border-emerald-400 ${isSoldOut ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
                     ${isLastOdd ? "w-[calc(50%-0.375rem)] md:w-[240px] lg:w-[260px]" : "w-full md:w-[240px] lg:w-[260px]"}
                   `}
                   style={{
-                    boxShadow: "0 0 10px rgba(245,158,11,0.4), 0 0 20px rgba(245,158,11,0.2)",
+                    boxShadow: "0 0 10px rgba(52,211,153,0.4), 0 0 20px rgba(52,211,153,0.2)",
                     borderRadius: 0,
                     overflow: "visible",
                     position: "relative",
@@ -361,13 +359,11 @@ export default function TacosPage() {
                     <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
                       {flavor.name}
                     </h4>
-                    <p className="text-amber-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2">
+                    <p className="text-emerald-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2">
                       {flavor.description}
                     </p>
                     <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                      <span className="text-sm md:text-base font-black text-amber-400"
-                        style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}
-                      >
+                      <span className="text-sm md:text-base font-black text-emerald-400 neon-glow-taco">
                         S/ 24.90
                       </span>
                       {!isSoldOut && (
@@ -376,7 +372,7 @@ export default function TacosPage() {
                             e.stopPropagation();
                             openModal();
                           }}
-                          className="w-5 h-5 md:w-6 md:h-6 text-white rounded text-xs font-bold transition-all flex items-center justify-center bg-amber-500 hover:bg-amber-400"
+                          className="w-5 h-5 md:w-6 md:h-6 text-white rounded text-xs font-bold transition-all flex items-center justify-center bg-emerald-500 hover:bg-emerald-400"
                         >
                           +
                         </button>
@@ -392,7 +388,7 @@ export default function TacosPage() {
         {/* ── Duo count hint ─────────────────────────────────────────────────── */}
         {completedOrders.length > 0 && (
           <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
-            <p className="text-center text-xs text-amber-200/70 italic">
+            <p className="text-center text-xs text-emerald-200/70 italic">
               Puedes agregar más dúos a tu pedido antes de continuar
             </p>
           </div>
@@ -408,20 +404,20 @@ export default function TacosPage() {
       {completedOrders.length > 0 && (
         <div className="container mx-auto px-3 md:px-4 pb-4">
           <div
-            className="bg-gray-900 border-2 border-amber-500/40 rounded-lg p-4 md:p-5"
-            style={{ boxShadow: "0 0 10px rgba(245,158,11,0.2)" }}
+            className="bg-gray-900 border-2 border-emerald-500/40 rounded-lg p-4 md:p-5"
+            style={{ boxShadow: "0 0 10px rgba(52,211,153,0.2)" }}
           >
-            <h3 className="text-white font-bold uppercase tracking-wide text-sm mb-3 border-b border-amber-500/20 pb-2">
+            <h3 className="text-white font-bold uppercase tracking-wide text-sm mb-3 border-b border-emerald-500/20 pb-2">
               Tu pedido
             </h3>
             <div className="space-y-2">
               {completedOrders.map((order, index) => (
                 <div
                   key={index}
-                  className="bg-gray-800/50 border border-amber-500/20 rounded-lg px-4 py-3 flex items-center justify-between"
+                  className="bg-gray-800/50 border border-emerald-500/20 rounded-lg px-4 py-3 flex items-center justify-between"
                 >
                   <div>
-                    <p className="text-amber-400 text-xs font-bold uppercase tracking-wide">
+                    <p className="text-emerald-400 text-xs font-bold uppercase tracking-wide">
                       Dúo #{index + 1}
                     </p>
                     <p className="text-white text-sm font-medium mt-0.5">
@@ -445,9 +441,9 @@ export default function TacosPage() {
             </div>
 
             {/* Running total */}
-            <div className="mt-3 flex justify-between items-center px-1 border-t border-amber-500/20 pt-3">
+            <div className="mt-3 flex justify-between items-center px-1 border-t border-emerald-500/20 pt-3">
               <span className="text-gray-400 text-sm font-bold">Total</span>
-              <span className="text-amber-400 font-black text-xl" style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}>
+              <span className="text-emerald-400 font-black text-xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
                 S/ {total.toFixed(2)}
               </span>
             </div>
@@ -458,29 +454,28 @@ export default function TacosPage() {
       {/* ── Sticky bottom bar ──────────────────────────────────────────────── */}
       {completedOrders.length > 0 && (
         <div
-          className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-amber-500/50 shadow-2xl z-50"
-          style={{ boxShadow: "0 0 20px rgba(245,158,11,0.3)" }}
+          className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-emerald-500/50 shadow-2xl z-50"
+          style={{ boxShadow: "0 0 20px rgba(52,211,153,0.3)" }}
         >
           <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 lg:py-5">
             <div className="flex justify-between items-center gap-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-sm md:text-lg">Total</span>
-                <span className="text-amber-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}>
+                <span className="text-emerald-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
                   S/ {total.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={openModal}
-                  className="bg-gray-800 hover:bg-gray-700 text-amber-400 font-bold text-sm rounded-lg px-4 py-2.5 md:py-3 transition-all border border-amber-500/30"
+                  className="bg-gray-800 hover:bg-gray-700 text-emerald-400 font-bold text-sm rounded-lg px-4 py-2.5 md:py-3 transition-all border border-emerald-500/30"
                 >
                   + Otro
                 </button>
                 {isOpen ? (
                   <button
                     onClick={handleCheckout}
-                    className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-black px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all"
-                    style={{ boxShadow: "0 0 10px rgba(245,158,11,0.5), 0 0 20px rgba(245,158,11,0.3)" }}
+                    className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all neon-border-taco"
                   >
                     Continuar<span className="hidden sm:inline"> Pedido</span> →
                   </button>
@@ -501,14 +496,13 @@ export default function TacosPage() {
       {/* ── Add first duo bottom bar (when no orders yet) ──────────────────── */}
       {completedOrders.length === 0 && isOpen && (
         <div
-          className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-amber-500/50 shadow-2xl z-50"
-          style={{ boxShadow: "0 0 20px rgba(245,158,11,0.3)" }}
+          className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-emerald-500/50 shadow-2xl z-50"
+          style={{ boxShadow: "0 0 20px rgba(52,211,153,0.3)" }}
         >
           <div className="container mx-auto px-4 py-3">
             <button
               onClick={openModal}
-              className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-black text-base uppercase tracking-widest rounded-lg py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-              style={{ boxShadow: "0 0 20px rgba(245,158,11,0.4)" }}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black font-black text-base uppercase tracking-widest rounded-lg py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] neon-border-taco"
             >
               Armar mi dúo →
             </button>
@@ -564,7 +558,7 @@ export default function TacosPage() {
             <div
               className={`flex-1 rounded-xl px-3 py-2 border transition-all duration-200 ${
                 step1Done
-                  ? "bg-amber-500/20 border-amber-500 text-amber-400"
+                  ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
                   : "bg-gray-900 border-gray-700 text-gray-500"
               }`}
             >
@@ -587,9 +581,9 @@ export default function TacosPage() {
             <div
               className={`flex-1 rounded-xl px-3 py-2 border transition-all duration-200 ${
                 step2Done
-                  ? "bg-amber-500/20 border-amber-500 text-amber-400"
+                  ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
                   : step2Active
-                  ? "bg-gray-800 border-amber-500/50 text-gray-300"
+                  ? "bg-gray-800 border-emerald-500/50 text-gray-300"
                   : "bg-gray-900 border-gray-700 text-gray-600"
               }`}
             >
@@ -619,12 +613,12 @@ export default function TacosPage() {
                   onClick={() => handleFlavorClick(flavor.id)}
                   className={`w-full text-left rounded-2xl border transition-all duration-200 overflow-hidden ${
                     isSelected
-                      ? "border-amber-500 bg-amber-500/10"
+                      ? "border-emerald-500 bg-emerald-500/10"
                       : "border-gray-800 bg-gray-900 hover:border-gray-600"
                   }`}
                   style={
                     isSelected
-                      ? { boxShadow: "0 0 16px rgba(245,158,11,0.2)" }
+                      ? { boxShadow: "0 0 16px rgba(52,211,153,0.2)" }
                       : {}
                   }
                 >
@@ -652,7 +646,7 @@ export default function TacosPage() {
                     {/* Selection badge */}
                     <div className="flex-shrink-0">
                       {isSelectedAsTaco1 && (
-                        <div className="bg-amber-500 text-black text-[10px] font-black rounded-full w-7 h-7 flex items-center justify-center">
+                        <div className="bg-emerald-500 text-black text-[10px] font-black rounded-full w-7 h-7 flex items-center justify-center">
                           T1
                         </div>
                       )}
@@ -675,7 +669,7 @@ export default function TacosPage() {
 
           {/* Duo preview */}
           {bothSelected && (
-            <div className="mt-5 bg-gray-900 border border-amber-500/30 rounded-2xl p-4">
+            <div className="mt-5 bg-gray-900 border border-emerald-500/30 rounded-2xl p-4">
               <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">
                 Tu dúo
               </p>
@@ -691,12 +685,12 @@ export default function TacosPage() {
             disabled={!bothSelected}
             className={`mt-4 w-full font-black text-base uppercase tracking-widest rounded-2xl py-4 transition-all duration-200 ${
               bothSelected
-                ? "bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black hover:scale-[1.02] active:scale-[0.98]"
+                ? "bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black hover:scale-[1.02] active:scale-[0.98]"
                 : "bg-gray-800 text-gray-600 cursor-not-allowed"
             }`}
             style={
               bothSelected
-                ? { boxShadow: "0 0 20px rgba(245,158,11,0.4)" }
+                ? { boxShadow: "0 0 20px rgba(52,211,153,0.4)" }
                 : {}
             }
           >
@@ -709,11 +703,11 @@ export default function TacosPage() {
       {showDeleteModal && deleteOrderIndex !== null && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div
-            className="bg-gray-900 border-2 border-amber-500 rounded-lg p-6 max-w-md w-full"
-            style={{ boxShadow: "0 0 10px rgba(245,158,11,0.4), 0 0 20px rgba(245,158,11,0.2)" }}
+            className="bg-gray-900 border-2 border-emerald-500 rounded-lg p-6 max-w-md w-full"
+            style={{ boxShadow: "0 0 10px rgba(52,211,153,0.4), 0 0 20px rgba(52,211,153,0.2)" }}
           >
-            <h3 className="text-xl font-black text-amber-400 mb-4 text-center"
-              style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}
+            <h3 className="text-xl font-black text-emerald-400 mb-4 text-center"
+              style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}
             >
               ¡Qué dilema!
             </h3>
@@ -721,15 +715,15 @@ export default function TacosPage() {
               <p className="text-white mb-3 text-center">
                 ¿Estás seguro que deseas quitar este dúo de tu pedido?
               </p>
-              <div className="bg-gray-800/50 border border-amber-400/30 rounded-lg p-4">
-                <p className="text-amber-400 font-bold text-base mb-1">
+              <div className="bg-gray-800/50 border border-emerald-400/30 rounded-lg p-4">
+                <p className="text-emerald-400 font-bold text-base mb-1">
                   Dúo #{deleteOrderIndex + 1}
                 </p>
                 <p className="text-white text-sm">
                   {getFlavorName(completedOrders[deleteOrderIndex]?.salsas[0])} +{" "}
                   {getFlavorName(completedOrders[deleteOrderIndex]?.salsas[1])}
                 </p>
-                <p className="text-amber-400 font-bold mt-1">S/ 24.90</p>
+                <p className="text-emerald-400 font-bold mt-1">S/ 24.90</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -741,8 +735,8 @@ export default function TacosPage() {
               </button>
               <button
                 onClick={confirmDeleteOrder}
-                className="flex-1 bg-amber-500 hover:bg-amber-400 text-black px-4 py-3 rounded-lg font-bold transition-all"
-                style={{ boxShadow: "0 0 8px rgba(245,158,11,0.4)" }}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black px-4 py-3 rounded-lg font-bold transition-all"
+                style={{ boxShadow: "0 0 8px rgba(52,211,153,0.4)" }}
               >
                 Quitar
               </button>
