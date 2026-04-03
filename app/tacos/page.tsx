@@ -8,7 +8,7 @@ import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import WhatsAppButton from "../components/WhatsAppButton";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CompletedOrder {
   productId: string;
@@ -70,13 +70,11 @@ export default function TacosPage() {
   const router = useRouter();
   const { addToCart, clearCart } = useCart();
 
-  const [businessOpen, setBusinessOpen] = useState(false);
-  const [nextOpenMsg, setNextOpenMsg] = useState("");
+  const [isOpen, setIsOpen] = useState(isBusinessOpen());
+  const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
 
   // Orders that belong to other categories (fit/fat from other pages)
-  const [crossCategoryOrders, setCrossCategoryOrders] = useState<
-    CompletedOrder[]
-  >([]);
+  const [crossCategoryOrders, setCrossCategoryOrders] = useState<CompletedOrder[]>([]);
   // Taco orders managed on this page
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
 
@@ -85,11 +83,24 @@ export default function TacosPage() {
   const [taco1, setTaco1] = useState<string | null>(null);
   const [taco2, setTaco2] = useState<string | null>(null);
 
+  // Delete modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
+
   // ── On mount: check hours + load sessionStorage ──────────────────────────
   useEffect(() => {
-    setBusinessOpen(isBusinessOpen());
-    setNextOpenMsg(getNextOpenMessage());
+    const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
+  useEffect(() => {
+    fetch("/api/menu-stock")
+      .then((r) => r.json())
+      .then((data) => setMenuStock(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     try {
       const raw = sessionStorage.getItem(SESSION_KEY);
       if (raw) {
@@ -134,7 +145,6 @@ export default function TacosPage() {
         return;
       }
       if (taco1 === id) {
-        // Deselect taco1
         setTaco1(null);
         return;
       }
@@ -143,7 +153,6 @@ export default function TacosPage() {
         return;
       }
       if (taco2 === id) {
-        // Deselect taco2
         setTaco2(null);
         return;
       }
@@ -169,14 +178,25 @@ export default function TacosPage() {
   }, [taco1, taco2, closeModal]);
 
   const handleDeleteOrder = useCallback((index: number) => {
-    setCompletedOrders((prev) => prev.filter((_, i) => i !== index));
+    setDeleteOrderIndex(index);
+    setShowDeleteModal(true);
+  }, []);
+
+  const confirmDeleteOrder = useCallback(() => {
+    if (deleteOrderIndex === null) return;
+    setCompletedOrders((prev) => prev.filter((_, i) => i !== deleteOrderIndex));
+    setShowDeleteModal(false);
+    setDeleteOrderIndex(null);
+  }, [deleteOrderIndex]);
+
+  const cancelDeleteOrder = useCallback(() => {
+    setShowDeleteModal(false);
+    setDeleteOrderIndex(null);
   }, []);
 
   const handleCheckout = useCallback(() => {
-    // Save to sessionStorage first (checkout reads it)
     const all = [...crossCategoryOrders, ...completedOrders];
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(all));
-
     clearCart();
     completedOrders.forEach((order) => {
       addToCart(TACO_DUO_PRODUCT, order.quantity);
@@ -195,69 +215,73 @@ export default function TacosPage() {
   const bothSelected = step1Done && step2Done;
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32">
+    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-black/95 backdrop-blur-sm border-b border-gray-800">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Back */}
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 text-gray-400 hover:text-amber-400 transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            <span className="text-sm font-medium">Volver</span>
+      <header className="bg-gray-900 border-b-2 border-amber-500 sticky top-0 z-30 overflow-visible"
+        style={{ boxShadow: "0 0 10px rgba(245,158,11,0.4), 0 0 20px rgba(245,158,11,0.2)" }}
+      >
+        <div className="container mx-auto px-3 md:px-4 py-2 md:py-1.5 flex justify-between items-center overflow-visible">
+          <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity relative z-10">
+            <Image
+              src="/logoprincipal.png"
+              alt="Santo Dilema"
+              width={300}
+              height={75}
+              className="h-10 md:h-9 w-auto"
+              priority
+            />
           </Link>
-
-          {/* Logo */}
-          <Image
-            src="/logoprincipal.png"
-            alt="Santo Dilema"
-            width={150}
-            height={45}
-            className="object-contain"
-            priority
-          />
-
-          {/* Cart badge */}
-          <div className="w-16 flex justify-end">
-            {duoCount > 0 && (
-              <div className="flex items-center gap-1 bg-amber-500 text-black rounded-full px-2.5 py-1">
-                <span className="text-xs font-bold">🌮 {duoCount}</span>
-              </div>
-            )}
+          <div className="flex items-center gap-2 md:gap-3">
+            <Link
+              href="/fat"
+              className="text-xs md:text-sm font-bold text-red-400 hover:text-red-300 transition-colors px-2 md:px-3 py-1 md:py-1.5 rounded border border-red-500/30 hover:border-red-400 hidden sm:block"
+              style={{ textShadow: "0 0 8px rgba(239,68,68,0.5)" }}
+            >
+              Ver menú Alitas →
+            </Link>
+            <Link
+              href="/fat"
+              className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors px-2 py-1 rounded border border-red-500/30 hover:border-red-400 sm:hidden"
+            >
+              Ver menú Alitas
+            </Link>
+            <Link
+              href="/fit"
+              className="text-xs md:text-sm font-bold text-cyan-400 hover:text-cyan-300 transition-colors px-2 md:px-3 py-1 md:py-1.5 rounded border border-cyan-500/30 hover:border-cyan-400 hidden sm:block"
+              style={{ textShadow: "0 0 8px rgba(34,211,238,0.5)" }}
+            >
+              Ver menú Ensaladas →
+            </Link>
+            <Link
+              href="/fit"
+              className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors px-2 py-1 rounded border border-cyan-500/30 hover:border-cyan-400 sm:hidden"
+            >
+              Ver menú Ensaladas
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* ── Closed banner ──────────────────────────────────────────────────── */}
-      {!businessOpen && (
-        <div className="bg-gray-900 border-b border-amber-500/30 px-4 py-3 text-center">
-          <p className="text-amber-400 text-sm font-semibold">
+      {/* ── Business closed banner ─────────────────────────────────────────── */}
+      {!isOpen && (
+        <div className="bg-gray-900 border-b-2 border-amber-500/30 px-4 py-3 text-center">
+          <p className="text-amber-400 text-sm font-bold">
             ⏰ Estamos cerrados por ahora
           </p>
-          <p className="text-gray-400 text-xs mt-0.5">{nextOpenMsg}</p>
+          <p className="text-gray-400 text-xs mt-0.5">{getNextOpenMessage()}</p>
         </div>
       )}
 
-      {/* ── Hero / title ───────────────────────────────────────────────────── */}
-      <div className="max-w-lg mx-auto px-4 pt-8 pb-4">
-        <div className="text-center mb-8">
+      {/* ── Products grid section ─────────────────────────────────────────── */}
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? "pb-20 md:pb-16" : "pb-3 md:pb-3"}`}>
+
+        {/* Page title */}
+        <div className="px-3 pt-4 pb-2 text-center">
           <p className="text-amber-400 text-xs font-bold tracking-widest uppercase mb-2">
             Dark Kitchen · Lima
           </p>
-          <h1 className="text-4xl font-black uppercase tracking-tight text-white">
+          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
             Tacos
           </h1>
           <p className="text-gray-400 text-sm mt-2">
@@ -266,60 +290,142 @@ export default function TacosPage() {
           </p>
         </div>
 
-        {/* ── Flavor cards ─────────────────────────────────────────────────── */}
-        <div className="space-y-4">
-          {flavors.map((flavor) => (
-            <div
-              key={flavor.id}
-              className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-amber-500/50 transition-all duration-300 group"
-            >
-              <div className="flex items-center gap-4 p-4">
-                {/* Image */}
-                <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
-                  <Image
-                    src={flavor.image}
-                    alt={flavor.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
+        {/* ── Flavor cards grid ─────────────────────────────────────────────── */}
+        <div
+          className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-12 md:gap-6 lg:gap-8 px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10"
+          style={{ overflow: "visible" }}
+        >
+          {flavors.map((flavor, index) => {
+            const isSoldOut = !!menuStock[flavor.id];
+            const isLastOdd = index === flavors.length - 1 && flavors.length % 2 !== 0;
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-amber-400 text-[10px] font-bold tracking-widest uppercase mb-0.5">
-                    {flavor.tagline}
-                  </p>
-                  <h2 className="text-white font-black text-lg uppercase leading-tight">
-                    {flavor.name}
-                  </h2>
-                  <p className="text-gray-400 text-xs mt-1.5 leading-relaxed line-clamp-3">
-                    {flavor.description}
-                  </p>
+            return (
+              <div
+                key={flavor.id}
+                className={isLastOdd ? "col-span-2 md:contents flex justify-center overflow-visible" : "contents"}
+                style={isLastOdd ? { overflow: "visible" } : undefined}
+              >
+                <div
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl border-2 md:border-2 border-amber-400 ${isSoldOut ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
+                    ${isLastOdd ? "w-[calc(50%-0.375rem)] md:w-[240px] lg:w-[260px]" : "w-full md:w-[240px] lg:w-[260px]"}
+                  `}
+                  style={{
+                    boxShadow: "0 0 10px rgba(245,158,11,0.4), 0 0 20px rgba(245,158,11,0.2)",
+                    borderRadius: 0,
+                    overflow: "visible",
+                    position: "relative",
+                    zIndex: index + 1,
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  }}
+                  onClick={() => {
+                    if (!isSoldOut) openModal();
+                  }}
+                >
+                  {/* Image area */}
+                  <div
+                    className="relative flex items-center justify-center bg-black h-40 md:h-40 border-0"
+                    style={{ overflow: "visible" }}
+                  >
+                    <Image
+                      src={flavor.image}
+                      alt={flavor.name}
+                      width={300}
+                      height={300}
+                      className="absolute object-cover drop-shadow-2xl"
+                      style={{
+                        width: "150%",
+                        height: "160%",
+                        top: "-30%",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        objectPosition: "center 55%",
+                        zIndex: 10,
+                      }}
+                    />
+                    {isSoldOut && (
+                      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: "rgba(0,0,0,0.45)" }}>
+                        <div
+                          className="border-4 border-red-500 rounded-sm px-3 py-1 select-none"
+                          style={{ transform: "rotate(-20deg)", boxShadow: "0 0 12px rgba(239,68,68,0.7)" }}
+                        >
+                          <span className="text-red-500 font-black text-xl md:text-2xl tracking-widest uppercase" style={{ textShadow: "0 0 8px rgba(239,68,68,0.8)" }}>
+                            AGOTADO
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info area */}
+                  <div className="p-3 md:p-2.5">
+                    <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
+                      {flavor.name}
+                    </h4>
+                    <p className="text-amber-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2">
+                      {flavor.description}
+                    </p>
+                    <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                      <span className="text-sm md:text-base font-black text-amber-400"
+                        style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}
+                      >
+                        S/ 24.90
+                      </span>
+                      {!isSoldOut && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openModal();
+                          }}
+                          className="w-5 h-5 md:w-6 md:h-6 text-white rounded text-xs font-bold transition-all flex items-center justify-center bg-amber-500 hover:bg-amber-400"
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* ── Orders list ──────────────────────────────────────────────────── */}
+        {/* ── Duo count hint ─────────────────────────────────────────────────── */}
         {completedOrders.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-white font-bold uppercase tracking-wide text-sm mb-3">
+          <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
+            <p className="text-center text-xs text-amber-200/70 italic">
+              Puedes agregar más dúos a tu pedido antes de continuar
+            </p>
+          </div>
+        )}
+
+        {/* ── Spacer for fixed bottom bar ─────────────────────────────────── */}
+        {completedOrders.length > 0 && (
+          <div className="h-24 md:h-28" />
+        )}
+      </section>
+
+      {/* ── Orders list (injected above the bottom bar) ────────────────────── */}
+      {completedOrders.length > 0 && (
+        <div className="container mx-auto px-3 md:px-4 pb-4">
+          <div
+            className="bg-gray-900 border-2 border-amber-500/40 rounded-lg p-4 md:p-5"
+            style={{ boxShadow: "0 0 10px rgba(245,158,11,0.2)" }}
+          >
+            <h3 className="text-white font-bold uppercase tracking-wide text-sm mb-3 border-b border-amber-500/20 pb-2">
               Tu pedido
             </h3>
             <div className="space-y-2">
               {completedOrders.map((order, index) => (
                 <div
                   key={index}
-                  className="bg-gray-900 border border-amber-500/30 rounded-xl px-4 py-3 flex items-center justify-between"
+                  className="bg-gray-800/50 border border-amber-500/20 rounded-lg px-4 py-3 flex items-center justify-between"
                 >
                   <div>
                     <p className="text-amber-400 text-xs font-bold uppercase tracking-wide">
                       Dúo #{index + 1}
                     </p>
                     <p className="text-white text-sm font-medium mt-0.5">
-                      {getFlavorName(order.salsas[0])} +{" "}
-                      {getFlavorName(order.salsas[1])}
+                      {getFlavorName(order.salsas[0])} + {getFlavorName(order.salsas[1])}
                     </p>
                     <p className="text-gray-500 text-xs mt-0.5">S/ 24.90</p>
                   </div>
@@ -328,16 +434,8 @@ export default function TacosPage() {
                     className="text-gray-600 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-400/10"
                     aria-label="Eliminar dúo"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
                     </svg>
@@ -347,65 +445,87 @@ export default function TacosPage() {
             </div>
 
             {/* Running total */}
-            <div className="mt-3 flex justify-between items-center px-1">
-              <span className="text-gray-400 text-sm">Total</span>
-              <span className="text-amber-400 font-black text-xl">
+            <div className="mt-3 flex justify-between items-center px-1 border-t border-amber-500/20 pt-3">
+              <span className="text-gray-400 text-sm font-bold">Total</span>
+              <span className="text-amber-400 font-black text-xl" style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}>
                 S/ {total.toFixed(2)}
               </span>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Sticky bottom bar ──────────────────────────────────────────────── */}
-      {businessOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-black/95 backdrop-blur-sm border-t border-gray-800 px-4 py-3">
-          <div className="max-w-lg mx-auto">
-            {duoCount === 0 ? (
-              <button
-                onClick={openModal}
-                className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-black text-base uppercase tracking-widest rounded-2xl py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                style={{ boxShadow: "0 0 20px rgba(245,158,11,0.4)" }}
-              >
-                🌮 Armar mi dúo →
-              </button>
-            ) : (
-              <div className="flex gap-3">
+      {completedOrders.length > 0 && (
+        <div
+          className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-amber-500/50 shadow-2xl z-50"
+          style={{ boxShadow: "0 0 20px rgba(245,158,11,0.3)" }}
+        >
+          <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 lg:py-5">
+            <div className="flex justify-between items-center gap-3 md:gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-white font-bold text-sm md:text-lg">Total</span>
+                <span className="text-amber-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}>
+                  S/ {total.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
                 <button
                   onClick={openModal}
-                  className="flex-shrink-0 bg-gray-800 hover:bg-gray-700 text-amber-400 font-bold text-sm rounded-2xl px-4 py-4 transition-all duration-200 border border-amber-500/30"
+                  className="bg-gray-800 hover:bg-gray-700 text-amber-400 font-bold text-sm rounded-lg px-4 py-2.5 md:py-3 transition-all border border-amber-500/30"
                 >
                   + Otro
                 </button>
-                <button
-                  onClick={handleCheckout}
-                  className="flex-1 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-black text-sm uppercase tracking-wide rounded-2xl py-4 transition-all duration-200 flex items-center justify-between px-5 hover:scale-[1.01] active:scale-[0.99]"
-                  style={{ boxShadow: "0 0 20px rgba(245,158,11,0.4)" }}
-                >
-                  <span>
-                    {duoCount} dúo{duoCount > 1 ? "s" : ""}
-                  </span>
-                  <span>Pedir →</span>
-                  <span>S/ {total.toFixed(2)}</span>
-                </button>
+                {isOpen ? (
+                  <button
+                    onClick={handleCheckout}
+                    className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-black px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-black text-sm md:text-lg transition-all"
+                    style={{ boxShadow: "0 0 10px rgba(245,158,11,0.5), 0 0 20px rgba(245,158,11,0.3)" }}
+                  >
+                    Continuar<span className="hidden sm:inline"> Pedido</span> →
+                  </button>
+                ) : (
+                  <div className="flex flex-col items-end gap-0.5">
+                    <div className="bg-gray-700 text-gray-400 px-4 md:px-7 py-2 md:py-3 rounded-lg font-black text-xs md:text-base cursor-not-allowed border-2 border-gray-600 text-center">
+                      🔒 Cerrado
+                    </div>
+                    <span className="text-gray-500 text-[10px] md:text-xs text-right">{getNextOpenMessage()}</span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Bottom-sheet modal ─────────────────────────────────────────────── */}
+      {/* ── Add first duo bottom bar (when no orders yet) ──────────────────── */}
+      {completedOrders.length === 0 && isOpen && (
+        <div
+          className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-amber-500/50 shadow-2xl z-50"
+          style={{ boxShadow: "0 0 20px rgba(245,158,11,0.3)" }}
+        >
+          <div className="container mx-auto px-4 py-3">
+            <button
+              onClick={openModal}
+              className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-black text-base uppercase tracking-widest rounded-lg py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              style={{ boxShadow: "0 0 20px rgba(245,158,11,0.4)" }}
+            >
+              Armar mi dúo →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Duo selector modal ─────────────────────────────────────────────── */}
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${
-          modalOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-40 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ${
+          modalOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={closeModal}
       />
 
-      {/* Sheet */}
+      {/* Modal container */}
       <div
         className={`fixed bottom-0 left-0 right-0 z-50 bg-gray-950 rounded-t-3xl border-t border-gray-800 transition-transform duration-[400ms] ease-out ${
           modalOpen ? "translate-y-0" : "translate-y-full"
@@ -432,18 +552,8 @@ export default function TacosPage() {
               onClick={closeModal}
               className="text-gray-600 hover:text-white transition-colors p-2 rounded-xl hover:bg-gray-800"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -468,18 +578,8 @@ export default function TacosPage() {
 
             {/* Arrow */}
             <div className="flex items-center text-gray-700">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>
 
@@ -604,6 +704,52 @@ export default function TacosPage() {
           </button>
         </div>
       </div>
+
+      {/* ── Delete confirmation modal ──────────────────────────────────────── */}
+      {showDeleteModal && deleteOrderIndex !== null && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div
+            className="bg-gray-900 border-2 border-amber-500 rounded-lg p-6 max-w-md w-full"
+            style={{ boxShadow: "0 0 10px rgba(245,158,11,0.4), 0 0 20px rgba(245,158,11,0.2)" }}
+          >
+            <h3 className="text-xl font-black text-amber-400 mb-4 text-center"
+              style={{ textShadow: "0 0 8px rgba(245,158,11,0.5)" }}
+            >
+              ¡Qué dilema!
+            </h3>
+            <div className="mb-6 text-sm">
+              <p className="text-white mb-3 text-center">
+                ¿Estás seguro que deseas quitar este dúo de tu pedido?
+              </p>
+              <div className="bg-gray-800/50 border border-amber-400/30 rounded-lg p-4">
+                <p className="text-amber-400 font-bold text-base mb-1">
+                  Dúo #{deleteOrderIndex + 1}
+                </p>
+                <p className="text-white text-sm">
+                  {getFlavorName(completedOrders[deleteOrderIndex]?.salsas[0])} +{" "}
+                  {getFlavorName(completedOrders[deleteOrderIndex]?.salsas[1])}
+                </p>
+                <p className="text-amber-400 font-bold mt-1">S/ 24.90</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={cancelDeleteOrder}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-bold transition-all border border-gray-500"
+              >
+                Volver
+              </button>
+              <button
+                onClick={confirmDeleteOrder}
+                className="flex-1 bg-amber-500 hover:bg-amber-400 text-black px-4 py-3 rounded-lg font-bold transition-all"
+                style={{ boxShadow: "0 0 8px rgba(245,158,11,0.4)" }}
+              >
+                Quitar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── WhatsApp button ────────────────────────────────────────────────── */}
       <WhatsAppButton />
