@@ -909,7 +909,7 @@ export default function FitPage() {
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
-          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-cyan-400" style={{ textShadow: "0 0 12px rgba(34,211,238,0.6)" }}>
             ENSALADAS PARA EL BALANCE
           </h1>
         </div>

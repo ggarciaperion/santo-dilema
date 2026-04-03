@@ -1258,7 +1258,7 @@ export default function FatPage() {
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
-          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-red-400" style={{ textShadow: "0 0 12px rgba(239,68,68,0.6)" }}>
             ALITAS PREMIUM PARA EL PLACER
           </h1>
         </div>
