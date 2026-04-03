@@ -1506,7 +1506,7 @@ export default function FatPage() {
                             <span className={`text-[10px] md:text-sm font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
                               {canAdd
                                 ? `Salsas seleccionadas (${requiredSalsas})`
-                                : `Elige tu${requiredSalsas > 1 ? 's' : ''} salsa${requiredSalsas > 1 ? 's' : ''}`
+                                : requiredSalsas === 1 ? 'Elige una salsa' : requiredSalsas === 2 ? 'Elige dos salsas' : 'Elige tres salsas'
                               }
                             </span>
                           </div>
