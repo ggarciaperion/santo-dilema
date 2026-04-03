@@ -300,8 +300,7 @@ export default function TacosPage() {
             return (
               <div
                 key={flavor.id}
-                className={isLastOdd ? "col-span-2 md:contents flex justify-center overflow-visible" : "contents"}
-                style={isLastOdd ? { overflow: "visible" } : undefined}
+                className={isLastOdd ? "col-span-2 md:contents flex justify-center" : "contents"}
               >
                 <div
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl border-2 md:border-2 border-emerald-400 ${isSoldOut ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
@@ -310,7 +309,7 @@ export default function TacosPage() {
                   style={{
                     boxShadow: "0 0 10px rgba(52,211,153,0.4), 0 0 20px rgba(52,211,153,0.2)",
                     borderRadius: 0,
-                    overflow: "visible",
+                    overflow: "hidden",
                     position: "relative",
                     zIndex: index + 1,
                     transition: "transform 0.3s ease, box-shadow 0.3s ease",
@@ -321,24 +320,13 @@ export default function TacosPage() {
                 >
                   {/* Image area */}
                   <div
-                    className="relative flex items-center justify-center bg-black h-40 md:h-40 border-0"
-                    style={{ overflow: "visible" }}
+                    className="relative flex items-center justify-center bg-black h-44 md:h-48 overflow-hidden"
                   >
                     <Image
                       src={flavor.image}
                       alt={flavor.name}
-                      width={300}
-                      height={300}
-                      className="absolute object-cover drop-shadow-2xl"
-                      style={{
-                        width: "150%",
-                        height: "160%",
-                        top: "-30%",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        objectPosition: "center 55%",
-                        zIndex: 10,
-                      }}
+                      fill
+                      className="object-contain drop-shadow-2xl p-2"
                     />
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: "rgba(0,0,0,0.45)" }}>
