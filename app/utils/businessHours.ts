@@ -1,11 +1,18 @@
 // Horario de atención: Jueves a Domingo, 6:00 PM - 11:00 PM (hora Perú, UTC-5)
 // Dominio de pruebas: siempre abierto
-const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app", "www.santodilema.com", "santodilema.com"];
+const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app"];
+
+// Cierre temporal hasta Sábado 4 de Abril 2026, 18:00 hora Perú (= 23:00 UTC)
+const TEMP_CLOSURE_UNTIL = new Date("2026-04-04T23:00:00Z");
 
 export function isBusinessOpen(): boolean {
+  // Staging: siempre abierto
   if (typeof window !== "undefined" && ALWAYS_OPEN_DOMAINS.includes(window.location.hostname)) {
     return true;
   }
+
+  // Cierre temporal activo
+  if (new Date() < TEMP_CLOSURE_UNTIL) return false;
 
   const peruDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
@@ -20,6 +27,11 @@ export function isBusinessOpen(): boolean {
 }
 
 export function getNextOpenMessage(): string {
+  // Durante cierre temporal, mensaje fijo
+  if (new Date() < TEMP_CLOSURE_UNTIL) {
+    return "Volvemos el Sábado a las 6:00 PM";
+  }
+
   const peruDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
   );
