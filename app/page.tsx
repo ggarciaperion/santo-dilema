@@ -675,6 +675,14 @@ export default function Home() {
           <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light mb-1.5 md:mb-3 text-green-200">
             Tacos Auténticos
           </p>
+          <div className={`transition-all duration-300 md:opacity-0 md:translate-y-4 ${
+            hoveredSide === "taco" ? "md:opacity-100 md:translate-y-0" : ""
+          }`}>
+            <div className="inline-flex items-center gap-2 px-5 py-2 md:px-5 md:py-2 border-2 border-emerald-400 rounded-full neon-border-taco">
+              <span className="text-emerald-400 font-bold text-sm md:text-sm">VER MENÚ</span>
+              <span className="text-emerald-400 text-sm">→</span>
+            </div>
+          </div>
         </div>
 
         {/* Línea decorativa con efecto neón */}
