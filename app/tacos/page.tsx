@@ -765,10 +765,10 @@ export default function TacosPage() {
           className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-emerald-500/50 shadow-2xl z-50"
           style={{ boxShadow: "0 0 20px rgba(52,211,153,0.3)" }}
         >
-          <div className="container mx-auto px-4 py-3">
+          <div className="container mx-auto px-4 py-3 flex justify-center">
             <button
               onClick={openModal}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black font-black text-base uppercase tracking-widest rounded-lg py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] neon-border-taco"
+              className="w-full md:w-72 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black font-black text-base uppercase tracking-widest rounded-lg py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] neon-border-taco"
             >
               Armar mi dúo →
             </button>
