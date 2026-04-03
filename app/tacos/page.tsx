@@ -934,23 +934,39 @@ export default function TacosPage() {
               <p className="text-gray-400 text-xs uppercase tracking-widest mb-3">
                 Tu dúo
               </p>
-              <div className="flex items-center gap-3">
-                {/* Taco 1 thumbnail */}
+              {/* Mobile: thumbnails centered */}
+              <div className="flex items-center gap-3 sm:hidden">
                 <div className="flex flex-col items-center gap-1.5 flex-1">
                   <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/40 relative">
                     <Image src={flavors.find(f => f.id === taco1!)!.image} alt={getFlavorName(taco1!)} fill className="object-cover" />
                   </div>
                   <p className="text-emerald-400 text-[10px] font-bold text-center leading-tight">{getFlavorName(taco1!)}</p>
                 </div>
-                {/* Plus separator */}
                 <span className="text-emerald-500 font-black text-xl">+</span>
-                {/* Taco 2 thumbnail */}
                 <div className="flex flex-col items-center gap-1.5 flex-1">
                   <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/40 relative">
                     <Image src={flavors.find(f => f.id === taco2!)!.image} alt={getFlavorName(taco2!)} fill className="object-cover" />
                   </div>
                   <p className="text-emerald-400 text-[10px] font-bold text-center leading-tight">{getFlavorName(taco2!)}</p>
                 </div>
+              </div>
+
+              {/* Tablet + Desktop: thumbnail + description side by side */}
+              <div className="hidden sm:flex flex-col gap-3">
+                {[taco1!, taco2!].map((id, i) => {
+                  const flavor = flavors.find(f => f.id === id)!;
+                  return (
+                    <div key={i} className="flex items-center gap-3 bg-black/30 rounded-xl p-2">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/40 relative flex-shrink-0">
+                        <Image src={flavor.image} alt={flavor.name} fill className="object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-emerald-400 text-xs font-black uppercase leading-tight mb-1">{flavor.name}</p>
+                        <p className="text-gray-400 text-[11px] leading-snug">{flavor.description}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
