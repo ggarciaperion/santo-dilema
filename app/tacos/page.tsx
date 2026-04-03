@@ -557,10 +557,17 @@ export default function TacosPage() {
           <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
             Tacos
           </h1>
-          <p className="text-gray-400 text-sm mt-2">
-            Elige tus 2 sabores y arma tu dúo por{" "}
-            <span className="text-emerald-400 font-bold">S/ 24.90</span>
-          </p>
+          <div
+            className="inline-block mt-3 px-5 py-3 rounded-xl border border-emerald-500/60 bg-emerald-950/40"
+            style={{ boxShadow: "0 0 16px rgba(52,211,153,0.25), inset 0 0 12px rgba(52,211,153,0.06)" }}
+          >
+            <p className="text-white text-sm md:text-base font-bold">
+              🌮 Elige tus{" "}
+              <span className="text-emerald-400" style={{ textShadow: "0 0 8px rgba(52,211,153,0.7)" }}>2 sabores</span>
+              {" "}y arma tu dúo por{" "}
+              <span className="text-emerald-300 font-black text-base md:text-lg" style={{ textShadow: "0 0 10px rgba(52,211,153,0.8)" }}>S/ 24.90</span>
+            </p>
+          </div>
         </div>
 
         {/* ── Flavor cards grid ─────────────────────────────────────────────── */}
