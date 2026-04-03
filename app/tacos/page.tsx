@@ -110,6 +110,7 @@ export default function TacosPage() {
   const [taco1, setTaco1] = useState<string | null>(null);
   const [taco2, setTaco2] = useState<string | null>(null);
   const [selectedComplemento, setSelectedComplemento] = useState<string | null>(null);
+  const [showBebidasModal, setShowBebidasModal] = useState(false);
 
   // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -178,6 +179,7 @@ export default function TacosPage() {
     setTaco1(null);
     setTaco2(null);
     setSelectedComplemento(null);
+    setShowBebidasModal(false);
   }, []);
 
   const handleFlavorClick = useCallback(
@@ -703,50 +705,6 @@ export default function TacosPage() {
           </div>
         )}
 
-        {/* ── Bebidas section ─────────────────────────────────────────────── */}
-        <div className="px-3 md:px-4 mt-8 mb-2">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">🥤</span>
-            <h2 className="text-base md:text-lg font-black text-emerald-400 uppercase tracking-wide neon-glow-taco">
-              Bebidas
-            </h2>
-            <span className="text-gray-600 text-xs font-normal normal-case ml-1">— agrega a tu pedido</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
-            {bebidas.map((b) => {
-              const qty = bebidaQty[b.id] || 0;
-              return (
-                <div
-                  key={b.id}
-                  className={`bg-gray-900 rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-200 ${
-                    qty > 0 ? "border-emerald-500/60" : "border-gray-800"
-                  }`}
-                  style={qty > 0 ? { boxShadow: "0 0 10px rgba(52,211,153,0.15)" } : {}}
-                >
-                  <span className="text-2xl">{b.emoji}</span>
-                  <p className="text-white text-[11px] md:text-xs font-bold text-center leading-tight">{b.name}</p>
-                  <p className="text-amber-400 text-xs font-black">S/ {b.price.toFixed(2)}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      onClick={() => setBebidaQty(prev => ({ ...prev, [b.id]: Math.max(0, (prev[b.id] || 0) - 1) }))}
-                      className="w-6 h-6 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold text-sm flex items-center justify-center transition-all"
-                    >
-                      −
-                    </button>
-                    <span className="text-white font-bold text-sm w-5 text-center">{qty}</span>
-                    <button
-                      onClick={() => setBebidaQty(prev => ({ ...prev, [b.id]: (prev[b.id] || 0) + 1 }))}
-                      className="w-6 h-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold text-sm flex items-center justify-center transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
         {/* ── Spacer for fixed bottom bar ─────────────────────────────────── */}
         {hasAnyOrder && (
           <div className="h-3 md:h-4" />
@@ -1085,12 +1043,86 @@ export default function TacosPage() {
                       }`}
                       style={isChosen ? { boxShadow: "0 0 12px rgba(52,211,153,0.2)" } : {}}
                     >
-                      <span className="text-2xl">{c.emoji}</span>
+                      {/* Custom icons per complemento */}
+                      {c.id === "nachos" && (
+                        <svg viewBox="0 0 48 42" className="w-9 h-8" fill="none">
+                          <polygon points="24,3 45,39 3,39" fill="#F5C842" stroke="#C99B20" strokeWidth="1.5" strokeLinejoin="round"/>
+                          <circle cx="18" cy="30" r="2.5" fill="#C99B20" opacity="0.55"/>
+                          <circle cx="27" cy="24" r="2" fill="#C99B20" opacity="0.5"/>
+                          <circle cx="32" cy="32" r="2" fill="#C99B20" opacity="0.5"/>
+                          <circle cx="21" cy="19" r="1.5" fill="#C99B20" opacity="0.4"/>
+                        </svg>
+                      )}
+                      {c.id === "chifles" && (
+                        <svg viewBox="0 0 52 32" className="w-10 h-7" fill="none">
+                          <ellipse cx="26" cy="16" rx="23" ry="12" fill="#E8C43A" stroke="#B8910A" strokeWidth="1.5"/>
+                          <ellipse cx="20" cy="13" rx="6" ry="3" fill="#B8910A" opacity="0.35" transform="rotate(-12 20 13)"/>
+                          <ellipse cx="33" cy="18" rx="5" ry="2.5" fill="#B8910A" opacity="0.3" transform="rotate(8 33 18)"/>
+                          <ellipse cx="26" cy="10" rx="3" ry="1.5" fill="#B8910A" opacity="0.25"/>
+                        </svg>
+                      )}
+                      {c.id === "papas-fritas" && (
+                        <span className="text-2xl">🍟</span>
+                      )}
                       <span className={`text-xs font-bold ${isChosen ? "text-emerald-400" : "text-gray-400"}`}>{c.name}</span>
                       {isChosen && <span className="text-emerald-500 text-[10px] font-black">✓</span>}
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Bebidas accordion */}
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowBebidasModal(prev => !prev)}
+                  className="w-full flex items-center justify-between bg-gray-900 border border-gray-700 hover:border-emerald-500/40 rounded-xl px-4 py-3 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🥤</span>
+                    <span className="text-white font-bold text-sm">Bebidas</span>
+                    <span className="text-gray-500 text-xs">· opcionales</span>
+                    {bebidasTotal > 0 && (
+                      <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-500/40">
+                        S/ {bebidasTotal.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-emerald-400 text-sm">{showBebidasModal ? "▲" : "▼"}</span>
+                </button>
+                {showBebidasModal && (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {bebidas.map((b) => {
+                      const qty = bebidaQty[b.id] || 0;
+                      return (
+                        <div
+                          key={b.id}
+                          className={`bg-gray-900 rounded-xl border px-3 py-2.5 flex items-center justify-between transition-all duration-150 ${
+                            qty > 0 ? "border-emerald-500/50" : "border-gray-800"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base flex-shrink-0">{b.emoji}</span>
+                            <div className="min-w-0">
+                              <p className="text-white text-[10px] font-bold leading-tight truncate">{b.name}</p>
+                              <p className="text-amber-400 text-[10px] font-black">S/ {b.price.toFixed(2)}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                            <button
+                              onClick={() => setBebidaQty(prev => ({ ...prev, [b.id]: Math.max(0, (prev[b.id] || 0) - 1) }))}
+                              className="w-5 h-5 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs font-bold flex items-center justify-center"
+                            >−</button>
+                            <span className="text-white font-bold text-xs w-4 text-center">{qty}</span>
+                            <button
+                              onClick={() => setBebidaQty(prev => ({ ...prev, [b.id]: (prev[b.id] || 0) + 1 }))}
+                              className="w-5 h-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold flex items-center justify-center"
+                            >+</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}
