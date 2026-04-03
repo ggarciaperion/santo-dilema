@@ -412,21 +412,34 @@ export default function FitPage() {
   const handleCardClick = (productId: string) => {
     const currentQty = orderQuantity[productId] || 0;
 
-    // Si qty = 0, permitir expandir/colapsar con clic
+    // Helper: reset previous card qty to 0 if it has no completed order
+    const resetPreviousCard = (prevId: string) => {
+      const hasOrder = completedOrders.some(o => o.productId === prevId);
+      if (!hasOrder) {
+        setOrderQuantity((prev) => ({ ...prev, [prevId]: 0 }));
+      }
+      setShowBebidas((prev) => ({ ...prev, [prevId]: false }));
+      setShowExtras((prev) => ({ ...prev, [prevId]: false }));
+    };
+
     if (currentQty === 0) {
       if (expandedCard === productId) {
-        // Colapsar
+        // Colapsar: volver a 0
         setExpandedCard(null);
+        setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
         setShowBebidas((prev) => ({ ...prev, [productId]: false }));
         setShowExtras((prev) => ({ ...prev, [productId]: false }));
       } else {
-        // Expandir
+        // Si había otro cartel expandido, resetear su contador
+        if (expandedCard) resetPreviousCard(expandedCard);
+
+        // Expandir y poner qty = 1 automáticamente
         setExpandedCard(productId);
+        setOrderQuantity((prev) => ({ ...prev, [productId]: 1 }));
         if (!selectedComplements[productId]) {
           setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
         }
 
-        // Scroll hacia el contenido expandido después de que se expanda el cartel
         setTimeout(() => {
           const card = cardRefs.current[productId];
           if (card) {
@@ -435,10 +448,9 @@ export default function FitPage() {
         }, 600);
       }
     } else if (currentQty > 0 && expandedCard !== productId) {
-      // Si qty > 0, solo expandir si no está expandido
+      if (expandedCard) resetPreviousCard(expandedCard);
       setExpandedCard(productId);
 
-      // Scroll hacia el contenido expandido después de que se expanda el cartel
       setTimeout(() => {
         const card = cardRefs.current[productId];
         if (card) {
@@ -710,8 +722,23 @@ export default function FitPage() {
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
+  const resetExpandedCard = (productId: string) => {
+    const hasOrder = completedOrders.some(o => o.productId === productId);
+    if (!hasOrder) {
+      setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
+    }
+    setShowBebidas((prev) => ({ ...prev, [productId]: false }));
+    setShowExtras((prev) => ({ ...prev, [productId]: false }));
+  };
+
+  const collapseExpandedCard = () => {
+    if (!expandedCard) return;
+    resetExpandedCard(expandedCard);
+    setExpandedCard(null);
+  };
+
   return (
-    <div className="min-h-screen bg-black relative">
+    <div className="min-h-screen bg-black relative" onClick={collapseExpandedCard}>
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Cadeneta de carnaval */}
@@ -954,13 +981,13 @@ export default function FitPage() {
                   <div className={isLastOdd ? 'col-span-2 md:contents flex justify-center overflow-visible' : 'contents'} style={isLastOdd ? { overflow: 'visible' } : undefined}>
                   <div
                   ref={(el) => { cardRefs.current[product.id] = el; }}
-                  onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
+                  onClick={(e) => { e.stopPropagation(); if (!isSoldOut && !isExpanded) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
-                      ? 'w-full md:w-[340px] lg:w-[360px] z-20'
+                      ? `${isLastOdd ? 'w-[calc(50%-0.375rem)]' : 'w-full'} md:w-[340px] lg:w-[360px] z-20`
                       : isLastOdd ? 'w-[calc(50%-0.375rem)] md:w-[240px] lg:w-[260px]' : 'w-full md:w-[240px] lg:w-[260px]'
                     }
                     ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
@@ -978,11 +1005,21 @@ export default function FitPage() {
                     zIndex: isExpanded ? 50 : isMobile ? productIndex + 1 : undefined,
                   }}
                 >
-                  <div className={`relative flex items-center justify-center overflow-visible ${
-                    product.image.startsWith('/')
-                      ? 'bg-black h-40 md:h-40 border-0'
-                      : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
-                  }`} style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}>
+                  <div
+                    className={`relative flex items-center justify-center overflow-visible ${
+                      product.image.startsWith('/')
+                        ? 'bg-black h-40 md:h-40 border-0'
+                        : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
+                    } ${isExpanded ? 'cursor-pointer' : ''}`}
+                    style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}
+                    onClick={(e) => {
+                      if (isExpanded && !isSoldOut) {
+                        e.stopPropagation();
+                        resetExpandedCard(product.id);
+                        setExpandedCard(null);
+                      }
+                    }}
+                  >
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
