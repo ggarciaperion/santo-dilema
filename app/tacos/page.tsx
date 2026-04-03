@@ -615,6 +615,18 @@ export default function TacosPage() {
                         </div>
                       </div>
                     )}
+                    {!isSoldOut && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModal();
+                        }}
+                        className="absolute top-2 right-2 z-10 w-7 h-7 text-white rounded-full text-base font-bold transition-all flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 shadow-lg"
+                        style={{ boxShadow: "0 0 8px rgba(52,211,153,0.6)" }}
+                      >
+                        +
+                      </button>
+                    )}
                   </div>
 
                   {/* Info area */}
@@ -622,22 +634,9 @@ export default function TacosPage() {
                     <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
                       {flavor.name}
                     </h4>
-                    <p className="text-emerald-200/70 text-[10px] md:text-[11px] mb-1.5 md:mb-2">
+                    <p className="text-emerald-200/70 text-[10px] md:text-[11px]">
                       {flavor.description}
                     </p>
-                    <div className="flex items-center justify-end mb-1.5 md:mb-2">
-                      {!isSoldOut && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openModal();
-                          }}
-                          className="w-5 h-5 md:w-6 md:h-6 text-white rounded text-xs font-bold transition-all flex items-center justify-center bg-emerald-500 hover:bg-emerald-400"
-                        >
-                          +
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
