@@ -1028,9 +1028,9 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl') ? '120%' : '150%',
-                          height: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl') ? '125%' : '160%',
-                          top: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl') ? '-15%' : '-30%',
+                          width: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '120%' : '150%',
+                          height: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '125%' : '160%',
+                          top: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 40%',
