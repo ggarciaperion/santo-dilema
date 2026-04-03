@@ -847,10 +847,9 @@ export default function CheckoutPage() {
                                 return (
                                   <div key={`${compId}-${i}`} className="flex justify-between items-center">
                                     <span className="opacity-80">+ {comp.name}</span>
-                                    {comp.price > 0
-                                      ? <span className="font-mono text-xs">S/ {comp.price.toFixed(2)}</span>
-                                      : <span className="font-mono text-xs text-emerald-400">Incluido</span>
-                                    }
+                                    {comp.price > 0 && (
+                                      <span className="font-mono text-xs">S/ {comp.price.toFixed(2)}</span>
+                                    )}
                                   </div>
                                 );
                               })}
