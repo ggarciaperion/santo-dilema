@@ -30,7 +30,7 @@ const flavors = [
     tagline: "Crujiente y tentador",
     description:
       "Pollo crispy dorado, lechuga fresca, pico de gallo, aros de cebolla crunchy, acompañado de aioli y salsa BBQ cremosa, todo envuelto en tortilla soft.",
-    image: "/tacoinicio.png",
+    image: "/crunch.png",
   },
   {
     id: "tex-dilema",
@@ -38,7 +38,7 @@ const flavors = [
     tagline: "Con ese toque tex-mex",
     description:
       "Pollo crispy, lechuga fresca, guacamole cremoso, pico de gallo, aros de cebolla crunchy y un toque de cilantro dressing, servido en tortilla soft.",
-    image: "/tacoinicio.png",
+    image: "/tex.png",
   },
   {
     id: "santo-bacon",
@@ -46,7 +46,7 @@ const flavors = [
     tagline: "El que lo prueba, repite",
     description:
       "Pollo crispy, bacon crocante, queso cheddar fundido, pimientos y cebolla salteados, lechuga fresca, pico de gallo y salsa cremosa especial, envuelto en tortilla soft.",
-    image: "/tacoinicio.png",
+    image: "/bacon.png",
   },
 ];
 
