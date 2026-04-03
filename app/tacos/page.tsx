@@ -326,7 +326,7 @@ export default function TacosPage() {
                       src={flavor.image}
                       alt={flavor.name}
                       fill
-                      className="object-contain drop-shadow-2xl p-2"
+                      className="object-cover"
                     />
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: "rgba(0,0,0,0.45)" }}>
