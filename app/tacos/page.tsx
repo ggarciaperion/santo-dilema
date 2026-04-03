@@ -144,19 +144,11 @@ export default function TacosPage() {
         setTaco1(id);
         return;
       }
-      if (taco1 === id) {
-        setTaco1(null);
-        return;
-      }
       if (taco2 === null) {
         setTaco2(id);
         return;
       }
-      if (taco2 === id) {
-        setTaco2(null);
-        return;
-      }
-      // Both slots filled and a different card tapped — replace taco2
+      // Both slots filled — replace taco2
       setTaco2(id);
     },
     [taco1, taco2]
@@ -806,6 +798,9 @@ export default function TacosPage() {
               </h2>
               <p className="text-gray-500 text-xs mt-0.5">
                 Elige 2 sabores · S/ 24.90
+              </p>
+              <p className="text-emerald-400/70 text-[10px] mt-0.5">
+                ✦ Puedes repetir el mismo sabor dos veces
               </p>
             </div>
             <button
