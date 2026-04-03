@@ -1256,6 +1256,24 @@ export default function FatPage() {
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
+        {/* Page title */}
+        <div className="px-3 pt-4 pb-2 text-center">
+          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
+            Alitas
+          </h1>
+          <div
+            className="inline-block mt-3 px-5 py-3 rounded-xl border border-red-500/60 bg-red-950/40"
+            style={{ boxShadow: "0 0 16px rgba(239,68,68,0.25), inset 0 0 12px rgba(239,68,68,0.06)" }}
+          >
+            <p className="text-white text-sm md:text-base font-bold">
+              🍗{" "}
+              <span className="text-red-300 font-black text-base md:text-lg" style={{ textShadow: "0 0 10px rgba(239,68,68,0.8)" }}>
+                ALITAS PREMIUM
+              </span>
+            </p>
+          </div>
+        </div>
+
         {/* Carousel Container */}
         <div className="relative flex items-center justify-center overflow-visible" style={{ overflow: 'visible' }}>
           {/* Scrollable Products - Carrusel en móvil, grilla en desktop */}
