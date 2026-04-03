@@ -751,8 +751,24 @@ export default function TacosPage() {
                             <span>🌮 {getFlavorName(order.salsas[0])} + {getFlavorName(order.salsas[1])}</span>
                           </div>
                           {order.complementIds?.[0] && (
-                            <div className="text-gray-400">
-                              {getComplementoEmoji(order.complementIds[0])} {getComplementoName(order.complementIds[0])}
+                            <div className="text-gray-400 flex items-center gap-1">
+                              {order.complementIds[0] === "nachos" && (
+                                <svg viewBox="0 0 48 42" className="w-4 h-3.5 inline-block flex-shrink-0" fill="none">
+                                  <polygon points="24,3 45,39 3,39" fill="#F5C842" stroke="#C99B20" strokeWidth="1.5" strokeLinejoin="round"/>
+                                  <circle cx="18" cy="30" r="2.5" fill="#C99B20" opacity="0.55"/>
+                                  <circle cx="27" cy="24" r="2" fill="#C99B20" opacity="0.5"/>
+                                  <circle cx="32" cy="32" r="2" fill="#C99B20" opacity="0.5"/>
+                                </svg>
+                              )}
+                              {order.complementIds[0] === "chifles" && (
+                                <svg viewBox="0 0 52 32" className="w-4 h-3 inline-block flex-shrink-0" fill="none">
+                                  <ellipse cx="26" cy="16" rx="23" ry="12" fill="#E8C43A" stroke="#B8910A" strokeWidth="1.5"/>
+                                  <ellipse cx="20" cy="13" rx="6" ry="3" fill="#B8910A" opacity="0.35" transform="rotate(-12 20 13)"/>
+                                  <ellipse cx="33" cy="18" rx="5" ry="2.5" fill="#B8910A" opacity="0.3" transform="rotate(8 33 18)"/>
+                                </svg>
+                              )}
+                              {order.complementIds[0] === "papas-fritas" && <span className="text-xs">🍟</span>}
+                              <span>{getComplementoName(order.complementIds[0])}</span>
                             </div>
                           )}
                         </div>
