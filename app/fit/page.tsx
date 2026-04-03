@@ -116,8 +116,22 @@ const fatProducts: Product[] = [
   },
 ];
 
+const tacoFlavorNames: Record<string, string> = {
+  "santo-crujiente": "Crunch Supreme Taco",
+  "tex-dilema": "Tex Supreme Taco",
+  "santo-bacon": "Bacon Deluxe Taco",
+};
+
 // Productos de TACOS para visualización de órdenes cruzadas
 const tacoProducts: Product[] = [
+  {
+    id: "taco-duo",
+    name: "Dúo de Tacos",
+    description: "Elige 2 sabores de taco.",
+    price: 24.90,
+    image: "/tacoinicio.png",
+    category: "taco",
+  },
   {
     id: "trio-taco-classico",
     name: "Trío Taco Clásico",
@@ -1353,8 +1367,14 @@ export default function FitPage() {
                               <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
                             </div>
 
-                            {/* Salsas (para órdenes de fat y tacos) */}
-                            {(isFatOrder || isTacoOrder) && order.salsas && order.salsas.length > 0 && (
+                            {/* Sabores tacos */}
+                            {isTacoOrder && order.productId === 'taco-duo' && order.salsas && order.salsas.length > 0 && (
+                              <div className="text-emerald-300/80">
+                                🌮 Sabores: {order.salsas.map((id) => tacoFlavorNames[id] ?? id).join(" + ")}
+                              </div>
+                            )}
+                            {/* Salsas (para órdenes de fat) */}
+                            {isFatOrder && order.salsas && order.salsas.length > 0 && (
                               <div className="text-amber-300/80">
                                 🌶️ Salsas: {order.salsas
                                   .map((sId) => salsas.find((s) => s.id === sId)?.name)

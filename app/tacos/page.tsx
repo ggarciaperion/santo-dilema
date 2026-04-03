@@ -564,7 +564,7 @@ export default function TacosPage() {
 
         {/* ── Flavor cards grid ─────────────────────────────────────────────── */}
         <div
-          className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-12 md:gap-6 lg:gap-8 px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10"
+          className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-12 md:gap-6 lg:gap-8 px-3 md:px-4 pt-10 pb-2 md:py-8 lg:py-10"
           style={{ overflow: "visible" }}
         >
           {flavors.map((flavor, index) => {
@@ -654,20 +654,23 @@ export default function TacosPage() {
 
         {/* ── Spacer for fixed bottom bar ─────────────────────────────────── */}
         {completedOrders.length > 0 && (
-          <div className="h-24 md:h-28" />
+          <div className="h-3 md:h-4" />
         )}
       </section>
 
       {/* ── Orders list (injected above the bottom bar) ────────────────────── */}
       {completedOrders.length > 0 && (
-        <div className="container mx-auto px-3 md:px-4 pb-4">
+        <div className="container mx-auto px-3 md:px-4 pb-24">
           <div
             className="bg-gray-900 border-2 border-emerald-500/40 rounded-lg p-4 md:p-5"
             style={{ boxShadow: "0 0 10px rgba(52,211,153,0.2)" }}
           >
-            <h3 className="text-white font-bold uppercase tracking-wide text-sm mb-3 border-b border-emerald-500/20 pb-2">
-              Tu pedido
-            </h3>
+            <div className="flex items-center gap-2 mb-3 border-b border-emerald-500/20 pb-2">
+              <Image src="/logoprincipal.png" alt="Santo Dilema" width={100} height={28} className="h-5 w-auto opacity-60" />
+              <h3 className="text-white font-bold uppercase tracking-wide text-sm">
+                Tu pedido
+              </h3>
+            </div>
             <div className="space-y-2">
               {completedOrders.map((order, index) => (
                 <div
