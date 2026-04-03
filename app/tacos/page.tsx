@@ -595,7 +595,7 @@ export default function TacosPage() {
       )}
 
       {/* ── Products grid section ─────────────────────────────────────────── */}
-      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${hasAnyOrder ? "pb-20 md:pb-16" : "pb-3 md:pb-3"}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-2 md:py-3 transition-all duration-300 overflow-visible ${hasAnyOrder ? "pb-4 md:pb-6" : "pb-2 md:pb-2"}`}>
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
@@ -617,7 +617,7 @@ export default function TacosPage() {
 
         {/* ── Flavor cards grid ─────────────────────────────────────────────── */}
         <div
-          className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-12 md:gap-6 lg:gap-8 px-3 md:px-4 pt-10 pb-2 md:py-8 lg:py-10"
+          className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-10 md:gap-6 lg:gap-8 px-3 md:px-4 pt-6 pb-1 md:py-5 lg:py-6"
           style={{ overflow: "visible" }}
         >
           {flavors.map((flavor, index) => {
@@ -713,7 +713,7 @@ export default function TacosPage() {
 
       {/* ── Orders list ─────────────────────────────────────────────────────── */}
       {hasAnyOrder && (
-        <div className="container mx-auto px-3 md:px-4 pb-28 -mt-2 md:mt-0 lg:mt-2">
+        <div className="container mx-auto px-3 md:px-4 pb-28 mt-0">
           <h3 className="text-base md:text-lg lg:text-xl font-black text-emerald-400 mb-2 md:mb-3 neon-glow-taco">
             Tu orden
           </h3>
