@@ -27,7 +27,10 @@ const generateAvailableComplements = () => {
     "extra-papas": { name: "Extra papas", price: 5.00 },
     "extra-salsa": { name: "Extra salsa", price: 3.00 },
     "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
-    "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
+    "pollo-grillado": { name: "Pollo grillado", price: 5.00 },
+    "nachos": { name: "Nachos", price: 0 },
+    "chifles": { name: "Chifles", price: 0 },
+    "papas-fritas": { name: "Papas fritas", price: 0 },
   };
 
   salsas.forEach(salsa => {
@@ -465,14 +468,25 @@ export default function DeliveryPage() {
                             </div>
                           </div>
 
-                          {/* Salsas */}
+                          {/* Salsas / Sabores de taco */}
                           {itemSalsas.length > 0 && (
                             <div className="ml-11 text-xs text-yellow-300 mb-1">
-                              <span className="font-bold">🌶️ </span>
-                              {itemSalsas.map((salsaId: string) => {
-                                const salsa = salsas.find(s => s.id === salsaId);
-                                return salsa?.name || salsaId;
-                              }).join(', ')}
+                              {item.productId === 'taco-duo' || item.category === 'taco' ? (
+                                <>
+                                  <span className="font-bold">🌮 </span>
+                                  {itemSalsas.map((id: string) => (
+                                    { 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' }[id] || id
+                                  )).join(' + ')}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="font-bold">🌶️ </span>
+                                  {itemSalsas.map((salsaId: string) => {
+                                    const salsa = salsas.find((s: any) => s.id === salsaId);
+                                    return salsa?.name || salsaId;
+                                  }).join(', ')}
+                                </>
+                              )}
                             </div>
                           )}
 
@@ -495,7 +509,10 @@ export default function DeliveryPage() {
                                       <span className="font-bold">+ </span>
                                       {count > 1 && <span className="text-green-400 font-black">{count}x </span>}
                                       {complement.name}
-                                      <span className="text-green-400 font-bold ml-1">S/ {totalPrice.toFixed(2)}</span>
+                                      {complement.price > 0
+                                        ? <span className="text-green-400 font-bold ml-1">S/ {totalPrice.toFixed(2)}</span>
+                                        : <span className="text-emerald-400 font-bold ml-1">(incluido)</span>
+                                      }
                                     </div>
                                   );
                                 })}

@@ -178,7 +178,10 @@ const availableComplements: Record<string, { name: string; price: number }> = {
   "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
   "extra-papas": { name: "Extra papas", price: 5.00 },
   "extra-salsa": { name: "Extra salsa", price: 3.00 },
-  "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
+  "pollo-grillado": { name: "Pollo grillado", price: 5.00 },
+  "nachos": { name: "Nachos", price: 0 },
+  "chifles": { name: "Chifles", price: 0 },
+  "papas-fritas": { name: "Papas fritas", price: 0 },
 };
 
 export default function FitPage() {
@@ -1429,7 +1432,10 @@ export default function FitPage() {
                                   return (
                                     <div key={`${compId}-${idx}`} className={`${isTacoOrder ? 'text-emerald-300/80' : isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between`}>
                                       <span>• {complement.name}</span>
-                                      <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
+                                      {complement.price > 0
+                                        ? <span className="text-amber-400/80">S/ {complement.price.toFixed(2)}</span>
+                                        : <span className="text-emerald-400/80 text-[10px]">Incluido</span>
+                                      }
                                     </div>
                                   );
                                 })}

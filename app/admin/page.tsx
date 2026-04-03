@@ -28,7 +28,10 @@ const generateAvailableComplements = () => {
     "extra-papas": { name: "Extra papas", price: 5.00 },
     "extra-salsa": { name: "Extra salsa", price: 3.00 },
     "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
-    "pollo-grillado": { name: "Pollo grillado", price: 5.00 }
+    "pollo-grillado": { name: "Pollo grillado", price: 5.00 },
+    "nachos": { name: "Nachos", price: 0 },
+    "chifles": { name: "Chifles", price: 0 },
+    "papas-fritas": { name: "Papas fritas", price: 0 },
   };
 
   salsas.forEach(salsa => {
@@ -2933,7 +2936,10 @@ export default function AdminPage() {
                                           <span className="font-bold">+</span>
                                           {count > 1 && <span className="text-green-400 font-black">{count}x</span>}
                                           <span>{complement.name}</span>
-                                          <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                                          {complement.price > 0
+                                            ? <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                                            : <span className="text-emerald-400 font-bold">(incluido)</span>
+                                          }
                                         </div>
                                       );
                                     })}
