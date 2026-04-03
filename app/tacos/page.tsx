@@ -665,30 +665,45 @@ export default function TacosPage() {
             className="bg-gray-900 border-2 border-emerald-500/40 rounded-lg p-4 md:p-5"
             style={{ boxShadow: "0 0 10px rgba(52,211,153,0.2)" }}
           >
-            <div className="flex items-center gap-2 mb-3 border-b border-emerald-500/20 pb-2">
-              <Image src="/logoprincipal.png" alt="Santo Dilema" width={100} height={28} className="h-5 w-auto opacity-60" />
-              <h3 className="text-white font-bold uppercase tracking-wide text-sm">
-                Tu pedido
-              </h3>
-            </div>
+            <h3 className="text-white font-bold uppercase tracking-wide text-sm mb-3 border-b border-emerald-500/20 pb-2">
+              Tu pedido
+            </h3>
             <div className="space-y-2">
-              {completedOrders.map((order, index) => (
+              {completedOrders.map((order, index) => {
+                const f1 = flavors.find(f => f.id === order.salsas[0]);
+                const f2 = flavors.find(f => f.id === order.salsas[1]);
+                return (
                 <div
                   key={index}
-                  className="bg-gray-800/50 border border-emerald-500/20 rounded-lg px-4 py-3 flex items-center justify-between"
+                  className="bg-gray-800/50 border border-emerald-500/20 rounded-lg px-3 py-2.5 flex items-center justify-between gap-2"
                 >
-                  <div>
-                    <p className="text-emerald-400 text-xs font-bold uppercase tracking-wide">
+                  {/* Thumbnails */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {f1 && (
+                      <div className="w-9 h-9 rounded-lg overflow-hidden border border-emerald-500/40 relative flex-shrink-0">
+                        <Image src={f1.image} alt={f1.name} fill className="object-cover" />
+                      </div>
+                    )}
+                    <span className="text-emerald-500 font-black text-xs">+</span>
+                    {f2 && (
+                      <div className="w-9 h-9 rounded-lg overflow-hidden border border-emerald-500/40 relative flex-shrink-0">
+                        <Image src={f2.image} alt={f2.name} fill className="object-cover" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
                       Dúo #{index + 1}
                     </p>
-                    <p className="text-white text-sm font-medium mt-0.5">
+                    <p className="text-white text-xs font-medium mt-0.5 truncate">
                       {getFlavorName(order.salsas[0])} + {getFlavorName(order.salsas[1])}
                     </p>
                     <p className="text-gray-500 text-xs mt-0.5">S/ 24.90</p>
                   </div>
                   <button
                     onClick={() => handleDeleteOrder(index)}
-                    className="text-gray-600 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-400/10"
+                    className="text-gray-600 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-400/10 flex-shrink-0"
                     aria-label="Eliminar dúo"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -698,7 +713,8 @@ export default function TacosPage() {
                     </svg>
                   </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Running total */}
