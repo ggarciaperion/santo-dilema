@@ -592,10 +592,10 @@ export default function FatPage() {
       const hasOrder = completedOrders.some(o => o.productId === prevId);
       if (!hasOrder) {
         setOrderQuantity((prev) => ({ ...prev, [prevId]: 0 }));
-        setShowSalsas((prev) => ({ ...prev, [prevId]: false }));
-        setShowBebidas((prev) => ({ ...prev, [prevId]: false }));
-        setShowExtras((prev) => ({ ...prev, [prevId]: false }));
       }
+      setShowSalsas((prev) => ({ ...prev, [prevId]: false }));
+      setShowBebidas((prev) => ({ ...prev, [prevId]: false }));
+      setShowExtras((prev) => ({ ...prev, [prevId]: false }));
     };
 
     // Si qty = 0, permitir expandir/colapsar con clic
@@ -633,6 +633,10 @@ export default function FatPage() {
           }
         }, 600);
       }
+    } else if (currentQty > 0 && expandedCard === productId) {
+      // Mismo cartel expandido clickeado de nuevo → colapsar y resetear
+      resetPreviousCard(productId);
+      setExpandedCard(null);
     } else if (currentQty > 0 && expandedCard !== productId) {
       // Si qty > 0, solo expandir si no está expandido
       if (expandedCard) resetPreviousCard(expandedCard);
@@ -1086,8 +1090,24 @@ export default function FatPage() {
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
+  const collapseExpandedCard = () => {
+    if (!expandedCard) return;
+    resetExpandedCard(expandedCard);
+    setExpandedCard(null);
+  };
+
+  const resetExpandedCard = (productId: string) => {
+    const hasOrder = completedOrders.some(o => o.productId === productId);
+    if (!hasOrder) {
+      setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
+    }
+    setShowSalsas((prev) => ({ ...prev, [productId]: false }));
+    setShowBebidas((prev) => ({ ...prev, [productId]: false }));
+    setShowExtras((prev) => ({ ...prev, [productId]: false }));
+  };
+
   return (
-    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible" onClick={collapseExpandedCard}>
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Cadeneta de carnaval */}
@@ -1328,7 +1348,7 @@ export default function FatPage() {
                 >
                 <div
                   ref={(el) => { cardRefs.current[product.id] = el; }}
-                  onClick={() => { if (!isSoldOut) handleCardClick(product.id); }}
+                  onClick={(e) => { e.stopPropagation(); if (!isSoldOut) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
