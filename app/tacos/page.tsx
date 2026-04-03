@@ -218,7 +218,7 @@ export default function TacosPage() {
     <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
 
       {/* ── Iconos decorativos de fondo - México/Tacos ──────────────────────── */}
-      <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
+      <div className="fixed inset-0 overflow-hidden opacity-20 pointer-events-none z-0">
 
         {/* === TACOS === */}
         {/* Taco XL izquierda arriba */}
