@@ -655,6 +655,15 @@ export default function Home() {
           <div className="absolute inset-0 bg-emerald-500/10 animate-pulse" />
         )}
 
+        {/* Resplandor de sección "NUEVO" */}
+        <div className="taco-section-glow absolute inset-0 pointer-events-none z-[1]" />
+
+        {/* Sweep diagonal de brillo */}
+        <div
+          className="taco-sweep absolute inset-0 pointer-events-none z-[2]"
+          style={{ background: 'linear-gradient(108deg, transparent 25%, rgba(52,211,153,0.13) 50%, transparent 75%)' }}
+        />
+
 
         <div className="relative z-10 text-center text-white px-4 md:px-6 flex flex-col items-center justify-center h-full md:h-auto md:pt-12 md:pb-6 lg:pt-16 lg:pb-8">
           <div className="hidden md:block mb-0 md:mb-1 filter drop-shadow-lg">
@@ -666,6 +675,11 @@ export default function Home() {
               className="mx-auto md:w-44 md:h-44 lg:w-56 lg:h-56"
             />
           </div>
+          {/* Badge NUEVO */}
+          <span className="nuevo-badge inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-400/70 text-emerald-400 text-[10px] md:text-[11px] font-black px-3 py-1 rounded-full tracking-[0.2em] uppercase mb-2 md:mb-3">
+            ✦ Nuevo
+          </span>
+
           <h2
             className="mb-3 md:mb-1 text-emerald-400 neon-glow-taco tracking-[0.14em] leading-none"
             style={{ fontFamily: 'var(--font-graffiti)', fontSize: 'clamp(3.6rem, 16vw, 4.5rem)' }}

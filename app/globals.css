@@ -716,3 +716,40 @@ body {
 .challenge-widget-in {
   animation: challengeWidgetIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
 }
+
+/* ── Taco "NUEVO" animations ─────────────────────────────────────────────── */
+@keyframes tacoSweep {
+  0%, 65%  { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  5%       { opacity: 1; }
+  30%      { opacity: 0.8; }
+  35%      { transform: translateX(230%) skewX(-18deg); opacity: 0; }
+  100%     { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes nuevoPulse {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(52,211,153,0.7), 0 0 14px rgba(52,211,153,0.35);
+    text-shadow: 0 0 8px rgba(52,211,153,0.9);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(52,211,153,1), 0 0 28px rgba(52,211,153,0.55), 0 0 42px rgba(52,211,153,0.2);
+    text-shadow: 0 0 16px rgba(52,211,153,1), 0 0 30px rgba(52,211,153,0.5);
+  }
+}
+
+@keyframes tacoSectionGlow {
+  0%, 100% { box-shadow: inset 0 0 40px rgba(52,211,153,0.04); }
+  50%      { box-shadow: inset 0 0 80px rgba(52,211,153,0.10); }
+}
+
+.taco-sweep {
+  animation: tacoSweep 5s ease-in-out infinite;
+}
+
+.nuevo-badge {
+  animation: nuevoPulse 2.2s ease-in-out infinite;
+}
+
+.taco-section-glow {
+  animation: tacoSectionGlow 3s ease-in-out infinite;
+}
