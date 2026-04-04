@@ -82,7 +82,17 @@ const fitProducts = [
   },
 ];
 
-const allProducts = [...fatProducts, ...fitProducts];
+// Productos TACO para referencia
+const tacoProducts = [
+  {
+    id: "taco-duo",
+    name: "Dúo de Tacos",
+    price: 24.90,
+    category: "taco",
+  },
+];
+
+const allProducts = [...fatProducts, ...fitProducts, ...tacoProducts];
 
 // GET - Obtener pedidos (soporta ?status=en-camino y ?today=true para reducir carga)
 export async function GET(request: Request) {
