@@ -239,6 +239,7 @@ export default function CheckoutPage() {
   // Estados para cupón
   const [couponCode, setCouponCode] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponFixedAmount, setCouponFixedAmount] = useState(0);
   const [couponValidating, setCouponValidating] = useState(false);
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
@@ -335,8 +336,10 @@ export default function CheckoutPage() {
   // Delivery siempre incluido — sin cobro de zona
   const deliveryCost = 0;
 
-  // Aplicar descuento de cupón si es válido (SIEMPRE sobre precio base, no promocional)
-  const couponDiscountAmount = couponValid ? (subtotalBase * couponDiscount) / 100 : 0;
+  // Aplicar descuento de cupón si es válido (monto fijo o porcentaje, siempre sobre precio base)
+  const couponDiscountAmount = couponValid
+    ? (couponFixedAmount > 0 ? couponFixedAmount : (subtotalBase * couponDiscount) / 100)
+    : 0;
 
   // Si hay cupón válido, usar subtotalBase (elimina promociones)
   // Si NO hay cupón, usar subtotal (mantiene promociones)
@@ -467,23 +470,28 @@ export default function CheckoutPage() {
 
       if (response.ok && data.valid) {
         setCouponValid(true);
-        setCouponDiscount(data.discount);
+        setCouponDiscount(data.discount || 0);
+        setCouponFixedAmount(data.fixedAmount || 0);
         setCouponHasDeliveryFree(data.deliveryFree || false);
 
         if (data.deliveryFree) {
           setCouponMessage(`✓ Cupón aplicado: Delivery Gratis`);
+        } else if (data.fixedAmount > 0) {
+          setCouponMessage(`✓ Cupón aplicado: -S/ ${data.fixedAmount.toFixed(2)} de descuento`);
         } else {
           setCouponMessage(`✓ Cupón aplicado: ${data.discount}% de descuento`);
         }
       } else {
         setCouponValid(false);
         setCouponDiscount(0);
+        setCouponFixedAmount(0);
         setCouponHasDeliveryFree(false);
         setCouponMessage(data.error || "Cupón no válido");
       }
     } catch (error) {
       setCouponValid(false);
       setCouponDiscount(0);
+      setCouponFixedAmount(0);
       setCouponHasDeliveryFree(false);
       setCouponMessage("Error al validar cupón");
     } finally {
@@ -926,7 +934,7 @@ export default function CheckoutPage() {
 
               {/* Totales */}
               <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
-                {(hasComboDiscount || (couponValid && couponDiscount > 0)) && (
+                {(hasComboDiscount || (couponValid && (couponDiscount > 0 || couponFixedAmount > 0))) && (
                   <>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-400">Subtotal:</span>
@@ -938,9 +946,11 @@ export default function CheckoutPage() {
                         <span className="text-fuchsia-400 font-bold font-mono">-S/ {comboDiscountAmount.toFixed(2)}</span>
                       </div>
                     )}
-                    {couponValid && couponDiscount > 0 && (
+                    {couponValid && (couponDiscount > 0 || couponFixedAmount > 0) && (
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-green-400 font-bold">Cupón -{couponDiscount}%:</span>
+                        <span className="text-green-400 font-bold">
+                          {couponFixedAmount > 0 ? `Cupón -S/ ${couponFixedAmount.toFixed(2)}:` : `Cupón -${couponDiscount}%:`}
+                        </span>
                         <span className="text-green-400 font-bold font-mono">-S/ {couponDiscountAmount.toFixed(2)}</span>
                       </div>
                     )}

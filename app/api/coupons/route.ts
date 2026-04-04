@@ -16,9 +16,12 @@ const PROMO_SAUCE_IDS = [
 interface Coupon {
   id: string;
   code: string;
+  // "INTERNO" = reutilizable por todos | "MULTI" = un uso por teléfono, múltiples teléfonos
   phone: string;
   customerName: string;
-  discount: number;
+  discount: number;       // porcentaje (0 si es monto fijo)
+  fixedAmount?: number;   // descuento en soles (S/), 0 si es porcentaje
+  usedBy?: string[];      // solo para cupones MULTI: teléfonos que ya lo usaron
   deliveryFree?: boolean;
   is2x1?: boolean;
   status: "pending" | "used";
@@ -90,9 +93,9 @@ export async function POST(request: Request) {
       }
 
       const coupons = await storage.getCoupons();
-      // Buscar por código + teléfono (soporta campaña multi-teléfono con código compartido)
+      // Buscar por código + teléfono (soporta INTERNO, MULTI y cupones personales)
       const coupon = coupons.find((c: Coupon) =>
-        c.code === code && (c.phone === phone || c.phone === "INTERNO")
+        c.code === code && (c.phone === phone || c.phone === "INTERNO" || c.phone === "MULTI")
       );
 
       if (!coupon) {
@@ -104,7 +107,15 @@ export async function POST(request: Request) {
         );
       }
 
-      if (coupon.status === "used") {
+      // Para cupones MULTI: verificar que este teléfono no lo haya usado ya
+      if (coupon.phone === "MULTI") {
+        if (coupon.usedBy?.includes(phone)) {
+          return NextResponse.json(
+            { error: "Ya usaste este cupón con este número" },
+            { status: 400 }
+          );
+        }
+      } else if (coupon.status === "used") {
         return NextResponse.json(
           { error: "Cupón ya utilizado" },
           { status: 400 }
@@ -131,6 +142,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         valid: true,
         discount: coupon.discount,
+        fixedAmount: coupon.fixedAmount || 0,
         deliveryFree: coupon.deliveryFree || false,
         is2x1: coupon.is2x1 || false,
         code: coupon.code,
@@ -257,9 +269,9 @@ export async function POST(request: Request) {
       }
 
       const coupons = await storage.getCoupons();
-      // Buscar cupón por código, y verificar que sea del teléfono correcto o sea cupón interno
+      // Buscar cupón por código
       const couponIndex = coupons.findIndex((c: Coupon) =>
-        c.code === code && (c.phone === phone || c.phone === "INTERNO")
+        c.code === code && (c.phone === phone || c.phone === "INTERNO" || c.phone === "MULTI")
       );
 
       if (couponIndex === -1) {
@@ -269,8 +281,20 @@ export async function POST(request: Request) {
         );
       }
 
-      // Los cupones internos no se marcan como usados (son reutilizables)
-      if (coupons[couponIndex].phone !== "INTERNO") {
+      const couponPhone = coupons[couponIndex].phone;
+
+      if (couponPhone === "INTERNO") {
+        // Cupones internos: nunca se marcan como usados (reutilizables)
+      } else if (couponPhone === "MULTI") {
+        // Cupones MULTI: registrar el teléfono en usedBy
+        if (!coupons[couponIndex].usedBy) coupons[couponIndex].usedBy = [];
+        if (!coupons[couponIndex].usedBy!.includes(phone)) {
+          coupons[couponIndex].usedBy!.push(phone);
+          coupons[couponIndex].usedAt = new Date().toISOString();
+          await storage.updateCoupons(coupons);
+        }
+      } else {
+        // Cupones personales: marcar como usados
         coupons[couponIndex].status = "used";
         coupons[couponIndex].usedAt = new Date().toISOString();
         await storage.updateCoupons(coupons);
@@ -342,6 +366,38 @@ export async function POST(request: Request) {
       });
 
       return NextResponse.json({ success: true, code, phone });
+    }
+
+    // Crear cupón MULTI (un código, 1 uso por teléfono, múltiples teléfonos)
+    if (action === "create-multi") {
+      const { code, fixedAmount, discount, expiresAt, customerName } = body;
+
+      if (!code || !expiresAt) {
+        return NextResponse.json({ error: "code y expiresAt requeridos" }, { status: 400 });
+      }
+
+      const existingCoupons = await storage.getCoupons();
+      const alreadyExists = existingCoupons.find((c: Coupon) => c.code === code && c.phone === "MULTI");
+      if (alreadyExists) {
+        return NextResponse.json({ error: "Ya existe un cupón MULTI con ese código", alreadyHas: true }, { status: 409 });
+      }
+
+      const newCoupon: Coupon = {
+        id: `multi-${code}-${Date.now()}`,
+        code,
+        phone: "MULTI",
+        customerName: customerName || "Cupón Campaña",
+        discount: discount || 0,
+        fixedAmount: fixedAmount || 0,
+        usedBy: [],
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        expiresAt,
+        orderId: "CAMPAIGN",
+      };
+
+      await storage.saveCoupon(newCoupon);
+      return NextResponse.json({ success: true, code: newCoupon.code, fixedAmount: newCoupon.fixedAmount });
     }
 
     // Eliminar todos los cupones de una campaña por código
