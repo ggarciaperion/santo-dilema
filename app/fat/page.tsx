@@ -1917,10 +1917,10 @@ export default function FatPage() {
                               {order.discountApplied && !hasComboDiscount ? (
                                 <span className="flex items-center gap-1.5">
                                   <span className="text-gray-500 line-through text-[10px]">S/ {((order.originalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
-                                  <span className="text-amber-400 font-bold">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
+                                  <span className="text-amber-400 font-bold text-sm gold-glow">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                                 </span>
                               ) : (
-                                <span className="text-amber-400/80">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? (menuPrices[product.id] || product.price)) : (order.finalPrice ?? (menuPrices[product.id] || product.price))) * order.quantity).toFixed(2)}</span>
+                                <span className="text-amber-400 font-bold text-sm gold-glow">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? (menuPrices[product.id] || product.price)) : (order.finalPrice ?? (menuPrices[product.id] || product.price))) * order.quantity).toFixed(2)}</span>
                               )}
                             </div>
 
@@ -1976,20 +1976,6 @@ export default function FatPage() {
                           ✕
                         </button>
                       </div>
-                    </div>
-                    <div className="text-amber-400 font-bold text-sm md:text-base gold-glow">
-                      S/ {(() => {
-                        const effectivePrice = menuPrices[product.id] || product.price;
-                        const basePrice = order.finalPrice ?? effectivePrice;
-                        const unitPrice = (hasComboDiscount && order.discountApplied)
-                          ? (order.originalPrice ?? effectivePrice)
-                          : basePrice;
-                        const productTotal = unitPrice * order.quantity;
-                        const complementsTotal = order.complementIds.reduce((sum, compId) => {
-                          return sum + (availableComplements[compId]?.price || 0);
-                        }, 0);
-                        return (productTotal + complementsTotal).toFixed(2);
-                      })()}
                     </div>
                   </div>
                 );

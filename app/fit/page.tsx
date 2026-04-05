@@ -1412,7 +1412,7 @@ export default function FitPage() {
                             {/* Precio del menú */}
                             <div className={`${isTacoOrder ? 'text-emerald-300/80' : isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              <span className="text-amber-400/80">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                              <span className="text-amber-400 font-bold text-sm gold-glow">S/ {(product.price * order.quantity).toFixed(2)}</span>
                             </div>
 
                             {/* Sabores tacos */}
@@ -1467,20 +1467,6 @@ export default function FitPage() {
                           ✕
                         </button>
                       </div>
-                    </div>
-                    <div className="text-amber-400 font-bold text-sm gold-glow">
-                      S/ {(() => {
-                        const effectivePrice = menuPrices[product.id] || product.price;
-                        const basePrice = order.finalPrice ?? effectivePrice;
-                        const unitPrice = (hasComboDiscount && order.discountApplied)
-                          ? (order.originalPrice ?? effectivePrice)
-                          : basePrice;
-                        const productTotal = unitPrice * order.quantity;
-                        const complementsTotal = order.complementIds.reduce((sum, compId) => {
-                          return sum + (availableComplements[compId]?.price || 0);
-                        }, 0);
-                        return (productTotal + complementsTotal).toFixed(2);
-                      })()}
                     </div>
                   </div>
                 );

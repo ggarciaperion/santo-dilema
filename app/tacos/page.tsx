@@ -874,10 +874,8 @@ export default function TacosPage() {
                       >
                         ✕
                       </button>
+                      <span className="text-amber-400 font-bold text-sm gold-glow">S/ 24.90</span>
                     </div>
-                  </div>
-                  <div className="text-amber-400 font-bold text-sm">
-                    S/ 24.90
                   </div>
                 </div>
               );
