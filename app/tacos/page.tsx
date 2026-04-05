@@ -78,6 +78,31 @@ const bebidas = [
 const SESSION_KEY = "santo-dilema-orders";
 const BEBIDAS_KEY = "santo-dilema-tacos-bebidas";
 
+// Lookup de productos de otras páginas para mostrar en "Tu orden"
+const CROSS_PRODUCTS: Record<string, { name: string; image: string; price: number }> = {
+  "pequeno-dilema":      { name: "Pequeño Dilema",       image: "/pequeno-dilema.png?v=3",    price: 20.00 },
+  "duo-dilema":          { name: "Dúo Dilema",            image: "/duo-dilema.png?v=3",        price: 34.00 },
+  "santo-pecado":        { name: "Santo Pecado",          image: "/todos-pecan.png?v=3",       price: 47.00 },
+  "ensalada-clasica":    { name: "Clásica Fresh Bowl",    image: "/clasica-fresh-bowl.png",    price: 18.50 },
+  "ensalada-proteica":   { name: "César Power Bowl",      image: "/cesar-power-bowl.png",      price: 22.50 },
+  "ensalada-caesar":     { name: "Protein Fit Bowl",      image: "/protein-fit-bowl.png",      price: 23.50 },
+  "ensalada-mediterranea":{ name: "Tuna Fresh Bowl",      image: "/4.png",                     price: 23.50 },
+  "cobb-supreme-bowl":   { name: "Cobb Supreme Bowl",     image: "/cobb.png",                  price: 23.50 },
+  "crispy-chicken-bowl": { name: "Crispy Chicken Bowl",   image: "/crispy.png",                price: 22.50 },
+  "pasta-power-bowl":    { name: "Pasta Power Bowl",      image: "/pasta.png",                 price: 22.50 },
+};
+
+const SALSAS_NAMES: Record<string, string> = {
+  "barbecue":       "BBQ ahumada",
+  "buffalo-picante":"Santo Picante",
+  "ahumada":        "Acevichada Imperial",
+  "parmesano-ajo":  "Crispy Celestial",
+  "anticuchos":     "Parrillera",
+  "honey-mustard":  "Honey mustard",
+  "teriyaki":       "Oriental Teriyaki",
+  "macerichada":    "Sweet & Sour",
+};
+
 function getFlavorName(id: string): string {
   return flavors.find((f) => f.id === id)?.name ?? id;
 }
@@ -220,6 +245,10 @@ export default function TacosPage() {
     setShowDeleteModal(true);
   }, []);
 
+  const handleDeleteCrossOrder = useCallback((index: number) => {
+    setCrossCategoryOrders((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
   const confirmDeleteOrder = useCallback(() => {
     if (deleteOrderIndex === null) return;
     setCompletedOrders((prev) => prev.filter((_, i) => i !== deleteOrderIndex));
@@ -264,7 +293,7 @@ export default function TacosPage() {
     crossCategoryOrders.reduce((sum, o) => sum + (o.originalPrice ?? o.finalPrice ?? 0) * o.quantity, 0);
   const total = hasComboDiscount ? baseTotal - comboDiscountAmount : baseTotal;
   const duoCount = completedOrders.length;
-  const hasAnyOrder = completedOrders.length > 0 || bebidasTotal > 0;
+  const hasAnyOrder = completedOrders.length > 0 || crossCategoryOrders.length > 0 || bebidasTotal > 0;
 
   // ── Step indicator for modal ──────────────────────────────────────────────
   const step1Done = taco1 !== null;
@@ -744,6 +773,43 @@ export default function TacosPage() {
             Tu orden
           </h3>
           <div className="space-y-2 md:space-y-3">
+            {/* Órdenes de otras páginas (alitas / ensaladas) */}
+            {crossCategoryOrders.map((order, index) => {
+              const prod = CROSS_PRODUCTS[order.productId];
+              if (!prod) return null;
+              const unitPrice = order.originalPrice ?? order.finalPrice ?? prod.price;
+              return (
+                <div
+                  key={`cross-${index}`}
+                  className="bg-gray-900 rounded-lg border-2 border-emerald-400/20 p-2 md:p-3 relative"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border border-emerald-400/20 flex-shrink-0 relative">
+                        <Image src={prod.image} alt={prod.name} fill className="object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-white truncate">{prod.name}</p>
+                        {order.salsas && order.salsas.length > 0 && (
+                          <p className="text-[11px] text-red-300/80 truncate">
+                            🌶️ {order.salsas.map(s => SALSAS_NAMES[s] ?? s).join(", ")}
+                          </p>
+                        )}
+                        <p className="text-amber-400 font-bold text-xs mt-0.5">
+                          S/ {(unitPrice * order.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteCrossOrder(index)}
+                      className="text-emerald-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 flex-shrink-0"
+                      title="Eliminar"
+                    >✕</button>
+                  </div>
+                </div>
+              );
+            })}
+
             {completedOrders.map((order, index) => {
               const f1 = flavors.find(f => f.id === order.salsas[0]);
               const f2 = flavors.find(f => f.id === order.salsas[1]);
