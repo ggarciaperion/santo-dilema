@@ -77,11 +77,11 @@ export default function BannerCarousel({
         {slides.map((slide, i) => (
           <div key={i} className="relative w-full flex-shrink-0">
 
-            {/* Móvil: 1920×300 */}
+            {/* Móvil: 1920×500 */}
             {hasMovil && slide.movil && (
               <div
                 className="block md:hidden w-full"
-                style={{ aspectRatio: "1920/300" }}
+                style={{ aspectRatio: "1920/500" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -94,11 +94,11 @@ export default function BannerCarousel({
               </div>
             )}
 
-            {/* Desktop: 1920×500 */}
+            {/* Desktop: 1920×300 */}
             {hasWeb && slide.web && (
               <div
                 className={`w-full ${hasMovil ? "hidden md:block" : "block"}`}
-                style={{ aspectRatio: "1920/500" }}
+                style={{ aspectRatio: "1920/300" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
