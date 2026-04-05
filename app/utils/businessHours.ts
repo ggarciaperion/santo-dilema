@@ -21,7 +21,7 @@ export function isBusinessOpen(): boolean {
   const hour = peruDate.getHours();
 
   const isOpenDay = [0, 4, 5, 6].includes(day); // Dom, Jue, Vie, Sáb
-  const isOpenHour = hour >= 18 && hour < 23;    // 6pm a 11pm
+  const isOpenHour = hour >= 17 && hour < 23;    // 5pm a 11pm
 
   return isOpenDay && isOpenHour;
 }
@@ -42,8 +42,8 @@ export function getNextOpenMessage(): string {
   const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
   // Si es día de apertura pero todavía no son las 6pm
-  if (openDays.includes(day) && hour < 18) {
-    return "Hoy abrimos a las 6:00 PM";
+  if (openDays.includes(day) && hour < 17) {
+    return "Hoy abrimos a las 5:00 PM";
   }
 
   // Buscar el próximo día de apertura
