@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
+import { detectCombos } from "../../lib/combos";
 import WhatsAppButton from "../components/WhatsAppButton";
 import BannerCarousel from "../components/BannerCarousel";
 
@@ -249,7 +250,19 @@ export default function TacosPage() {
 
   // ── Derived values ────────────────────────────────────────────────────────
   const bebidasTotal = bebidas.reduce((acc, b) => acc + (bebidaQty[b.id] || 0) * b.price, 0);
-  const total = completedOrders.length * 24.9 + bebidasTotal;
+
+  // Detección de combos: combinar órdenes de otras páginas + tacos actuales
+  const allOrders = useMemo(
+    () => [...crossCategoryOrders, ...completedOrders],
+    [crossCategoryOrders, completedOrders]
+  );
+  const comboResult = useMemo(() => detectCombos(allOrders), [allOrders]);
+  const hasComboDiscount = comboResult.appliedCombos.length > 0;
+  const comboDiscountAmount = comboResult.totalSavings;
+
+  const baseTotal = completedOrders.length * 24.9 + bebidasTotal +
+    crossCategoryOrders.reduce((sum, o) => sum + (o.originalPrice ?? o.finalPrice ?? 0) * o.quantity, 0);
+  const total = hasComboDiscount ? baseTotal - comboDiscountAmount : baseTotal;
   const duoCount = completedOrders.length;
   const hasAnyOrder = completedOrders.length > 0 || bebidasTotal > 0;
 
@@ -841,9 +854,25 @@ export default function TacosPage() {
             <div className="flex justify-between items-center gap-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-sm md:text-lg">Total</span>
-                <span className="text-emerald-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
-                  S/ {total.toFixed(2)}
-                </span>
+                {hasComboDiscount ? (
+                  <div className="flex flex-col items-start">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400 line-through text-sm">
+                        S/ {baseTotal.toFixed(2)}
+                      </span>
+                      <span className="bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded">
+                        🎉 {comboResult.appliedCombos.length === 1 ? comboResult.appliedCombos[0].rule.name : `${comboResult.appliedCombos.length} Combos`}
+                      </span>
+                    </div>
+                    <span className="text-emerald-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
+                      S/ {total.toFixed(2)}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-emerald-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
+                    S/ {total.toFixed(2)}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <button
