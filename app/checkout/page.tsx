@@ -3,11 +3,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import MpCardModal from "../components/MpCardModal";
+import { detectCombos } from "../../lib/combos";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -275,17 +276,18 @@ export default function CheckoutPage() {
     setShowMobileFormModal(true);
   }, []);
 
-  // Detectar combo FAT + FIT para descuento S/ 5.00 (debe estar ANTES de subtotal)
-  const COMBO_FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
-  const COMBO_FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea"];
-  const hasComboDiscount = false; // Promoción desactivada
-  const comboDiscountAmount = 0;
+  // ── DETECCIÓN DE COMBOS ──────────────────────────────────────────
+  const comboResult = useMemo(() => detectCombos(completedOrders), [completedOrders]);
+  const hasComboDiscount = comboResult.appliedCombos.length > 0;
+  const comboDiscountAmount = comboResult.totalSavings;
 
-  // Detectar si hay productos con descuentos individuales (ej: promo S/ 16)
-  const hasIndividualDiscount = completedOrders.some(o => o.discountApplied === true);
+  // Detectar si hay productos con descuentos individuales (ej: promo de salsas)
+  // Si hay combo activo, los descuentos individuales quedan anulados (no acumulable)
+  const hasIndividualDiscount = !hasComboDiscount && completedOrders.some(o => o.discountApplied === true);
 
   // Verificar si hay alguna promoción activa (combo o individual)
   const hasAnyActivePromotion = hasComboDiscount || hasIndividualDiscount;
+  // ─────────────────────────────────────────────────────────────────
 
   // Calcular subtotal BASE (sin promociones) - para aplicar cupones
   const subtotalBase = completedOrders.reduce((total, order) => {
@@ -309,29 +311,23 @@ export default function CheckoutPage() {
   }, 0);
 
   // Calcular subtotal REAL (con promociones aplicadas)
-  const subtotal = completedOrders.reduce((total, order) => {
-    // Buscar el producto en los arrays
-    const fatProduct = fatProducts.find((p) => p.id === order.productId);
-    const fitProduct = fitProducts.find((p) => p.id === order.productId);
-    const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
-    const product = fatProduct || fitProduct || tacoProduct;
-
-    if (!product) return total;
-
-    // Promos no acumulables: si combo activo, ignorar descuento individual
-    const basePrice = order.finalPrice ?? product.price;
-    const productPrice = (hasComboDiscount && order.discountApplied)
-      ? (order.originalPrice ?? product.price)
-      : basePrice;
-    const productTotal = productPrice * order.quantity;
-
-    // Calcular total de complementos
-    const complementsTotal = order.complementIds.reduce((sum, compId) => {
-      return sum + (availableComplements[compId]?.price || 0);
-    }, 0);
-
-    return total + productTotal + complementsTotal;
-  }, 0);
+  // Si hay combo: subtotalBase - ahorro del combo (los descuentos individuales quedan anulados)
+  // Si no hay combo: aplica descuentos individuales de salsas
+  const subtotal = hasComboDiscount
+    ? subtotalBase - comboDiscountAmount
+    : completedOrders.reduce((total, order) => {
+        const fatProduct = fatProducts.find((p) => p.id === order.productId);
+        const fitProduct = fitProducts.find((p) => p.id === order.productId);
+        const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
+        const product = fatProduct || fitProduct || tacoProduct;
+        if (!product) return total;
+        const basePrice = order.finalPrice ?? product.price;
+        const productTotal = basePrice * order.quantity;
+        const complementsTotal = order.complementIds.reduce((sum, compId) => {
+          return sum + (availableComplements[compId]?.price || 0);
+        }, 0);
+        return total + productTotal + complementsTotal;
+      }, 0);
 
   // Delivery siempre incluido — sin cobro de zona
   const deliveryCost = 0;
@@ -551,7 +547,8 @@ export default function CheckoutPage() {
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
       formDataToSend.append('totalItems', completedOrders.length.toString());
       formDataToSend.append('totalPrice', realTotal.toString());
-      formDataToSend.append('comboDiscount', hasComboDiscount ? '5' : '0');
+      formDataToSend.append('comboDiscount', comboDiscountAmount.toFixed(2));
+      formDataToSend.append('comboNames', comboResult.appliedCombos.map(c => c.rule.name).join(', '));
       formDataToSend.append('couponDiscount', couponValid ? couponDiscount.toString() : '0');
       formDataToSend.append('couponCode', couponValid ? couponCode.trim().toUpperCase() : '');
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
@@ -874,8 +871,8 @@ export default function CheckoutPage() {
                               </span>
                             </div>
                           )}
-                          <span className="text-amber-400 font-black text-sm font-mono">
-                            S/ {productTotal.toFixed(2)}
+                          <span className={`font-black text-sm font-mono ${hasComboDiscount ? 'text-orange-300' : 'text-amber-400'}`}>
+                            S/ {(hasComboDiscount ? (order.originalPrice ?? productPrice) * order.quantity : productTotal).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -884,12 +881,33 @@ export default function CheckoutPage() {
                 })}
               </div>
 
-              {/* Aviso promos no acumulables */}
-              {hasComboDiscount && completedOrders.some(o => o.discountApplied) && (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 mb-4">
-                  <p className="text-center text-xs text-amber-300">
-                    * Las promociones no son acumulables
-                  </p>
+              {/* Combos aplicados */}
+              {hasComboDiscount && (
+                <div className="space-y-2 mb-4">
+                  {comboResult.appliedCombos.map((combo, i) => (
+                    <div
+                      key={`${combo.rule.id}-${i}`}
+                      className="bg-gradient-to-r from-emerald-900/40 to-teal-900/30 border border-emerald-500/40 rounded-xl px-3 py-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-emerald-300 font-black text-xs tracking-wide">
+                            {combo.rule.emoji} {combo.rule.name.toUpperCase()} — ACTIVADO
+                          </p>
+                          <p className="text-emerald-400/70 text-[10px] mt-0.5">{combo.rule.description}</p>
+                        </div>
+                        <div className="text-right ml-3 flex-shrink-0">
+                          <p className="text-gray-500 line-through text-[10px] font-mono">S/ {combo.originalTotal.toFixed(2)}</p>
+                          <p className="text-emerald-300 font-black text-sm font-mono">S/ {combo.comboPrice.toFixed(2)}</p>
+                        </div>
+                      </div>
+                      {combo.savings > 0 && (
+                        <p className="text-emerald-400 text-[10px] font-bold mt-1">
+                          🎉 Ahorro: S/ {combo.savings.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -934,16 +952,20 @@ export default function CheckoutPage() {
 
               {/* Totales */}
               <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
-                {(hasComboDiscount || (couponValid && (couponDiscount > 0 || couponFixedAmount > 0))) && (
+                {(hasComboDiscount || hasIndividualDiscount || (couponValid && (couponDiscount > 0 || couponFixedAmount > 0))) && (
                   <>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-400">Subtotal:</span>
-                      <span className="text-gray-300 font-mono">S/ {subtotal.toFixed(2)}</span>
+                      <span className="text-gray-400 line-through font-mono text-xs">S/ {subtotalBase.toFixed(2)}</span>
                     </div>
                     {hasComboDiscount && (
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-fuchsia-400 font-bold">🔥 Combo FAT+FIT:</span>
-                        <span className="text-fuchsia-400 font-bold font-mono">-S/ {comboDiscountAmount.toFixed(2)}</span>
+                        <span className="text-emerald-400 font-bold">
+                          🎉 {comboResult.appliedCombos.length === 1
+                            ? comboResult.appliedCombos[0].rule.name
+                            : `${comboResult.appliedCombos.length} Combos`}:
+                        </span>
+                        <span className="text-emerald-400 font-bold font-mono">-S/ {comboDiscountAmount.toFixed(2)}</span>
                       </div>
                     )}
                     {couponValid && (couponDiscount > 0 || couponFixedAmount > 0) && (
