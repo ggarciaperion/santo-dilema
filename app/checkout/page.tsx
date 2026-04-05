@@ -310,11 +310,10 @@ export default function CheckoutPage() {
     return total + productTotal + complementsTotal;
   }, 0);
 
-  // Calcular subtotal REAL (con promociones aplicadas)
-  // Si hay combo: subtotalBase - ahorro del combo (los descuentos individuales quedan anulados)
-  // Si no hay combo: aplica descuentos individuales de salsas
+  // Calcular subtotal REAL (con promociones individuales de salsas, SIN combo)
+  // El combo se descuenta por separado en realTotal para evitar doble sustracción
   const subtotal = hasComboDiscount
-    ? subtotalBase - comboDiscountAmount
+    ? subtotalBase  // combo activo: usar precio base; realTotal aplica el descuento
     : completedOrders.reduce((total, order) => {
         const fatProduct = fatProducts.find((p) => p.id === order.productId);
         const fitProduct = fitProducts.find((p) => p.id === order.productId);

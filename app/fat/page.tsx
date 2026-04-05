@@ -8,6 +8,7 @@ import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
 import BannerCarousel from "../components/BannerCarousel";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
+import { detectCombos } from "../../lib/combos";
 
 interface Product {
   id: string;
@@ -301,24 +302,19 @@ export default function FatPage() {
     ) || null;
   };
 
-  // Detectar combo FAT + FIT antes de calcular totales (las promos no son acumulables)
-  // PROMOCIÓN DESACTIVADA
-  const FAT_IDS = ["pequeno-dilema", "duo-dilema", "santo-pecado"];
-  const FIT_IDS = ["ensalada-clasica", "ensalada-proteica", "ensalada-caesar", "ensalada-mediterranea", "cobb-supreme-bowl", "crispy-chicken-bowl", "pasta-power-bowl"];
-  const hasComboDiscount = false; // Promoción combo desactivada
+  // Detección de combos promocionales
+  const comboResult = useMemo(() => detectCombos(completedOrders), [completedOrders]);
+  const hasComboDiscount = comboResult.appliedCombos.length > 0;
+  const comboDiscountAmount = comboResult.totalSavings;
 
   const completedTotal = completedOrders.reduce((total, order) => {
-    const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
+    const basePrice = order.originalPrice ?? order.finalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
       if (!product) product = tacoProducts.find(p => p.id === order.productId);
       return product ? (menuPrices[product.id] || product.price) : 0;
     })();
-    // Promos no acumulables: si combo activo, ignorar descuento individual Santo Picante
-    const unitPrice = (hasComboDiscount && order.discountApplied)
-      ? (order.originalPrice ?? basePrice)
-      : basePrice;
-    let orderTotal = unitPrice * order.quantity;
+    let orderTotal = basePrice * order.quantity;
     order.complementIds.forEach(compId => {
       const complement = availableComplements[compId];
       if (complement) orderTotal += complement.price;
@@ -326,7 +322,6 @@ export default function FatPage() {
     return total + orderTotal;
   }, 0);
 
-  const comboDiscountAmount = hasComboDiscount ? 5 : 0;
   const comboTotal = completedTotal - comboDiscountAmount;
 
   const navigateToCheckout = () => {
@@ -2033,8 +2028,8 @@ export default function FatPage() {
                       <span className="text-gray-400 line-through text-sm md:text-xl">
                         S/ {completedTotal.toFixed(2)}
                       </span>
-                      <span className="bg-fuchsia-500 text-white text-[10px] md:text-xs font-black px-1.5 py-0.5 rounded">
-                        COMBO -S/ 5
+                      <span className="bg-emerald-600 text-white text-[10px] md:text-xs font-black px-1.5 py-0.5 rounded">
+                        🎉 {comboResult.appliedCombos.length === 1 ? comboResult.appliedCombos[0].rule.name : `${comboResult.appliedCombos.length} Combos`}
                       </span>
                     </div>
                     <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
