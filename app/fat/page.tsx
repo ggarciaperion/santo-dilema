@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
+import BannerCarousel from "../components/BannerCarousel";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 
 interface Product {
@@ -1290,6 +1291,16 @@ export default function FatPage() {
       </header>
       {/* Spacer for fixed header on mobile */}
       <div className="h-14 md:hidden" />
+
+      {/* Banner Carrusel */}
+      <BannerCarousel
+        slides={[
+          { movil: "/1920x300/1.png", web: "/1920x500/1.png" },
+          { movil: "/1920x300/2.png", web: "/1920x500/2.png" },
+          { movil: "/1920x300/3.png", web: "/1920x500/3.png" },
+          { movil: "/1920x300/4.png", web: "/1920x500/4.png" },
+        ]}
+      />
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
