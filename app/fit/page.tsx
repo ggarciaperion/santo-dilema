@@ -955,10 +955,10 @@ export default function FitPage() {
       {/* Banner Carrusel */}
       <BannerCarousel
         slides={[
-          { movil: "/1920x300/1.png", web: "/1920x500/1.png" },
-          { movil: "/1920x300/2.png", web: "/1920x500/2.png" },
-          { movil: "/1920x300/3.png", web: "/1920x500/3.png" },
-          { movil: "/1920x300/4.png", web: "/1920x500/4.png" },
+          { movil: "/1920x300/1.webp", web: "/1920x500/1.webp" },
+          { movil: "/1920x300/2.webp", web: "/1920x500/2.webp" },
+          { movil: "/1920x300/3.webp", web: "/1920x500/3.webp" },
+          { movil: "/1920x300/4.webp", web: "/1920x500/4.webp" },
         ]}
       />
 
