@@ -25,7 +25,7 @@ export interface ComboRule {
 export const COMBO_RULES: ComboRule[] = [
   {
     id: 'combo-4',
-    name: 'Combo Completo',
+    name: 'Combo Santo Dilema',
     emoji: '🔥',
     description: 'Dúo Dilema + Ensalada + Dúo de Tacos',
     requiredProducts: ['duo-dilema', 'ANY_FIT', 'taco-duo'],
@@ -34,7 +34,7 @@ export const COMBO_RULES: ComboRule[] = [
   },
   {
     id: 'combo-3',
-    name: 'Combo Doble Dilema',
+    name: 'Combo Alitas',
     emoji: '🍗',
     description: 'Pequeño Dilema + Dúo Dilema',
     requiredProducts: ['pequeno-dilema', 'duo-dilema'],
@@ -43,7 +43,7 @@ export const COMBO_RULES: ComboRule[] = [
   },
   {
     id: 'combo-2',
-    name: 'Combo Taquero',
+    name: 'Combo Especial',
     emoji: '🌮',
     description: 'Pequeño Dilema + Dúo de Tacos',
     requiredProducts: ['pequeno-dilema', 'taco-duo'],
@@ -52,7 +52,7 @@ export const COMBO_RULES: ComboRule[] = [
   },
   {
     id: 'combo-1',
-    name: 'Combo Fresh',
+    name: 'Combo Perfecto',
     emoji: '🥗',
     description: 'Pequeño Dilema + Ensalada',
     requiredProducts: ['pequeno-dilema', 'ANY_FIT'],
