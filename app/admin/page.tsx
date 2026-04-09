@@ -3204,7 +3204,6 @@ export default function AdminPage() {
       ) : activeTab === "customers" ? (
         /* Customers Tab */
         <>
-          <>
           {/* Customer Stats */}
           <section className="container mx-auto px-4 py-8">
             <div className="mb-6">
