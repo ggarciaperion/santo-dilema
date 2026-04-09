@@ -762,7 +762,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Banner tarjeta - primera visita */}
+      {/* Banner delivery - primera visita */}
       {showTarjetaBanner && (
         <div
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
@@ -775,13 +775,12 @@ export default function Home() {
             className="relative max-w-sm w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <Image
-              src="/tarjeta.png"
-              alt="Paga con tarjeta"
-              width={500}
-              height={500}
-              className="w-full h-auto rounded-2xl shadow-2xl"
-              priority
+            <video
+              src="/delivery.mp4"
+              autoPlay
+              muted
+              playsInline
+              className="w-full rounded-2xl shadow-2xl"
             />
             <button
               onClick={() => {
