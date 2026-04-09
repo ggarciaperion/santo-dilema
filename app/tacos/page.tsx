@@ -123,6 +123,8 @@ export default function TacosPage() {
 
   const [isOpen, setIsOpen] = useState(isBusinessOpen());
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
+  const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
+  const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
 
   // Orders that belong to other categories (fit/fat from other pages)
   const [crossCategoryOrders, setCrossCategoryOrders] = useState<CompletedOrder[]>([]);
@@ -153,6 +155,14 @@ export default function TacosPage() {
     fetch("/api/menu-stock")
       .then((r) => r.json())
       .then((data) => setMenuStock(data))
+      .catch(() => {});
+    fetch("/api/menu-prices")
+      .then((r) => r.json())
+      .then((data) => setMenuPrices(data))
+      .catch(() => {});
+    fetch("/api/menu-discounts")
+      .then((r) => r.json())
+      .then((data) => setMenuDiscounts(data))
       .catch(() => {});
   }, []);
 
@@ -266,7 +276,8 @@ export default function TacosPage() {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(all));
     clearCart();
     completedOrders.forEach((order) => {
-      addToCart(TACO_DUO_PRODUCT, order.quantity);
+      const effectivePrice = menuDiscounts["taco-duo"] || menuPrices["taco-duo"] || TACO_DUO_PRODUCT.price;
+      addToCart({ ...TACO_DUO_PRODUCT, price: effectivePrice }, order.quantity);
     });
     bebidas.forEach((b) => {
       const qty = bebidaQty[b.id] || 0;
@@ -275,9 +286,14 @@ export default function TacosPage() {
       }
     });
     router.push("/checkout");
-  }, [crossCategoryOrders, completedOrders, bebidaQty, clearCart, addToCart, router]);
+  }, [crossCategoryOrders, completedOrders, bebidaQty, menuPrices, menuDiscounts, clearCart, addToCart, router]);
 
   // ── Derived values ────────────────────────────────────────────────────────
+  const duoBasePrice = TACO_DUO_PRODUCT.price; // 24.90 default
+  const duoRealPrice = menuPrices["taco-duo"] || duoBasePrice;
+  const duoOfferPrice = menuDiscounts["taco-duo"] || null;
+  const duoEffectivePrice = duoOfferPrice ?? duoRealPrice;
+
   const bebidasTotal = bebidas.reduce((acc, b) => acc + (bebidaQty[b.id] || 0) * b.price, 0);
 
   // Detección de combos: combinar órdenes de otras páginas + tacos actuales
@@ -289,7 +305,7 @@ export default function TacosPage() {
   const hasComboDiscount = comboResult.appliedCombos.length > 0;
   const comboDiscountAmount = comboResult.totalSavings;
 
-  const baseTotal = completedOrders.length * 24.9 + bebidasTotal +
+  const baseTotal = completedOrders.length * duoEffectivePrice + bebidasTotal +
     crossCategoryOrders.reduce((sum, o) => sum + (o.originalPrice ?? o.finalPrice ?? 0) * o.quantity, 0);
   const total = hasComboDiscount ? baseTotal - comboDiscountAmount : baseTotal;
   const duoCount = completedOrders.length;
@@ -665,7 +681,15 @@ export default function TacosPage() {
               🌮 Elige tus{" "}
               <span className="text-emerald-400" style={{ textShadow: "0 0 8px rgba(52,211,153,0.7)" }}>2 sabores</span>
               {" "}y arma tu dúo por{" "}
-              <span className="text-emerald-300 font-black text-base md:text-lg" style={{ textShadow: "0 0 10px rgba(52,211,153,0.8)" }}>S/ 24.90</span>
+              {duoOfferPrice ? (
+                <>
+                  <span className="text-gray-500 line-through text-sm">S/ {duoRealPrice.toFixed(2)}</span>
+                  {" "}
+                  <span className="text-emerald-300 font-black text-base md:text-lg" style={{ textShadow: "0 0 10px rgba(52,211,153,0.8)" }}>S/ {duoOfferPrice.toFixed(2)}</span>
+                </>
+              ) : (
+                <span className="text-emerald-300 font-black text-base md:text-lg" style={{ textShadow: "0 0 10px rgba(52,211,153,0.8)" }}>S/ {duoRealPrice.toFixed(2)}</span>
+              )}
             </p>
           </div>
         </div>
@@ -874,7 +898,14 @@ export default function TacosPage() {
                       >
                         ✕
                       </button>
-                      <span className="text-amber-400 font-bold text-sm gold-glow">S/ 24.90</span>
+                      {duoOfferPrice ? (
+                        <span className="text-amber-400 font-bold text-sm gold-glow">
+                          <span className="text-gray-500 line-through text-xs mr-1">S/ {duoRealPrice.toFixed(2)}</span>
+                          S/ {duoOfferPrice.toFixed(2)}
+                        </span>
+                      ) : (
+                        <span className="text-amber-400 font-bold text-sm gold-glow">S/ {duoRealPrice.toFixed(2)}</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1012,7 +1043,10 @@ export default function TacosPage() {
                 Arma tu dúo
               </h2>
               <p className="text-gray-500 text-xs mt-0.5">
-                Elige 2 sabores · S/ 24.90
+                {duoOfferPrice
+                  ? <>Elige 2 sabores · <span className="line-through">S/ {duoRealPrice.toFixed(2)}</span> <span className="text-emerald-400 font-bold">S/ {duoOfferPrice.toFixed(2)}</span></>
+                  : `Elige 2 sabores · S/ ${duoRealPrice.toFixed(2)}`
+                }
               </p>
               <p className="text-emerald-400/70 text-[10px] mt-0.5">
                 ✦ Puedes repetir el mismo sabor dos veces
