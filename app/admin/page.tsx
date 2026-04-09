@@ -385,10 +385,10 @@ export default function AdminPage() {
   // Inicializar filtro de fechas en Dashboard (mes actual por defecto)
   useEffect(() => {
     if (activeTab === "financial" && financialSection === "dashboard" && !dashboardDateInitialized) {
-      const today = new Date();
-      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const todayStr = today.toISOString().split('T')[0];
-      const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
+      const now = new Date();
+      const today = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      const firstDayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`;
 
       setDashboardDateFrom(firstDayStr);
       setDashboardDateTo(todayStr);
@@ -3996,104 +3996,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* SECCIÓN: CONTROL DE STOCK DEL DÍA */}
-            {(analytics.menusSoldToday.length > 0 || analytics.beveragesSoldToday.length > 0) && (
-              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-cyan-400 mb-2">📋 Control de Stock Hoy</h3>
-                <p className="text-gray-400 text-sm mb-5">Unidades despachadas del día • Para reposición de insumos</p>
 
-                {/* Menús */}
-                {analytics.menusSoldToday.length > 0 && (
-                  <div className="mb-5">
-                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🍽️ Menús</h4>
-                    <div className="space-y-2">
-                      {analytics.menusSoldToday.map((menu: any, idx: number) => (
-                        <div key={idx} className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-full bg-cyan-700 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-black text-sm">{menu.quantity}</span>
-                          </div>
-                          <p className="text-white font-bold text-sm">{menu.name}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 flex items-center justify-between border-t border-gray-700 pt-3">
-                      <p className="text-gray-400 text-xs font-bold">Total menús</p>
-                      <p className="text-xl font-black text-cyan-400">
-                        {analytics.menusSoldToday.reduce((sum: number, m: any) => sum + m.quantity, 0)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Bebidas */}
-                {analytics.beveragesSoldToday.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3 opacity-70">🥤 Bebidas</h4>
-                    <div className="space-y-2">
-                      {analytics.beveragesSoldToday.map((bev: any, idx: number) => (
-                        <div key={idx} className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-black text-sm">{bev.quantity}</span>
-                          </div>
-                          <p className="text-white font-bold text-sm">{bev.name}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 flex items-center justify-between border-t border-gray-700 pt-3">
-                      <p className="text-gray-400 text-xs font-bold">Total bebidas</p>
-                      <p className="text-xl font-black text-green-400">
-                        {analytics.beveragesSoldToday.reduce((sum: number, b: any) => sum + b.quantity, 0)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {analytics.beveragesSoldToday.length === 0 && (
-                  <p className="text-gray-500 text-xs italic mt-2">No se vendieron bebidas hoy</p>
-                )}
-              </div>
-            )}
-
-            {/* SECCIÓN: TODOS LOS COMPLEMENTOS/EXTRAS POR CATEGORÍA */}
-            {analytics.allComplements.length > 0 && (
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/30 p-6 mb-8">
-                <h3 className="text-xl font-black text-purple-400 mb-2">🌟 Ranking de Extras, Complementos y Salsas</h3>
-                <p className="text-gray-400 text-sm mb-4">Todos los complementos vendidos • Organizado por categoría y ranking</p>
-
-                <div className="space-y-6">
-                  {Object.entries(analytics.complementsByCategory).map(([category, items]: [string, any[]]) => (
-                    items.length > 0 && (
-                      <div key={category}>
-                        <h4 className="text-lg font-black text-cyan-400 mb-3">{category}</h4>
-                        <div className="space-y-2">
-                          {items.map((comp: any, idx: number) => (
-                            <div key={comp.id} className="bg-black/50 rounded-lg p-3 border border-purple-500/20 flex items-center justify-between hover:border-purple-500/40 transition-all">
-                              <div className="flex items-center gap-3 flex-1">
-                                <span className="text-lg font-black text-purple-400 w-8">#{idx + 1}</span>
-                                {idx === 0 && (
-                                  <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">👑</span>
-                                )}
-                                <p className="text-white font-bold text-sm">{comp.name}</p>
-                              </div>
-                              <div className="flex items-center gap-6">
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-500">Vendidos</p>
-                                  <p className="text-lg font-black text-cyan-400">{comp.count}</p>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-xs text-gray-500">Ingresos</p>
-                                  <p className="text-lg font-black text-amber-400">S/ {comp.revenue.toFixed(2)}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  ))}
-                </div>
-              </div>
-            )}
 
           </section>
         </>
@@ -4124,16 +4027,6 @@ export default function AdminPage() {
                 }`}
               >
                 🛒 Compras y Gastos
-              </button>
-              <button
-                onClick={() => setFinancialSection("canjes")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  financialSection === "canjes"
-                    ? "text-orange-400 border-b-4 border-orange-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                🎁 Canjes / Cortesías
               </button>
               {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
             </div>
@@ -4207,11 +4100,9 @@ export default function AdminPage() {
               // 💸 EGRESOS: Dinero que sale (Compras REALES registradas)
               let filteredPurchases = inventory;
               if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
-                const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
                 filteredPurchases = inventory.filter((purchase: any) => {
-                  const purchaseDate = getPeruDate(purchase.purchaseDate);
-                  return purchaseDate >= fromDate && purchaseDate <= toDate;
+                  const d = (purchase.purchaseDate || "").slice(0, 10);
+                  return d >= dashboardDateFrom && d <= dashboardDateTo;
                 });
               }
 
@@ -5826,8 +5717,8 @@ export default function AdminPage() {
             );
           })()}
 
-            {/* CANJES / CORTESÍAS */}
-            {financialSection === "canjes" && (() => {
+            {/* CANJES eliminado */}
+            {false && (() => {
               const canjeOrders = orders.filter((o: any) => o.isCanje);
               const nonCanjeOrders = orders.filter((o: any) => !o.isCanje);
 
