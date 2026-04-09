@@ -31,6 +31,7 @@ let salsaOffersFilePath: string = '';
 let salsaPromosFilePath: string = '';
 let customerProfilesFilePath: string = '';
 let menuPricesFilePath: string = '';
+let cajaFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -53,6 +54,7 @@ if (!isProduction) {
   salsaPromosFilePath = path.join(dataDir, 'salsa-promos.json');
   customerProfilesFilePath = path.join(dataDir, 'customer-profiles.json');
   menuPricesFilePath = path.join(dataDir, 'menu-prices.json');
+  cajaFilePath = path.join(dataDir, 'caja.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -1010,5 +1012,29 @@ export const storage = {
       fs.writeFileSync(customerProfilesFilePath, JSON.stringify(profiles, null, 2));
     }
     return idx >= 0 ? profiles[idx] : profiles[0];
+  },
+
+  // ========== CAJA (SALDO CORRIENTE) ==========
+  async getCaja(): Promise<{ snapshotBalance: number; snapshotDate: string }> {
+    const defaultData = { snapshotBalance: 0, snapshotDate: new Date().toISOString().split('T')[0] };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any>('caja')) || defaultData;
+    }
+    ensureDataDirectory();
+    try {
+      return JSON.parse(fs.readFileSync(cajaFilePath, 'utf-8'));
+    } catch {
+      return defaultData;
+    }
+  },
+  async saveCaja(data: { snapshotBalance: number; snapshotDate: string }): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('caja', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(cajaFilePath, JSON.stringify(data, null, 2));
+    }
   },
 };

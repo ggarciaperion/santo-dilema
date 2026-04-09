@@ -288,6 +288,10 @@ export default function AdminPage() {
   const [isDashboardDateFiltered, setIsDashboardDateFiltered] = useState(false);
   const [dashboardDateInitialized, setDashboardDateInitialized] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
+  const [cajaData, setCajaData] = useState<{ snapshotBalance: number; snapshotDate: string } | null>(null);
+  const [cajaEditMode, setCajaEditMode] = useState(false);
+  const [cajaEditBalance, setCajaEditBalance] = useState("");
+  const [cajaEditDate, setCajaEditDate] = useState("");
   const [deductions, setDeductions] = useState<any[]>([]);
   const [showProductModal, setShowProductModal] = useState(false);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
@@ -440,6 +444,7 @@ export default function AdminPage() {
     checkHistoricalSale();
     loadCustomerProfiles();
     loadSalsaPromos();
+    loadCaja();
     // Auto-refresh cada 10 segundos
     const interval = setInterval(() => {
       loadOrders();
@@ -813,6 +818,32 @@ export default function AdminPage() {
       setInventory(data);
     } catch (error) {
       console.error("Error al cargar inventario:", error);
+    }
+  };
+
+  const loadCaja = async () => {
+    try {
+      const response = await fetch("/api/caja");
+      const data = await response.json();
+      setCajaData(data);
+    } catch (error) {
+      console.error("Error al cargar caja:", error);
+    }
+  };
+
+  const saveCajaSnapshot = async () => {
+    const balance = parseFloat(cajaEditBalance);
+    if (isNaN(balance) || !cajaEditDate) return;
+    try {
+      await fetch("/api/caja", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ snapshotBalance: balance, snapshotDate: cajaEditDate }),
+      });
+      setCajaEditMode(false);
+      loadCaja();
+    } catch (error) {
+      console.error("Error al guardar caja:", error);
     }
   };
 
@@ -4125,6 +4156,25 @@ export default function AdminPage() {
 
               const totalCompras = comprasInsumos + gastosFijos + gastosPersonal + gastosMarketing;
 
+              // 💰 CAJA CORRIENTE
+              const cajaSnapshot = cajaData?.snapshotBalance || 0;
+              const cajaSnapshotDate = cajaData?.snapshotDate || "";
+              const ventasDesdeSnapshot = cajaSnapshotDate
+                ? orders.filter((o: any) =>
+                    !o.isCanje &&
+                    (o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado") &&
+                    (o.createdAt || "").slice(0, 10) >= cajaSnapshotDate
+                  ).reduce((sum: number, o: any) => sum + (o.totalPrice || 0), 0)
+                : 0;
+              const pagosDesdeSnapshot = cajaSnapshotDate
+                ? inventory.filter((p: any) =>
+                    p.liquidado &&
+                    p.liquidadoAt &&
+                    p.liquidadoAt.slice(0, 10) >= cajaSnapshotDate
+                  ).reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0)
+                : 0;
+              const cajaActual = cajaSnapshot + ventasDesdeSnapshot - pagosDesdeSnapshot;
+
               // 📊 INDICADORES DE FLUJO DE CAJA
               const cajaUtilidad = totalVentas - totalCompras; // Dinero real que queda
               const margenCaja = totalVentas > 0 ? (cajaUtilidad / totalVentas) * 100 : 0; // % de utilidad sobre ventas
@@ -4208,6 +4258,81 @@ export default function AdminPage() {
                       📅 Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </div>
                   )}
+
+                  {/* ===== CAJA CORRIENTE ===== */}
+                  <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/20 rounded-2xl border-2 border-emerald-400/60 p-6 mb-6">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <div className="flex-1">
+                        <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">💵 CAJA ACTUAL</p>
+                        <p className={`text-6xl font-black ${cajaActual >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          S/ {cajaActual.toFixed(2)}
+                        </p>
+                        {cajaData && (
+                          <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-400">
+                            <span>Base {new Date(cajaData.snapshotDate + "T12:00:00").toLocaleDateString("es-PE")}: <span className="text-white font-bold">S/ {cajaSnapshot.toFixed(2)}</span></span>
+                            <span>+ Ventas desde entonces: <span className="text-emerald-400 font-bold">S/ {ventasDesdeSnapshot.toFixed(2)}</span></span>
+                            <span>− Pagos realizados: <span className="text-red-400 font-bold">S/ {pagosDesdeSnapshot.toFixed(2)}</span></span>
+                          </div>
+                        )}
+                        {!cajaData && (
+                          <p className="text-gray-500 text-sm mt-2">Configura el saldo inicial para empezar a llevar la caja.</p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        {!cajaEditMode ? (
+                          <button
+                            onClick={() => {
+                              setCajaEditBalance(cajaData ? String(cajaData.snapshotBalance) : "");
+                              setCajaEditDate(cajaData?.snapshotDate || new Date().toLocaleDateString("en-CA"));
+                              setCajaEditMode(true);
+                            }}
+                            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold transition-all"
+                          >
+                            ✏️ {cajaData ? "Ajustar base" : "Configurar caja"}
+                          </button>
+                        ) : (
+                          <div className="bg-gray-900 border border-emerald-500/40 rounded-xl p-4 space-y-3 min-w-[240px]">
+                            <p className="text-emerald-400 text-xs font-bold uppercase tracking-wide">Establecer base</p>
+                            <div>
+                              <label className="text-xs text-gray-400 mb-1 block">Saldo en caja (S/)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={cajaEditBalance}
+                                onChange={(e) => setCajaEditBalance(e.target.value)}
+                                className="w-full px-3 py-1.5 text-sm rounded-lg bg-black border border-emerald-500/40 text-white focus:border-emerald-400 focus:outline-none"
+                                placeholder="521.80"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-400 mb-1 block">Fecha de corte</label>
+                              <input
+                                type="date"
+                                value={cajaEditDate}
+                                onChange={(e) => setCajaEditDate(e.target.value)}
+                                className="w-full px-3 py-1.5 text-sm rounded-lg bg-black border border-emerald-500/40 text-white focus:border-emerald-400 focus:outline-none [color-scheme:dark]"
+                              />
+                            </div>
+                            <div className="flex gap-2 pt-1">
+                              <button
+                                onClick={saveCajaSnapshot}
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 rounded-lg text-sm font-bold"
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                onClick={() => setCajaEditMode(false)}
+                                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            <p className="text-xs text-gray-500">Las ventas y pagos posteriores a esta fecha se suman/restan automáticamente.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="space-y-6">
                     {/* SECCIÓN 1: INGRESOS - Dinero que entra */}
