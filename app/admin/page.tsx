@@ -1778,7 +1778,9 @@ export default function AdminPage() {
   };
 
   const customerSegments = getCustomerSegments();
-  const segmentCustomers = customerSegments[customerSegment as keyof typeof customerSegments] || allCustomers;
+  const segmentCustomers = customerSegment === 'birthday'
+    ? allCustomers.filter((c: any) => !!c.birthday)
+    : customerSegments[customerSegment as keyof typeof customerSegments] || allCustomers;
 
   // CRM Dashboard
   const getCrmDashboard = () => {
@@ -2469,16 +2471,6 @@ export default function AdminPage() {
             📦 <span className="hidden sm:inline">Gestión de </span>Pedidos
           </button>
           <button
-            onClick={() => setActiveTab("customers")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "customers"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            👥 <span className="hidden sm:inline">Base de </span>Clientes
-          </button>
-          <button
             onClick={() => setActiveTab("analytics")}
             className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
               activeTab === "analytics"
@@ -2486,7 +2478,17 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            📊 Analytics<span className="hidden sm:inline"> & CRM</span>
+            📊 Inicio
+          </button>
+          <button
+            onClick={() => setActiveTab("customers")}
+            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
+              activeTab === "customers"
+                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
+                : "text-gray-400 hover:text-gray-300"
+            }`}
+          >
+            👥 Clientes
           </button>
           <button
             onClick={() => setActiveTab("financial")}
@@ -2496,7 +2498,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            💰 Financiero
+            💰 Finanzas
           </button>
           <button
             onClick={() => setActiveTab("marketing")}
@@ -2506,7 +2508,7 @@ export default function AdminPage() {
                 : "text-gray-400 hover:text-gray-300"
             }`}
           >
-            🎯 Marketing
+            🎯 Promociones
           </button>
           <button
             onClick={() => setActiveTab("carta")}
@@ -3202,25 +3204,6 @@ export default function AdminPage() {
       ) : activeTab === "customers" ? (
         /* Customers Tab */
         <>
-          {/* Navegación CRM */}
-          <section className="container mx-auto px-4 pt-6 pb-0">
-            <div className="flex gap-2 flex-wrap border-b border-gray-800 pb-3">
-              <button onClick={() => setCustomersView('list')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${customersView==='list' ? 'bg-fuchsia-600 text-white' : 'bg-gray-900 text-gray-400 border border-gray-700 hover:bg-gray-800'}`}>
-                Clientes
-              </button>
-              <button onClick={() => setCustomersView('dashboard')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${customersView==='dashboard' ? 'bg-fuchsia-600 text-white' : 'bg-gray-900 text-gray-400 border border-gray-700 hover:bg-gray-800'}`}>
-                Dashboard CRM{crmDashboard && crmDashboard.birthdaysToday.length > 0 ? ' 🎂' : ''}
-              </button>
-              <button onClick={() => setCustomersView('birthdays')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${customersView==='birthdays' ? 'bg-fuchsia-600 text-white' : 'bg-gray-900 text-gray-400 border border-gray-700 hover:bg-gray-800'}`}>
-                Cumpleaños
-              </button>
-            </div>
-          </section>
-
-          {customersView === 'list' && (
           <>
           {/* Customer Stats */}
           <section className="container mx-auto px-4 py-8">
@@ -3288,6 +3271,16 @@ export default function AdminPage() {
                   }`}
                 >
                   💤 Inactivos ({customerSegments.inactive.length})
+                </button>
+                <button
+                  onClick={() => setCustomerSegment("birthday")}
+                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
+                    customerSegment === "birthday"
+                      ? "bg-pink-600 text-white"
+                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                  }`}
+                >
+                  🎂 Cumpleaños ({allCustomers.filter((c: any) => !!c.birthday).length})
                 </button>
               </div>
             </div>
@@ -3601,11 +3594,8 @@ export default function AdminPage() {
               </>
             )}
           </section>
-          </>
-          )}
-
-          {/* Dashboard CRM sub-view */}
-          {customersView === 'dashboard' && crmDashboard && (
+          {/* Dashboard CRM - integrado en tab Inicio */}
+          {false && crmDashboard && (
             <section className="container mx-auto px-4 py-6 space-y-6">
               {/* 4 KPIs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -3699,8 +3689,8 @@ export default function AdminPage() {
             </section>
           )}
 
-          {/* Cumpleaños sub-view */}
-          {customersView === 'birthdays' && crmDashboard && (
+          {/* Cumpleaños - integrado como segmento en lista de clientes */}
+          {false && crmDashboard && (
             <section className="container mx-auto px-4 py-6 space-y-4">
               {crmDashboard.birthdaysToday.length > 0 && (
                 <div className="bg-pink-900/20 border-2 border-pink-500 rounded-xl p-4">
@@ -3754,45 +3744,80 @@ export default function AdminPage() {
           {/* Date Filter - Only for Analytics */}
           <section className="container mx-auto px-4 pt-4">
             <div className="bg-gray-900 rounded-lg border-2 border-fuchsia-500/30 p-4">
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Quick period buttons */}
+                <span className="text-xs font-bold text-fuchsia-400 uppercase tracking-wide">Período:</span>
+                {(() => {
+                  const todayStr = new Date().toISOString().split("T")[0];
+                  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
+                  const weekStr = weekAgo.toISOString().split("T")[0];
+                  const monthStart = new Date(); monthStart.setDate(1);
+                  const monthStr = monthStart.toISOString().split("T")[0];
+                  const periods = [
+                    { label: "Hoy", from: todayStr, to: todayStr },
+                    { label: "Esta semana", from: weekStr, to: todayStr },
+                    { label: "Este mes", from: monthStr, to: todayStr },
+                  ];
+                  return periods.map(({ label, from, to }) => {
+                    const isActive = isAnalyticsDateFiltered && analyticsDateFrom === from && analyticsDateTo === to;
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => { setAnalyticsDateFrom(from); setAnalyticsDateTo(to); setIsAnalyticsDateFiltered(true); }}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                          isActive
+                            ? "bg-fuchsia-600 text-white"
+                            : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  });
+                })()}
+
+                {/* Divider */}
+                <div className="w-px h-5 bg-gray-700 mx-1" />
+
+                {/* Custom date pickers */}
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-bold text-fuchsia-400">Desde:</label>
+                  <label className="text-xs text-gray-400">Desde:</label>
                   <input
                     type="date"
                     value={analyticsDateFrom}
                     onChange={(e) => setAnalyticsDateFrom(e.target.value)}
-                    className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
+                    className="px-2 py-1.5 text-sm rounded-lg bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-bold text-fuchsia-400">Hasta:</label>
+                  <label className="text-xs text-gray-400">Hasta:</label>
                   <input
                     type="date"
                     value={analyticsDateTo}
                     onChange={(e) => setAnalyticsDateTo(e.target.value)}
-                    className="px-3 py-2 text-sm rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
+                    className="px-2 py-1.5 text-sm rounded-lg bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
+                  <button
+                    onClick={applyAnalyticsDateFilter}
+                    disabled={!analyticsDateFrom || !analyticsDateTo}
+                    className="px-4 py-1.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Aplicar
+                  </button>
                 </div>
-                <button
-                  onClick={applyAnalyticsDateFilter}
-                  disabled={!analyticsDateFrom || !analyticsDateTo}
-                  className="px-6 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Aplicar Filtro
-                </button>
+
                 {isAnalyticsDateFiltered && (
                   <button
                     onClick={clearAnalyticsDateFilter}
-                    className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold transition-all"
+                    className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm transition-all"
                   >
-                    Limpiar Filtro
+                    ✕ Limpiar
                   </button>
                 )}
+
                 {isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo && (
-                  <span className="text-sm text-green-400 font-bold">
-                    ✓ Mostrando datos del {new Date(analyticsDateFrom).toLocaleDateString("es-PE")} al {new Date(analyticsDateTo).toLocaleDateString("es-PE")}
+                  <span className="text-xs text-green-400 font-bold">
+                    ✓ {new Date(analyticsDateFrom + "T12:00:00").toLocaleDateString("es-PE")} — {new Date(analyticsDateTo + "T12:00:00").toLocaleDateString("es-PE")}
                   </span>
                 )}
               </div>
@@ -4100,16 +4125,6 @@ export default function AdminPage() {
                 }`}
               >
                 🛒 Compras y Gastos
-              </button>
-              <button
-                onClick={() => setFinancialSection("products")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  financialSection === "products"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                🍗 Productos de Venta
               </button>
               <button
                 onClick={() => setFinancialSection("canjes")}
@@ -5933,1070 +5948,11 @@ export default function AdminPage() {
             })()}
 
         </>
-      ) : activeTab === "marketing-OLD-DELETE" ? (
-        /* OLD INVENTORY SECTION - TO BE DELETED */
-        <>
-          <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">VIEJO - ELIMINAR</h2>
-
-            {/* Sub-tabs */}
-            <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
-              <button
-                onClick={() => setInventorySection("purchases")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  inventorySection === "purchases"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                🛒 Compras y Gastos
-              </button>
-              <button
-                onClick={() => setInventorySection("stock")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  inventorySection === "stock"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                📊 Control de Stock
-              </button>
-            </div>
-
-            {inventorySection === "purchases" && (
-              <>
-                {(() => {
-                  // Filtrar inventario
-                  const filteredInventory = inventory.filter((purchase) => {
-                    // Filtro por mes (por defecto mes actual)
-                    if (inventoryMonthFilter) {
-                      const purchaseDate = new Date(purchase.purchaseDate);
-                      const purchaseYearMonth = `${purchaseDate.getFullYear()}-${String(purchaseDate.getMonth() + 1).padStart(2, '0')}`;
-                      if (purchaseYearMonth !== inventoryMonthFilter) {
-                        return false;
-                      }
-                    }
-
-                    // Filtro por fecha específica
-                    if (inventoryDateFilter) {
-                      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
-                      if (purchaseDate !== inventoryDateFilter) {
-                        return false;
-                      }
-                    }
-
-                    // Filtro por categoría
-                    if (inventoryCategoryFilter !== "all") {
-                      const purchaseCategory = purchase.category || "operativos"; // Por defecto: operativos
-                      if (purchaseCategory !== inventoryCategoryFilter) {
-                        return false;
-                      }
-                    }
-
-                    // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
-                    if (inventorySearchTerm) {
-                      const searchLower = inventorySearchTerm.toLowerCase();
-                      const hasMatchingProduct = purchase.items.some((item: any) =>
-                        item.productName.toLowerCase().includes(searchLower)
-                      );
-                      const hasMatchingSupplier = purchase.supplier?.toLowerCase().includes(searchLower);
-                      const hasMatchingPhone = purchase.supplierPhone?.includes(inventorySearchTerm);
-                      const hasMatchingPayment = purchase.paymentMethod?.toLowerCase().includes(searchLower);
-
-                      if (!hasMatchingProduct && !hasMatchingSupplier && !hasMatchingPhone && !hasMatchingPayment) {
-                        return false;
-                      }
-                    }
-
-                    return true;
-                  });
-
-                  return (
-                    <>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold text-white">Compras {getMonthName(inventoryMonthFilter)}</h3>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="month"
-                      value={inventoryMonthFilter}
-                      onChange={(e) => setInventoryMonthFilter(e.target.value)}
-                      className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                    />
-                    <button
-                      onClick={() => {
-                        console.log('🔥 Click en Nueva Compra');
-                        setShowInventoryModal(true);
-                        setProductSearchTerms([""]);
-                      }}
-                      className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
-                    >
-                      + Nueva Compra
-                    </button>
-                  </div>
-                </div>
-
-                {/* Pequeño cartel con totales */}
-                <div className="flex gap-3 mb-6">
-                  <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-fuchsia-500/20">
-                    <p className="text-xs text-gray-400">Compras del mes</p>
-                    <p className="text-sm font-bold text-fuchsia-400">
-                      S/ {filteredInventory.reduce((sum, p) => sum + p.totalAmount, 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="bg-gray-900/50 rounded px-3 py-1.5 border border-cyan-500/20">
-                    <p className="text-xs text-gray-400">Compras totales</p>
-                    <p className="text-sm font-bold text-cyan-400">
-                      S/ {inventory.reduce((sum, p) => sum + p.totalAmount, 0).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Inventory List - Formato Tabla Excel */}
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                  {filteredInventory.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-xl text-gray-400">No hay compras en este mes</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-black/50">
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CATEGORÍA</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ESTADO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredInventory.map((purchase) =>
-                            purchase.items.map((item: any, itemIdx: number) => (
-                              <tr key={`${purchase.id}-${itemIdx}`} className="hover:bg-fuchsia-500/5 transition-all">
-                                <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
-                                  {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2">
-                                  <p className="text-xs font-bold text-white">{purchase.supplier}</p>
-                                  {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center">
-                                  {(() => {
-                                    const category = purchase.category || "operativos";
-                                    const categoryConfig: Record<string, {icon: string, color: string, label: string}> = {
-                                      operativos: { icon: "🍖", color: "text-blue-400", label: "Operativos" },
-                                      fijos: { icon: "🏢", color: "text-purple-400", label: "Fijos" },
-                                      personal: { icon: "👥", color: "text-green-400", label: "Personal" },
-                                      marketing: { icon: "📢", color: "text-orange-400", label: "Marketing" }
-                                    };
-                                    const config = categoryConfig[category] || categoryConfig.operativos;
-                                    return (
-                                      <span className={`text-xs font-bold ${config.color}`}>
-                                        {config.icon} {config.label}
-                                      </span>
-                                    );
-                                  })()}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-xs text-white font-bold">
-                                  {item.productName || '-'}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-white">
-                                  {item.originalQuantity || item.quantity}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-gray-300">
-                                  {item.unit}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-cyan-400">
-                                  {purchase.paymentMethod === 'plin-yape' && 'PLIN-YAPE'}
-                                  {purchase.paymentMethod === 'efectivo' && 'EFECTIVO'}
-                                  {purchase.paymentMethod === 'transferencia' && 'TRANSFERENCIA'}
-                                  {purchase.paymentMethod === 'tarjeta' && 'TARJETA'}
-                                </td>
-                                {(() => {
-                                  // Operativos: unitCost=total pagado, total=costo/unidad (fórmula inversa)
-                                  // Marketing/Personal/Fijos: unitCost=costo/unidad, total=total pagado
-                                  const isOperativos = (purchase.category || "operativos") === "operativos";
-                                  const displayTotal = isOperativos ? item.unitCost : item.total;
-                                  const displayUnit  = isOperativos ? item.total    : item.unitCost;
-                                  return (
-                                    <>
-                                      <td className="border border-gray-700 px-3 py-2 text-right">
-                                        <p className="text-xs font-bold text-fuchsia-400">S/ {displayTotal.toFixed(2)}</p>
-                                      </td>
-                                      <td className="border border-gray-700 px-3 py-2 text-right">
-                                        <p className="text-xs font-bold text-amber-400">S/ {displayUnit.toFixed(2)}</p>
-                                      </td>
-                                    </>
-                                  );
-                                })()}
-                                {itemIdx === 0 ? (
-                                  <td
-                                    className="border border-gray-700 px-2 py-2 text-center"
-                                    rowSpan={purchase.items.length}
-                                  >
-                                    <button
-                                      onClick={() => toggleLiquidado(purchase.id, !!(purchase as any).liquidado)}
-                                      title={(purchase as any).liquidado ? 'Marcar como pendiente' : 'Marcar como liquidado'}
-                                      className={`flex flex-col items-center gap-0.5 mx-auto px-2 py-1.5 rounded-lg border transition-all active:scale-95 min-w-[80px] ${
-                                        (purchase as any).liquidado
-                                          ? 'border-emerald-500/50 bg-emerald-900/20 hover:bg-emerald-900/40'
-                                          : 'border-amber-500/40 bg-amber-900/10 hover:bg-amber-900/30'
-                                      }`}
-                                    >
-                                      <span className="text-base leading-none">
-                                        {(purchase as any).liquidado ? '✅' : '⏳'}
-                                      </span>
-                                      <span className={`text-[10px] font-black uppercase leading-none mt-0.5 ${
-                                        (purchase as any).liquidado ? 'text-emerald-400' : 'text-amber-400'
-                                      }`}>
-                                        {(purchase as any).liquidado ? 'Liquidado' : 'Pendiente'}
-                                      </span>
-                                    </button>
-                                  </td>
-                                ) : null}
-                                <td className="border border-gray-700 px-3 py-2 text-center">
-                                  {itemIdx === 0 && (
-                                    <div className="flex items-center justify-center gap-2">
-                                      <button
-                                        onClick={() => {
-                                          setEditingPurchase(purchase);
-                                          setShowInventoryEditModal(true);
-                                        }}
-                                        className="text-amber-400 hover:text-amber-300 text-sm"
-                                        title="Editar"
-                                      >
-                                        ✏️
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteInventory(purchase.id)}
-                                        className="text-red-400 hover:text-red-300 text-sm font-bold"
-                                        title="Eliminar"
-                                      >
-                                        ✕
-                                      </button>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-
-                {/* Modal de Detalles */}
-                {showInventoryDetailModal && selectedPurchaseDetail && (
-                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-2xl font-black text-fuchsia-400">Detalle de Compra</h3>
-                        <button
-                          onClick={() => setShowInventoryDetailModal(false)}
-                          className="text-gray-400 hover:text-white text-2xl"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {/* Información del Proveedor */}
-                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 Información del Proveedor</h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-gray-400">Proveedor:</p>
-                            <p className="text-white font-bold">{selectedPurchaseDetail.supplier}</p>
-                          </div>
-                          {selectedPurchaseDetail.supplierRuc && (
-                            <div>
-                              <p className="text-gray-400">RUC:</p>
-                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierRuc}</p>
-                            </div>
-                          )}
-                          {selectedPurchaseDetail.supplierPhone && (
-                            <div>
-                              <p className="text-gray-400">Teléfono:</p>
-                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierPhone}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-gray-400">Fecha de Compra:</p>
-                            <p className="text-white font-bold">
-                              {new Date(selectedPurchaseDetail.purchaseDate).toLocaleDateString('es-PE', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-400">Método de Pago:</p>
-                            <p className="text-white font-bold">
-                              {selectedPurchaseDetail.paymentMethod === 'plin-yape' && '📱 Plin / Yape'}
-                              {selectedPurchaseDetail.paymentMethod === 'efectivo' && '💵 Efectivo'}
-                              {selectedPurchaseDetail.paymentMethod === 'transferencia' && '🏦 Transferencia'}
-                              {selectedPurchaseDetail.paymentMethod === 'tarjeta' && '💳 Tarjeta'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-400">ID de Compra:</p>
-                            <p className="text-white font-bold">#{selectedPurchaseDetail.id}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Lista de Artículos */}
-                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📦 Artículos Comprados</h4>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse">
-                            <thead>
-                              <tr className="bg-gray-900">
-                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-left">Producto</th>
-                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-center">Cantidad</th>
-                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-center">Unidad</th>
-                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-right">Total</th>
-                                <th className="border border-gray-700 px-2 py-2 text-xs font-bold text-gray-400 text-right">C. Unit.</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {selectedPurchaseDetail.items.map((item: any, idx: number) => {
-                                const isOperativos = (selectedPurchaseDetail.category || "operativos") === "operativos";
-                                const displayTotal = isOperativos ? item.unitCost : item.total;
-                                const displayUnit  = isOperativos ? item.total    : item.unitCost;
-                                return (
-                                  <tr key={idx}>
-                                    <td className="border border-gray-700 px-2 py-2 text-xs text-white">{item.productName}</td>
-                                    <td className="border border-gray-700 px-2 py-2 text-xs text-center text-white">{item.originalQuantity || item.quantity}</td>
-                                    <td className="border border-gray-700 px-2 py-2 text-xs text-center text-gray-300">{item.unit}</td>
-                                    <td className="border border-gray-700 px-2 py-2 text-xs text-right text-fuchsia-400 font-bold">
-                                      S/ {displayTotal.toFixed(2)}
-                                    </td>
-                                    <td className="border border-gray-700 px-2 py-2 text-xs text-right text-amber-400 font-bold">
-                                      S/ {displayUnit.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {/* Total */}
-                      <div className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-lg p-4 border-2 border-fuchsia-500/50 mb-4">
-                        <div className="flex justify-between items-center">
-                          <p className="text-white font-bold">TOTAL DE LA COMPRA</p>
-                          <p className="text-3xl font-black text-fuchsia-400">
-                            S/ {selectedPurchaseDetail.totalAmount.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Notas */}
-                      {selectedPurchaseDetail.notes && (
-                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-                          <p className="text-sm text-gray-400">
-                            <span className="font-bold text-amber-400">📝 Notas:</span> {selectedPurchaseDetail.notes}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Botón Cerrar */}
-                      <div className="mt-4 flex justify-end">
-                        <button
-                          onClick={() => setShowInventoryDetailModal(false)}
-                          className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-bold transition-all"
-                        >
-                          Cerrar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                    </>
-                  );
-                })()}
-              </>
-            )}
-
-            {inventorySection === "stock" && (
-              <>
-                {(() => {
-                  // Calcular stock basado en compras
-                  const stockMap = new Map<string, { productName: string; unit: string; totalQuantity: number; purchases: number }>();
-
-                  inventory.forEach((purchase) => {
-                    purchase.items.forEach((item: any) => {
-                      // Excluir categoría SERVICIO
-                      if (item.category === "SERVICIO") return;
-
-                      const key = `${item.productName}-${item.unit}`;
-                      // Calcular stock: usar stockUnits si existe (post-descuento), sino quantity × volume
-                      const stockQuantity = item.stockUnits !== undefined
-                        ? item.stockUnits
-                        : item.quantity * (item.volume || 1);
-
-                      if (stockMap.has(key)) {
-                        const existing = stockMap.get(key)!;
-                        existing.totalQuantity += stockQuantity;
-                        existing.purchases += 1;
-                      } else {
-                        stockMap.set(key, {
-                          productName: item.productName,
-                          unit: item.unit,
-                          totalQuantity: stockQuantity,
-                          purchases: 1
-                        });
-                      }
-                    });
-                  });
-
-                  // Restar deducciones del stock
-                  deductions.forEach((deduction: any) => {
-                    deduction.items.forEach((item: any) => {
-                      const key = `${item.productName}-${item.unit}`;
-                      if (stockMap.has(key)) {
-                        const existing = stockMap.get(key)!;
-                        existing.totalQuantity -= item.quantity;
-                      }
-                    });
-                  });
-
-                  const stockItems = Array.from(stockMap.values()).sort((a, b) =>
-                    a.productName.localeCompare(b.productName)
-                  );
-
-                  // Filtrar items de stock según búsqueda
-                  const filteredStockItems = stockItems.filter((item) => {
-                    if (!stockSearchTerm) return true;
-                    const searchLower = stockSearchTerm.toLowerCase();
-                    return item.productName.toLowerCase().includes(searchLower);
-                  });
-
-                  return (
-                    <>
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-2xl font-bold text-white">Control de Stock</h3>
-                        <input
-                          type="text"
-                          value={stockSearchTerm}
-                          onChange={(e) => setStockSearchTerm(e.target.value)}
-                          placeholder="🔍 Buscar producto..."
-                          className="px-3 py-2 text-sm rounded bg-black border border-gray-700 text-white focus:border-cyan-400 focus:outline-none w-64"
-                        />
-                      </div>
-
-                      {/* Tabla de Stock */}
-                      <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                        {filteredStockItems.length === 0 ? (
-                          <div className="text-center py-12">
-                            <p className="text-xl text-gray-400">No hay stock registrado</p>
-                          </div>
-                        ) : (
-                          <table className="w-full" style={{ borderCollapse: "collapse" }}>
-                            <thead className="bg-black">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">PRODUCTO</th>
-                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">UNIDAD</th>
-                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30">CANTIDAD EN STOCK</th>
-                                <th className="px-6 py-3 text-center text-xs font-bold text-fuchsia-400 border border-fuchsia-500/30"># COMPRAS</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredStockItems.map((item, idx) => (
-                                <tr key={idx} className="hover:bg-black/50 transition-all">
-                                  <td className="px-6 py-3 text-white font-bold border border-fuchsia-500/10">{item.productName}</td>
-                                  <td className="px-6 py-3 text-center text-cyan-400 font-bold border border-fuchsia-500/10">
-                                    {item.unit}
-                                  </td>
-                                  <td className="px-6 py-3 text-center text-green-400 font-black text-lg border border-fuchsia-500/10">
-                                    {item.totalQuantity}
-                                  </td>
-                                  <td className="px-6 py-3 text-center text-gray-400 border border-fuchsia-500/10">
-                                    {item.purchases}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    </>
-                  );
-                })()}
-              </>
-            )}
-
-          </section>
-
-          {/* Catalog Product Modal */}
-          {showCatalogModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full">
-                <h3 className="text-xl font-black text-fuchsia-400 mb-4">
-                  {editingCatalogProduct ? '✏️ Editar Producto' : '📦 Nuevo Producto'}
-                </h3>
-
-                <div className="space-y-4">
-                  {editingCatalogProduct && (
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-2">ID del Producto</label>
-                      <input
-                        type="text"
-                        value={catalogForm.productId}
-                        readOnly
-                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-400 rounded cursor-not-allowed"
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2">Nombre del Producto *</label>
-                    <input
-                      type="text"
-                      value={catalogForm.name}
-                      onChange={(e) => setCatalogForm({ ...catalogForm, name: e.target.value.toUpperCase() })}
-                      placeholder="NOMBRE DEL PRODUCTO"
-                      className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2">Categoría *</label>
-                    <select
-                      value={catalogForm.category}
-                      onChange={(e) => setCatalogForm({ ...catalogForm, category: e.target.value })}
-                      className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
-                    >
-                      <option value="">Seleccionar categoría *</option>
-                      <option value="EMPAQUE">EMPAQUE</option>
-                      <option value="INSUMO">INSUMO</option>
-                      <option value="SERVICIO">SERVICIO</option>
-                      <option value="COSTO FIJO">COSTO FIJO</option>
-                      <option value="UTENCILIO">UTENCILIO</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2">Unidad de Medida *</label>
-                    <select
-                      value={catalogForm.unit}
-                      onChange={(e) => setCatalogForm({ ...catalogForm, unit: e.target.value })}
-                      className="w-full px-3 py-2 bg-black border border-gray-700 text-white rounded focus:border-fuchsia-400 focus:outline-none"
-                    >
-                      <option value="">Seleccionar unidad *</option>
-                      <option value="UNIDAD">UNIDAD</option>
-                      <option value="KG">KG</option>
-                      <option value="LITROS">LITROS</option>
-                      <option value="GRAMOS">GRAMOS</option>
-                      <option value="SERVICIO">SERVICIO</option>
-                      <option value="CIENTO">CIENTO</option>
-                      <option value="MEDIO MILLAR">MEDIO MILLAR</option>
-                      <option value="MILLAR">MILLAR</option>
-                      <option value="PAQUETE">PAQUETE</option>
-                      <option value="CAJA">CAJA</option>
-                      <option value="BOLSA">BOLSA</option>
-                      <option value="BALDE">BALDE</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => {
-                      setShowCatalogModal(false);
-                      setCatalogForm({ productId: "", name: "", category: "", unit: "" });
-                      setEditingCatalogProduct(null);
-                    }}
-                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleCreateCatalogProduct}
-                    className="flex-1 px-4 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg font-bold transition-all"
-                  >
-                    Registrar
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* MODAL ELIMINADO - AHORA ESTÁ FUERA DE LOS TABS */}
-          {false && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
-                <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
-
-                {/* Información Compacta en Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
-                    <input
-                      type="text"
-                      value={inventoryForm.supplierRuc}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                      placeholder="20123456789"
-                      maxLength={11}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Nombre del proveedor *</label>
-                    <input
-                      type="text"
-                      value={inventoryForm.supplier}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value.toUpperCase() })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      placeholder="Nombre proveedor"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
-                    <input
-                      type="tel"
-                      value={inventoryForm.supplierPhone}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        setInventoryForm({ ...inventoryForm, supplierPhone: value });
-                      }}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                      maxLength={9}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Fecha de compra *</label>
-                    <input
-                      type="date"
-                      value={inventoryForm.purchaseDate}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, purchaseDate: e.target.value })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 mb-1">Método de pago *</label>
-                    <select
-                      value={inventoryForm.paymentMethod}
-                      onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
-                      className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                    >
-                      <option value="plin-yape">📱 Plin / Yape</option>
-                      <option value="efectivo">💵 Efectivo</option>
-                      <option value="transferencia">🏦 Transferencia</option>
-                      <option value="tarjeta">💳 Tarjeta</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Lista de Artículos */}
-                <div className="mb-3">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowNewMaterialForm(!showNewMaterialForm)}
-                        className="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                      >
-                        + Nuevo Material
-                      </button>
-                      <button
-                        onClick={addInventoryItem}
-                        className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                      >
-                        + Item
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Formulario para nuevo material */}
-                  {showNewMaterialForm && (
-                    <div className="bg-gray-900 rounded-lg p-3 mb-3 border border-amber-500/30">
-                      <p className="text-sm font-bold text-amber-400 mb-2">Agregar Nuevo Material al Catálogo</p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                        <div>
-                          <label className="block text-xs font-bold text-gray-400 mb-1">Nombre del Material *</label>
-                          <input
-                            type="text"
-                            placeholder="Ej: TENEDORES TRANSPARENTES"
-                            value={newMaterialForm.productName}
-                            onChange={(e) => setNewMaterialForm({ ...newMaterialForm, productName: e.target.value.toUpperCase() })}
-                            className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-gray-400 mb-1">Unidad de Medida *</label>
-                          <select
-                            value={newMaterialForm.unit}
-                            onChange={(e) => setNewMaterialForm({ ...newMaterialForm, unit: e.target.value })}
-                            className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
-                          >
-                            <option value="">Seleccionar...</option>
-                            <option value="UNIDAD">UNIDAD</option>
-                            <option value="KG">KG</option>
-                            <option value="LITROS">LITROS</option>
-                            <option value="GRAMOS">GRAMOS</option>
-                            <option value="CIENTO">CIENTO</option>
-                            <option value="MEDIO MILLAR">MEDIO MILLAR</option>
-                            <option value="MILLAR">MILLAR</option>
-                            <option value="PAQUETE">PAQUETE</option>
-                            <option value="CAJA">CAJA</option>
-                            <option value="BOLSA">BOLSA</option>
-                            <option value="BALDE">BALDE</option>
-                          </select>
-                        </div>
-                        <div className="flex items-end gap-2">
-                          <button
-                            onClick={() => {
-                              setShowNewMaterialForm(false);
-                              setNewMaterialForm({ productName: "", unit: "" });
-                            }}
-                            className="flex-1 px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded font-bold transition-all"
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (newMaterialForm.productName && newMaterialForm.unit) {
-                                try {
-                                  // Crear el material en el catálogo de productos
-                                  const response = await fetch("/api/products", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                      name: newMaterialForm.productName,
-                                      category: "EMPAQUE", // Categoría por defecto
-                                      unit: newMaterialForm.unit,
-                                      price: 0,
-                                      cost: 0,
-                                      active: true,
-                                      stock: 0,
-                                      minStock: 10,
-                                      maxStock: 100,
-                                    }),
-                                  });
-
-                                  if (response.ok) {
-                                    await loadCatalogProducts(); // Recargar catálogo
-                                    setShowNewMaterialForm(false);
-                                    setNewMaterialForm({ productName: "", unit: "" });
-                                    alert(`✅ Material "${newMaterialForm.productName}" agregado al catálogo`);
-                                  }
-                                } catch (error) {
-                                  console.error("Error al crear material:", error);
-                                  alert("Error al crear el material");
-                                }
-                              }
-                            }}
-                            className="flex-1 px-3 py-1.5 text-sm bg-amber-600 hover:bg-amber-500 text-white rounded font-bold transition-all"
-                          >
-                            Crear Material
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Encabezados de columnas */}
-                  <div className="hidden md:grid grid-cols-12 gap-2 mb-2 px-2">
-                    <div className="col-span-3">
-                      <p className="text-xs font-bold text-gray-400">Producto</p>
-                    </div>
-                    <div className="col-span-1">
-                      <p className="text-xs font-bold text-gray-400">Cantidad</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs font-bold text-gray-400">Unidad de medida</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs font-bold text-gray-400">Volumen</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs font-bold text-gray-400">Costo total</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs font-bold text-gray-400">Costo unitario</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pr-1">
-                    {inventoryForm.items.map((item, idx) => (
-                      <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
-                        <div className="grid grid-cols-12 gap-2">
-                          {/* Producto */}
-                          <div className="col-span-12 md:col-span-3 relative product-autocomplete">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Producto</label>
-                            <input
-                              type="text"
-                              value={item.productName || ""}
-                              onChange={(e) => {
-                                console.log('🔥 onChange ejecutado:', e.target.value);
-                                updateInventoryItem(idx, 'productName', e.target.value);
-                                const newSearchTerms = [...productSearchTerms];
-                                newSearchTerms[idx] = e.target.value;
-                                setProductSearchTerms(newSearchTerms);
-                                setActiveDropdownIndex(idx);
-                              }}
-                              onFocus={() => {
-                                console.log('🔥 onFocus ejecutado, idx:', idx);
-                                setActiveDropdownIndex(idx);
-                              }}
-                              placeholder="Escribir o seleccionar producto *"
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                            />
-                            {activeDropdownIndex === idx && (item.productName?.length >= 3 || !item.productName) && (
-                              <div className="absolute z-[200] w-full mt-1 bg-gray-800 border border-fuchsia-500/30 rounded max-h-40 overflow-y-auto shadow-2xl" style={{ position: 'absolute' }}>
-                                {(() => {
-                                  const searchTerm = item.productName?.toLowerCase() || "";
-
-                                  // Obtener materiales únicos del inventario (compras registradas)
-                                  const materialsMap = new Map<string, { productName: string; unit: string; productId?: string }>();
-
-                                  inventory.forEach((purchase: any) => {
-                                    purchase.items.forEach((purchaseItem: any) => {
-                                      const key = `${purchaseItem.productName}-${purchaseItem.unit}`;
-                                      if (!materialsMap.has(key)) {
-                                        materialsMap.set(key, {
-                                          productName: purchaseItem.productName,
-                                          unit: purchaseItem.unit,
-                                        });
-                                      }
-                                    });
-                                  });
-
-                                  // También agregar materiales del catálogo con categoría de inventario
-                                  const materialCategories = ['EMPAQUE', 'INSUMO', 'SERVICIO', 'COSTO FIJO', 'UTENCILIO'];
-                                  catalogProducts.forEach((product: any) => {
-                                    if (materialCategories.includes(product.category)) {
-                                      const key = `${product.name}-${product.unit}`;
-                                      if (!materialsMap.has(key)) {
-                                        materialsMap.set(key, {
-                                          productName: product.name,
-                                          unit: product.unit,
-                                          productId: product.productId,
-                                        });
-                                      }
-                                    }
-                                  });
-
-                                  // Convertir a array y filtrar por búsqueda
-                                  const allMaterials = Array.from(materialsMap.values());
-                                  const filteredProducts = searchTerm.length >= 3
-                                    ? allMaterials.filter(m =>
-                                        m.productName.toLowerCase().includes(searchTerm) ||
-                                        m.productId?.toLowerCase().includes(searchTerm)
-                                      )
-                                    : allMaterials;
-
-                                  // Ordenar alfabéticamente
-                                  filteredProducts.sort((a, b) => a.productName.localeCompare(b.productName));
-
-                                  if (filteredProducts.length === 0) {
-                                    return (
-                                      <div className="px-3 py-2 text-xs text-gray-400">
-                                        No se encontraron materiales
-                                      </div>
-                                    );
-                                  }
-
-                                  return filteredProducts.map((material, materialIdx) => (
-                                    <div
-                                      key={`${material.productName}-${material.unit}-${materialIdx}`}
-                                      onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        console.log('🔥 onMouseDown - Material a seleccionar:', material.productName);
-
-                                        // Actualizar el nombre del producto y la unidad
-                                        const newItems = [...inventoryForm.items];
-                                        newItems[idx] = {
-                                          ...newItems[idx],
-                                          productName: material.productName,
-                                          unit: material.unit
-                                        };
-
-                                        setInventoryForm({ ...inventoryForm, items: newItems });
-
-                                        // Actualizar searchTerms
-                                        const newSearchTerms = [...productSearchTerms];
-                                        newSearchTerms[idx] = material.productName;
-                                        setProductSearchTerms(newSearchTerms);
-
-                                        // Cerrar dropdown
-                                        setActiveDropdownIndex(null);
-
-                                        console.log('🔥 Material guardado:', material.productName);
-                                      }}
-                                      className="px-3 py-2 text-xs text-white hover:bg-fuchsia-500/20 cursor-pointer border-b border-fuchsia-500/10 last:border-b-0"
-                                    >
-                                      <div className="font-bold">{material.productName}</div>
-                                      <div className="text-cyan-400 text-[10px] mt-0.5">
-                                        {material.productId && `ID: ${material.productId} • `}
-                                        Unidad: {material.unit}
-                                      </div>
-                                    </div>
-                                  ));
-                                })()}
-                              </div>
-                            )}
-                          </div>
-                          {/* Cantidad */}
-                          <div className="col-span-6 md:col-span-1">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Cantidad</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={item.quantity === 0 ? '' : item.quantity}
-                              onChange={(e) => updateInventoryItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              placeholder="0"
-                            />
-                          </div>
-                          {/* Unidad */}
-                          <div className="col-span-6 md:col-span-2">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Unidad de medida</label>
-                            <select
-                              value={item.unit}
-                              onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                            >
-                              <option value="">Seleccionar</option>
-                              <option value="UNIDAD">UNIDAD</option>
-                              <option value="KG">KG</option>
-                              <option value="LITROS">LITROS</option>
-                              <option value="GRAMOS">GRAMOS</option>
-                              <option value="SERVICIO">SERVICIO</option>
-                              <option value="CIENTO">CIENTO</option>
-                              <option value="MEDIO MILLAR">MEDIO MILLAR</option>
-                              <option value="MILLAR">MILLAR</option>
-                              <option value="PAQUETE">PAQUETE</option>
-                              <option value="CAJA">CAJA</option>
-                              <option value="BOLSA">BOLSA</option>
-                              <option value="BALDE">BALDE</option>
-                            </select>
-                          </div>
-                          {/* Volumen */}
-                          <div className="col-span-6 md:col-span-2">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Volumen (unid/pres.)</label>
-                            <input
-                              type="number"
-                              step="1"
-                              value={item.volume || ''}
-                              onChange={(e) => updateInventoryItem(idx, 'volume', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              placeholder=""
-                            />
-                          </div>
-                          {/* Costo total */}
-                          <div className="col-span-6 md:col-span-2">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Costo total</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={item.unitCost === 0 ? '' : item.unitCost}
-                              onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              placeholder="0"
-                            />
-                          </div>
-                          {/* Costo unitario */}
-                          <div className="col-span-6 md:col-span-2">
-                            <label className="block md:hidden text-xs font-bold text-gray-400 mb-1">Costo unitario</label>
-                            <input
-                              type="text"
-                              value={`S/ ${item.total.toFixed(2)}`}
-                              disabled
-                              className="w-full px-2 py-1 text-xs rounded bg-gray-800 border border-fuchsia-500/30 text-amber-400 font-bold"
-                            />
-                          </div>
-                          {inventoryForm.items.length > 1 && (
-                            <div className="col-span-12 md:col-span-0 md:flex items-center justify-center hidden">
-                              <button
-                                onClick={() => removeInventoryItem(idx)}
-                                className="text-red-400 hover:text-red-300 text-xs"
-                                title="Eliminar"
-                              >
-                                ❌
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                        {inventoryForm.items.length > 1 && (
-                          <div className="md:hidden mt-1 text-right">
-                            <button
-                              onClick={() => removeInventoryItem(idx)}
-                              className="text-red-400 hover:text-red-300 text-xs"
-                            >
-                              ❌ Eliminar
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Total */}
-                <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-lg p-3 border-2 border-fuchsia-500/50 mb-3">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-xs text-gray-400">Total de la Compra</p>
-                      <p className="text-xs text-gray-500">{inventoryForm.items.length} item(s)</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-black text-fuchsia-400">
-                        S/ {inventoryForm.totalAmount.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-gray-400">{inventoryForm.paymentMethod}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Botones */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setShowInventoryModal(false);
-                      setInventoryForm({
-                        supplier: "",
-                        supplierRuc: "",
-                        supplierPhone: "",
-                        paymentMethod: "plin-yape",
-                        items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
-                        totalAmount: 0,
-                        purchaseDate: new Date().toISOString().split('T')[0]
-                      });
-                      setProductSearchTerms([""]);
-                      setActiveDropdownIndex(null);
-                    }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
-                  >
-                    ❌ Cancelar
-                  </button>
-                  <button
-                    onClick={handleCreateInventory}
-                    className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-                  >
-                    ✅ Registrar Compra
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
       ) : activeTab === "marketing" ? (
         /* Marketing Tab */
         <>
           <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Marketing y Fidelización</h2>
+            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Promociones</h2>
 
             {/* Sub-tabs */}
             <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
@@ -7019,16 +5975,6 @@ export default function AdminPage() {
                 }`}
               >
                 📢 Campañas de Marketing
-              </button>
-              <button
-                onClick={() => setMarketingSection("loyalty")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  marketingSection === "loyalty"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                🏆 Programa de Fidelización
               </button>
               <button
                 onClick={() => setMarketingSection("challenge")}
