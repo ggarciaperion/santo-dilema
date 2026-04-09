@@ -288,7 +288,7 @@ export default function AdminPage() {
   const [isDashboardDateFiltered, setIsDashboardDateFiltered] = useState(false);
   const [dashboardDateInitialized, setDashboardDateInitialized] = useState(false);
   const [inventory, setInventory] = useState<any[]>([]);
-  const [cajaData, setCajaData] = useState<{ snapshotBalance: number; snapshotDate: string } | null>(null);
+  const [cajaData, setCajaData] = useState<{ snapshotBalance: number; snapshotDate: string; snapshotCreatedAt?: string } | null>(null);
   const [cajaEditMode, setCajaEditMode] = useState(false);
   const [cajaEditBalance, setCajaEditBalance] = useState("");
   const [cajaEditDate, setCajaEditDate] = useState("");
@@ -4157,20 +4157,23 @@ export default function AdminPage() {
               const totalCompras = comprasInsumos + gastosFijos + gastosPersonal + gastosMarketing;
 
               // 💰 CAJA CORRIENTE
+              // El snapshot representa el saldo REAL en un momento dado.
+              // Solo sumamos/restamos transacciones ocurridas DESPUÉS de ese momento exacto.
               const cajaSnapshot = cajaData?.snapshotBalance || 0;
               const cajaSnapshotDate = cajaData?.snapshotDate || "";
-              const ventasDesdeSnapshot = cajaSnapshotDate
+              const cajaSnapshotTs = cajaData?.snapshotCreatedAt || "";
+              const ventasDesdeSnapshot = cajaSnapshotTs
                 ? orders.filter((o: any) =>
                     !o.isCanje &&
                     (o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado") &&
-                    (o.createdAt || "").slice(0, 10) >= cajaSnapshotDate
+                    (o.createdAt || "") > cajaSnapshotTs
                   ).reduce((sum: number, o: any) => sum + (o.totalPrice || 0), 0)
                 : 0;
-              const pagosDesdeSnapshot = cajaSnapshotDate
+              const pagosDesdeSnapshot = cajaSnapshotTs
                 ? inventory.filter((p: any) =>
                     p.liquidado &&
                     p.liquidadoAt &&
-                    p.liquidadoAt.slice(0, 10) >= cajaSnapshotDate
+                    p.liquidadoAt > cajaSnapshotTs
                   ).reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0)
                 : 0;
               const cajaActual = cajaSnapshot + ventasDesdeSnapshot - pagosDesdeSnapshot;

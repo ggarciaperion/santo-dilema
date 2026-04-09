@@ -17,8 +17,9 @@ export async function PUT(request: Request) {
     if (typeof snapshotBalance !== "number" || !snapshotDate) {
       return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
     }
-    await storage.saveCaja({ snapshotBalance, snapshotDate });
-    return NextResponse.json({ success: true, snapshotBalance, snapshotDate });
+    const snapshotCreatedAt = new Date().toISOString();
+    await storage.saveCaja({ snapshotBalance, snapshotDate, snapshotCreatedAt });
+    return NextResponse.json({ success: true, snapshotBalance, snapshotDate, snapshotCreatedAt });
   } catch (error) {
     return NextResponse.json({ error: "Error al guardar caja" }, { status: 500 });
   }

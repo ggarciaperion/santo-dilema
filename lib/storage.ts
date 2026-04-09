@@ -1015,8 +1015,8 @@ export const storage = {
   },
 
   // ========== CAJA (SALDO CORRIENTE) ==========
-  async getCaja(): Promise<{ snapshotBalance: number; snapshotDate: string }> {
-    const defaultData = { snapshotBalance: 0, snapshotDate: new Date().toISOString().split('T')[0] };
+  async getCaja(): Promise<{ snapshotBalance: number; snapshotDate: string; snapshotCreatedAt?: string }> {
+    const defaultData = { snapshotBalance: 0, snapshotDate: new Date().toISOString().split('T')[0], snapshotCreatedAt: new Date().toISOString() };
     if (isProduction) {
       if (!redis) throw new Error('Database not configured.');
       return (await redis.get<any>('caja')) || defaultData;
@@ -1028,7 +1028,7 @@ export const storage = {
       return defaultData;
     }
   },
-  async saveCaja(data: { snapshotBalance: number; snapshotDate: string }): Promise<void> {
+  async saveCaja(data: { snapshotBalance: number; snapshotDate: string; snapshotCreatedAt?: string }): Promise<void> {
     if (isProduction) {
       if (!redis) throw new Error('Database not configured.');
       await redis.set('caja', data);
