@@ -30,6 +30,11 @@ interface CompletedOrder {
   discountApplied?: boolean;
   originalPrice?: number;
   finalPrice?: number;
+  category?: string;
+  comboGroupId?: string;
+  comboName?: string;
+  comboPrice?: number;
+  comboOriginalTotal?: number;
 }
 
 const products: Product[] = [
@@ -615,6 +620,10 @@ export default function FitPage() {
   const cancelDeleteOrder = () => {
     setShowDeleteModal(false);
     setDeleteOrderIndex(null);
+  };
+
+  const handleDeleteComboGroup = (groupId: string) => {
+    setCompletedOrders(prev => prev.filter(o => o.comboGroupId !== groupId));
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
@@ -1362,7 +1371,65 @@ export default function FitPage() {
               Tu orden
             </h3>
             <div className="space-y-2 md:space-y-3">
-              {completedOrders.map((order, index) => {
+              {(() => {
+                const _seenCombos = new Set<string>();
+                return completedOrders.map((order, index) => {
+                // ── Combo group card ──────────────────────────────────────
+                if (order.comboGroupId) {
+                  if (_seenCombos.has(order.comboGroupId)) return null;
+                  _seenCombos.add(order.comboGroupId);
+                  const _gi = completedOrders.filter(o => o.comboGroupId === order.comboGroupId);
+                  return (
+                    <div key={`cg-${order.comboGroupId}`} className="bg-gray-900/80 rounded-xl border-2 border-amber-400/40 p-3 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+                      <div className="flex items-start justify-between mb-2.5">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
+                          <h4 className="text-sm font-black text-white mt-0.5">{order.comboName}</h4>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            {order.comboOriginalTotal && (
+                              <div className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</div>
+                            )}
+                            <div className="text-amber-400 font-black text-lg gold-glow">S/ {order.comboPrice?.toFixed(2)}</div>
+                          </div>
+                          <button onClick={() => handleDeleteComboGroup(order.comboGroupId!)} className="text-cyan-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 leading-none ml-1">✕</button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5 border-t border-white/5 pt-2">
+                        {_gi.map((item, i) => {
+                          let prod = products.find(p => p.id === item.productId);
+                          let iFat = false, iTaco = false;
+                          if (!prod) { prod = fatProducts.find(p => p.id === item.productId); iFat = true; }
+                          if (!prod) { prod = tacoProducts.find(p => p.id === item.productId); iFat = false; iTaco = true; }
+                          if (!prod) return null;
+                          return (
+                            <div key={i} className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40">
+                                {prod.image.startsWith('/') ? (
+                                  <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-lg flex items-center justify-center h-full">{prod.image}</span>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-white font-semibold truncate">{prod.name}</p>
+                                {iFat && item.salsas && item.salsas.length > 0 && (
+                                  <p className="text-[10px] text-amber-300/70 truncate">🌶️ {item.salsas.map(s => salsas.find(sa => sa.id === s)?.name ?? s).join(", ")}</p>
+                                )}
+                                {iTaco && item.salsas && item.salsas.length > 0 && (
+                                  <p className="text-[10px] text-emerald-300/70 truncate">🌮 {item.salsas.map(id => tacoFlavorNames[id] ?? id).join(" + ")}</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+                // ── Individual item ───────────────────────────────────────
                 // Buscar producto en fit products
                 let product = products.find((p) => p.id === order.productId);
                 let isFatOrder = false;
@@ -1471,7 +1538,8 @@ export default function FitPage() {
                     </div>
                   </div>
                 );
-              })}
+                });
+              })()}
             </div>
 
 

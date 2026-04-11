@@ -304,15 +304,18 @@ export default function CombosPage() {
   // ── Guardar en sessionStorage ──────────────────────────────────
   const saveToCart = () => {
     if (!activeCombo) return;
+    const comboGroupId = `cg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const comboOriginalTotal = parseFloat((activeCombo.price + activeCombo.maxSavings).toFixed(2));
+    const comboMeta = { comboGroupId, comboName: activeCombo.name, comboPrice: activeCombo.price, comboOriginalTotal };
     const items: any[] = [];
     for (const step of activeCombo.steps) {
       if (step.type === "sauces") {
-        items.push({ productId: step.productId, quantity: 1, salsas: selections.sauces[step.productId] ?? [], complementIds: [], originalPrice: REF_PRICES[step.productId] ?? 0, finalPrice: REF_PRICES[step.productId] ?? 0 });
+        items.push({ productId: step.productId, quantity: 1, salsas: selections.sauces[step.productId] ?? [], complementIds: [], originalPrice: REF_PRICES[step.productId] ?? 0, finalPrice: REF_PRICES[step.productId] ?? 0, ...comboMeta });
       } else if (step.type === "salad") {
         const salad = FIT_OPTIONS.find(p => p.id === selections.salad);
-        if (salad) items.push({ productId: salad.id, quantity: 1, salsas: [], complementIds: [], originalPrice: salad.price, finalPrice: salad.price });
+        if (salad) items.push({ productId: salad.id, quantity: 1, salsas: [], complementIds: [], originalPrice: salad.price, finalPrice: salad.price, ...comboMeta });
       } else if (step.type === "tacos") {
-        items.push({ productId: "taco-duo", quantity: 1, salsas: selections.tacos, complementIds: [], category: "taco", originalPrice: REF_PRICES["taco-duo"], finalPrice: REF_PRICES["taco-duo"] });
+        items.push({ productId: "taco-duo", quantity: 1, salsas: selections.tacos, complementIds: [], category: "taco", originalPrice: REF_PRICES["taco-duo"], finalPrice: REF_PRICES["taco-duo"], ...comboMeta });
       }
     }
     try {
@@ -542,8 +545,15 @@ function ComboCard({ combo, isOpen, onSelect }: { combo: ComboConfig; isOpen: bo
         </ul>
         <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t border-white/5">
           <div className="leading-none">
-            <span className="text-2xl font-bold text-white">S/ {combo.price.toFixed(2)}</span>
-            <span className="text-xs text-gray-500 ml-1">combo</span>
+            {combo.maxSavings > 0 && (
+              <div className="text-xs text-gray-500 line-through mb-0.5">
+                S/ {(combo.price + combo.maxSavings).toFixed(2)}
+              </div>
+            )}
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-white">S/ {combo.price.toFixed(2)}</span>
+              <span className={`text-xs font-bold ${combo.colors.text}`}>combo</span>
+            </div>
           </div>
           <button
             onClick={onSelect}

@@ -22,6 +22,10 @@ interface CompletedOrder {
   originalPrice?: number;
   discountApplied?: boolean;
   category?: string;
+  comboGroupId?: string;
+  comboName?: string;
+  comboPrice?: number;
+  comboOriginalTotal?: number;
 }
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -258,6 +262,11 @@ export default function TacosPage() {
 
   const handleDeleteCrossOrder = useCallback((index: number) => {
     setCrossCategoryOrders((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleDeleteComboGroup = useCallback((groupId: string) => {
+    setCrossCategoryOrders((prev) => prev.filter((o) => o.comboGroupId !== groupId));
+    setCompletedOrders((prev) => prev.filter((o) => o.comboGroupId !== groupId));
   }, []);
 
   const confirmDeleteOrder = useCallback(() => {
@@ -798,44 +807,102 @@ export default function TacosPage() {
             Tu orden
           </h3>
           <div className="space-y-2 md:space-y-3">
-            {/* Órdenes de otras páginas (alitas / ensaladas) */}
-            {crossCategoryOrders.map((order, index) => {
-              const prod = CROSS_PRODUCTS[order.productId];
-              if (!prod) return null;
-              const unitPrice = order.originalPrice ?? order.finalPrice ?? prod.price;
-              return (
-                <div
-                  key={`cross-${index}`}
-                  className="bg-gray-900 rounded-lg border-2 border-emerald-400/20 p-2 md:p-3 relative"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border border-emerald-400/20 flex-shrink-0 relative">
-                        <Image src={prod.image} alt={prod.name} fill className="object-cover" />
+            {/* Órdenes de otras páginas (alitas / ensaladas) — con agrupación de combos */}
+            {(() => {
+              const _seenCombos = new Set<string>();
+              return crossCategoryOrders.map((order, index) => {
+                // ── Combo group card ──────────────────────────────────────
+                if (order.comboGroupId) {
+                  if (_seenCombos.has(order.comboGroupId)) return null;
+                  _seenCombos.add(order.comboGroupId);
+                  const _crossItems = crossCategoryOrders.filter(o => o.comboGroupId === order.comboGroupId);
+                  const _tacoItems  = completedOrders.filter(o => o.comboGroupId === order.comboGroupId);
+                  const _allItems   = [..._crossItems, ..._tacoItems];
+                  return (
+                    <div key={`cg-${order.comboGroupId}`} className="bg-gray-900/80 rounded-xl border-2 border-amber-400/40 p-3 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+                      <div className="flex items-start justify-between mb-2.5">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
+                          <h4 className="text-sm font-black text-white mt-0.5">{order.comboName}</h4>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            {order.comboOriginalTotal && (
+                              <div className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</div>
+                            )}
+                            <div className="text-amber-400 font-black text-lg gold-glow">S/ {order.comboPrice?.toFixed(2)}</div>
+                          </div>
+                          <button onClick={() => handleDeleteComboGroup(order.comboGroupId!)} className="text-emerald-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 leading-none ml-1">✕</button>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-white truncate">{prod.name}</p>
-                        {order.salsas && order.salsas.length > 0 && (
-                          <p className="text-[11px] text-red-300/80 truncate">
-                            🌶️ {order.salsas.map(s => SALSAS_NAMES[s] ?? s).join(", ")}
-                          </p>
-                        )}
-                        <p className="text-amber-400 font-bold text-xs mt-0.5">
-                          S/ {(unitPrice * order.quantity).toFixed(2)}
-                        </p>
+                      <div className="space-y-1.5 border-t border-white/5 pt-2">
+                        {_allItems.map((item, i) => {
+                          const cProd = CROSS_PRODUCTS[item.productId];
+                          const cName = cProd?.name ?? (item.productId === "taco-duo" ? "Dúo de Tacos" : item.productId);
+                          const cImg  = cProd?.image ?? "/tacoinicio.png";
+                          const isTacoItem = item.productId === "taco-duo";
+                          return (
+                            <div key={i} className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40 relative">
+                                <Image src={cImg} alt={cName} fill className="object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-white font-semibold truncate">{cName}</p>
+                                {!isTacoItem && item.salsas && item.salsas.length > 0 && (
+                                  <p className="text-[10px] text-amber-300/70 truncate">🌶️ {item.salsas.map(s => SALSAS_NAMES[s] ?? s).join(", ")}</p>
+                                )}
+                                {isTacoItem && item.salsas && item.salsas.length > 0 && (
+                                  <p className="text-[10px] text-emerald-300/70 truncate">🌮 {item.salsas.map(id => getFlavorName(id)).join(" + ")}</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteCrossOrder(index)}
-                      className="text-emerald-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 flex-shrink-0"
-                      title="Eliminar"
-                    >✕</button>
+                  );
+                }
+                // ── Individual cross-category order ───────────────────────
+                const prod = CROSS_PRODUCTS[order.productId];
+                if (!prod) return null;
+                const unitPrice = order.originalPrice ?? order.finalPrice ?? prod.price;
+                return (
+                  <div
+                    key={`cross-${index}`}
+                    className="bg-gray-900 rounded-lg border-2 border-emerald-400/20 p-2 md:p-3 relative"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border border-emerald-400/20 flex-shrink-0 relative">
+                          <Image src={prod.image} alt={prod.name} fill className="object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-white truncate">{prod.name}</p>
+                          {order.salsas && order.salsas.length > 0 && (
+                            <p className="text-[11px] text-red-300/80 truncate">
+                              🌶️ {order.salsas.map(s => SALSAS_NAMES[s] ?? s).join(", ")}
+                            </p>
+                          )}
+                          <p className="text-amber-400 font-bold text-xs mt-0.5">
+                            S/ {(unitPrice * order.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteCrossOrder(index)}
+                        className="text-emerald-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 flex-shrink-0"
+                        title="Eliminar"
+                      >✕</button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
 
             {completedOrders.map((order, index) => {
+              // Skip taco orders already shown inside a combo group card
+              if (order.comboGroupId && crossCategoryOrders.some(o => o.comboGroupId === order.comboGroupId)) return null;
               const f1 = flavors.find(f => f.id === order.salsas[0]);
               const f2 = flavors.find(f => f.id === order.salsas[1]);
               return (
