@@ -579,6 +579,11 @@ export default function CombosPage() {
                                     🌮 {item.salsas.map(id => TACO_OPTIONS.find(t => t.id === id)?.name ?? id).join(" + ")}
                                   </p>
                                 )}
+                                {isTaco && item.complementIds && item.complementIds.length > 0 && (
+                                  <p className="text-[10px] text-green-300/70 truncate">
+                                    + {TACO_COMPLEMENTS.find(c => c.id === item.complementIds[0])?.name ?? item.complementIds[0]}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           );
@@ -779,6 +784,11 @@ function PreCheckoutModal({
                               {isTaco && item.salsas && item.salsas.length > 0 && (
                                 <p className="text-[10px] text-emerald-300/70 mt-0.5">
                                   🌮 {item.salsas.map(id => TACO_OPTIONS.find(t => t.id === id)?.name ?? id).join(" + ")}
+                                </p>
+                              )}
+                              {isTaco && item.complementIds && item.complementIds.length > 0 && (
+                                <p className="text-[10px] text-green-300/70 mt-0.5">
+                                  + {TACO_COMPLEMENTS.find(c => c.id === item.complementIds[0])?.name ?? item.complementIds[0]}
                                 </p>
                               )}
                             </div>
