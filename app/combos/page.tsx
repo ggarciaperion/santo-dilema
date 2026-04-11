@@ -437,9 +437,9 @@ function ComboCard({
       <div className="relative h-48 bg-black overflow-hidden">
         {combo.images.length === 3 ? (
           <div className="flex h-full">
-            <div className="w-1/2 relative"><Image src={combo.images[0]} alt="" fill className="object-contain p-4" /></div>
-            <div className="w-1/4 relative"><Image src={combo.images[1]} alt="" fill className="object-contain p-3" /></div>
-            <div className="w-1/4 relative"><Image src={combo.images[2]} alt="" fill className="object-contain p-3" /></div>
+            <div className="w-1/3 relative"><Image src={combo.images[0]} alt="" fill className="object-contain p-3" /></div>
+            <div className="w-1/3 relative"><Image src={combo.images[1]} alt="" fill className="object-contain p-3" /></div>
+            <div className="w-1/3 relative"><Image src={combo.images[2]} alt="" fill className="object-contain p-3" /></div>
           </div>
         ) : (
           <div className="flex h-full">
