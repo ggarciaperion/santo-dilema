@@ -283,6 +283,20 @@ export default function CombosPage() {
     return () => clearInterval(iv);
   }, []);
 
+  // Cargar órdenes existentes al montar (pueden venir de fat/fit/tacos)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("santo-dilema-orders");
+      if (raw) {
+        const orders = JSON.parse(raw);
+        if (orders.length > 0) {
+          setSavedOrders(orders);
+          setShowTuOrden(true);
+        }
+      }
+    } catch {}
+  }, []);
+
   const openModal = (combo: ComboConfig) => {
     setActiveCombo(combo);
     setCurrentStep(0);
