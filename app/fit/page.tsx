@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
+import CombosButton from "../components/CombosButton";
 import BannerCarousel from "../components/BannerCarousel";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import { detectCombos } from "../../lib/combos";
@@ -1664,6 +1665,7 @@ export default function FitPage() {
       })()}
 
       <WhatsAppButton />
+      <CombosButton />
     </div>
   );
 }
