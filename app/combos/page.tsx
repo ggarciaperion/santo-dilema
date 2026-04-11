@@ -416,6 +416,21 @@ export default function CombosPage() {
 }
 
 // ──────────────────────────────────────────────────────────────────
+//  PLUS SEPARATOR
+// ──────────────────────────────────────────────────────────────────
+
+function PlusSeparator({ colors }: { colors: ComboColors }) {
+  return (
+    <div className="relative z-10 shrink-0 flex items-center justify-center w-7">
+      <div className={`w-7 h-7 rounded-full flex items-center justify-center border ${colors.border} bg-black/80`}
+        style={{ boxShadow: colors.glow }}>
+        <span className={`text-base font-black leading-none ${colors.text}`}>+</span>
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────
 //  COMBO CARD
 // ──────────────────────────────────────────────────────────────────
 
@@ -436,15 +451,18 @@ function ComboCard({
       {/* Image area */}
       <div className="relative h-48 bg-black overflow-hidden">
         {combo.images.length === 3 ? (
-          <div className="flex h-full">
-            <div className="w-1/3 relative"><Image src={combo.images[0]} alt="" fill className="object-contain p-3" /></div>
-            <div className="w-1/3 relative"><Image src={combo.images[1]} alt="" fill className="object-contain p-3" /></div>
-            <div className="w-1/3 relative"><Image src={combo.images[2]} alt="" fill className="object-contain p-3" /></div>
+          <div className="flex h-full items-center">
+            <div className="w-1/3 relative h-full"><Image src={combo.images[0]} alt="" fill className="object-contain p-3" /></div>
+            <PlusSeparator colors={combo.colors} />
+            <div className="w-1/3 relative h-full"><Image src={combo.images[1]} alt="" fill className="object-contain p-3" /></div>
+            <PlusSeparator colors={combo.colors} />
+            <div className="w-1/3 relative h-full"><Image src={combo.images[2]} alt="" fill className="object-contain p-3" /></div>
           </div>
         ) : (
-          <div className="flex h-full">
-            <div className="w-1/2 relative"><Image src={combo.images[0]} alt="" fill className="object-contain p-4" /></div>
-            <div className="w-1/2 relative"><Image src={combo.images[1]} alt="" fill className="object-contain p-4" /></div>
+          <div className="flex h-full items-center">
+            <div className="w-1/2 relative h-full"><Image src={combo.images[0]} alt="" fill className="object-contain p-4" /></div>
+            <PlusSeparator colors={combo.colors} />
+            <div className="w-1/2 relative h-full"><Image src={combo.images[1]} alt="" fill className="object-contain p-4" /></div>
           </div>
         )}
         {/* Gradient overlay bottom */}
@@ -455,7 +473,6 @@ function ComboCard({
             Ahorra hasta S/ {combo.maxSavings.toFixed(2)}
           </span>
         )}
-        <span className="absolute bottom-3 left-3 text-2xl select-none">{combo.emoji}</span>
       </div>
 
       {/* Body */}
