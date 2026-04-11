@@ -2257,8 +2257,8 @@ export default function FatPage() {
         );
       })()}
 
-      <WhatsAppButton />
-      <CombosButton />
+      <WhatsAppButton lifted={completedOrders.length > 0} />
+      <CombosButton lifted={completedOrders.length > 0} />
     </div>
   );
 }

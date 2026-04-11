@@ -1664,8 +1664,8 @@ export default function FitPage() {
         );
       })()}
 
-      <WhatsAppButton />
-      <CombosButton />
+      <WhatsAppButton lifted={completedOrders.length > 0} />
+      <CombosButton lifted={completedOrders.length > 0} />
     </div>
   );
 }

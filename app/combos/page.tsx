@@ -390,6 +390,33 @@ export default function CombosPage() {
         </p>
       </section>
 
+      {/* CATEGORY NAV */}
+      <section className="max-w-3xl mx-auto px-4 pb-6">
+        <div className="flex gap-2">
+          <Link
+            href="/fat"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900/80 border border-red-500/30 rounded-xl px-2 py-3 text-[11px] md:text-xs font-bold text-red-400 hover:border-red-400 hover:bg-red-950/30 transition-all text-center leading-tight"
+            style={{ boxShadow: "0 0 8px rgba(239,68,68,0.08)" }}
+          >
+            🍗 Ver menú alitas
+          </Link>
+          <Link
+            href="/fit"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900/80 border border-cyan-500/30 rounded-xl px-2 py-3 text-[11px] md:text-xs font-bold text-cyan-400 hover:border-cyan-400 hover:bg-cyan-950/30 transition-all text-center leading-tight"
+            style={{ boxShadow: "0 0 8px rgba(6,182,212,0.08)" }}
+          >
+            🥗 Ver menú ensaladas
+          </Link>
+          <Link
+            href="/tacos"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900/80 border border-emerald-500/30 rounded-xl px-2 py-3 text-[11px] md:text-xs font-bold text-emerald-400 hover:border-emerald-400 hover:bg-emerald-950/30 transition-all text-center leading-tight"
+            style={{ boxShadow: "0 0 8px rgba(16,185,129,0.08)" }}
+          >
+            🌮 Ver menú tacos
+          </Link>
+        </div>
+      </section>
+
       {/* COMBO GRID */}
       <main className="max-w-3xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-5">
         {COMBOS.map(combo => (
