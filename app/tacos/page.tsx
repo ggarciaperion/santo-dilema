@@ -1484,8 +1484,8 @@ export default function TacosPage() {
       )}
 
       {/* ── WhatsApp button ────────────────────────────────────────────────── */}
-      <WhatsAppButton lifted={hasAnyOrder} />
-      <CombosButton lifted={hasAnyOrder} />
+      <WhatsAppButton lifted={isOpen || hasAnyOrder} />
+      <CombosButton lifted={isOpen || hasAnyOrder} />
     </div>
   );
 }
