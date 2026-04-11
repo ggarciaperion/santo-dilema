@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -206,6 +206,33 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "duo-dilema":     "/duo-dilema.png",
 };
 
+// Lookup global para mostrar nombre e imagen en Tu orden
+const ALL_PRODUCTS: Record<string, { name: string; image: string }> = {
+  "pequeno-dilema":       { name: "Pequeño Dilema",     image: "/pequeno-dilema.png" },
+  "duo-dilema":           { name: "Dúo Dilema",          image: "/duo-dilema.png" },
+  "taco-duo":             { name: "Dúo de Tacos",        image: "/tacoinicio.png" },
+  "ensalada-clasica":     { name: "Clásica Fresh Bowl",  image: "/clasica-fresh-bowl.png" },
+  "ensalada-proteica":    { name: "César Power Bowl",    image: "/cesar-power-bowl.png" },
+  "ensalada-caesar":      { name: "Protein Fit Bowl",    image: "/protein-fit-bowl.png" },
+  "ensalada-mediterranea":{ name: "Tuna Fresh Bowl",     image: "/4.png" },
+  "cobb-supreme-bowl":    { name: "Cobb Supreme Bowl",   image: "/cobb.png" },
+  "crispy-chicken-bowl":  { name: "Crispy Chicken Bowl", image: "/crispy.png" },
+  "pasta-power-bowl":     { name: "Pasta Power Bowl",    image: "/pasta.png" },
+};
+
+interface SavedOrder {
+  productId: string;
+  quantity: number;
+  salsas: string[];
+  complementIds: string[];
+  originalPrice?: number;
+  comboGroupId?: string;
+  comboName?: string;
+  comboPrice?: number;
+  comboOriginalTotal?: number;
+  category?: string;
+}
+
 function buildSummary(combo: ComboConfig, sel: Selections): SummaryItem[] {
   const items: SummaryItem[] = [];
   for (const step of combo.steps) {
@@ -241,6 +268,10 @@ export default function CombosPage() {
   const [selections, setSelections] = useState<Selections>(emptySelections());
   const [modalPhase, setModalPhase] = useState<ModalPhase>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [showTuOrden, setShowTuOrden] = useState(false);
+  const [savedOrders, setSavedOrders] = useState<SavedOrder[]>([]);
+  const [preCheckoutVisible, setPreCheckoutVisible] = useState(false);
+  const tuOrdenRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsOpen(isBusinessOpen());
@@ -336,15 +367,49 @@ export default function CombosPage() {
     }
   };
 
+  const loadOrders = useCallback(() => {
+    try {
+      const raw = sessionStorage.getItem("santo-dilema-orders");
+      setSavedOrders(raw ? JSON.parse(raw) : []);
+    } catch { setSavedOrders([]); }
+  }, []);
+
   const handleKeepShopping = () => {
-    // Combo ya guardado — cerrar modal y quedar en la página
     closeAll();
+    loadOrders();
+    setShowTuOrden(true);
+    setTimeout(() => tuOrdenRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
   };
 
   const handleGoToCheckout = () => {
-    closeAll();
-    setTimeout(() => router.push("/checkout"), 200);
+    // Cerrar modal de selección y abrir pre-checkout review
+    setModalPhase(null);
+    setSheetVisible(false);
+    loadOrders();
+    setTimeout(() => {
+      setPreCheckoutVisible(true);
+      setActiveCombo(null);
+    }, 200);
   };
+
+  const handleDeleteComboGroupInPage = (groupId: string) => {
+    const updated = savedOrders.filter(o => o.comboGroupId !== groupId);
+    setSavedOrders(updated);
+    try { sessionStorage.setItem("santo-dilema-orders", JSON.stringify(updated)); } catch {}
+    if (updated.length === 0) setShowTuOrden(false);
+  };
+
+  const tuOrdenTotal = useMemo(() => {
+    const seen = new Set<string>();
+    return savedOrders.reduce((sum, o) => {
+      if (o.comboGroupId) {
+        if (seen.has(o.comboGroupId)) return sum;
+        seen.add(o.comboGroupId);
+        return sum + (o.comboPrice ?? 0);
+      }
+      return sum + ((o.originalPrice ?? 0) * o.quantity);
+    }, 0);
+  }, [savedOrders]);
 
   // ──────────────────────────────────────────────────────────────
   //  RENDER
@@ -427,9 +492,120 @@ export default function CombosPage() {
         ))}
       </main>
 
-      <p className="text-center text-xs text-gray-700 pb-16 px-4">
+      <p className="text-center text-xs text-gray-700 pb-8 px-4">
         El descuento se calcula automáticamente en el checkout · No acumulable con cupones
       </p>
+
+      {/* ── TU ORDEN ──────────────────────────────────────────────── */}
+      {showTuOrden && savedOrders.length > 0 && (
+        <section ref={tuOrdenRef} className="max-w-3xl mx-auto px-4 pb-36">
+          <h3 className="text-xl font-black text-amber-400 mb-4" style={{ textShadow: "0 0 16px rgba(251,191,36,0.4)" }}>
+            Tu orden
+          </h3>
+          <div className="space-y-3">
+            {(() => {
+              const seen = new Set<string>();
+              return savedOrders.map((order, i) => {
+                if (order.comboGroupId) {
+                  if (seen.has(order.comboGroupId)) return null;
+                  seen.add(order.comboGroupId);
+                  const gi = savedOrders.filter(o => o.comboGroupId === order.comboGroupId);
+                  return (
+                    <div key={`cg-${order.comboGroupId}`} className="bg-gray-900/80 rounded-xl border-2 border-amber-400/40 p-3 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+                      <div className="flex items-start justify-between mb-2.5">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
+                          <h4 className="text-sm font-black text-white mt-0.5">{order.comboName}</h4>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            {order.comboOriginalTotal && (
+                              <div className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</div>
+                            )}
+                            <div className="text-amber-400 font-black text-lg" style={{ textShadow: "0 0 8px rgba(251,191,36,0.5)" }}>
+                              S/ {order.comboPrice?.toFixed(2)}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteComboGroupInPage(order.comboGroupId!)}
+                            className="text-gray-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 leading-none ml-1"
+                          >✕</button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5 border-t border-white/5 pt-2">
+                        {gi.map((item, j) => {
+                          const prod = ALL_PRODUCTS[item.productId];
+                          if (!prod) return null;
+                          const isTaco = item.productId === "taco-duo";
+                          return (
+                            <div key={j} className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40 relative">
+                                <Image src={prod.image} alt={prod.name} fill className="object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-white font-semibold truncate">{prod.name}</p>
+                                {!isTaco && item.salsas && item.salsas.length > 0 && (
+                                  <p className="text-[10px] text-amber-300/70 truncate">
+                                    🌶️ {item.salsas.map(s => SALSAS.find(sa => sa.id === s)?.name ?? s).join(", ")}
+                                  </p>
+                                )}
+                                {isTaco && item.salsas && item.salsas.length > 0 && (
+                                  <p className="text-[10px] text-emerald-300/70 truncate">
+                                    🌮 {item.salsas.map(id => TACO_OPTIONS.find(t => t.id === id)?.name ?? id).join(" + ")}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+                // Individual item (non-combo)
+                const prod = ALL_PRODUCTS[order.productId];
+                if (!prod) return null;
+                return (
+                  <div key={i} className="bg-gray-900 rounded-xl border border-white/8 p-3 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0 bg-black/40 relative">
+                      <Image src={prod.image} alt={prod.name} fill className="object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">{prod.name}</p>
+                      <p className="text-amber-400 font-bold text-xs">S/ {((order.originalPrice ?? 0) * order.quantity).toFixed(2)}</p>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+          <p className="text-center text-xs text-gray-600 mt-4 italic">
+            💡 Puedes agregar más combos o ir a pagar cuando estés listo
+          </p>
+        </section>
+      )}
+
+      {/* ── STICKY BAR cuando hay órdenes ───────────────────────── */}
+      {showTuOrden && savedOrders.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-sm border-t border-amber-400/20" style={{ boxShadow: "0 -4px 20px rgba(251,191,36,0.1)" }}>
+          <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-[11px] text-gray-500 leading-none">Total estimado</p>
+              <p className="text-xl font-black text-amber-400" style={{ textShadow: "0 0 8px rgba(251,191,36,0.4)" }}>
+                S/ {tuOrdenTotal.toFixed(2)}
+              </p>
+            </div>
+            <button
+              onClick={() => { loadOrders(); setPreCheckoutVisible(true); }}
+              className="flex-1 max-w-[200px] py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95"
+              style={{ boxShadow: "0 0 14px rgba(16,185,129,0.35)" }}
+            >
+              Ir a pagar →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* MODALES */}
       {activeCombo && modalPhase === "selecting" && (
@@ -456,6 +632,16 @@ export default function CombosPage() {
           visible={sheetVisible}
           onKeepShopping={handleKeepShopping}
           onCheckout={handleGoToCheckout}
+        />
+      )}
+
+      {/* PRE-CHECKOUT REVIEW MODAL */}
+      {preCheckoutVisible && (
+        <PreCheckoutModal
+          orders={savedOrders}
+          total={tuOrdenTotal}
+          onBack={() => setPreCheckoutVisible(false)}
+          onConfirm={() => { setPreCheckoutVisible(false); router.push("/checkout"); }}
         />
       )}
     </div>
@@ -486,6 +672,147 @@ function PlusSeparator({ colors }: { colors: ComboColors }) {
         >
           +
         </span>
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────
+//  PRE-CHECKOUT REVIEW MODAL
+// ──────────────────────────────────────────────────────────────────
+
+function PreCheckoutModal({
+  orders, total, onBack, onConfirm,
+}: {
+  orders: SavedOrder[];
+  total: number;
+  onBack: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col justify-end">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onBack} />
+
+      {/* Sheet */}
+      <div className="relative z-10 bg-[#111] rounded-t-3xl border-t border-white/10 max-h-[92vh] flex flex-col">
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-white/20" />
+        </div>
+
+        {/* Header */}
+        <div className="px-5 pt-3 pb-4 border-b border-white/5 shrink-0">
+          <p className="text-white font-black text-lg leading-tight" style={{ fontFamily: "var(--font-graffiti)" }}>
+            Confirma tu pedido
+          </p>
+          <p className="text-xs text-gray-500 mt-1">Revisa todo antes de continuar al pago</p>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+          {(() => {
+            const seen = new Set<string>();
+            return orders.map((order, i) => {
+              if (order.comboGroupId) {
+                if (seen.has(order.comboGroupId)) return null;
+                seen.add(order.comboGroupId);
+                const gi = orders.filter(o => o.comboGroupId === order.comboGroupId);
+                return (
+                  <div key={`pc-cg-${order.comboGroupId}`} className="bg-white/3 rounded-xl border border-amber-400/25 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70 mb-0.5">🔥 Combo especial</p>
+                        <p className="text-sm font-black text-white">{order.comboName}</p>
+                      </div>
+                      <div className="text-right">
+                        {order.comboOriginalTotal && (
+                          <p className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</p>
+                        )}
+                        <p className="text-amber-400 font-black text-base" style={{ textShadow: "0 0 6px rgba(251,191,36,0.4)" }}>
+                          S/ {order.comboPrice?.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-2 border-t border-white/5 pt-3">
+                      {gi.map((item, j) => {
+                        const prod = ALL_PRODUCTS[item.productId];
+                        if (!prod) return null;
+                        const isTaco = item.productId === "taco-duo";
+                        return (
+                          <div key={j} className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-black/40 relative">
+                              <Image src={prod.image} alt={prod.name} fill className="object-contain p-1" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-white font-semibold">{prod.name}</p>
+                              {!isTaco && item.salsas && item.salsas.length > 0 && (
+                                <p className="text-[10px] text-amber-300/70 mt-0.5">
+                                  🌶️ {item.salsas.map(s => SALSAS.find(sa => sa.id === s)?.name ?? s).join(", ")}
+                                </p>
+                              )}
+                              {isTaco && item.salsas && item.salsas.length > 0 && (
+                                <p className="text-[10px] text-emerald-300/70 mt-0.5">
+                                  🌮 {item.salsas.map(id => TACO_OPTIONS.find(t => t.id === id)?.name ?? id).join(" + ")}
+                                </p>
+                              )}
+                            </div>
+                            <span className="shrink-0 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+                              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+              // Individual
+              const prod = ALL_PRODUCTS[order.productId];
+              if (!prod) return null;
+              return (
+                <div key={i} className="bg-white/3 rounded-xl border border-white/8 p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-black/40 relative">
+                    <Image src={prod.image} alt={prod.name} fill className="object-contain p-1" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{prod.name}</p>
+                    <p className="text-amber-400 font-bold text-xs">S/ {((order.originalPrice ?? 0) * order.quantity).toFixed(2)}</p>
+                  </div>
+                </div>
+              );
+            });
+          })()}
+
+          {/* Total */}
+          <div className="flex items-center justify-between py-3 border-t border-white/10 mt-2">
+            <span className="text-sm text-gray-400 font-semibold">Total estimado</span>
+            <span className="text-2xl font-black text-white">S/ {total.toFixed(2)}</span>
+          </div>
+
+          <p className="text-[10px] text-gray-600 text-center pb-1">
+            El descuento de combo se aplica automáticamente · No acumulable con cupones
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="shrink-0 px-5 py-4 border-t border-white/5 flex flex-col gap-2.5">
+          <button
+            onClick={onConfirm}
+            className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95"
+            style={{ boxShadow: "0 0 16px rgba(16,185,129,0.35)" }}
+          >
+            Confirmar pedido e ir a pagar →
+          </button>
+          <button
+            onClick={onBack}
+            className="w-full py-3 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-all"
+          >
+            Volver y editar pedido
+          </button>
+        </div>
       </div>
     </div>
   );
