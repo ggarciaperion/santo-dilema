@@ -241,6 +241,8 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponFixedAmount, setCouponFixedAmount] = useState(0);
+  const [couponMinOrder, setCouponMinOrder] = useState(0);
+  const [couponTieredAmount, setCouponTieredAmount] = useState(0);
   const [couponValidating, setCouponValidating] = useState(false);
   const [couponMessage, setCouponMessage] = useState("");
   const [couponValid, setCouponValid] = useState(false);
@@ -331,9 +333,14 @@ export default function CheckoutPage() {
   // Delivery siempre incluido — sin cobro de zona
   const deliveryCost = 0;
 
-  // Aplicar descuento de cupón si es válido (monto fijo o porcentaje, siempre sobre precio base)
+  // Aplicar descuento de cupón si es válido (monto fijo, escalonado o porcentaje)
   const couponDiscountAmount = couponValid
-    ? (couponFixedAmount > 0 ? couponFixedAmount : (subtotalBase * couponDiscount) / 100)
+    ? couponTieredAmount > 0
+      // Cupón escalonado: S/fixedAmount si total == minOrderAmount, S/tieredAmount si total > minOrderAmount
+      ? subtotalBase >= couponMinOrder
+        ? subtotalBase > couponMinOrder ? couponTieredAmount : couponFixedAmount
+        : 0
+      : couponFixedAmount > 0 ? couponFixedAmount : (subtotalBase * couponDiscount) / 100
     : 0;
 
   // Si hay cupón válido, usar subtotalBase (elimina promociones)
@@ -464,13 +471,30 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (response.ok && data.valid) {
+        // Validar monto mínimo si el cupón lo requiere
+        if (data.minOrderAmount > 0 && subtotalBase < data.minOrderAmount) {
+          setCouponValid(false);
+          setCouponDiscount(0);
+          setCouponFixedAmount(0);
+          setCouponMinOrder(0);
+          setCouponTieredAmount(0);
+          setCouponHasDeliveryFree(false);
+          setCouponMessage(`Mínimo S/ ${data.minOrderAmount.toFixed(2)} para usar este cupón`);
+          return;
+        }
+
         setCouponValid(true);
         setCouponDiscount(data.discount || 0);
         setCouponFixedAmount(data.fixedAmount || 0);
+        setCouponMinOrder(data.minOrderAmount || 0);
+        setCouponTieredAmount(data.tieredAmount || 0);
         setCouponHasDeliveryFree(data.deliveryFree || false);
 
         if (data.deliveryFree) {
           setCouponMessage(`✓ Cupón aplicado: Delivery Gratis`);
+        } else if (data.tieredAmount > 0) {
+          const discount = subtotalBase > data.minOrderAmount ? data.tieredAmount : data.fixedAmount;
+          setCouponMessage(`✓ Cupón aplicado: -S/ ${discount.toFixed(2)} de descuento`);
         } else if (data.fixedAmount > 0) {
           setCouponMessage(`✓ Cupón aplicado: -S/ ${data.fixedAmount.toFixed(2)} de descuento`);
         } else {
@@ -480,6 +504,8 @@ export default function CheckoutPage() {
         setCouponValid(false);
         setCouponDiscount(0);
         setCouponFixedAmount(0);
+        setCouponMinOrder(0);
+        setCouponTieredAmount(0);
         setCouponHasDeliveryFree(false);
         setCouponMessage(data.error || "Cupón no válido");
       }
@@ -487,6 +513,8 @@ export default function CheckoutPage() {
       setCouponValid(false);
       setCouponDiscount(0);
       setCouponFixedAmount(0);
+      setCouponMinOrder(0);
+      setCouponTieredAmount(0);
       setCouponHasDeliveryFree(false);
       setCouponMessage("Error al validar cupón");
     } finally {
@@ -970,7 +998,7 @@ export default function CheckoutPage() {
                     {couponValid && (couponDiscount > 0 || couponFixedAmount > 0) && (
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-green-400 font-bold">
-                          {couponFixedAmount > 0 ? `Cupón -S/ ${couponFixedAmount.toFixed(2)}:` : `Cupón -${couponDiscount}%:`}
+                          {couponTieredAmount > 0 ? `Cupón -S/ ${couponDiscountAmount.toFixed(2)}:` : couponFixedAmount > 0 ? `Cupón -S/ ${couponFixedAmount.toFixed(2)}:` : `Cupón -${couponDiscount}%:`}
                         </span>
                         <span className="text-green-400 font-bold font-mono">-S/ {couponDiscountAmount.toFixed(2)}</span>
                       </div>

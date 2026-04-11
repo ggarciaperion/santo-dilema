@@ -24,6 +24,8 @@ interface Coupon {
   usedBy?: string[];      // solo para cupones MULTI: teléfonos que ya lo usaron
   deliveryFree?: boolean;
   is2x1?: boolean;
+  minOrderAmount?: number; // monto mínimo de pedido para usar el cupón
+  tieredAmount?: number;   // descuento cuando total > minOrderAmount (vs fixedAmount para total == minOrderAmount)
   status: "pending" | "used";
   createdAt: string;
   usedAt?: string;
@@ -145,6 +147,8 @@ export async function POST(request: Request) {
         fixedAmount: coupon.fixedAmount || 0,
         deliveryFree: coupon.deliveryFree || false,
         is2x1: coupon.is2x1 || false,
+        minOrderAmount: coupon.minOrderAmount || 0,
+        tieredAmount: coupon.tieredAmount || 0,
         code: coupon.code,
       });
     }
@@ -370,7 +374,7 @@ export async function POST(request: Request) {
 
     // Crear cupón MULTI (un código, 1 uso por teléfono, múltiples teléfonos)
     if (action === "create-multi") {
-      const { code, fixedAmount, discount, expiresAt, customerName } = body;
+      const { code, fixedAmount, discount, expiresAt, customerName, minOrderAmount, tieredAmount } = body;
 
       if (!code || !expiresAt) {
         return NextResponse.json({ error: "code y expiresAt requeridos" }, { status: 400 });
@@ -389,6 +393,8 @@ export async function POST(request: Request) {
         customerName: customerName || "Cupón Campaña",
         discount: discount || 0,
         fixedAmount: fixedAmount || 0,
+        minOrderAmount: minOrderAmount || 0,
+        tieredAmount: tieredAmount || 0,
         usedBy: [],
         status: "pending",
         createdAt: new Date().toISOString(),
