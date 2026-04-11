@@ -102,7 +102,7 @@ const COMBOS: ComboConfig[] = [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Elige tu salsa para las alitas" },
       { type: "salad", label: "Elige tu ensalada" },
     ],
-    images: ["/pequeno-dilema.png", "/SALAD.png"],
+    images: ["/pequeno-dilema.png", "/cobb.png"],
     colors: {
       text:     "text-emerald-400",
       border:   "border-emerald-500/30",
@@ -172,7 +172,7 @@ const COMBOS: ComboConfig[] = [
       { type: "salad", label: "Elige tu ensalada" },
       { type: "tacos", label: "Elige los 2 sabores de tus tacos" },
     ],
-    images: ["/duo-dilema.png", "/SALAD.png", "/tacoinicio.png"],
+    images: ["/duo-dilema.png", "/cobb.png", "/tacoinicio.png"],
     colors: {
       text:    "text-red-400",
       border:  "border-red-500/30",
