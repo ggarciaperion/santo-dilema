@@ -4208,9 +4208,7 @@ export default function AdminPage() {
                 : 0;
               const pagosDesdeSnapshot = cajaSnapshotTs
                 ? inventory.filter((p: any) =>
-                    p.liquidado &&
-                    p.liquidadoAt &&
-                    p.liquidadoAt > cajaSnapshotTs
+                    (p.createdAt || "") > cajaSnapshotTs
                   ).reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0)
                 : 0;
               const cajaActual = cajaSnapshot + ventasDesdeSnapshot - pagosDesdeSnapshot;
