@@ -274,6 +274,21 @@ export async function POST(request: Request) {
   }
 }
 
+// DELETE - Eliminar un pedido
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+    const deleted = await storage.deleteOrder(id);
+    if (!deleted) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar pedido:', error);
+    return NextResponse.json({ error: 'Error al eliminar el pedido' }, { status: 500 });
+  }
+}
+
 // PATCH - Actualizar estado de un pedido (o marcar como canje)
 export async function PATCH(request: Request) {
   try {

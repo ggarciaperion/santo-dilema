@@ -249,6 +249,21 @@ export const storage = {
     return order;
   },
 
+  // Eliminar una orden
+  async deleteOrder(id: string): Promise<boolean> {
+    const orders = await this.getOrders();
+    const filtered = orders.filter((o) => o.id !== id);
+    if (filtered.length === orders.length) return false;
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('orders', filtered);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(ordersFilePath, JSON.stringify(filtered, null, 2));
+    }
+    return true;
+  },
+
   // Actualizar una orden existente
   async updateOrder(id: string, updates: Partial<Order>): Promise<Order | null> {
     const orders = await this.getOrders();

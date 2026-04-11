@@ -2805,11 +2805,22 @@ export default function AdminPage() {
                     order.status === 'programado' ? 'bg-indigo-500/20' :
                     'bg-red-500/20'
                   }`}>
-                    <span className={`px-2 py-0.5 rounded text-xs font-black uppercase block mb-1 ${
-                      statusColors[order.status]
-                    }`}>
-                      {statusLabels[order.status]}
-                    </span>
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className={`px-2 py-0.5 rounded text-xs font-black uppercase ${statusColors[order.status]}`}>
+                        {statusLabels[order.status]}
+                      </span>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
+                          await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
+                          setOrders(prev => prev.filter(o => o.id !== order.id));
+                        }}
+                        className="text-gray-600 hover:text-red-400 text-sm transition-colors leading-none"
+                        title="Eliminar pedido"
+                      >
+                        🗑
+                      </button>
+                    </div>
                     <span className="font-mono font-black text-base text-white block">#{order.id}</span>
                     <p className="text-[10px] text-gray-300 font-medium mt-1">
                       {new Date(order.createdAt).toLocaleString("es-PE", {
@@ -3214,13 +3225,39 @@ export default function AdminPage() {
                       </>
                     )}
                     {order.status === "delivered" && (
-                      <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase">
-                        ✓ Entregado
+                      <div className="flex gap-2 items-center">
+                        <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase flex-1">
+                          ✓ Entregado
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
+                            await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
+                            setOrders(prev => prev.filter(o => o.id !== order.id));
+                          }}
+                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs font-black uppercase transition-all"
+                          title="Eliminar pedido"
+                        >
+                          🗑
+                        </button>
                       </div>
                     )}
                     {order.status === "cancelled" && (
-                      <div className="bg-red-900/50 border border-red-500 text-red-400 px-4 py-2 rounded text-xs font-black text-center uppercase">
-                        ✕ Cancelado
+                      <div className="flex gap-2 items-center">
+                        <div className="bg-red-900/50 border border-red-500 text-red-400 px-4 py-2 rounded text-xs font-black text-center uppercase flex-1">
+                          ✕ Cancelado
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
+                            await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
+                            setOrders(prev => prev.filter(o => o.id !== order.id));
+                          }}
+                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs font-black uppercase transition-all"
+                          title="Eliminar pedido"
+                        >
+                          🗑
+                        </button>
                       </div>
                     )}
                 </div>
