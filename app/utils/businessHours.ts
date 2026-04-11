@@ -2,14 +2,19 @@
 // Dominio de pruebas: siempre abierto
 const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app"];
 
-// Cierre temporal hasta Sábado 4 de Abril 2026, 18:00 hora Perú (= 23:00 UTC)
-const TEMP_CLOSURE_UNTIL = new Date("2026-04-04T23:00:00Z");
+// Apertura temporal hasta 23:16 hora Perú (= 04:16 UTC del 11/04)
+const TEMP_OPEN_UNTIL = new Date("2026-04-11T04:16:00Z");
+// Cierre temporal hasta Sábado 11 de Abril 2026, 18:00 hora Perú (= 23:00 UTC)
+const TEMP_CLOSURE_UNTIL = new Date("2026-04-11T23:00:00Z");
 
 export function isBusinessOpen(): boolean {
   // Staging: siempre abierto
   if (typeof window !== "undefined" && ALWAYS_OPEN_DOMAINS.includes(window.location.hostname)) {
     return true;
   }
+
+  // Apertura temporal activa (override de horario normal)
+  if (new Date() < TEMP_OPEN_UNTIL) return true;
 
   // Cierre temporal activo
   if (new Date() < TEMP_CLOSURE_UNTIL) return false;
