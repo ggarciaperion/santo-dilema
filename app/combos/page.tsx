@@ -37,6 +37,12 @@ const TACO_OPTIONS = [
   { id: "santo-bacon",     name: "Bacon Deluxe Taco",   image: "/bacon.png"  },
 ];
 
+const TACO_COMPLEMENTS = [
+  { id: "nachos",       name: "Nachos",        emoji: "🌽" },
+  { id: "chifles",      name: "Chifles",       emoji: "🍌" },
+  { id: "papas-fritas", name: "Papas fritas",  emoji: "🍟" },
+];
+
 const REF_PRICES: Record<string, number> = {
   "pequeno-dilema": 22, "duo-dilema": 34, "taco-duo": 24.90,
   "ensalada-clasica": 18.50, "ensalada-proteica": 20, "ensalada-caesar": 20,
@@ -81,11 +87,12 @@ interface Selections {
   sauces: Record<string, string[]>;
   salad: string;
   tacos: string[];
+  tacoComplement: string;
 }
 
 type ModalPhase = "selecting" | "confirming" | null;
 
-const emptySelections = (): Selections => ({ sauces: {}, salad: "", tacos: [] });
+const emptySelections = (): Selections => ({ sauces: {}, salad: "", tacos: [], tacoComplement: "" });
 
 // ──────────────────────────────────────────────────────────────────
 //  COMBOS
@@ -249,7 +256,8 @@ function buildSummary(combo: ComboConfig, sel: Selections): SummaryItem[] {
       if (salad) items.push({ label: salad.name, image: salad.image, details: [`S/ ${salad.price.toFixed(2)}`] });
     } else if (step.type === "tacos") {
       const names = sel.tacos.map(id => TACO_OPTIONS.find(t => t.id === id)?.name ?? id);
-      items.push({ label: "Dúo de Tacos", image: "/tacoinicio.png", details: names });
+      const complement = TACO_COMPLEMENTS.find(c => c.id === sel.tacoComplement);
+      items.push({ label: "Dúo de Tacos", image: "/tacoinicio.png", details: complement ? [...names, `Complemento: ${complement.name}`] : names });
     }
   }
   return items;
@@ -319,7 +327,7 @@ export default function CombosPage() {
     const step = activeCombo.steps[currentStep];
     if (step.type === "sauces") return (selections.sauces[step.productId]?.length ?? 0) === step.count;
     if (step.type === "salad")  return !!selections.salad;
-    if (step.type === "tacos")  return selections.tacos.length === 2;
+    if (step.type === "tacos")  return selections.tacos.length === 2 && !!selections.tacoComplement;
     return false;
   }, [activeCombo, currentStep, selections]);
 
@@ -346,6 +354,8 @@ export default function CombosPage() {
     });
   };
 
+  const selectTacoComplement = (id: string) => setSelections(prev => ({ ...prev, tacoComplement: id }));
+
   // ── Guardar en sessionStorage ──────────────────────────────────
   const saveToCart = () => {
     if (!activeCombo) return;
@@ -360,7 +370,7 @@ export default function CombosPage() {
         const salad = FIT_OPTIONS.find(p => p.id === selections.salad);
         if (salad) items.push({ productId: salad.id, quantity: 1, salsas: [], complementIds: [], originalPrice: salad.price, finalPrice: salad.price, ...comboMeta });
       } else if (step.type === "tacos") {
-        items.push({ productId: "taco-duo", quantity: 1, salsas: selections.tacos, complementIds: [], category: "taco", originalPrice: REF_PRICES["taco-duo"], finalPrice: REF_PRICES["taco-duo"], ...comboMeta });
+        items.push({ productId: "taco-duo", quantity: 1, salsas: selections.tacos, complementIds: selections.tacoComplement ? [selections.tacoComplement] : [], category: "taco", originalPrice: REF_PRICES["taco-duo"], finalPrice: REF_PRICES["taco-duo"], ...comboMeta });
       }
     }
     try {
@@ -634,6 +644,7 @@ export default function CombosPage() {
           onToggleSauce={toggleSauce}
           onSelectSalad={selectSalad}
           onToggleTaco={toggleTaco}
+          onSelectTacoComplement={selectTacoComplement}
           onNext={handleNext}
           onBack={() => setCurrentStep(prev => prev - 1)}
         />
@@ -915,7 +926,7 @@ function ComboCard({ combo, isOpen, onSelect }: { combo: ComboConfig; isOpen: bo
 
 function SelectionModal({
   combo, currentStep, selections, visible, isStepValid, isLastStep,
-  onClose, onToggleSauce, onSelectSalad, onToggleTaco, onNext, onBack,
+  onClose, onToggleSauce, onSelectSalad, onToggleTaco, onSelectTacoComplement, onNext, onBack,
 }: {
   combo: ComboConfig; currentStep: number; selections: Selections;
   visible: boolean; isStepValid: boolean; isLastStep: boolean;
@@ -923,6 +934,7 @@ function SelectionModal({
   onToggleSauce: (productId: string, sauceId: string, maxCount: number) => void;
   onSelectSalad: (id: string) => void;
   onToggleTaco: (id: string) => void;
+  onSelectTacoComplement: (id: string) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
@@ -983,7 +995,7 @@ function SelectionModal({
           ) : step.type === "salad" ? (
             <SaladStep selected={selections.salad} colors={combo.colors} onSelect={onSelectSalad} />
           ) : (
-            <TacoStep selected={selections.tacos} colors={combo.colors} onToggle={onToggleTaco} />
+            <TacoStep selected={selections.tacos} tacoComplement={selections.tacoComplement} colors={combo.colors} onToggle={onToggleTaco} onSelectComplement={onSelectTacoComplement} />
           )}
         </div>
 
@@ -1204,12 +1216,18 @@ function SaladStep({ selected, colors, onSelect }: { selected: string; colors: C
   );
 }
 
-function TacoStep({ selected, colors, onToggle }: { selected: string[]; colors: ComboColors; onToggle: (id: string) => void }) {
+function TacoStep({ selected, tacoComplement, colors, onToggle, onSelectComplement }: {
+  selected: string[];
+  tacoComplement: string;
+  colors: ComboColors;
+  onToggle: (id: string) => void;
+  onSelectComplement: (id: string) => void;
+}) {
   return (
     <div className="pt-2">
       <p className="text-white font-semibold mb-1">Elige tus tacos</p>
       <p className="text-xs text-gray-500 mb-4">Selecciona 2 sabores · {selected.length}/2 seleccionados</p>
-      <div className="space-y-2">
+      <div className="space-y-2 mb-6">
         {TACO_OPTIONS.map(taco => {
           const isSelected = selected.includes(taco.id);
           return (
@@ -1224,6 +1242,28 @@ function TacoStep({ selected, colors, onToggle }: { selected: string[]; colors: 
               {isSelected && (
                 <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${colors.stepDot}`}>
                   <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="text-white font-semibold mb-1">Elige tu complemento</p>
+      <p className="text-xs text-gray-500 mb-3">Nachos, chifles o papas fritas · incluido</p>
+      <div className="grid grid-cols-3 gap-2">
+        {TACO_COMPLEMENTS.map(c => {
+          const isSelected = tacoComplement === c.id;
+          return (
+            <button key={c.id} onClick={() => onSelectComplement(c.id)}
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all active:scale-95 ${isSelected ? `${colors.border} bg-white/5` : "border-white/8 hover:border-white/15"}`}>
+              <span className="text-2xl">{c.emoji}</span>
+              <span className={`text-xs font-semibold text-center leading-tight ${isSelected ? colors.text : "text-gray-300"}`}>{c.name}</span>
+              {isSelected && (
+                <span className={`w-4 h-4 rounded-full flex items-center justify-center ${colors.stepDot}`}>
+                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </span>

@@ -2927,11 +2927,33 @@ export default function AdminPage() {
                                       <span className="text-sm font-black text-amber-300">S/ {comboPrice.toFixed(2)}</span>
                                     </div>
                                   </div>
-                                  <div className="flex flex-wrap gap-1">
+                                  <div className="space-y-1">
                                     {groupItems.map((gi: any, giIdx: number) => (
-                                      <div key={giIdx} className="flex items-center gap-1 bg-amber-900/20 rounded px-1.5 py-0.5">
-                                        <span className="text-amber-400 font-black text-xs">{gi.quantity}x</span>
-                                        <span className="text-xs text-amber-100">{gi.name}</span>
+                                      <div key={giIdx} className="bg-amber-900/20 rounded px-1.5 py-1">
+                                        <div className="flex items-center gap-1">
+                                          <span className="text-amber-400 font-black text-xs">{gi.quantity}x</span>
+                                          <span className="text-xs text-amber-100 font-semibold">{gi.name}</span>
+                                        </div>
+                                        {gi.productId === 'taco-duo' && gi.salsas && gi.salsas.length > 0 && (
+                                          <div className="text-[10px] text-yellow-300 mt-0.5 ml-3">
+                                            🌮 {gi.salsas.map((id: string) => (
+                                              ({ 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' } as Record<string,string>)[id] || id
+                                            )).join(' + ')}
+                                          </div>
+                                        )}
+                                        {gi.productId !== 'taco-duo' && gi.salsas && gi.salsas.length > 0 && (
+                                          <div className="text-[10px] text-yellow-300 mt-0.5 ml-3">
+                                            🌶️ {gi.salsas.map((salsaId: string) => {
+                                              const salsa = salsas.find((s: any) => s.id === salsaId);
+                                              return salsa?.name || salsaId;
+                                            }).join(', ')}
+                                          </div>
+                                        )}
+                                        {gi.complementIds && gi.complementIds.length > 0 && (
+                                          <div className="text-[10px] text-green-300 mt-0.5 ml-3">
+                                            + {gi.complementIds.map((cId: string) => availableComplements[cId]?.name || cId).join(', ')}
+                                          </div>
+                                        )}
                                       </div>
                                     ))}
                                   </div>
