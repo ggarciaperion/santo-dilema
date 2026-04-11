@@ -2905,94 +2905,123 @@ export default function AdminPage() {
                     <h3 className="text-xs font-black text-white uppercase mb-2">🍽️ PEDIDO</h3>
                     <div className="flex flex-wrap gap-2">
                       {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
-                        (order as any).completedOrders.map((item: any, idx: number) => {
-                          const productName = item.name || 'Sin nombre';
-                          const catalogPrice = item.price || 0;
-                          const originalPrice = item.originalPrice || catalogPrice;
-                          const comboFactor = 1;
-                          const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
-                          const productPrice = catalogPrice * comboFactor * couponFactor;
-                          const quantity = item.quantity || 0;
-                          const itemSalsas = item.salsas || [];
-                          const itemComplementIds = item.complementIds || [];
-                          const hasItemDiscount = (order as any).comboDiscount > 0 || (order as any).couponDiscount > 0 || item.discountApplied;
-
-                          return (
-                            <div key={idx} className="bg-white/5 rounded px-2 py-1.5">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-white font-black text-sm">{quantity}</span>
-                                </div>
-                                <div className="flex-1">
-                                  <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                  {hasItemDiscount ? (
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="text-gray-500 line-through text-xs">S/ {(originalPrice * quantity).toFixed(2)}</span>
-                                      <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                      {item.discountApplied && <span className="text-[9px] bg-red-600/40 text-red-300 px-1 rounded font-bold">🔥 PROMO Santo Picante</span>}
-                                      {(order as any).comboDiscount > 0 && <span className="text-[9px] bg-fuchsia-600/30 text-fuchsia-400 px-1 rounded font-bold">COMBO -S/ 5</span>}
-                                      {(order as any).couponDiscount > 0 && <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>}
+                        (() => {
+                          const allItems = (order as any).completedOrders;
+                          const seenComboGroups = new Set<string>();
+                          return allItems.map((item: any, idx: number) => {
+                            // --- COMBO GROUP ---
+                            if (item.comboGroupId) {
+                              if (seenComboGroups.has(item.comboGroupId)) return null;
+                              seenComboGroups.add(item.comboGroupId);
+                              const groupItems = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
+                              const comboName = item.comboName || 'Combo';
+                              const comboPrice = item.comboPrice || 0;
+                              const comboOriginalTotal = item.comboOriginalTotal || comboPrice;
+                              const savings = parseFloat((comboOriginalTotal - comboPrice).toFixed(2));
+                              return (
+                                <div key={`combo-${item.comboGroupId}`} className="bg-amber-900/30 border border-amber-500/40 rounded px-2 py-1.5 w-full">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[10px] font-black text-amber-400 uppercase">🔥 {comboName}</span>
+                                    <div className="flex items-center gap-1">
+                                      {savings > 0 && <span className="text-[9px] bg-amber-500/30 text-amber-300 px-1 rounded font-bold">-S/ {savings.toFixed(2)}</span>}
+                                      <span className="text-sm font-black text-amber-300">S/ {comboPrice.toFixed(2)}</span>
                                     </div>
-                                  ) : (
-                                    <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Mostrar salsas / sabores de taco si existen */}
-                              {itemSalsas.length > 0 && (
-                                <div className="mt-1 ml-8 text-[10px] text-yellow-300">
-                                  {item.productId === 'taco-duo' ? (
-                                    <>
-                                      <span className="font-bold">🌮 Sabores: </span>
-                                      {itemSalsas.map((id: string) => (
-                                        { 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' }[id] || id
-                                      )).join(' + ')}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span className="font-bold">🌶️ Salsas: </span>
-                                      {itemSalsas.map((salsaId: string) => {
-                                        const salsa = salsas.find(s => s.id === salsaId);
-                                        return salsa?.name || salsaId;
-                                      }).join(', ')}
-                                    </>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Mostrar complementos si existen - agrupados por tipo */}
-                              {itemComplementIds.length > 0 && (() => {
-                                // Agrupar complementos duplicados
-                                const complementCounts: { [key: string]: number } = {};
-                                itemComplementIds.forEach((compId: string) => {
-                                  complementCounts[compId] = (complementCounts[compId] || 0) + 1;
-                                });
-
-                                return (
-                                  <div className="mt-1 ml-8 space-y-0.5">
-                                    {Object.entries(complementCounts).map(([compId, count], compIdx) => {
-                                      const complement = availableComplements[compId];
-                                      if (!complement) return null;
-                                      const totalPrice = complement.price * count;
-                                      return (
-                                        <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
-                                          <span className="font-bold">+</span>
-                                          {count > 1 && <span className="text-green-400 font-black">{count}x</span>}
-                                          <span>{complement.name}</span>
-                                          {complement.price > 0
-                                            ? <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
-                                            : <span className="text-emerald-400 font-bold">(incluido)</span>
-                                          }
-                                        </div>
-                                      );
-                                    })}
                                   </div>
-                                );
-                              })()}
-                            </div>
-                          );
-                        })
+                                  <div className="flex flex-wrap gap-1">
+                                    {groupItems.map((gi: any, giIdx: number) => (
+                                      <div key={giIdx} className="flex items-center gap-1 bg-amber-900/20 rounded px-1.5 py-0.5">
+                                        <span className="text-amber-400 font-black text-xs">{gi.quantity}x</span>
+                                        <span className="text-xs text-amber-100">{gi.name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            // --- INDIVIDUAL ITEM ---
+                            const productName = item.name || 'Sin nombre';
+                            const catalogPrice = item.price || 0;
+                            const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
+                            const productPrice = catalogPrice * couponFactor;
+                            const quantity = item.quantity || 0;
+                            const itemSalsas = item.salsas || [];
+                            const itemComplementIds = item.complementIds || [];
+                            const hasCouponDiscount = (order as any).couponDiscount > 0;
+
+                            return (
+                              <div key={idx} className="bg-white/5 rounded px-2 py-1.5">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-white font-black text-sm">{quantity}</span>
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="text-xs font-bold text-white">{productName}</h4>
+                                    {hasCouponDiscount ? (
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="text-gray-500 line-through text-xs">S/ {(catalogPrice * quantity).toFixed(2)}</span>
+                                        <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
+                                        <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Mostrar salsas / sabores de taco si existen */}
+                                {itemSalsas.length > 0 && (
+                                  <div className="mt-1 ml-8 text-[10px] text-yellow-300">
+                                    {item.productId === 'taco-duo' ? (
+                                      <>
+                                        <span className="font-bold">🌮 Sabores: </span>
+                                        {itemSalsas.map((id: string) => (
+                                          { 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' }[id] || id
+                                        )).join(' + ')}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="font-bold">🌶️ Salsas: </span>
+                                        {itemSalsas.map((salsaId: string) => {
+                                          const salsa = salsas.find(s => s.id === salsaId);
+                                          return salsa?.name || salsaId;
+                                        }).join(', ')}
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Mostrar complementos si existen - agrupados por tipo */}
+                                {itemComplementIds.length > 0 && (() => {
+                                  const complementCounts: { [key: string]: number } = {};
+                                  itemComplementIds.forEach((compId: string) => {
+                                    complementCounts[compId] = (complementCounts[compId] || 0) + 1;
+                                  });
+                                  return (
+                                    <div className="mt-1 ml-8 space-y-0.5">
+                                      {Object.entries(complementCounts).map(([compId, count], compIdx) => {
+                                        const complement = availableComplements[compId];
+                                        if (!complement) return null;
+                                        const totalPrice = complement.price * count;
+                                        return (
+                                          <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
+                                            <span className="font-bold">+</span>
+                                            {count > 1 && <span className="text-green-400 font-black">{count}x</span>}
+                                            <span>{complement.name}</span>
+                                            {complement.price > 0
+                                              ? <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
+                                              : <span className="text-emerald-400 font-bold">(incluido)</span>
+                                            }
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            );
+                          });
+                        })()
                       ) : order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
                         order.cart.map((item: any, idx: number) => {
                           const productName = item.product?.name || item.name || 'Sin nombre';
@@ -3054,11 +3083,40 @@ export default function AdminPage() {
                       S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
                     </p>
                     <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
-                    {(order as any).comboDiscount > 0 && (
-                      <p className="text-[9px] bg-fuchsia-900/60 text-fuchsia-200 rounded px-1 mt-1 font-bold">
-                        🔥 Combo FAT+FIT -S/ 5
-                      </p>
-                    )}
+                    {(() => {
+                      const items = (order as any).completedOrders;
+                      if (items && Array.isArray(items)) {
+                        const seenGroups = new Set<string>();
+                        let totalSavings = 0;
+                        const comboNames: string[] = [];
+                        items.forEach((item: any) => {
+                          if (item.comboGroupId && !seenGroups.has(item.comboGroupId)) {
+                            seenGroups.add(item.comboGroupId);
+                            const savings = (item.comboOriginalTotal || 0) - (item.comboPrice || 0);
+                            if (savings > 0) {
+                              totalSavings += savings;
+                              if (item.comboName && !comboNames.includes(item.comboName)) comboNames.push(item.comboName);
+                            }
+                          }
+                        });
+                        if (totalSavings > 0) {
+                          return (
+                            <p className="text-[9px] bg-amber-900/60 text-amber-200 rounded px-1 mt-1 font-bold">
+                              🔥 {comboNames.length > 0 ? comboNames.join(' + ') : 'Combo'} -S/ {totalSavings.toFixed(2)}
+                            </p>
+                          );
+                        }
+                      }
+                      // fallback para pedidos del sistema anterior
+                      if ((order as any).comboDiscount > 0) {
+                        return (
+                          <p className="text-[9px] bg-fuchsia-900/60 text-fuchsia-200 rounded px-1 mt-1 font-bold">
+                            🔥 Combo -S/ {((order as any).comboDiscount).toFixed(2)}
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                     {(order as any).couponDiscount > 0 && (
                       <p className="text-[9px] bg-purple-900/60 text-purple-200 rounded px-1 mt-1 font-bold">
                         Cupón -{(order as any).couponDiscount}% aplicado
