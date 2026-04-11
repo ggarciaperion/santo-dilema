@@ -11,21 +11,21 @@ import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 // ──────────────────────────────────────────────────────────────────
 
 const SALSAS = [
-  { id: "barbecue", name: "BBQ ahumada" },
-  { id: "buffalo-picante", name: "Santo Picante" },
-  { id: "ahumada", name: "Acevichada Imperial" },
-  { id: "parmesano-ajo", name: "Crispy Celestial" },
-  { id: "anticuchos", name: "Parrillera" },
-  { id: "honey-mustard", name: "Honey Mustard" },
-  { id: "teriyaki", name: "Oriental Teriyaki" },
-  { id: "macerichada", name: "Sweet & Sour" },
+  { id: "barbecue",       name: "BBQ ahumada"         },
+  { id: "buffalo-picante",name: "Santo Picante"        },
+  { id: "ahumada",        name: "Acevichada Imperial"  },
+  { id: "parmesano-ajo",  name: "Crispy Celestial"     },
+  { id: "anticuchos",     name: "Parrillera"           },
+  { id: "honey-mustard",  name: "Honey Mustard"        },
+  { id: "teriyaki",       name: "Oriental Teriyaki"    },
+  { id: "macerichada",    name: "Sweet & Sour"         },
 ];
 
 const FIT_OPTIONS = [
   { id: "ensalada-clasica",    name: "Clásica Fresh Bowl",  price: 18.50, image: "/clasica-fresh-bowl.png" },
   { id: "ensalada-proteica",   name: "César Power Bowl",    price: 20.00, image: "/cesar-power-bowl.png"   },
   { id: "ensalada-caesar",     name: "Protein Fit Bowl",    price: 20.00, image: "/protein-fit-bowl.png"   },
-  { id: "ensalada-mediterranea", name: "Tuna Fresh Bowl",   price: 23.50, image: "/4.png"                  },
+  { id: "ensalada-mediterranea",name:"Tuna Fresh Bowl",     price: 23.50, image: "/4.png"                  },
   { id: "cobb-supreme-bowl",   name: "Cobb Supreme Bowl",   price: 23.50, image: "/cobb.png"               },
   { id: "crispy-chicken-bowl", name: "Crispy Chicken Bowl", price: 22.50, image: "/crispy.png"             },
   { id: "pasta-power-bowl",    name: "Pasta Power Bowl",    price: 22.50, image: "/pasta.png"              },
@@ -38,10 +38,10 @@ const TACO_OPTIONS = [
 ];
 
 const REF_PRICES: Record<string, number> = {
-  "pequeno-dilema": 20,  "duo-dilema": 34,   "taco-duo": 24.90,
+  "pequeno-dilema": 20, "duo-dilema": 34, "taco-duo": 24.90,
   "ensalada-clasica": 18.50, "ensalada-proteica": 20, "ensalada-caesar": 20,
   "ensalada-mediterranea": 23.50, "cobb-supreme-bowl": 23.50,
-  "crispy-chicken-bowl": 22.50,   "pasta-power-bowl": 22.50,
+  "crispy-chicken-bowl": 22.50, "pasta-power-bowl": 22.50,
 };
 
 // ──────────────────────────────────────────────────────────────────
@@ -60,6 +60,7 @@ interface ComboColors {
   btn: string;
   stepDot: string;
   glow: string;
+  rgb: string; // raw "R,G,B" para efectos neón
 }
 
 interface ComboConfig {
@@ -82,10 +83,12 @@ interface Selections {
   tacos: string[];
 }
 
+type ModalPhase = "selecting" | "confirming" | null;
+
 const emptySelections = (): Selections => ({ sauces: {}, salad: "", tacos: [] });
 
 // ──────────────────────────────────────────────────────────────────
-//  DEFINICIÓN DE COMBOS
+//  COMBOS
 // ──────────────────────────────────────────────────────────────────
 
 const COMBOS: ComboConfig[] = [
@@ -104,12 +107,13 @@ const COMBOS: ComboConfig[] = [
     ],
     images: ["/pequeno-dilema.png", "/cobb.png"],
     colors: {
-      text:     "text-emerald-400",
-      border:   "border-emerald-500/30",
-      badge:    "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
-      btn:      "bg-emerald-600 hover:bg-emerald-500 text-white",
-      stepDot:  "bg-emerald-500",
-      glow:     "0 0 35px rgba(16,185,129,0.18)",
+      text:    "text-emerald-400",
+      border:  "border-emerald-500/30",
+      badge:   "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
+      btn:     "bg-emerald-600 hover:bg-emerald-500 text-white",
+      stepDot: "bg-emerald-500",
+      glow:    "0 0 35px rgba(16,185,129,0.18)",
+      rgb:     "16,185,129",
     },
   },
   {
@@ -133,6 +137,7 @@ const COMBOS: ComboConfig[] = [
       btn:     "bg-orange-600 hover:bg-orange-500 text-white",
       stepDot: "bg-orange-500",
       glow:    "0 0 35px rgba(249,115,22,0.18)",
+      rgb:     "249,115,22",
     },
   },
   {
@@ -146,7 +151,7 @@ const COMBOS: ComboConfig[] = [
     includes: ["Pequeño Dilema · 8 alitas + papas", "Dúo Dilema · 14 alitas + papas"],
     steps: [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Salsa del Pequeño Dilema" },
-      { type: "sauces", productId: "duo-dilema", productName: "Dúo Dilema", count: 2, label: "2 salsas para el Dúo Dilema" },
+      { type: "sauces", productId: "duo-dilema",     productName: "Dúo Dilema",     count: 2, label: "2 salsas para el Dúo Dilema" },
     ],
     images: ["/pequeno-dilema.png", "/duo-dilema.png"],
     colors: {
@@ -156,6 +161,7 @@ const COMBOS: ComboConfig[] = [
       btn:     "bg-fuchsia-600 hover:bg-fuchsia-500 text-white",
       stepDot: "bg-fuchsia-500",
       glow:    "0 0 35px rgba(217,70,239,0.18)",
+      rgb:     "217,70,239",
     },
   },
   {
@@ -180,9 +186,38 @@ const COMBOS: ComboConfig[] = [
       btn:     "bg-red-600 hover:bg-red-500 text-white",
       stepDot: "bg-red-500",
       glow:    "0 0 35px rgba(239,68,68,0.18)",
+      rgb:     "239,68,68",
     },
   },
 ];
+
+// ──────────────────────────────────────────────────────────────────
+//  HELPER: construir resumen de selecciones
+// ──────────────────────────────────────────────────────────────────
+
+interface SummaryItem {
+  label: string;
+  image?: string;
+  details: string[];
+}
+
+function buildSummary(combo: ComboConfig, sel: Selections): SummaryItem[] {
+  const items: SummaryItem[] = [];
+  for (const step of combo.steps) {
+    if (step.type === "sauces") {
+      const names = (sel.sauces[step.productId] ?? [])
+        .map(id => SALSAS.find(s => s.id === id)?.name ?? id);
+      items.push({ label: step.productName, details: names.length ? [`Salsa: ${names.join(", ")}`] : [] });
+    } else if (step.type === "salad") {
+      const salad = FIT_OPTIONS.find(p => p.id === sel.salad);
+      if (salad) items.push({ label: salad.name, image: salad.image, details: [`S/ ${salad.price.toFixed(2)}`] });
+    } else if (step.type === "tacos") {
+      const names = sel.tacos.map(id => TACO_OPTIONS.find(t => t.id === id)?.name ?? id);
+      items.push({ label: "Dúo de Tacos", details: names });
+    }
+  }
+  return items;
+}
 
 // ──────────────────────────────────────────────────────────────────
 //  PÁGINA PRINCIPAL
@@ -195,9 +230,8 @@ export default function CombosPage() {
   const [activeCombo, setActiveCombo] = useState<ComboConfig | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState<Selections>(emptySelections());
-  const [isAdding, setIsAdding] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalPhase, setModalPhase] = useState<ModalPhase>(null);
+  const [sheetVisible, setSheetVisible] = useState(false);
 
   useEffect(() => {
     setIsOpen(isBusinessOpen());
@@ -213,14 +247,16 @@ export default function CombosPage() {
     setActiveCombo(combo);
     setCurrentStep(0);
     setSelections(emptySelections());
-    setSuccess(false);
-    setIsAdding(false);
-    setTimeout(() => setModalVisible(true), 10);
+    setModalPhase("selecting");
+    setTimeout(() => setSheetVisible(true), 10);
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    setTimeout(() => setActiveCombo(null), 320);
+  const closeAll = () => {
+    setSheetVisible(false);
+    setTimeout(() => {
+      setActiveCombo(null);
+      setModalPhase(null);
+    }, 320);
   };
 
   // ── Validación del paso actual ─────────────────────────────────
@@ -235,13 +271,11 @@ export default function CombosPage() {
 
   const isLastStep = activeCombo ? currentStep === activeCombo.steps.length - 1 : false;
 
-  // ── Handlers de selección ──────────────────────────────────────
+  // ── Selección de opciones ──────────────────────────────────────
   const toggleSauce = (productId: string, sauceId: string, maxCount: number) => {
     setSelections(prev => {
       const cur = prev.sauces[productId] ?? [];
-      if (cur.includes(sauceId)) {
-        return { ...prev, sauces: { ...prev.sauces, [productId]: cur.filter(s => s !== sauceId) } };
-      }
+      if (cur.includes(sauceId)) return { ...prev, sauces: { ...prev.sauces, [productId]: cur.filter(s => s !== sauceId) } };
       const next = cur.length >= maxCount ? [...cur.slice(1), sauceId] : [...cur, sauceId];
       return { ...prev, sauces: { ...prev.sauces, [productId]: next } };
     });
@@ -258,66 +292,46 @@ export default function CombosPage() {
     });
   };
 
-  // ── Añadir al carrito ─────────────────────────────────────────
-  const handleAddToCart = () => {
-    if (!activeCombo || isAdding) return;
-    setIsAdding(true);
-
+  // ── Guardar en sessionStorage ──────────────────────────────────
+  const saveToCart = () => {
+    if (!activeCombo) return;
     const items: any[] = [];
-
     for (const step of activeCombo.steps) {
       if (step.type === "sauces") {
-        items.push({
-          productId: step.productId,
-          quantity: 1,
-          salsas: selections.sauces[step.productId] ?? [],
-          complementIds: [],
-          originalPrice: REF_PRICES[step.productId] ?? 0,
-          finalPrice:    REF_PRICES[step.productId] ?? 0,
-        });
+        items.push({ productId: step.productId, quantity: 1, salsas: selections.sauces[step.productId] ?? [], complementIds: [], originalPrice: REF_PRICES[step.productId] ?? 0, finalPrice: REF_PRICES[step.productId] ?? 0 });
       } else if (step.type === "salad") {
         const salad = FIT_OPTIONS.find(p => p.id === selections.salad);
-        if (salad) {
-          items.push({
-            productId: salad.id,
-            quantity: 1,
-            salsas: [],
-            complementIds: [],
-            originalPrice: salad.price,
-            finalPrice:    salad.price,
-          });
-        }
+        if (salad) items.push({ productId: salad.id, quantity: 1, salsas: [], complementIds: [], originalPrice: salad.price, finalPrice: salad.price });
       } else if (step.type === "tacos") {
-        items.push({
-          productId: "taco-duo",
-          quantity: 1,
-          salsas: selections.tacos,
-          complementIds: [],
-          category: "taco",
-          originalPrice: REF_PRICES["taco-duo"],
-          finalPrice:    REF_PRICES["taco-duo"],
-        });
+        items.push({ productId: "taco-duo", quantity: 1, salsas: selections.tacos, complementIds: [], category: "taco", originalPrice: REF_PRICES["taco-duo"], finalPrice: REF_PRICES["taco-duo"] });
       }
     }
-
     try {
       const existing = JSON.parse(sessionStorage.getItem("santo-dilema-orders") ?? "[]");
       sessionStorage.setItem("santo-dilema-orders", JSON.stringify([...existing, ...items]));
     } catch {}
-
-    setSuccess(true);
-    setTimeout(() => {
-      router.push("/checkout");
-    }, 900);
   };
 
+  // ── Avanzar paso ──────────────────────────────────────────────
   const handleNext = () => {
     if (!isStepValid()) return;
     if (isLastStep) {
-      handleAddToCart();
+      // Guardar y mostrar confirmación
+      saveToCart();
+      setModalPhase("confirming");
     } else {
       setCurrentStep(prev => prev + 1);
     }
+  };
+
+  const handleKeepShopping = () => {
+    // Combo ya guardado — cerrar modal y quedar en la página
+    closeAll();
+  };
+
+  const handleGoToCheckout = () => {
+    closeAll();
+    setTimeout(() => router.push("/checkout"), 200);
   };
 
   // ──────────────────────────────────────────────────────────────
@@ -339,10 +353,7 @@ export default function CombosPage() {
             </h1>
             <p className="text-xs text-gray-500 leading-none mt-0.5">Elige, personaliza y pide</p>
           </div>
-          <Link
-            href="/"
-            className="shrink-0 p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all"
-          >
+          <Link href="/" className="shrink-0 p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -353,9 +364,7 @@ export default function CombosPage() {
       {/* CLOSED BANNER */}
       {!isOpen && (
         <div className="border-b border-red-500/20 bg-red-950/30 px-4 py-3 text-center">
-          <p className="text-sm text-red-300 font-medium">
-            🔒 Estamos cerrados — <span className="text-red-200">{openMessage}</span>
-          </p>
+          <p className="text-sm text-red-300 font-medium">🔒 Estamos cerrados — <span className="text-red-200">{openMessage}</span></p>
         </div>
       )}
 
@@ -364,10 +373,7 @@ export default function CombosPage() {
         <span className="inline-block bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold uppercase tracking-widest rounded-full px-4 py-1.5 mb-5">
           Precio especial · Descuento automático
         </span>
-        <h2
-          className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight"
-          style={{ fontFamily: "var(--font-graffiti)" }}
-        >
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "var(--font-graffiti)" }}>
           Combos para todos los pecados
         </h2>
         <p className="text-gray-400 text-sm md:text-base max-w-sm mx-auto leading-relaxed">
@@ -378,32 +384,24 @@ export default function CombosPage() {
       {/* COMBO GRID */}
       <main className="max-w-3xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-5">
         {COMBOS.map(combo => (
-          <ComboCard
-            key={combo.id}
-            combo={combo}
-            isOpen={isOpen}
-            onSelect={() => openModal(combo)}
-          />
+          <ComboCard key={combo.id} combo={combo} isOpen={isOpen} onSelect={() => openModal(combo)} />
         ))}
       </main>
 
-      {/* FOOTER NOTE */}
       <p className="text-center text-xs text-gray-700 pb-16 px-4">
         El descuento se calcula automáticamente en el checkout · No acumulable con cupones
       </p>
 
-      {/* CUSTOMIZATION MODAL */}
-      {activeCombo && (
-        <ComboModal
+      {/* MODALES */}
+      {activeCombo && modalPhase === "selecting" && (
+        <SelectionModal
           combo={activeCombo}
           currentStep={currentStep}
           selections={selections}
-          visible={modalVisible}
-          isAdding={isAdding}
-          success={success}
+          visible={sheetVisible}
           isStepValid={isStepValid()}
           isLastStep={isLastStep}
-          onClose={closeModal}
+          onClose={closeAll}
           onToggleSauce={toggleSauce}
           onSelectSalad={selectSalad}
           onToggleTaco={toggleTaco}
@@ -411,20 +409,44 @@ export default function CombosPage() {
           onBack={() => setCurrentStep(prev => prev - 1)}
         />
       )}
+
+      {activeCombo && modalPhase === "confirming" && (
+        <ConfirmationModal
+          combo={activeCombo}
+          summary={buildSummary(activeCombo, selections)}
+          visible={sheetVisible}
+          onKeepShopping={handleKeepShopping}
+          onCheckout={handleGoToCheckout}
+        />
+      )}
     </div>
   );
 }
 
 // ──────────────────────────────────────────────────────────────────
-//  PLUS SEPARATOR
+//  NEON PLUS SEPARATOR
 // ──────────────────────────────────────────────────────────────────
 
 function PlusSeparator({ colors }: { colors: ComboColors }) {
+  const { rgb } = colors;
   return (
-    <div className="relative z-10 shrink-0 flex items-center justify-center w-7">
-      <div className={`w-7 h-7 rounded-full flex items-center justify-center border ${colors.border} bg-black/80`}
-        style={{ boxShadow: colors.glow }}>
-        <span className={`text-base font-black leading-none ${colors.text}`}>+</span>
+    <div className="relative z-10 shrink-0 flex items-center justify-center w-9">
+      <div
+        className="w-9 h-9 rounded-full flex items-center justify-center bg-black"
+        style={{
+          border: `1.5px solid rgba(${rgb},0.9)`,
+          boxShadow: `0 0 4px rgba(${rgb},0.9), 0 0 10px rgba(${rgb},0.7), 0 0 20px rgba(${rgb},0.5), 0 0 35px rgba(${rgb},0.25), inset 0 0 8px rgba(${rgb},0.15)`,
+        }}
+      >
+        <span
+          className="text-xl font-black leading-none select-none"
+          style={{
+            color: `rgb(${rgb})`,
+            textShadow: `0 0 6px rgba(${rgb},1), 0 0 14px rgba(${rgb},0.9), 0 0 28px rgba(${rgb},0.7)`,
+          }}
+        >
+          +
+        </span>
       </div>
     </div>
   );
@@ -434,15 +456,7 @@ function PlusSeparator({ colors }: { colors: ComboColors }) {
 //  COMBO CARD
 // ──────────────────────────────────────────────────────────────────
 
-function ComboCard({
-  combo,
-  isOpen,
-  onSelect,
-}: {
-  combo: ComboConfig;
-  isOpen: boolean;
-  onSelect: () => void;
-}) {
+function ComboCard({ combo, isOpen, onSelect }: { combo: ComboConfig; isOpen: boolean; onSelect: () => void }) {
   return (
     <article
       className={`flex flex-col rounded-2xl border bg-gray-900/40 overflow-hidden ${combo.colors.border}`}
@@ -465,9 +479,7 @@ function ComboCard({
             <div className="w-1/2 relative h-full"><Image src={combo.images[1]} alt="" fill className="object-contain p-4" /></div>
           </div>
         )}
-        {/* Gradient overlay bottom */}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-transparent to-transparent pointer-events-none" />
-        {/* Savings badge */}
         {combo.maxSavings > 0 && (
           <span className={`absolute top-3 right-3 text-[11px] font-bold rounded-full px-2.5 py-1 ${combo.colors.badge}`}>
             Ahorra hasta S/ {combo.maxSavings.toFixed(2)}
@@ -478,17 +490,12 @@ function ComboCard({
       {/* Body */}
       <div className="flex flex-col flex-1 p-4 gap-3">
         <div>
-          <h3
-            className={`text-lg font-bold leading-tight ${combo.colors.text}`}
-            style={{ fontFamily: "var(--font-graffiti)" }}
-          >
+          <h3 className={`text-lg font-bold leading-tight ${combo.colors.text}`} style={{ fontFamily: "var(--font-graffiti)" }}>
             {combo.name}
           </h3>
           <p className="text-xs text-gray-500 mt-0.5 font-medium">{combo.tagline}</p>
           <p className="text-sm text-gray-400 mt-2 leading-relaxed">{combo.description}</p>
         </div>
-
-        {/* Includes */}
         <ul className="space-y-1">
           {combo.includes.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-xs text-gray-400">
@@ -497,8 +504,6 @@ function ComboCard({
             </li>
           ))}
         </ul>
-
-        {/* Price + CTA */}
         <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t border-white/5">
           <div className="leading-none">
             <span className="text-2xl font-bold text-white">S/ {combo.price.toFixed(2)}</span>
@@ -518,33 +523,15 @@ function ComboCard({
 }
 
 // ──────────────────────────────────────────────────────────────────
-//  MODAL DE PERSONALIZACIÓN
+//  MODAL DE SELECCIÓN PASO A PASO
 // ──────────────────────────────────────────────────────────────────
 
-function ComboModal({
-  combo,
-  currentStep,
-  selections,
-  visible,
-  isAdding,
-  success,
-  isStepValid,
-  isLastStep,
-  onClose,
-  onToggleSauce,
-  onSelectSalad,
-  onToggleTaco,
-  onNext,
-  onBack,
+function SelectionModal({
+  combo, currentStep, selections, visible, isStepValid, isLastStep,
+  onClose, onToggleSauce, onSelectSalad, onToggleTaco, onNext, onBack,
 }: {
-  combo: ComboConfig;
-  currentStep: number;
-  selections: Selections;
-  visible: boolean;
-  isAdding: boolean;
-  success: boolean;
-  isStepValid: boolean;
-  isLastStep: boolean;
+  combo: ComboConfig; currentStep: number; selections: Selections;
+  visible: boolean; isStepValid: boolean; isLastStep: boolean;
   onClose: () => void;
   onToggleSauce: (productId: string, sauceId: string, maxCount: number) => void;
   onSelectSalad: (id: string) => void;
@@ -556,21 +543,11 @@ function ComboModal({
   const totalSteps = combo.steps.length;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col justify-end"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
-        style={{ opacity: visible ? 1 : 0 }}
-      />
+    <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300" style={{ opacity: visible ? 1 : 0 }} />
+      <div className="relative z-10 bg-[#111] rounded-t-3xl border-t border-white/10 max-h-[90vh] flex flex-col transition-transform duration-300 ease-out"
+        style={{ transform: visible ? "translateY(0)" : "translateY(100%)" }}>
 
-      {/* Sheet */}
-      <div
-        className="relative z-10 bg-[#111] rounded-t-3xl border-t border-white/10 max-h-[90vh] flex flex-col transition-transform duration-300 ease-out"
-        style={{ transform: visible ? "translateY(0)" : "translateY(100%)" }}
-      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-10 h-1 rounded-full bg-white/20" />
@@ -586,80 +563,185 @@ function ComboModal({
               S/ {combo.price.toFixed(2)} · Paso {currentStep + 1} de {totalSteps}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all"
-          >
+          <button onClick={onClose} className="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Step progress dots */}
+        {/* Progress dots */}
         <div className="flex items-center justify-center gap-2 py-3 shrink-0">
           {Array.from({ length: totalSteps }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i < currentStep ? combo.colors.stepDot + " opacity-40 w-4" :
-                i === currentStep ? combo.colors.stepDot + " w-6" :
-                "bg-gray-700 w-4"
-              }`}
-            />
+            <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${
+              i < currentStep  ? combo.colors.stepDot + " opacity-40 w-4" :
+              i === currentStep ? combo.colors.stepDot + " w-6" : "bg-gray-700 w-4"
+            }`} />
           ))}
         </div>
 
-        {/* Step content — scrollable */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 pb-4">
-          {success ? (
-            <SuccessScreen combo={combo} />
-          ) : step.type === "sauces" ? (
+          {step.type === "sauces" ? (
             <SauceStep
               step={step as Extract<ComboStep, { type: "sauces" }>}
-              selected={selections.sauces[step.productId] ?? []}
+              selected={selections.sauces[(step as Extract<ComboStep, { type: "sauces" }>).productId] ?? []}
               colors={combo.colors}
-              onToggle={(sauceId) => onToggleSauce(
+              onToggle={sauceId => onToggleSauce(
                 (step as Extract<ComboStep, { type: "sauces" }>).productId,
                 sauceId,
                 (step as Extract<ComboStep, { type: "sauces" }>).count,
               )}
             />
           ) : step.type === "salad" ? (
-            <SaladStep
-              selected={selections.salad}
-              colors={combo.colors}
-              onSelect={onSelectSalad}
-            />
+            <SaladStep selected={selections.salad} colors={combo.colors} onSelect={onSelectSalad} />
           ) : (
-            <TacoStep
-              selected={selections.tacos}
-              colors={combo.colors}
-              onToggle={onToggleTaco}
-            />
+            <TacoStep selected={selections.tacos} colors={combo.colors} onToggle={onToggleTaco} />
           )}
         </div>
 
-        {/* Footer actions */}
-        {!success && (
-          <div className="shrink-0 px-5 py-4 border-t border-white/5 flex gap-3">
-            {currentStep > 0 && (
-              <button
-                onClick={onBack}
-                className="px-5 py-3 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-all"
-              >
-                Atrás
-              </button>
-            )}
-            <button
-              onClick={onNext}
-              disabled={!isStepValid || isAdding}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${combo.colors.btn}`}
-            >
-              {isAdding ? "Agregando..." : isLastStep ? `Añadir al carrito · S/ ${combo.price.toFixed(2)}` : "Continuar"}
+        {/* Footer */}
+        <div className="shrink-0 px-5 py-4 border-t border-white/5 flex gap-3">
+          {currentStep > 0 && (
+            <button onClick={onBack} className="px-5 py-3 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-all">
+              Atrás
             </button>
+          )}
+          <button
+            onClick={onNext}
+            disabled={!isStepValid}
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${combo.colors.btn}`}
+          >
+            {isLastStep ? "Revisar mi pedido →" : "Continuar"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────
+//  MODAL DE CONFIRMACIÓN
+// ──────────────────────────────────────────────────────────────────
+
+function ConfirmationModal({
+  combo, summary, visible, onKeepShopping, onCheckout,
+}: {
+  combo: ComboConfig;
+  summary: SummaryItem[];
+  visible: boolean;
+  onKeepShopping: () => void;
+  onCheckout: () => void;
+}) {
+  const { rgb } = combo.colors;
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm transition-opacity duration-300" style={{ opacity: visible ? 1 : 0 }} />
+      <div
+        className="relative z-10 bg-[#111] rounded-t-3xl border-t border-white/10 max-h-[90vh] flex flex-col transition-transform duration-300 ease-out"
+        style={{ transform: visible ? "translateY(0)" : "translateY(100%)" }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-white/20" />
+        </div>
+
+        {/* Header con check neón */}
+        <div className="px-5 pt-3 pb-4 border-b border-white/5 shrink-0 flex items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+            style={{
+              background: `rgba(${rgb},0.12)`,
+              border: `1.5px solid rgba(${rgb},0.7)`,
+              boxShadow: `0 0 12px rgba(${rgb},0.5), 0 0 24px rgba(${rgb},0.3)`,
+            }}
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+              style={{ color: `rgb(${rgb})`, filter: `drop-shadow(0 0 4px rgba(${rgb},0.9))` }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-        )}
+          <div>
+            <p className="text-white font-bold text-base leading-tight" style={{ fontFamily: "var(--font-graffiti)" }}>
+              ¡Combo agregado!
+            </p>
+            <p className={`text-xs mt-0.5 font-medium ${combo.colors.text}`}>
+              {combo.name} · S/ {combo.price.toFixed(2)}
+            </p>
+          </div>
+        </div>
+
+        {/* Resumen detallado */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+          <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3">Resumen de tu pedido</p>
+
+          {summary.map((item, i) => (
+            <div key={i} className={`flex items-center gap-3 p-3 rounded-xl bg-white/3 border border-white/6`}>
+              {item.image && (
+                <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-black/40">
+                  <Image src={item.image} alt={item.label} fill className="object-contain p-1" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white leading-tight">{item.label}</p>
+                {item.details.map((d, j) => (
+                  <p key={j} className={`text-xs mt-0.5 ${combo.colors.text}`}>{d}</p>
+                ))}
+              </div>
+              <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${combo.colors.stepDot}`}>
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+            </div>
+          ))}
+
+          {/* Total */}
+          <div className="flex items-center justify-between pt-2 border-t border-white/5 mt-2">
+            <span className="text-sm text-gray-400">Total combo</span>
+            <span className="text-xl font-bold text-white">S/ {combo.price.toFixed(2)}</span>
+          </div>
+
+          {/* Navegación seguir comprando */}
+          <div className="pt-2">
+            <p className="text-xs text-gray-500 mb-2">¿Quieres agregar más antes de pagar?</p>
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { href: "/fat",   label: "🍗 Alitas FAT" },
+                { href: "/fit",   label: "🥗 Ensaladas FIT" },
+                { href: "/tacos", label: "🌮 Tacos" },
+                { href: "/combos",label: "+ Otro combo" },
+              ].map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={onKeepShopping}
+                  className="text-xs border border-white/10 text-gray-300 hover:text-white hover:border-white/25 rounded-full px-3 py-1.5 transition-all"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Acciones */}
+        <div className="shrink-0 px-5 py-4 border-t border-white/5 flex flex-col gap-2.5">
+          <button
+            onClick={onCheckout}
+            className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${combo.colors.btn}`}
+            style={{ boxShadow: `0 0 16px rgba(${rgb},0.35)` }}
+          >
+            Confirmar e ir a pagar →
+          </button>
+          <button
+            onClick={onKeepShopping}
+            className="w-full py-3 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-all"
+          >
+            Continuar agregando órdenes
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -669,16 +751,9 @@ function ComboModal({
 //  STEP COMPONENTS
 // ──────────────────────────────────────────────────────────────────
 
-function SauceStep({
-  step,
-  selected,
-  colors,
-  onToggle,
-}: {
-  step: Extract<ComboStep, { type: "sauces" }>;
-  selected: string[];
-  colors: ComboColors;
-  onToggle: (id: string) => void;
+function SauceStep({ step, selected, colors, onToggle }: {
+  step: Extract<ComboStep, { type: "sauces" }>; selected: string[];
+  colors: ComboColors; onToggle: (id: string) => void;
 }) {
   return (
     <div className="pt-2">
@@ -690,15 +765,8 @@ function SauceStep({
         {SALSAS.map(salsa => {
           const isSelected = selected.includes(salsa.id);
           return (
-            <button
-              key={salsa.id}
-              onClick={() => onToggle(salsa.id)}
-              className={`relative flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all active:scale-95 ${
-                isSelected
-                  ? `${colors.border} bg-white/5`
-                  : "border-white/8 hover:border-white/15"
-              }`}
-            >
+            <button key={salsa.id} onClick={() => onToggle(salsa.id)}
+              className={`relative flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all active:scale-95 ${isSelected ? `${colors.border} bg-white/5` : "border-white/8 hover:border-white/15"}`}>
               {isSelected && (
                 <span className={`absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center ${colors.stepDot}`}>
                   <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -707,9 +775,7 @@ function SauceStep({
                 </span>
               )}
               <span className="text-lg select-none">🫙</span>
-              <span className={`text-xs font-semibold leading-tight ${isSelected ? colors.text : "text-gray-300"}`}>
-                {salsa.name}
-              </span>
+              <span className={`text-xs font-semibold leading-tight ${isSelected ? colors.text : "text-gray-300"}`}>{salsa.name}</span>
             </button>
           );
         })}
@@ -718,15 +784,7 @@ function SauceStep({
   );
 }
 
-function SaladStep({
-  selected,
-  colors,
-  onSelect,
-}: {
-  selected: string;
-  colors: ComboColors;
-  onSelect: (id: string) => void;
-}) {
+function SaladStep({ selected, colors, onSelect }: { selected: string; colors: ComboColors; onSelect: (id: string) => void }) {
   return (
     <div className="pt-2">
       <p className="text-white font-semibold mb-1">Elige tu ensalada</p>
@@ -735,20 +793,13 @@ function SaladStep({
         {FIT_OPTIONS.map(fit => {
           const isSelected = selected === fit.id;
           return (
-            <button
-              key={fit.id}
-              onClick={() => onSelect(fit.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all active:scale-95 ${
-                isSelected ? `${colors.border} bg-white/5` : "border-white/8 hover:border-white/15"
-              }`}
-            >
+            <button key={fit.id} onClick={() => onSelect(fit.id)}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all active:scale-95 ${isSelected ? `${colors.border} bg-white/5` : "border-white/8 hover:border-white/15"}`}>
               <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-black/40">
                 <Image src={fit.image} alt={fit.name} fill className="object-contain p-1" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold leading-tight ${isSelected ? colors.text : "text-gray-200"}`}>
-                  {fit.name}
-                </p>
+                <p className={`text-sm font-semibold leading-tight ${isSelected ? colors.text : "text-gray-200"}`}>{fit.name}</p>
                 <p className="text-xs text-gray-500 mt-0.5">S/ {fit.price.toFixed(2)}</p>
               </div>
               {isSelected && (
@@ -766,40 +817,22 @@ function SaladStep({
   );
 }
 
-function TacoStep({
-  selected,
-  colors,
-  onToggle,
-}: {
-  selected: string[];
-  colors: ComboColors;
-  onToggle: (id: string) => void;
-}) {
+function TacoStep({ selected, colors, onToggle }: { selected: string[]; colors: ComboColors; onToggle: (id: string) => void }) {
   return (
     <div className="pt-2">
       <p className="text-white font-semibold mb-1">Elige tus tacos</p>
-      <p className="text-xs text-gray-500 mb-4">
-        Selecciona 2 sabores · {selected.length}/2 seleccionados
-      </p>
+      <p className="text-xs text-gray-500 mb-4">Selecciona 2 sabores · {selected.length}/2 seleccionados</p>
       <div className="space-y-2">
         {TACO_OPTIONS.map(taco => {
-          const count = selected.filter(t => t === taco.id).length;
-          const isSelected = count > 0;
+          const isSelected = selected.includes(taco.id);
           return (
-            <button
-              key={taco.id}
-              onClick={() => onToggle(taco.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all active:scale-95 ${
-                isSelected ? `${colors.border} bg-white/5` : "border-white/8 hover:border-white/15"
-              }`}
-            >
+            <button key={taco.id} onClick={() => onToggle(taco.id)}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all active:scale-95 ${isSelected ? `${colors.border} bg-white/5` : "border-white/8 hover:border-white/15"}`}>
               <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-black/40">
                 <Image src={taco.image} alt={taco.name} fill className="object-contain p-1" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold leading-tight ${isSelected ? colors.text : "text-gray-200"}`}>
-                  {taco.name}
-                </p>
+                <p className={`text-sm font-semibold leading-tight ${isSelected ? colors.text : "text-gray-200"}`}>{taco.name}</p>
               </div>
               {isSelected && (
                 <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${colors.stepDot}`}>
@@ -811,20 +844,6 @@ function TacoStep({
             </button>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-function SuccessScreen({ combo }: { combo: ComboConfig }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-10 gap-4 text-center">
-      <div className="text-6xl animate-bounce">{combo.emoji}</div>
-      <div>
-        <p className="text-white font-bold text-lg" style={{ fontFamily: "var(--font-graffiti)" }}>
-          ¡Combo agregado!
-        </p>
-        <p className="text-gray-400 text-sm mt-1">Redirigiendo al checkout…</p>
       </div>
     </div>
   );
