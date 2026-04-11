@@ -201,19 +201,28 @@ interface SummaryItem {
   details: string[];
 }
 
+const PRODUCT_IMAGES: Record<string, string> = {
+  "pequeno-dilema": "/pequeno-dilema.png",
+  "duo-dilema":     "/duo-dilema.png",
+};
+
 function buildSummary(combo: ComboConfig, sel: Selections): SummaryItem[] {
   const items: SummaryItem[] = [];
   for (const step of combo.steps) {
     if (step.type === "sauces") {
       const names = (sel.sauces[step.productId] ?? [])
         .map(id => SALSAS.find(s => s.id === id)?.name ?? id);
-      items.push({ label: step.productName, details: names.length ? [`Salsa: ${names.join(", ")}`] : [] });
+      items.push({
+        label: step.productName,
+        image: PRODUCT_IMAGES[step.productId],
+        details: names.length ? [`Salsa: ${names.join(", ")}`] : [],
+      });
     } else if (step.type === "salad") {
       const salad = FIT_OPTIONS.find(p => p.id === sel.salad);
       if (salad) items.push({ label: salad.name, image: salad.image, details: [`S/ ${salad.price.toFixed(2)}`] });
     } else if (step.type === "tacos") {
       const names = sel.tacos.map(id => TACO_OPTIONS.find(t => t.id === id)?.name ?? id);
-      items.push({ label: "Dúo de Tacos", details: names });
+      items.push({ label: "Dúo de Tacos", image: "/tacoinicio.png", details: names });
     }
   }
   return items;
@@ -705,12 +714,12 @@ function ConfirmationModal({
 
           {/* Navegación seguir comprando */}
           <div className="pt-2">
-            <p className="text-xs text-gray-500 mb-2">¿Quieres agregar más antes de pagar?</p>
+            <p className="text-xs text-gray-500 mb-2">Puedes agregar más órdenes a tu pedido</p>
             <div className="flex gap-2 flex-wrap">
               {[
-                { href: "/fat",   label: "🍗 Alitas FAT" },
-                { href: "/fit",   label: "🥗 Ensaladas FIT" },
-                { href: "/tacos", label: "🌮 Tacos" },
+                { href: "/fat",   label: "Ver menú alitas" },
+                { href: "/fit",   label: "Ver menú ensaladas" },
+                { href: "/tacos", label: "Ver menú tacos" },
                 { href: "/combos",label: "+ Otro combo" },
               ].map(link => (
                 <Link
