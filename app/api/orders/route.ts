@@ -19,7 +19,7 @@ const fatProducts = [
   {
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
-    price: 20.00,
+    price: 22.00,
     category: "fat",
   },
   {

@@ -83,7 +83,7 @@ interface OrderItem {
 
 // Precios de referencia para el cálculo de ahorro
 const REFERENCE_PRICES: Record<string, number> = {
-  'pequeno-dilema': 20,
+  'pequeno-dilema': 22,
   'duo-dilema': 34,
   'santo-pecado': 47,
   'taco-duo': 24.90,

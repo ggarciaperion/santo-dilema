@@ -97,7 +97,7 @@ const fatProducts: Product[] = [
     id: "pequeno-dilema",
     name: "Pequeño Dilema",
     description: "8 alitas acompañadas de papas y 01 salsa favorita.",
-    price: 20.00,
+    price: 22.00,
     image: "/pequeno-dilema.png?v=3",
     category: "fat",
   },

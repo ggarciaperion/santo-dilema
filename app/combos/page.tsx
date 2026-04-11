@@ -38,7 +38,7 @@ const TACO_OPTIONS = [
 ];
 
 const REF_PRICES: Record<string, number> = {
-  "pequeno-dilema": 20, "duo-dilema": 34, "taco-duo": 24.90,
+  "pequeno-dilema": 22, "duo-dilema": 34, "taco-duo": 24.90,
   "ensalada-clasica": 18.50, "ensalada-proteica": 20, "ensalada-caesar": 20,
   "ensalada-mediterranea": 23.50, "cobb-supreme-bowl": 23.50,
   "crispy-chicken-bowl": 22.50, "pasta-power-bowl": 22.50,
@@ -99,7 +99,7 @@ const COMBOS: ComboConfig[] = [
     tagline: "Balance que no miente",
     description: "Lo justo para cuando el cuerpo pide alitas pero la cabeza dice ensalada. Spoiler: las dos cosas.",
     price: 40,
-    maxSavings: 3.50,
+    maxSavings: 5.50,
     includes: ["Pequeño Dilema · 8 alitas + papas", "Ensalada FIT a elección"],
     steps: [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Elige tu salsa para las alitas" },
@@ -123,7 +123,7 @@ const COMBOS: ComboConfig[] = [
     tagline: "Alitas meets street food",
     description: "La combinación que nadie esperaba pero todos necesitaban. Crujiente, sabroso, sin complicaciones.",
     price: 42,
-    maxSavings: 2.90,
+    maxSavings: 4.90,
     includes: ["Pequeño Dilema · 8 alitas + papas", "Dúo de Tacos · 2 sabores"],
     steps: [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Elige tu salsa para las alitas" },
@@ -147,7 +147,7 @@ const COMBOS: ComboConfig[] = [
     tagline: "Doble dosis de pecado",
     description: "Para los que entienden que una porción nunca fue suficiente. El doble de alitas, el doble de crisis.",
     price: 52,
-    maxSavings: 2.00,
+    maxSavings: 4.00,
     includes: ["Pequeño Dilema · 8 alitas + papas", "Dúo Dilema · 14 alitas + papas"],
     steps: [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Salsa del Pequeño Dilema" },

@@ -6753,7 +6753,7 @@ _Valido por 30 dias._`;
             {/* Stock FAT */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {[
-                { id: "pequeno-dilema", name: "Pequeño Dilema", defaultPrice: 20.00 },
+                { id: "pequeno-dilema", name: "Pequeño Dilema", defaultPrice: 22.00 },
                 { id: "duo-dilema", name: "Dúo Dilema", defaultPrice: 34.00 },
                 { id: "santo-pecado", name: "Santo Pecado", defaultPrice: 47.00 },
               ].map((item) => {

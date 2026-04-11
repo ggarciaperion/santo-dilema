@@ -81,7 +81,7 @@ const BEBIDAS_KEY = "santo-dilema-tacos-bebidas";
 
 // Lookup de productos de otras páginas para mostrar en "Tu orden"
 const CROSS_PRODUCTS: Record<string, { name: string; image: string; price: number }> = {
-  "pequeno-dilema":      { name: "Pequeño Dilema",       image: "/pequeno-dilema.png?v=3",    price: 20.00 },
+  "pequeno-dilema":      { name: "Pequeño Dilema",       image: "/pequeno-dilema.png?v=3",    price: 22.00 },
   "duo-dilema":          { name: "Dúo Dilema",            image: "/duo-dilema.png?v=3",        price: 34.00 },
   "santo-pecado":        { name: "Santo Pecado",          image: "/todos-pecan.png?v=3",       price: 47.00 },
   "ensalada-clasica":    { name: "Clásica Fresh Bowl",    image: "/clasica-fresh-bowl.png",    price: 18.50 },
