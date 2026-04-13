@@ -44,7 +44,7 @@ const TACO_COMPLEMENTS = [
 ];
 
 const REF_PRICES: Record<string, number> = {
-  "pequeno-dilema": 22, "duo-dilema": 34, "taco-duo": 24.90,
+  "pequeno-dilema": 22, "duo-dilema": 34, "taco-duo": 24.90, "chiguan-alitas": 12,
   "ensalada-clasica": 18.50, "ensalada-proteica": 20, "ensalada-caesar": 20,
   "ensalada-mediterranea": 23.50, "cobb-supreme-bowl": 23.50,
   "crispy-chicken-bowl": 22.50, "pasta-power-bowl": 22.50,
@@ -55,9 +55,19 @@ const REF_PRICES: Record<string, number> = {
 // ──────────────────────────────────────────────────────────────────
 
 type ComboStep =
-  | { type: "sauces"; productId: string; productName: string; count: number; label: string }
+  | { type: "sauces"; productId: string; productName: string; count: number; label: string; excludeSauceIds?: string[] }
   | { type: "salad"; label: string }
   | { type: "tacos"; label: string };
+
+interface FixedComboItem {
+  productId: string;
+  cartSalsas: string[];
+  cartComplementIds: string[];
+  cartOriginalPrice: number;
+  summaryLabel: string;
+  summaryImage: string;
+  summaryDetails: string[];
+}
 
 interface ComboColors {
   text: string;
@@ -79,6 +89,7 @@ interface ComboConfig {
   maxSavings: number;
   includes: string[];
   steps: ComboStep[];
+  fixedItems?: FixedComboItem[];
   images: string[];
   colors: ComboColors;
 }
@@ -196,6 +207,50 @@ const COMBOS: ComboConfig[] = [
       rgb:     "239,68,68",
     },
   },
+  {
+    id: "combo-chiguan",
+    name: "Combo Chiguan",
+    emoji: "🔥",
+    tagline: "Alitas, taco y punto",
+    description: "El combo que no necesita justificación. 4 alitas con tu salsa, un Crunch Supreme Taco con nachos. Todo en uno, sin complicaciones.",
+    price: 20,
+    maxSavings: 0,
+    includes: [
+      "4 alitas de pollo · salsa a elección",
+      "Crunch Supreme Taco · Nachos incluidos",
+    ],
+    steps: [
+      {
+        type: "sauces",
+        productId: "chiguan-alitas",
+        productName: "4 Alitas",
+        count: 1,
+        label: "Elige tu salsa para las alitas",
+        excludeSauceIds: ["anticuchos"],
+      },
+    ],
+    fixedItems: [
+      {
+        productId: "taco-duo",
+        cartSalsas: ["santo-crujiente"],
+        cartComplementIds: ["nachos"],
+        cartOriginalPrice: REF_PRICES["taco-duo"] ?? 0,
+        summaryLabel: "Crunch Supreme Taco",
+        summaryImage: "/crunch.png",
+        summaryDetails: ["Sabor fijo · Nachos incluidos"],
+      },
+    ],
+    images: ["/pequeno-dilema.png", "/crunch.png"],
+    colors: {
+      text:    "text-violet-400",
+      border:  "border-violet-500/30",
+      badge:   "bg-violet-500/15 text-violet-300 border border-violet-500/30",
+      btn:     "bg-violet-600 hover:bg-violet-500 text-white",
+      stepDot: "bg-violet-500",
+      glow:    "0 0 35px rgba(139,92,246,0.18)",
+      rgb:     "139,92,246",
+    },
+  },
 ];
 
 // ──────────────────────────────────────────────────────────────────
@@ -218,6 +273,7 @@ const ALL_PRODUCTS: Record<string, { name: string; image: string }> = {
   "pequeno-dilema":       { name: "Pequeño Dilema",     image: "/pequeno-dilema.png" },
   "duo-dilema":           { name: "Dúo Dilema",          image: "/duo-dilema.png" },
   "taco-duo":             { name: "Dúo de Tacos",        image: "/tacoinicio.png" },
+  "chiguan-alitas":       { name: "4 Alitas · Chiguan",  image: "/pequeno-dilema.png" },
   "ensalada-clasica":     { name: "Clásica Fresh Bowl",  image: "/clasica-fresh-bowl.png" },
   "ensalada-proteica":    { name: "César Power Bowl",    image: "/cesar-power-bowl.png" },
   "ensalada-caesar":      { name: "Protein Fit Bowl",    image: "/protein-fit-bowl.png" },
@@ -248,7 +304,7 @@ function buildSummary(combo: ComboConfig, sel: Selections): SummaryItem[] {
         .map(id => SALSAS.find(s => s.id === id)?.name ?? id);
       items.push({
         label: step.productName,
-        image: PRODUCT_IMAGES[step.productId],
+        image: PRODUCT_IMAGES[step.productId] ?? ALL_PRODUCTS[step.productId]?.image,
         details: names.length ? [`Salsa: ${names.join(", ")}`] : [],
       });
     } else if (step.type === "salad") {
@@ -259,6 +315,10 @@ function buildSummary(combo: ComboConfig, sel: Selections): SummaryItem[] {
       const complement = TACO_COMPLEMENTS.find(c => c.id === sel.tacoComplement);
       items.push({ label: "Dúo de Tacos", image: "/tacoinicio.png", details: complement ? [...names, `Complemento: ${complement.name}`] : names });
     }
+  }
+  // Agregar items fijos del combo (no seleccionables por el usuario)
+  for (const fi of combo.fixedItems ?? []) {
+    items.push({ label: fi.summaryLabel, image: fi.summaryImage, details: fi.summaryDetails });
   }
   return items;
 }
@@ -360,7 +420,9 @@ export default function CombosPage() {
   const saveToCart = () => {
     if (!activeCombo) return;
     const comboGroupId = `cg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    const comboOriginalTotal = parseFloat((activeCombo.price + activeCombo.maxSavings).toFixed(2));
+    const comboOriginalTotal = activeCombo.maxSavings > 0
+      ? parseFloat((activeCombo.price + activeCombo.maxSavings).toFixed(2))
+      : undefined;
     const comboMeta = { comboGroupId, comboName: activeCombo.name, comboPrice: activeCombo.price, comboOriginalTotal };
     const items: any[] = [];
     for (const step of activeCombo.steps) {
@@ -372,6 +434,10 @@ export default function CombosPage() {
       } else if (step.type === "tacos") {
         items.push({ productId: "taco-duo", quantity: 1, salsas: selections.tacos, complementIds: selections.tacoComplement ? [selections.tacoComplement] : [], category: "taco", originalPrice: REF_PRICES["taco-duo"], finalPrice: REF_PRICES["taco-duo"], ...comboMeta });
       }
+    }
+    // Agregar items fijos del combo (taco/complemento predefinidos)
+    for (const fi of activeCombo.fixedItems ?? []) {
+      items.push({ productId: fi.productId, quantity: 1, salsas: fi.cartSalsas, complementIds: fi.cartComplementIds, category: "taco", originalPrice: fi.cartOriginalPrice, finalPrice: fi.cartOriginalPrice, ...comboMeta });
     }
     try {
       const existing = JSON.parse(sessionStorage.getItem("santo-dilema-orders") ?? "[]");
@@ -1164,6 +1230,7 @@ function SauceStep({ step, selected, colors, onToggle }: {
   step: Extract<ComboStep, { type: "sauces" }>; selected: string[];
   colors: ComboColors; onToggle: (id: string) => void;
 }) {
+  const visibleSalsas = SALSAS.filter(s => !step.excludeSauceIds?.includes(s.id));
   return (
     <div className="pt-2">
       <p className="text-white font-semibold mb-1">{step.label}</p>
@@ -1171,7 +1238,7 @@ function SauceStep({ step, selected, colors, onToggle }: {
         {step.count === 1 ? "Elige 1 salsa" : `Elige ${step.count} salsas`} · {selected.length}/{step.count} seleccionada{step.count > 1 ? "s" : ""}
       </p>
       <div className="grid grid-cols-2 gap-2">
-        {SALSAS.map(salsa => {
+        {visibleSalsas.map(salsa => {
           const isSelected = selected.includes(salsa.id);
           return (
             <button key={salsa.id} onClick={() => onToggle(salsa.id)}
