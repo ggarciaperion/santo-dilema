@@ -59,6 +59,15 @@ export const COMBO_RULES: ComboRule[] = [
     price: 40,
     priority: 1,
   },
+  {
+    id: 'combo-chiguan',
+    name: 'Combo Chiguan',
+    emoji: '🔥',
+    description: '4 Alitas + Crunch Supreme Taco',
+    requiredProducts: ['chiguan-alitas', 'taco-duo'],
+    price: 20,
+    priority: 2,
+  },
 ];
 
 export interface AppliedCombo {
@@ -87,6 +96,7 @@ const REFERENCE_PRICES: Record<string, number> = {
   'duo-dilema': 34,
   'santo-pecado': 47,
   'taco-duo': 24.90,
+  'chiguan-alitas': 12,
   'ensalada-clasica': 18.50,
   'ensalada-proteica': 20,
   'ensalada-caesar': 20,

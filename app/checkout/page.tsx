@@ -136,6 +136,12 @@ const fatProducts = [
     image: "/pequeno-dilema.png?v=3",
   },
   {
+    id: "chiguan-alitas",
+    name: "4 Alitas · Chiguan",
+    price: 12,
+    image: "/pequeno-dilema.png?v=3",
+  },
+  {
     id: "duo-dilema",
     name: "Dúo Dilema",
     price: 34.00,
