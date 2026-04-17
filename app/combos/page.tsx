@@ -437,7 +437,7 @@ export default function CombosPage() {
     }
     // Agregar items fijos del combo (taco/complemento predefinidos)
     for (const fi of activeCombo.fixedItems ?? []) {
-      items.push({ productId: fi.productId, quantity: 1, salsas: fi.cartSalsas, complementIds: fi.cartComplementIds, category: "taco", originalPrice: fi.cartOriginalPrice, finalPrice: fi.cartOriginalPrice, ...comboMeta });
+      items.push({ productId: fi.productId, name: fi.summaryLabel, quantity: 1, salsas: fi.cartSalsas, complementIds: fi.cartComplementIds, category: "taco", originalPrice: fi.cartOriginalPrice, finalPrice: fi.cartOriginalPrice, ...comboMeta });
     }
     try {
       const existing = JSON.parse(sessionStorage.getItem("santo-dilema-orders") ?? "[]");

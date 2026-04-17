@@ -23,6 +23,12 @@ const fatProducts = [
     category: "fat",
   },
   {
+    id: "chiguan-alitas",
+    name: "4 Alitas · Chiguan",
+    price: 12.00,
+    category: "fat",
+  },
+  {
     id: "duo-dilema",
     name: "Dúo Dilema",
     price: 34.00,
@@ -219,7 +225,7 @@ export async function POST(request: Request) {
       const effectivePrice = order.finalPrice ?? product?.price ?? 0;
       return {
         ...order,
-        name: product?.name || 'Producto desconocido',
+        name: order.name || product?.name || 'Producto desconocido',
         price: effectivePrice,
         finalPrice: effectivePrice,
         originalPrice: order.originalPrice ?? product?.price ?? 0,
