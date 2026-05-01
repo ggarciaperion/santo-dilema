@@ -36,8 +36,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Aviso Día del Trabajador — activo el 1 mayo 2026 (hasta medianoche hora Perú = 05:00 UTC día 2)
-    const DEADLINE = new Date('2026-05-02T05:00:00Z');
+    // Aviso Día del Trabajador — activo el 1 mayo 2026 hasta las 11:59pm hora Perú (= 04:59 UTC día 2)
+    const DEADLINE = new Date('2026-05-02T04:59:00Z');
     if (new Date() < DEADLINE) {
       setShowDiaTrabajador(true);
     }
@@ -45,7 +45,7 @@ export default function Home() {
 
   useEffect(() => {
     // Mostrar banner tarjeta una vez por sesión, pero NO el 1 mayo (día sin servicio)
-    const esDiaTrabajador = new Date() < new Date('2026-05-02T05:00:00Z');
+    const esDiaTrabajador = new Date() < new Date('2026-05-02T04:59:00Z');
     if (esDiaTrabajador) return;
     const seen = sessionStorage.getItem("sd-tarjeta-banner-seen");
     if (!seen) {
