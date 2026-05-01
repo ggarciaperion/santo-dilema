@@ -15,6 +15,7 @@ export default function Home() {
   const [isPreLaunch, setIsPreLaunch] = useState(false);
   const [showTarjetaBanner, setShowTarjetaBanner] = useState(false);
   const [showComunicado, setShowComunicado] = useState(false);
+  const [showDiaTrabajador, setShowDiaTrabajador] = useState(false);
 
   useEffect(() => {
     // YUNZA DESACTIVADA - Promoción finalizada
@@ -35,7 +36,17 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Mostrar banner tarjeta una vez por sesión (sessionStorage)
+    // Aviso Día del Trabajador — activo el 1 mayo 2026 (hasta medianoche hora Perú = 05:00 UTC día 2)
+    const DEADLINE = new Date('2026-05-02T05:00:00Z');
+    if (new Date() < DEADLINE) {
+      setShowDiaTrabajador(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Mostrar banner tarjeta una vez por sesión, pero NO el 1 mayo (día sin servicio)
+    const esDiaTrabajador = new Date() < new Date('2026-05-02T05:00:00Z');
+    if (esDiaTrabajador) return;
     const seen = sessionStorage.getItem("sd-tarjeta-banner-seen");
     if (!seen) {
       const timer = setTimeout(() => setShowTarjetaBanner(true), 1200);
@@ -733,6 +744,65 @@ export default function Home() {
 
       {/* Modal de Ruleta */}
       <YunzaModal isOpen={showYunzaModal} onClose={() => setShowYunzaModal(false)} />
+
+      {/* Aviso Día del Trabajador — 1 mayo 2026 */}
+      {showDiaTrabajador && (
+        <div
+          className="fixed inset-0 z-[220] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+          onClick={() => setShowDiaTrabajador(false)}
+        >
+          <div
+            className="relative max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl"
+            style={{ background: "linear-gradient(145deg, #1a0a00, #2d1200)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Franja superior decorativa */}
+            <div className="h-2 w-full bg-gradient-to-r from-red-600 via-yellow-500 to-red-600" />
+
+            <div className="px-7 py-8 text-center">
+              {/* Icono */}
+              <div className="text-6xl mb-4">🎉</div>
+
+              {/* Saludo */}
+              <h2 className="text-2xl font-black text-yellow-400 mb-1 tracking-tight">
+                ¡Feliz Día del Trabajador!
+              </h2>
+              <p className="text-orange-300 text-sm font-semibold mb-6">
+                1 de Mayo · Santo Dilema
+              </p>
+
+              {/* Mensaje de cierre */}
+              <div
+                className="rounded-xl px-5 py-4 mb-6"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,200,0,0.2)" }}
+              >
+                <p className="text-white text-base font-semibold mb-1">
+                  Hoy descansamos 🙌
+                </p>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  En este día especial no habrá atención.<br />
+                  Volvemos <span className="text-yellow-400 font-bold">mañana</span> en el horario de siempre:
+                </p>
+                <p className="text-yellow-400 font-black text-lg mt-2">
+                  6:00 PM – 11:00 PM
+                </p>
+              </div>
+
+              {/* Botón cerrar */}
+              <button
+                onClick={() => setShowDiaTrabajador(false)}
+                className="w-full py-3 rounded-xl font-black text-base text-white transition-all hover:scale-105 active:scale-95"
+                style={{ background: "linear-gradient(135deg, #c2410c, #ea580c)" }}
+              >
+                Entendido ✓
+              </button>
+            </div>
+
+            {/* Franja inferior decorativa */}
+            <div className="h-2 w-full bg-gradient-to-r from-red-600 via-yellow-500 to-red-600" />
+          </div>
+        </div>
+      )}
 
       {/* Comunicado urgente - activo hasta 3 abril 2026 12pm Perú */}
       {showComunicado && (
