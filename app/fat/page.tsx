@@ -1297,15 +1297,6 @@ export default function FatPage() {
       {/* Spacer for fixed header on mobile */}
       <div className="h-14 md:hidden" />
 
-      {/* Banner Carrusel */}
-      <BannerCarousel
-        slides={[
-          { movil: "/1920x500/1.webp", web: "/1920x300/1.webp" },
-          { movil: "/1920x500/2.webp", web: "/1920x300/2.webp" },
-          { movil: "/1920x500/3.webp", web: "/1920x300/3.webp" },
-          { movil: "/1920x500/4.webp", web: "/1920x300/4.webp" },
-        ]}
-      />
 
       {/* Products Carousel */}
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-8 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
