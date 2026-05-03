@@ -244,13 +244,15 @@ export default function TacosPage() {
 
   const handleAddOrder = useCallback(() => {
     if (!taco1 || !taco2 || !selectedComplemento) return;
+    const realPrice = menuPrices["taco-duo"] || TACO_DUO_PRODUCT.price;
+    const effectivePrice = menuDiscounts["taco-duo"] || realPrice;
     const newOrder: CompletedOrder = {
       productId: "taco-duo",
       quantity: 1,
       salsas: [taco1, taco2],
       complementIds: [selectedComplemento],
-      finalPrice: duoEffectivePrice,
-      originalPrice: duoRealPrice,
+      finalPrice: effectivePrice,
+      originalPrice: realPrice,
       category: "taco",
     };
     setCompletedOrders((prev) => [...prev, newOrder]);
@@ -262,7 +264,7 @@ export default function TacosPage() {
     setTimeout(() => {
       document.getElementById('tu-orden-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 750);
-  }, [taco1, taco2, selectedComplemento, duoEffectivePrice, duoRealPrice, closeModal]);
+  }, [taco1, taco2, selectedComplemento, menuPrices, menuDiscounts, closeModal]);
 
   const handleDeleteOrder = useCallback((index: number) => {
     setDeleteOrderIndex(index);
