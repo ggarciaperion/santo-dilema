@@ -1059,7 +1059,7 @@ export default function TacosPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={openModal}
+                  onClick={() => openModal()}
                   className="bg-gray-800 hover:bg-gray-700 text-emerald-400 font-bold text-sm rounded-lg px-4 py-2.5 md:py-3 transition-all border border-emerald-500/30"
                 >
                   + Otro
@@ -1093,7 +1093,7 @@ export default function TacosPage() {
         >
           <div className="container mx-auto px-4 py-3 flex justify-center">
             <button
-              onClick={openModal}
+              onClick={() => openModal()}
               className="w-full md:w-72 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black font-black text-base uppercase tracking-widest rounded-lg py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] neon-border-taco"
             >
               Armar mi dúo →
