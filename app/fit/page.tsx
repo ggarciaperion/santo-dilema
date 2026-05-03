@@ -1012,18 +1012,17 @@ export default function FitPage() {
                     transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
                     transformOrigin: 'center center',
                     borderRadius: isMobile ? 16 : 0,
-                    overflow: 'visible',
+                    overflow: isMobile ? 'hidden' : 'visible',
                     position: 'relative',
                     zIndex: isExpanded ? 50 : isMobile ? productIndex + 1 : undefined,
                   }}
                 >
                   <div
-                    className={`relative flex items-center justify-center overflow-visible ${
+                    className={`relative flex items-center justify-center ${
                       product.image.startsWith('/')
-                        ? 'bg-black h-40 md:h-40 border-0'
+                        ? 'bg-black h-44 md:h-40 border-0 overflow-hidden md:overflow-visible'
                         : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
                     } ${isExpanded ? 'cursor-pointer' : ''}`}
-                    style={product.image.startsWith('/') ? { overflow: 'visible' } : undefined}
                     onClick={(e) => {
                       if (isExpanded && !isSoldOut) {
                         e.stopPropagation();
@@ -1040,9 +1039,9 @@ export default function FitPage() {
                         height={300}
                         className="absolute object-cover drop-shadow-2xl"
                         style={{
-                          width: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '120%' : '150%',
-                          height: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '125%' : '160%',
-                          top: (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '-15%' : '-30%',
+                          width: isMobile ? '100%' : (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '120%' : '150%',
+                          height: isMobile ? '100%' : (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '125%' : '160%',
+                          top: isMobile ? '0' : (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '-15%' : '-30%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           objectPosition: 'center 40%',
