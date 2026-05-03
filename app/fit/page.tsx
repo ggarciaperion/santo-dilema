@@ -422,12 +422,9 @@ export default function FitPage() {
       return newState;
     });
     setExpandedCard(null);
-    const _name = product.name;
-    setTimeout(() => {
-      setSuccessProductName(_name);
-      setShowSuccessToast(true);
-    }, 150);
-    setTimeout(() => setShowSuccessToast(false), 2950);
+    setSuccessProductName(product.name);
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 2800);
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
   };
 
