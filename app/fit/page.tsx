@@ -1163,7 +1163,14 @@ export default function FitPage() {
                             {/* Precio del menú */}
                             <div className={`${isTacoOrder ? 'text-emerald-300/80' : isFatOrder ? 'text-red-300/80' : 'text-cyan-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              <span className="text-amber-400 font-bold text-sm gold-glow">S/ {(product.price * order.quantity).toFixed(2)}</span>
+                              {order.discountApplied && !hasComboDiscount ? (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="text-gray-500 line-through text-[10px]">S/ {((order.originalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
+                                  <span className="text-amber-400 font-bold text-sm gold-glow">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
+                                </span>
+                              ) : (
+                                <span className="text-amber-400 font-bold text-sm gold-glow">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? (menuPrices[product.id] || product.price)) : (order.finalPrice ?? (menuPrices[product.id] || product.price))) * order.quantity).toFixed(2)}</span>
+                              )}
                             </div>
 
                             {/* Sabores tacos */}
