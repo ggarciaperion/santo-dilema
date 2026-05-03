@@ -725,81 +725,75 @@ export default function TacosPage() {
         </div>
 
         {/* ── Flavor cards grid ─────────────────────────────────────────────── */}
-        <div
-          className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-10 md:gap-6 lg:gap-8 px-3 md:px-4 pt-6 pb-1 md:py-5 lg:py-6"
-          style={{ overflow: "visible" }}
-        >
-          {flavors.map((flavor, index) => {
+        <div className="flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10">
+          {flavors.map((flavor) => {
             const isSoldOut = !!menuStock[flavor.id];
-            const isLastOdd = index === flavors.length - 1 && flavors.length % 2 !== 0;
+            const isChosen = completedOrders.some(o => o.salsas.includes(flavor.id));
 
             return (
               <div
                 key={flavor.id}
-                className={isLastOdd ? "col-span-2 md:contents flex justify-center" : "contents"}
+                onClick={() => { if (!isSoldOut) openModal(flavor.id); }}
+                className={`bg-gray-900 flex-shrink-0 w-full md:w-[280px] lg:w-[300px] relative neon-border-taco shadow-xl shadow-emerald-500/30 border-2 border-emerald-400/40
+                  ${isSoldOut ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
+                `}
+                style={{
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                }}
               >
-                <div
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl border-2 md:border-2 border-emerald-400 ${isSoldOut ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
-                    ${isLastOdd ? "w-[calc(50%-0.375rem)] md:w-[240px] lg:w-[260px]" : "w-full md:w-[240px] lg:w-[260px]"}
-                  `}
-                  style={{
-                    boxShadow: "0 0 10px rgba(52,211,153,0.4), 0 0 20px rgba(52,211,153,0.2)",
-                    borderRadius: 0,
-                    overflow: "hidden",
-                    position: "relative",
-                    zIndex: index + 1,
-                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                  }}
-                  onClick={() => {
-                    if (!isSoldOut) openModal(flavor.id);
-                  }}
-                >
-                  {/* Image area */}
-                  <div
-                    className="relative flex items-center justify-center bg-black h-44 md:h-48 overflow-hidden"
-                  >
-                    <Image
-                      src={flavor.image}
-                      alt={flavor.name}
-                      fill
-                      className="object-cover"
-                    />
-                    {isSoldOut && (
-                      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: "rgba(0,0,0,0.45)" }}>
-                        <div
-                          className="border-4 border-red-500 rounded-sm px-3 py-1 select-none"
-                          style={{ transform: "rotate(-20deg)", boxShadow: "0 0 12px rgba(239,68,68,0.7)" }}
-                        >
-                          <span className="text-red-500 font-black text-xl md:text-2xl tracking-widest uppercase" style={{ textShadow: "0 0 8px rgba(239,68,68,0.8)" }}>
-                            AGOTADO
-                          </span>
-                        </div>
+                {/* Image */}
+                <div className="relative h-52 bg-black overflow-hidden">
+                  {isSoldOut && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
+                      <div className="border-4 border-red-500 rounded px-3 py-1 select-none" style={{ transform: "rotate(-15deg)" }}>
+                        <span className="text-red-500 font-black text-xl tracking-widest uppercase">AGOTADO</span>
                       </div>
-                    )}
+                    </div>
+                  )}
+                  <Image
+                    src={flavor.image}
+                    alt={flavor.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 300px"
+                    className="object-cover"
+                  />
+                </div>
+
+                {/* Info */}
+                <div className="p-3.5">
+                  <h4 className="text-base font-bold text-white mb-1 truncate">{flavor.name}</h4>
+                  <p className="text-emerald-200/60 text-sm mb-3 line-clamp-2">{flavor.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      {duoOfferPrice ? (
+                        <>
+                          <span className="text-xs text-gray-500 line-through">S/ {duoRealPrice.toFixed(2)}</span>
+                          <span className="text-lg font-black text-emerald-400">S/ {duoOfferPrice.toFixed(2)}</span>
+                        </>
+                      ) : (
+                        <span className="text-lg font-black text-amber-400 gold-glow">S/ {duoRealPrice.toFixed(2)}</span>
+                      )}
+                      <span className="text-[10px] text-gray-500">el dúo</span>
+                    </div>
                     {!isSoldOut && (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openModal(flavor.id);
-                        }}
-                        className="absolute top-2 right-2 z-10 w-7 h-7 text-white rounded-full text-base font-bold transition-all flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 shadow-lg"
-                        style={{ boxShadow: "0 0 8px rgba(52,211,153,0.6)" }}
+                        onClick={(e) => { e.stopPropagation(); openModal(flavor.id); }}
+                        className="w-10 h-10 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold text-2xl flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-emerald-500/40"
                       >
                         +
                       </button>
                     )}
                   </div>
-
-                  {/* Info area */}
-                  <div className="p-3 md:p-2.5">
-                    <h4 className="text-xs md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
-                      {flavor.name}
-                    </h4>
-                    <p className="text-emerald-200/70 text-[10px] md:text-[11px]">
-                      {flavor.description}
-                    </p>
-                  </div>
                 </div>
+
+                {/* Chosen badge */}
+                {isChosen && (
+                  <div className="absolute top-2 right-2 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-full z-20 shadow">
+                    ✓ Elegido
+                  </div>
+                )}
               </div>
             );
           })}
