@@ -1131,13 +1131,15 @@ export default function FatPage() {
                       </div>
                     )}
                     {/* Papas fritas decorativas */}
-                    <Image
-                      src="/papas-fritas.png"
-                      alt="Papas fritas"
-                      width={145}
-                      height={105}
-                      className="absolute bottom-0 left-0 object-contain pointer-events-none z-10"
-                    />
+                    {product.id !== "pequeno-dilema" && (
+                      <Image
+                        src="/papas-fritas.png"
+                        alt="Papas fritas"
+                        width={145}
+                        height={105}
+                        className="absolute bottom-0 left-0 object-contain pointer-events-none z-10"
+                      />
+                    )}
                     {discountPrice && (
                       <div className="absolute top-2 left-2 bg-amber-400 text-black text-xs font-black px-2 py-0.5 rounded-full">OFERTA</div>
                     )}
