@@ -233,7 +233,7 @@ export default function FitPage() {
   const comboDiscountAmount = comboResult.totalSavings;
 
   const completedTotal = completedOrders.reduce((total, order) => {
-    const basePrice = order.originalPrice ?? order.finalPrice ?? (() => {
+    const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fatProducts.find(p => p.id === order.productId);
       if (!product) product = tacoProducts.find(p => p.id === order.productId);
