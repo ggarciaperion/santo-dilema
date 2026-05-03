@@ -135,6 +135,7 @@ export default function TacosPage() {
   const [crossCategoryOrders, setCrossCategoryOrders] = useState<CompletedOrder[]>([]);
   // Taco orders managed on this page
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Bebidas
   const [bebidaQty, setBebidaQty] = useState<Record<string, number>>({});
@@ -253,6 +254,9 @@ export default function TacosPage() {
     };
     setCompletedOrders((prev) => [...prev, newOrder]);
     closeModal();
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 2800);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
   }, [taco1, taco2, selectedComplemento, closeModal]);
 
   const handleDeleteOrder = useCallback((index: number) => {
@@ -330,6 +334,21 @@ export default function TacosPage() {
 
   return (
     <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+
+      {/* Toast de orden agregada */}
+      {showSuccessToast && (
+        <div className="fixed top-5 left-1/2 z-[300] pointer-events-none" style={{ transform: 'translateX(-50%)', animation: 'slideUp 0.3s ease-out' }}>
+          <div className="bg-gray-900/95 border border-emerald-400/60 rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-2xl shadow-emerald-500/20 backdrop-blur-sm">
+            <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <p className="text-white font-bold text-sm whitespace-nowrap">¡Orden agregada!</p>
+              <p className="text-emerald-300/70 text-xs whitespace-nowrap">Dúo de Tacos</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Iconos decorativos de fondo - México/Tacos ──────────────────────── */}
       <div className="fixed inset-0 overflow-hidden opacity-15 pointer-events-none z-0">

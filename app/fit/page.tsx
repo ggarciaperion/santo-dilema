@@ -196,6 +196,8 @@ export default function FitPage() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedComplements, setSelectedComplements] = useState<Record<string, any[]>>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successProductName, setSuccessProductName] = useState('');
   const [isSafari, setIsSafari] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -420,6 +422,10 @@ export default function FitPage() {
       return newState;
     });
     setExpandedCard(null);
+    setSuccessProductName(product.name);
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 2800);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
   };
 
   const handleEditOrder = (orderIndex: number) => {
@@ -546,6 +552,22 @@ export default function FitPage() {
 
   return (
     <div className="min-h-screen bg-black relative">
+
+      {/* Toast de orden agregada */}
+      {showSuccessToast && (
+        <div className="fixed top-5 left-1/2 z-[300] pointer-events-none" style={{ transform: 'translateX(-50%)', animation: 'slideUp 0.3s ease-out' }}>
+          <div className="bg-gray-900/95 border border-cyan-400/60 rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-2xl shadow-cyan-500/20 backdrop-blur-sm">
+            <div className="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <p className="text-white font-bold text-sm whitespace-nowrap">¡Orden agregada!</p>
+              <p className="text-cyan-300/70 text-xs whitespace-nowrap">{successProductName}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Cadeneta de carnaval */}
