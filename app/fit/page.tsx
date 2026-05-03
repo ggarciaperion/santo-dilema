@@ -422,9 +422,12 @@ export default function FitPage() {
       return newState;
     });
     setExpandedCard(null);
-    setSuccessProductName(product.name);
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 2800);
+    const _name = product.name;
+    setTimeout(() => {
+      setSuccessProductName(_name);
+      setShowSuccessToast(true);
+    }, 150);
+    setTimeout(() => setShowSuccessToast(false), 2950);
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
   };
 
@@ -1191,7 +1194,7 @@ export default function FitPage() {
                                   <span className="text-amber-400 font-bold text-sm gold-glow">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                                 </span>
                               ) : (
-                                <span className="text-amber-400 font-bold text-sm gold-glow">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? (menuPrices[product.id] || product.price)) : (order.finalPrice ?? (menuPrices[product.id] || product.price))) * order.quantity).toFixed(2)}</span>
+                                <span className="text-amber-400 font-bold text-sm gold-glow">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                               )}
                             </div>
 
