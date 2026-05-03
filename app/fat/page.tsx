@@ -1123,7 +1123,7 @@ export default function FatPage() {
                         alt={product.name}
                         fill
                         sizes="(max-width: 768px) 100vw, 300px"
-                        className="object-cover"
+                        className={`object-cover ${product.id === "santo-pecado" ? "object-top" : "object-center"}`}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
