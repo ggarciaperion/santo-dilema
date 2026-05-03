@@ -1081,7 +1081,7 @@ export default function FatPage() {
                   }}
                 >
                   {/* Image */}
-                  <div className="relative h-44 bg-black overflow-hidden">
+                  <div className="relative h-52 bg-black overflow-hidden">
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
                         <div className="border-4 border-red-500 rounded px-3 py-1 select-none" style={{ transform: 'rotate(-15deg)' }}>
@@ -1093,10 +1093,9 @@ export default function FatPage() {
                       <Image
                         src={product.image}
                         alt={product.name}
-                        width={300}
-                        height={300}
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 55%' }}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 300px"
+                        className="object-contain"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
@@ -1182,7 +1181,7 @@ export default function FatPage() {
                 {/* Scrollable body */}
                 <div className="flex-1 overflow-y-auto">
                   {/* Product image */}
-                  <div className="relative h-56 bg-black overflow-hidden">
+                  <div className="relative h-64 bg-black overflow-hidden">
                     {mSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
                         <div className="border-4 border-red-500 rounded px-4 py-1" style={{ transform: 'rotate(-15deg)' }}>
@@ -1191,7 +1190,7 @@ export default function FatPage() {
                       </div>
                     )}
                     {mp.image.startsWith('/') ? (
-                      <Image src={mp.image} alt={mp.name} width={600} height={300} className="w-full h-full object-cover" style={{ objectPosition: 'center 55%' }} />
+                      <Image src={mp.image} alt={mp.name} fill sizes="100vw" className="object-contain" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
                         <span className="text-7xl">{mp.image}</span>

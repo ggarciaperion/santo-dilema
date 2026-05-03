@@ -797,15 +797,14 @@ export default function FitPage() {
                   `}
                   style={{ transition: 'transform 0.3s ease, box-shadow 0.3s ease', borderRadius: isMobile ? 16 : 0, overflow: 'hidden' }}
                 >
-                  <div className="relative h-44 bg-black overflow-hidden">
+                  <div className="relative h-52 bg-black overflow-hidden">
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
                         alt={product.name}
-                        width={300}
-                        height={300}
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 40%' }}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 280px"
+                        className="object-contain"
                       />
                     ) : (
                       <span className="text-4xl flex items-center justify-center h-full">{product.image}</span>
@@ -896,15 +895,14 @@ export default function FitPage() {
                 {/* Scrollable content */}
                 <div className="flex-1 overflow-y-auto">
                   {/* Image */}
-                  <div className="relative h-56 bg-black overflow-hidden rounded-t-3xl md:rounded-t-2xl">
+                  <div className="relative h-64 bg-black overflow-hidden rounded-t-3xl md:rounded-t-2xl">
                     {mp.image.startsWith('/') ? (
                       <Image
                         src={mp.image}
                         alt={mp.name}
-                        width={500}
-                        height={300}
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 40%' }}
+                        fill
+                        sizes="100vw"
+                        className="object-contain"
                       />
                     ) : (
                       <span className="text-6xl flex items-center justify-center h-full">{mp.image}</span>
