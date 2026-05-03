@@ -285,8 +285,6 @@ export default function FatPage() {
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
-  const [bannerWidth, setBannerWidth] = useState<number | null>(null);
-  const [bannerSlide, setBannerSlide] = useState(0);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
@@ -466,44 +464,6 @@ export default function FatPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-avanzar carrusel de banner cada 5 segundos
-  useEffect(() => {
-    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Medir ancho real de la fila de carteles para alinear el banner (solo desktop)
-  useEffect(() => {
-    const measure = () => {
-      if (window.innerWidth < 768) {
-        setBannerWidth(null);
-        return;
-      }
-      const ids = products.map(p => p.id);
-      const first = cardRefs.current[ids[0]];
-      const last = cardRefs.current[ids[ids.length - 1]];
-      if (first && last) {
-        const w = last.getBoundingClientRect().right - first.getBoundingClientRect().left;
-        if (w > 0) setBannerWidth(Math.round(w));
-      }
-    };
-    const t = setTimeout(measure, 200);
-    window.addEventListener('resize', measure);
-    return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
-  }, []);
-
-  useEffect(() => {
-    if (expandedCard && window.innerWidth < 768) {
-      const el = cardRefs.current[expandedCard];
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 80);
-      }
-    }
-  }, [expandedCard]);
-
-  // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
 
   const getRequiredSalsasCount = (productId: string): number => {
     const quantity = orderQuantity[productId] || 0;
@@ -515,198 +475,30 @@ export default function FatPage() {
     return baseSalsas * quantity;
   };
 
-  const handleExpandCard = (productId: string) => {
-    if (isDragging) return;
-    setExpandedCard(productId);
-    setShowSalsas((prev) => ({ ...prev, [productId]: true }));
-    setIsEditingOrder(false); // Es una nueva orden, no edición
-    if (!selectedSalsas[productId]) {
-      setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
-    }
-    if (!selectedComplements[productId]) {
-      setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
-    }
-
-    // Scroll hacia la sección de salsas después de expandir
-    setTimeout(() => {
-      const card = cardRefs.current[productId];
-      if (card) {
-        const salsasButton = card.querySelector('[data-salsas-button]');
-        if (salsasButton) {
-          // Obtener posición actual del scroll
-          const currentScroll = window.scrollY || document.documentElement.scrollTop;
-
-          // Obtener posición del botón de salsas
-          const rect = salsasButton.getBoundingClientRect();
-
-          // Calcular la posición absoluta del botón (scroll actual + posición relativa)
-          const elementTop = currentScroll + rect.top;
-
-          // Calcular cuánto scroll necesitamos para centrar el elemento
-          // Centramos restando la mitad de la altura de la ventana
-          const offset = window.innerHeight / 2 - rect.height / 2;
-          const scrollTarget = elementTop - offset + 100; // +100px para ajuste adicional hacia arriba
-
-          // Hacer scroll suave
-          window.scrollTo({
-            top: scrollTarget,
-            behavior: 'smooth'
-          });
-
-          console.log('Scroll triggered:', {
-            currentScroll,
-            elementTop,
-            scrollTarget,
-            windowHeight: window.innerHeight
-          });
-        }
-      }
-    }, 500);
-  };
-
-  const handleCloseCard = () => {
-    setExpandedCard(null);
-    setIsEditingOrder(false);
-    setEditingOrderIndex(null);
-    // Limpiar estados
-    if (expandedCard) {
-      setShowSalsas((prev) => ({ ...prev, [expandedCard]: false }));
-      setShowBebidas((prev) => ({ ...prev, [expandedCard]: false }));
-      setShowExtras((prev) => ({ ...prev, [expandedCard]: false }));
-    }
-  };
 
   const handleCardClick = (productId: string) => {
-    const currentQty = orderQuantity[productId] || 0;
-
-    // Helper: reset previous card qty to 0 if it has no completed order
-    const resetPreviousCard = (prevId: string) => {
-      const hasOrder = completedOrders.some(o => o.productId === prevId);
-      if (!hasOrder) {
-        setOrderQuantity((prev) => ({ ...prev, [prevId]: 0 }));
-      }
-      setShowSalsas((prev) => ({ ...prev, [prevId]: false }));
-      setShowBebidas((prev) => ({ ...prev, [prevId]: false }));
-      setShowExtras((prev) => ({ ...prev, [prevId]: false }));
-    };
-
-    // Si qty = 0, permitir expandir/colapsar con clic
-    if (currentQty === 0) {
-      if (expandedCard === productId) {
-        // Colapsar: volver a 0
-        setExpandedCard(null);
-        setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
-        setShowSalsas((prev) => ({ ...prev, [productId]: false }));
-        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
-        setShowExtras((prev) => ({ ...prev, [productId]: false }));
-      } else {
-        // Si había otro cartel expandido, resetear su contador
-        if (expandedCard) resetPreviousCard(expandedCard);
-
-        // Expandir y poner qty = 1 automáticamente
-        setExpandedCard(productId);
-        setOrderQuantity((prev) => ({ ...prev, [productId]: 1 }));
-        setShowSalsas((prev) => ({ ...prev, [productId]: true }));
-        if (!selectedSalsas[productId]) {
-          setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
-        }
-        if (!selectedComplements[productId]) {
-          setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
-        }
-
-        // Scroll hacia la sección de salsas después de que se expanda el cartel
-        setTimeout(() => {
-          const card = cardRefs.current[productId];
-          if (card) {
-            const salsasButton = card.querySelector('[data-salsas-button]');
-            if (salsasButton) {
-              salsasButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          }
-        }, 600);
-      }
-    } else if (currentQty > 0 && expandedCard !== productId) {
-      // Si qty > 0, solo expandir si no está expandido
-      if (expandedCard) resetPreviousCard(expandedCard);
-      setExpandedCard(productId);
-      setShowSalsas((prev) => ({ ...prev, [productId]: true }));
-
-      // Scroll hacia la sección de salsas después de que se expanda el cartel
-      setTimeout(() => {
-        const card = cardRefs.current[productId];
-        if (card) {
-          const salsasButton = card.querySelector('[data-salsas-button]');
-          if (salsasButton) {
-            salsasButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }
-      }, 600);
+    if (isDragging) return;
+    setExpandedCard(productId);
+    setIsEditingOrder(false);
+    if (!orderQuantity[productId]) {
+      setOrderQuantity(prev => ({ ...prev, [productId]: 1 }));
     }
+    if (!selectedSalsas[productId]) {
+      setSelectedSalsas(prev => ({ ...prev, [productId]: [] }));
+    }
+    setShowSalsas(prev => ({ ...prev, [productId]: true }));
   };
 
   const handleIncreaseQuantity = (productId: string) => {
-    const currentQty = orderQuantity[productId] || 0;
-    setOrderQuantity((prev) => ({
-      ...prev,
-      [productId]: currentQty + 1
-    }));
-
-    // Expandir automáticamente cuando se agrega unidad (de 0 a 1, de 1 a 2, etc.)
-    if (expandedCard !== productId && currentQty >= 0) {
-      setExpandedCard(productId);
-      setShowSalsas((prev) => ({ ...prev, [productId]: true }));
-      if (!selectedSalsas[productId]) {
-        setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
-      }
-      if (!selectedComplements[productId]) {
-        setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
-      }
-
-      // Scroll hacia la sección de salsas después de que se expanda el cartel
-      setTimeout(() => {
-        const card = cardRefs.current[productId];
-        if (card) {
-          const salsasButton = card.querySelector('[data-salsas-button]');
-          if (salsasButton) {
-            salsasButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }
-      }, 600);
-    } else if (expandedCard === productId) {
-      // Si el cartel ya está expandido, expandir la sección de salsas
-      // porque ahora se necesitan más salsas (1/2, 2/4, 3/6, etc.)
-      setShowSalsas((prev) => ({ ...prev, [productId]: true }));
-    }
+    const currentQty = orderQuantity[productId] || 1;
+    setOrderQuantity(prev => ({ ...prev, [productId]: currentQty + 1 }));
+    setShowSalsas(prev => ({ ...prev, [productId]: true }));
   };
 
   const handleDecreaseQuantity = (productId: string) => {
-    const currentQty = orderQuantity[productId] || 0;
-    if (currentQty > 0) {
-      setOrderQuantity((prev) => ({
-        ...prev,
-        [productId]: currentQty - 1
-      }));
-      // Si llega a 0, colapsar el card y limpiar carrito
-      if (currentQty === 1) {
-        setExpandedCard(null);
-        setIsEditingOrder(false);
-        setEditingOrderIndex(null);
-        setShowSalsas((prev) => ({ ...prev, [productId]: false }));
-        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
-        setShowExtras((prev) => ({ ...prev, [productId]: false }));
-        // Limpiar salsas y complementos solo cuando llega a 0
-        setSelectedSalsas((prev) => ({ ...prev, [productId]: [] }));
-        setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
-        // Eliminar del carrito si existe
-        if (mainProductsInCart[productId]) {
-          removeFromCart(mainProductsInCart[productId]);
-          setMainProductsInCart((prev) => {
-            const newState = { ...prev };
-            delete newState[productId];
-            return newState;
-          });
-        }
-      }
+    const currentQty = orderQuantity[productId] || 1;
+    if (currentQty > 1) {
+      setOrderQuantity(prev => ({ ...prev, [productId]: currentQty - 1 }));
     }
   };
 
@@ -913,23 +705,9 @@ export default function FatPage() {
     // Marcar que estamos editando
     setIsEditingOrder(true);
 
-    // Abrir el card expandido
+    // Abrir el modal
     setExpandedCard(order.productId);
     setShowSalsas((prev) => ({ ...prev, [order.productId]: true }));
-
-    // Desplazar y centrar el cartel correspondiente
-    setTimeout(() => {
-      const card = cardRefs.current[order.productId];
-      if (card && scrollContainerRef.current) {
-        const container = scrollContainerRef.current;
-        const cardLeft = card.offsetLeft;
-        const cardWidth = card.offsetWidth;
-        const containerWidth = container.offsetWidth;
-        const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
-
-        container.scrollTo({ left: scrollPosition, behavior: 'smooth' });
-      }
-    }, 100);
   };
 
   const handleDeleteOrder = (orderIndex: number) => {
@@ -1032,32 +810,6 @@ export default function FatPage() {
     }
   };
 
-  const handleCardHover = (productId: string) => {
-    if (expandedCard) return; // No hacer hover si hay un cartel expandido
-    setHoveredCard(productId);
-    const cardElement = cardRefs.current[productId];
-    const container = scrollContainerRef.current;
-
-    if (cardElement && container) {
-      const cardRect = cardElement.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-
-      if (cardRect.right > containerRect.right) {
-        const scrollAmount = cardRect.right - containerRect.right + 20;
-        container.scrollBy({
-          left: scrollAmount,
-          behavior: 'smooth'
-        });
-      } else if (cardRect.left < containerRect.left) {
-        const scrollAmount = cardRect.left - containerRect.left - 20;
-        container.scrollBy({
-          left: scrollAmount,
-          behavior: 'smooth'
-        });
-      }
-    }
-  };
-
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
@@ -1081,24 +833,8 @@ export default function FatPage() {
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  const collapseExpandedCard = () => {
-    if (!expandedCard) return;
-    resetExpandedCard(expandedCard);
-    setExpandedCard(null);
-  };
-
-  const resetExpandedCard = (productId: string) => {
-    const hasOrder = completedOrders.some(o => o.productId === productId);
-    if (!hasOrder) {
-      setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
-    }
-    setShowSalsas((prev) => ({ ...prev, [productId]: false }));
-    setShowBebidas((prev) => ({ ...prev, [productId]: false }));
-    setShowExtras((prev) => ({ ...prev, [productId]: false }));
-  };
-
   return (
-    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible" onClick={collapseExpandedCard}>
+    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Cadeneta de carnaval */}
@@ -1321,540 +1057,309 @@ export default function FatPage() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
             {products.map((product, index) => {
-              const isExpanded = expandedCard === product.id;
-              const requiredSalsas = getRequiredSalsasCount(product.id);
-              const currentSalsas = selectedSalsas[product.id] || [];
-              const canAdd = canAddProduct(product.id);
               const isSoldOut = !!menuStock[product.id];
               const discountPrice = menuDiscounts[product.id];
               const effectivePrice = menuPrices[product.id] || product.price;
-              const activePromo = findMatchingPromo(product.id, currentSalsas);
-              const dynamicPromosForProduct = salsaPromos.filter((p: any) => p.active && p.productId === product.id);
-              const allPromosForProduct = dynamicPromosForProduct;
-              const isLastOdd = index === products.length - 1 && products.length % 2 !== 0;
+              const activePromo = findMatchingPromo(product.id, selectedSalsas[product.id] || []);
 
               return (
                 <div
                   key={product.id}
-                  className={isLastOdd ? 'md:contents overflow-visible' : 'contents'}
-                  style={isLastOdd ? { overflow: 'visible' } : undefined}
-                >
-                <div
                   ref={(el) => { cardRefs.current[product.id] = el; }}
-                  onClick={(e) => { e.stopPropagation(); if (!isSoldOut && !isExpanded) handleCardClick(product.id); }}
-                  onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
+                  onClick={() => { if (!isSoldOut && !isDragging) handleCardClick(product.id); }}
+                  onMouseEnter={() => { if (!isSoldOut) setHoveredCard(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
-                    ${isExpanded
-                      ? `w-full md:w-[400px] lg:w-[420px] z-20`
-                      : 'w-full md:w-[280px] lg:w-[300px]'
-                    }
-                    ${!isExpanded && hoveredCard === product.id && !expandedCard
-                      ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
-                      : !isExpanded && !expandedCard ? 'md:shadow-none scale-100 translate-y-0' : ''
-                    }
-                    ${(orderQuantity[product.id] || 0) > 0 && !isExpanded ? 'cursor-pointer' : ''}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink w-full md:w-[280px] lg:w-[300px] relative
+                    ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 border-red-400/40'}
+                    ${isSoldOut ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+                    ${hoveredCard === product.id ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50' : ''}
                   `}
                   style={{
-                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
-                    transformOrigin: 'center center',
-                    borderRadius: isMobile ? 16 : 0,
-                    overflow: isMobile ? 'hidden' : 'visible',
-                    position: 'relative',
-                    zIndex: isExpanded ? 50 : isMobile ? index + 1 : undefined,
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    borderRadius: isMobile ? 16 : 8,
+                    overflow: 'hidden',
                   }}
                 >
-                  {/* Card Header */}
-                  <div
-                    className={`relative flex items-center justify-center ${
-                      product.image.startsWith('/')
-                        ? 'bg-black h-44 md:h-48 border-0 overflow-hidden md:overflow-visible'
-                        : 'bg-gradient-to-br from-red-900/40 to-orange-900/40 h-20 md:h-28 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-red-500/30'
-                    } ${isExpanded ? 'cursor-pointer' : ''}`}
-                    onClick={(e) => {
-                      if (isExpanded && !isSoldOut) {
-                        e.stopPropagation();
-                        resetExpandedCard(product.id);
-                        setExpandedCard(null);
-                      }
-                    }}
-                  >
+                  {/* Image */}
+                  <div className="relative h-44 bg-black overflow-hidden">
                     {isSoldOut && (
-                      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
-                        <div className="border-4 border-red-500 rounded-sm px-3 py-1 select-none" style={{ transform: 'rotate(-20deg)', boxShadow: '0 0 12px rgba(239,68,68,0.7)' }}>
-                          <span className="text-red-500 font-black text-xl md:text-2xl tracking-widest uppercase" style={{ textShadow: '0 0 8px rgba(239,68,68,0.8)' }}>AGOTADO</span>
+                      <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
+                        <div className="border-4 border-red-500 rounded px-3 py-1 select-none" style={{ transform: 'rotate(-15deg)' }}>
+                          <span className="text-red-500 font-black text-xl tracking-widest uppercase">AGOTADO</span>
                         </div>
                       </div>
                     )}
-
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
                         alt={product.name}
                         width={300}
                         height={300}
-                        className="absolute object-cover drop-shadow-2xl"
-                        style={{
-                          width: isMobile ? '100%' : '150%',
-                          height: isMobile ? '100%' : '160%',
-                          top: isMobile ? '0' : '-30%',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          objectPosition: 'center 55%',
-                          zIndex: 10
-                        }}
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 55%' }}
                       />
                     ) : (
-                      <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
+                        <span className="text-5xl">{product.image}</span>
+                      </div>
+                    )}
+                    {discountPrice && (
+                      <div className="absolute top-2 left-2 bg-amber-400 text-black text-xs font-black px-2 py-0.5 rounded-full">OFERTA</div>
                     )}
                   </div>
-                  <div className="p-3 md:p-3.5">
-                    <h4 className="text-base md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
-                      {product.name}
-                    </h4>
-                    <p
-                      className="text-orange-200/70 text-sm md:text-xs mb-1.5 md:mb-2 md:line-clamp-3 md:h-12"
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
-                    <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
+                  {/* Info */}
+                  <div className="p-3.5">
+                    <h4 className="text-base font-bold text-white mb-1 truncate">{product.name}</h4>
+                    <p className="text-orange-200/60 text-sm mb-3 line-clamp-2" dangerouslySetInnerHTML={{ __html: product.description }} />
+                    <div className="flex items-center justify-between">
                       {activePromo ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-bold text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                          <span className="text-sm md:text-lg font-black text-green-400 promo-price-pulse">S/ {activePromo.promoPrice.toFixed(2)}</span>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                          <span className="text-lg font-black text-green-400">S/ {activePromo.promoPrice.toFixed(2)}</span>
                         </div>
                       ) : discountPrice ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-bold text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                          <span className="text-sm md:text-lg font-black text-amber-400 promo-price-pulse">S/ {discountPrice.toFixed(2)}</span>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                          <span className="text-lg font-black text-amber-400">S/ {discountPrice.toFixed(2)}</span>
                         </div>
                       ) : (
-                        <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ {effectivePrice.toFixed(2)}</span>
+                        <span className="text-lg font-black text-amber-400 gold-glow">S/ {effectivePrice.toFixed(2)}</span>
                       )}
-                      <div className="flex items-center gap-0.5 md:gap-1">
+                      {!isSoldOut && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isSoldOut) handleDecreaseQuantity(product.id);
-                          }}
-                          disabled={isSoldOut}
-                          className={`w-11 h-11 md:w-7 md:h-7 text-white rounded text-base md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
-                        >
-                          −
-                        </button>
-                        <span className="text-white font-bold w-6 md:w-9 text-center text-xs md:text-base">
-                          {orderQuantity[product.id] || 0}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isSoldOut) handleIncreaseQuantity(product.id);
-                          }}
-                          disabled={isSoldOut}
-                          className={`w-11 h-11 md:w-7 md:h-7 text-white rounded text-base md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
+                          onClick={(e) => { e.stopPropagation(); handleCardClick(product.id); }}
+                          className="w-10 h-10 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold text-2xl flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-red-500/40"
                         >
                           +
                         </button>
-                      </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Expanded Content */}
-                  <div
-                    className={`overflow-hidden transition-all origin-top ${
-                      isExpanded
-                        ? 'max-h-[2500px] scale-y-100 opacity-100 duration-600 ease-out'
-                        : 'max-h-0 scale-y-95 opacity-0 duration-400 ease-in-out'
-                    }`}
-                    style={{
-                      transition: isExpanded
-                        ? 'max-height 0.6s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out'
-                        : 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, transform 0.4s ease-in-out'
-                    }}
-                  >
-                    <div className="px-2.5 md:px-5 pb-2.5 md:pb-5 border-t-2 border-red-500/30 pt-2.5 md:pt-4">
-                      {/* Selector de Salsas - Acordeón */}
-                      <div className="mb-2 md:mb-4">
-                        <button
-                          data-salsas-button
-                          onClick={() => setShowSalsas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                          className={`w-full flex items-center justify-between rounded-md md:rounded-lg p-1.5 md:p-3 transition-all shadow-sm border
-                            ${canAdd
-                              ? 'bg-green-600/20 hover:bg-green-600/30 border-green-500/40 shadow-green-500/20'
-                              : 'bg-amber-600/20 hover:bg-amber-600/30 border-amber-500/40 shadow-amber-500/20'
-                            }
-                          `}
-                          style={{
-                            boxShadow: showSalsas[product.id]
-                              ? canAdd
-                                ? '0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.15)'
-                                : '0 0 10px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.15)'
-                              : undefined
-                          }}
-                        >
-                          <div className="flex items-center gap-1.5 md:gap-2.5">
-                            <span className="text-xs md:text-base">{canAdd ? '✓' : '🌶️'}</span>
-                            <span className={`text-[10px] md:text-sm font-bold ${canAdd ? 'text-green-400' : 'text-white'}`}>
-                              {canAdd
-                                ? `Salsas seleccionadas (${requiredSalsas})`
-                                : requiredSalsas === 1 ? 'Elige una salsa' : requiredSalsas === 2 ? 'Elige dos salsas' : 'Elige tres salsas'
-                              }
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 md:gap-3">
-                            <span className={`text-[10px] md:text-xs font-bold ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
-                              {currentSalsas.length}/{requiredSalsas}
-                            </span>
-                            <span className={`text-xs md:text-sm ${canAdd ? 'text-green-400' : 'text-amber-400'}`}>
-                              {showSalsas[product.id] ? '▼' : '▶'}
-                            </span>
-                          </div>
-                        </button>
-
-                        <div
-                          data-salsas-section
-                          className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                            showSalsas[product.id]
-                              ? 'max-h-[800px] opacity-100 mt-2 md:mt-3'
-                              : 'max-h-0 opacity-0 mt-0'
-                          }`}
-                        >
-                          <div className="space-y-1 md:space-y-2">
-                            {effectiveSalsas.map((salsa) => {
-                              const count = getSalsaCount(product.id, salsa.id);
-                              const isSelected = count > 0;
-                              const canSelect = currentSalsas.length < requiredSalsas || isSelected;
-                              const wasRecentlyAdded = recentlyAddedSalsas.has(`${product.id}-${salsa.id}`);
-                              // Ocultar botón + cuando el count de esta salsa alcanza el máximo permitido
-                              const maxSalsaCount = requiredSalsas; // Máximo que se puede agregar de una misma salsa
-                              const canAddMore = count < maxSalsaCount && canSelect && !salsa.soldOut;
-                              const showAddButton = canAddMore;
-                              // Promo dinámica o hardcodeada para esta salsa
-                              const salsaPromoConfig = allPromosForProduct.find((p: any) => p.salsas.includes(salsa.id));
-                              const isSalsaInPromo = !!salsaPromoConfig;
-                              const isSalsaPromoActive = isSalsaInPromo
-                                ? currentSalsas.length > 0 && currentSalsas.every((sId: string) => salsaPromoConfig!.salsas.includes(sId))
-                                : false;
-
-                              return (
-                                <div
-                                  key={salsa.id}
-                                  className={`rounded p-1.5 md:p-2 border transition-all ${
-                                    salsa.soldOut
-                                      ? 'bg-gray-800/50 border-gray-600/30 opacity-60'
-                                      : isSalsaPromoActive
-                                        ? 'bg-green-900/20 border-green-400 promo-salsa-active'
-                                        : isSalsaInPromo
-                                          ? 'bg-gray-800/30 border-green-500/30 promo-salsa-hint'
-                                          : 'bg-gray-800/30 border-amber-500/10'
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between mb-1">
-                                    <div className="flex-1">
-                                      <div className={`text-[10px] md:text-xs ${count > 0 ? 'text-amber-400 font-bold' : salsa.soldOut ? 'text-gray-500' : 'text-white'}`}>
-                                        {salsa.name}
-                                        {salsa.soldOut && <span className="ml-1.5 text-[8px] bg-gray-600 text-gray-300 px-1 py-0.5 rounded font-bold align-middle">AGOTADO</span>}
-                                      </div>
-                                      <p className={`text-[9px] md:text-[10px] italic mt-0.5 ${salsa.soldOut ? 'text-gray-600' : 'text-gray-400'}`}>
-                                        {salsa.description}
-                                      </p>
-                                      {!salsa.soldOut && isSalsaInPromo && (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                          {isSalsaPromoActive ? (
-                                            <span className="text-[9px] text-green-400 font-bold">✓ PROMO ACTIVA — S/ {Number(salsaPromoConfig!.promoPrice).toFixed(2)}</span>
-                                          ) : (
-                                            <>
-                                              <span className="text-[9px] text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                                              <span className="text-[9px] text-amber-400 font-bold">
-                                                → S/ {Number(salsaPromoConfig!.promoPrice).toFixed(2)} eligiendo salsas del set promo
-                                              </span>
-                                            </>
-                                          )}
-                                        </div>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-1 md:gap-1.5 ml-2">
-                                      {count > 0 && (
-                                        <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
-                                          x{count}
-                                        </span>
-                                      )}
-                                      {count > 0 && (
-                                        <button
-                                          onClick={() => handleSalsaToggle(product.id, salsa.id, 'remove')}
-                                          className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
-                                        >
-                                          −
-                                        </button>
-                                      )}
-                                      {showAddButton && (
-                                        <button
-                                          onClick={() => handleSalsaToggle(product.id, salsa.id, 'add')}
-                                          className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
-                                            wasRecentlyAdded
-                                              ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                              : 'bg-amber-600 hover:bg-amber-500'
-                                          } text-white`}
-                                        >
-                                          {wasRecentlyAdded ? '✓' : '+'}
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Complementos */}
-                      <div className="mb-3 md:mb-4">
-                        <h5 className="text-xs md:text-sm font-bold text-white mb-2 md:mb-3">Complementos</h5>
-
-                        {/* Bebidas */}
-                        <div className="mb-2 md:mb-3">
-                          <button
-                            onClick={() => setShowBebidas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 md:p-3 transition-all"
-                          >
-                            <div className="flex items-center gap-2 md:gap-2.5">
-                              <span className="text-sm md:text-base">🥤</span>
-                              <span className="text-white text-xs md:text-sm font-bold">Bebidas</span>
-                            </div>
-                            <span className="text-red-400 text-xs md:text-sm">{showBebidas[product.id] ? '▼' : '▶'}</span>
-                          </button>
-
-                          {showBebidas[product.id] && (
-                            <div className="mt-2 md:mt-3 space-y-1 md:space-y-2">
-                              {[
-                                { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
-                                { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
-                                { id: "inka-cola", name: "Inka Cola 500ml", emoji: "🥤", price: 4.00 },
-                                { id: "sprite", name: "Sprite 500ml", emoji: "🥤", price: 4.00 },
-                                { id: "fanta", name: "Fanta 500ml", emoji: "🥤", price: 4.00 },
-                              ].map((bebida) => {
-                                const bebidaProduct: Product = {
-                                  id: bebida.id,
-                                  name: bebida.name,
-                                  description: bebida.name,
-                                  price: bebida.price,
-                                  image: bebida.emoji,
-                                  category: "bebida"
-                                };
-                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${bebida.id}`);
-                                const count = getComplementCount(product.id, bebida.id);
-                                return (
-                                  <div
-                                    key={bebida.id}
-                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 md:p-2 border border-red-500/10"
-                                  >
-                                    <div className="flex items-center gap-1.5 md:gap-2">
-                                      <span className="text-sm md:text-base">{bebida.emoji}</span>
-                                      <span className="text-white text-[10px] md:text-xs">{bebida.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 md:gap-1.5">
-                                      <span className="text-amber-400 text-[10px] md:text-xs font-bold">S/ {bebida.price.toFixed(2)}</span>
-                                      {count > 0 && (
-                                        <>
-                                          <button
-                                            onClick={() => handleRemoveComplement(product.id, bebida.id)}
-                                            className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
-                                          >
-                                            −
-                                          </button>
-                                          <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
-                                            {count}
-                                          </span>
-                                        </>
-                                      )}
-                                      <button
-                                        onClick={() => handleAddComplement(product.id, bebidaProduct)}
-                                        className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
-                                          wasRecentlyAdded
-                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                            : 'bg-red-600 hover:bg-red-500'
-                                        } text-white`}
-                                      >
-                                        {wasRecentlyAdded ? '✓' : '+'}
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Extras */}
-                        <div>
-                          <button
-                            onClick={() => setShowExtras((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                            className="w-full flex items-center justify-between bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg p-2 md:p-3 transition-all"
-                          >
-                            <div className="flex items-center gap-2 md:gap-2.5">
-                              <span className="text-sm md:text-base">🍟</span>
-                              <span className="text-white text-xs md:text-sm font-bold">Extras</span>
-                            </div>
-                            <span className="text-red-400 text-xs md:text-sm">{showExtras[product.id] ? '▼' : '▶'}</span>
-                          </button>
-
-                          {showExtras[product.id] && (
-                            <div className="mt-2 md:mt-3 space-y-1 md:space-y-2">
-                              {/* Extra papas */}
-                              {(() => {
-                                const extra = { id: "extra-papas", name: "Extra papas", emoji: "🍟", price: 5.00 };
-                                const extraProduct: Product = {
-                                  id: extra.id,
-                                  name: extra.name,
-                                  description: extra.name,
-                                  price: extra.price,
-                                  image: extra.emoji,
-                                  category: "bebida"
-                                };
-                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extra.id}`);
-                                const count = getComplementCount(product.id, extra.id);
-                                return (
-                                  <div
-                                    key={extra.id}
-                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 md:p-2 border border-red-500/10"
-                                  >
-                                    <div className="flex items-center gap-1.5 md:gap-2">
-                                      <span className="text-sm md:text-base">{extra.emoji}</span>
-                                      <span className="text-white text-[10px] md:text-xs">{extra.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 md:gap-1.5">
-                                      <span className="text-amber-400 text-[10px] md:text-xs font-bold">S/ {extra.price.toFixed(2)}</span>
-                                      {count > 0 && (
-                                        <>
-                                          <button
-                                            onClick={() => handleRemoveComplement(product.id, extra.id)}
-                                            className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
-                                          >
-                                            −
-                                          </button>
-                                          <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
-                                            {count}
-                                          </span>
-                                        </>
-                                      )}
-                                      <button
-                                        onClick={() => handleAddComplement(product.id, extraProduct)}
-                                        className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
-                                          wasRecentlyAdded
-                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                            : 'bg-red-600 hover:bg-red-500'
-                                        } text-white`}
-                                      >
-                                        {wasRecentlyAdded ? '✓' : '+'}
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              })()}
-
-                              {/* Extra salsas - mostrar solo las salsas que el cliente ya seleccionó */}
-                              {(() => {
-                                // Obtener las salsas seleccionadas para este producto
-                                const currentSelectedSalsas = selectedSalsas[product.id] || [];
-                                // Obtener IDs únicos de salsas
-                                const uniqueSalsaIds = Array.from(new Set(currentSelectedSalsas));
-
-                                // Mapear cada salsa única a un item de extra salsa
-                                return uniqueSalsaIds.map((salsaId) => {
-                                  // Buscar el nombre de la salsa
-                                  const salsaData = salsas.find(s => s.id === salsaId);
-                                  if (!salsaData) return null;
-
-                                  const extraSalsa = {
-                                    id: `extra-salsa-${salsaId}`,
-                                    name: `Extra salsa - ${salsaData.name}`,
-                                    emoji: "🥫",
-                                    price: 3.00
-                                  };
-                                  const extraProduct: Product = {
-                                    id: extraSalsa.id,
-                                    name: extraSalsa.name,
-                                    description: extraSalsa.name,
-                                    price: extraSalsa.price,
-                                    image: extraSalsa.emoji,
-                                    category: "bebida"
-                                  };
-                                  const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extraSalsa.id}`);
-                                  const count = getComplementCount(product.id, extraSalsa.id);
-
-                                  return (
-                                    <div
-                                      key={extraSalsa.id}
-                                      className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 md:p-2 border border-red-500/10"
-                                    >
-                                      <div className="flex items-center gap-1.5 md:gap-2">
-                                        <span className="text-sm md:text-base">{extraSalsa.emoji}</span>
-                                        <span className="text-white text-[10px] md:text-xs">{extraSalsa.name}</span>
-                                      </div>
-                                      <div className="flex items-center gap-1 md:gap-1.5">
-                                        <span className="text-amber-400 text-[10px] md:text-xs font-bold">S/ {extraSalsa.price.toFixed(2)}</span>
-                                        {count > 0 && (
-                                          <>
-                                            <button
-                                              onClick={() => handleRemoveComplement(product.id, extraSalsa.id)}
-                                              className="px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all bg-red-600 hover:bg-red-500 text-white"
-                                            >
-                                              −
-                                            </button>
-                                            <span className="text-[10px] md:text-xs bg-amber-600 text-white px-1.5 md:px-2 py-0.5 md:py-1 rounded font-bold">
-                                              {count}
-                                            </span>
-                                          </>
-                                        )}
-                                        <button
-                                          onClick={() => handleAddComplement(product.id, extraProduct)}
-                                          className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-bold transition-all ${
-                                            wasRecentlyAdded
-                                              ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                              : 'bg-red-600 hover:bg-red-500'
-                                          } text-white`}
-                                        >
-                                          {wasRecentlyAdded ? '✓' : '+'}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  );
-                                });
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Botón Listo */}
-                      <button
-                        onClick={() => {
-                          handleCompleteOrder(product);
-                          setIsEditingOrder(false);
-                        }}
-                        disabled={!canAdd || isSoldOut || (orderQuantity[product.id] || 0) === 0}
-                        className={`w-full py-2.5 md:py-3.5 rounded-lg md:rounded-xl font-bold text-sm md:text-base transition-all
-                          ${isSoldOut
-                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
-                            : (orderQuantity[product.id] || 0) === 0
-                              ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
-                              : canAdd
-                                ? 'bg-red-500 hover:bg-red-400 text-white neon-border-fat cursor-pointer active:scale-95'
-                                : 'bg-gray-700 text-gray-500 cursor-not-allowed border-2 border-gray-600'
-                          }
-                        `}
-                      >
-                        {isSoldOut ? 'No disponible' : (orderQuantity[product.id] || 0) === 0 ? 'Agrega al menos 1 unidad' : canAdd ? (isEditingOrder ? 'Confirmar orden' : 'Agregar orden') : `Selecciona ${requiredSalsas} salsa${requiredSalsas > 1 ? 's' : ''}`}
-                      </button>
+                  {/* Order badge */}
+                  {completedOrders.some(o => o.productId === product.id) && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full z-20 shadow">
+                      ✓ En orden
                     </div>
-                  </div>
-                </div>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
 
+
+        {/* ═══ MODAL DE DETALLE DE PRODUCTO ═══ */}
+        {expandedCard && (() => {
+          const mp = products.find(p => p.id === expandedCard);
+          if (!mp) return null;
+          const mQty       = orderQuantity[mp.id] || 1;
+          const mSalsas    = selectedSalsas[mp.id] || [];
+          const mRequired  = getRequiredSalsasCount(mp.id);
+          const mCanAdd    = canAddProduct(mp.id);
+          const mSoldOut   = !!menuStock[mp.id];
+          const mDiscount  = menuDiscounts[mp.id];
+          const mEffPrice  = menuPrices[mp.id] || mp.price;
+          const mPromo     = findMatchingPromo(mp.id, mSalsas);
+          const mDynPromos = salsaPromos.filter((p: any) => p.active && p.productId === mp.id);
+
+          return (
+            <div className="fixed inset-0 z-[100] flex flex-col justify-end md:items-center md:justify-center" style={{ animation: 'fadeInOverlay 0.2s ease-out' }}>
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setExpandedCard(null)} />
+
+              {/* Panel */}
+              <div
+                className="relative bg-gray-900 w-full md:max-w-lg md:rounded-2xl rounded-t-3xl flex flex-col shadow-2xl"
+                style={{ maxHeight: '92vh', animation: 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)' }}
+              >
+                {/* Drag handle */}
+                <div className="flex justify-center pt-3 pb-1 md:hidden flex-shrink-0">
+                  <div className="w-10 h-1 bg-gray-600 rounded-full" />
+                </div>
+                {/* Close button */}
+                <button onClick={() => setExpandedCard(null)} className="absolute top-4 right-4 z-20 w-8 h-8 bg-gray-800/80 hover:bg-gray-700 text-white rounded-full flex items-center justify-center text-sm font-bold transition-all">✕</button>
+
+                {/* Scrollable body */}
+                <div className="flex-1 overflow-y-auto">
+                  {/* Product image */}
+                  <div className="relative h-56 bg-black overflow-hidden">
+                    {mSoldOut && (
+                      <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
+                        <div className="border-4 border-red-500 rounded px-4 py-1" style={{ transform: 'rotate(-15deg)' }}>
+                          <span className="text-red-500 font-black text-2xl tracking-widest uppercase">AGOTADO</span>
+                        </div>
+                      </div>
+                    )}
+                    {mp.image.startsWith('/') ? (
+                      <Image src={mp.image} alt={mp.name} width={600} height={300} className="w-full h-full object-cover" style={{ objectPosition: 'center 55%' }} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
+                        <span className="text-7xl">{mp.image}</span>
+                      </div>
+                    )}
+                    {mDiscount && <div className="absolute top-3 left-3 bg-amber-400 text-black text-xs font-black px-2.5 py-1 rounded-full">OFERTA</div>}
+                  </div>
+
+                  <div className="px-4 pt-4 pb-2">
+                    {/* Name + description */}
+                    <h3 className="text-xl font-black text-white mb-1">{mp.name}</h3>
+                    <p className="text-orange-200/60 text-sm mb-4" dangerouslySetInnerHTML={{ __html: mp.description }} />
+
+                    {/* Price + quantity */}
+                    <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-800">
+                      <div>
+                        {mPromo ? (
+                          <div className="flex flex-col"><span className="text-sm text-gray-500 line-through">S/ {mEffPrice.toFixed(2)}</span><span className="text-2xl font-black text-green-400">S/ {mPromo.promoPrice.toFixed(2)}</span></div>
+                        ) : mDiscount ? (
+                          <div className="flex flex-col"><span className="text-sm text-gray-500 line-through">S/ {mEffPrice.toFixed(2)}</span><span className="text-2xl font-black text-amber-400">S/ {mDiscount.toFixed(2)}</span></div>
+                        ) : (
+                          <span className="text-2xl font-black text-amber-400 gold-glow">S/ {mEffPrice.toFixed(2)}</span>
+                        )}
+                        <p className="text-xs text-gray-500 mt-0.5">precio unitario</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleDecreaseQuantity(mp.id)} disabled={mSoldOut || mQty <= 1} className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-600 bg-gray-800 hover:bg-gray-700 disabled:opacity-40 text-white font-bold text-xl transition-all">−</button>
+                        <span className="text-white font-black text-xl w-8 text-center">{mQty}</span>
+                        <button onClick={() => handleIncreaseQuantity(mp.id)} disabled={mSoldOut} className="w-10 h-10 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white font-bold text-xl transition-all">+</button>
+                      </div>
+                    </div>
+
+                    {/* Salsa selector */}
+                    <div className="mb-4">
+                      <button data-salsas-button onClick={() => setShowSalsas(prev => ({ ...prev, [mp.id]: !prev[mp.id] }))} className={`w-full flex items-center justify-between rounded-xl p-3 transition-all border mb-1 ${mCanAdd ? 'bg-green-600/20 border-green-500/40' : 'bg-amber-600/20 border-amber-500/40'}`}>
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-lg">{mCanAdd ? '✅' : '🌶️'}</span>
+                          <div className="text-left">
+                            <p className={`text-sm font-bold ${mCanAdd ? 'text-green-400' : 'text-white'}`}>{mCanAdd ? 'Salsas seleccionadas' : mRequired === 1 ? 'Elige tu salsa' : mRequired === 2 ? 'Elige 2 salsas' : 'Elige 3 salsas'}</p>
+                            <p className="text-xs text-gray-400">{mSalsas.length} / {mRequired} elegidas</p>
+                          </div>
+                        </div>
+                        <span className={`text-sm ${mCanAdd ? 'text-green-400' : 'text-amber-400'}`}>{showSalsas[mp.id] ? '▼' : '▶'}</span>
+                      </button>
+                      {showSalsas[mp.id] && (
+                        <div className="space-y-1.5 mt-2">
+                          {effectiveSalsas.map((salsa) => {
+                            const count = getSalsaCount(mp.id, salsa.id);
+                            const canSelect = mSalsas.length < mRequired || count > 0;
+                            const wasRecentlyAdded = recentlyAddedSalsas.has(`${mp.id}-${salsa.id}`);
+                            const canAddMore = count < mRequired && canSelect && !salsa.soldOut;
+                            const salsaPromoConfig = mDynPromos.find((p: any) => p.salsas.includes(salsa.id));
+                            const isSalsaPromoActive = salsaPromoConfig ? mSalsas.length > 0 && mSalsas.every((sId: string) => salsaPromoConfig.salsas.includes(sId)) : false;
+                            return (
+                              <div key={salsa.id} className={`rounded-xl p-3 border transition-all ${salsa.soldOut ? 'bg-gray-800/50 border-gray-700/30 opacity-60' : isSalsaPromoActive ? 'bg-green-900/20 border-green-400' : count > 0 ? 'bg-amber-900/20 border-amber-500/50' : 'bg-gray-800/40 border-gray-700/30'}`}>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1 mr-3">
+                                    <p className={`text-sm font-bold ${count > 0 ? 'text-amber-400' : salsa.soldOut ? 'text-gray-500' : 'text-white'}`}>{salsa.name}{salsa.soldOut && <span className="ml-2 text-[10px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded">AGOTADO</span>}</p>
+                                    <p className="text-xs text-gray-400 mt-0.5">{salsa.description}</p>
+                                    {!salsa.soldOut && salsaPromoConfig && <p className={`text-xs mt-1 font-bold ${isSalsaPromoActive ? 'text-green-400' : 'text-amber-400'}`}>{isSalsaPromoActive ? `✓ PROMO — S/ ${Number(salsaPromoConfig.promoPrice).toFixed(2)}` : `Promo: S/ ${Number(salsaPromoConfig.promoPrice).toFixed(2)}`}</p>}
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    {count > 0 && (<><span className="text-xs bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold">×{count}</span><button onClick={() => handleSalsaToggle(mp.id, salsa.id, 'remove')} className="w-8 h-8 flex items-center justify-center rounded-full bg-red-600/80 hover:bg-red-500 text-white font-bold">−</button></>)}
+                                    {canAddMore && <button onClick={() => handleSalsaToggle(mp.id, salsa.id, 'add')} className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-white ${wasRecentlyAdded ? 'bg-green-500 scale-110' : 'bg-amber-600 hover:bg-amber-500'}`}>{wasRecentlyAdded ? '✓' : '+'}</button>}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Complementos */}
+                    <div className="mb-4">
+                      <h5 className="text-sm font-bold text-white mb-2">Complementos</h5>
+                      {/* Bebidas */}
+                      <div className="mb-2">
+                        <button onClick={() => setShowBebidas(prev => ({ ...prev, [mp.id]: !prev[mp.id] }))} className="w-full flex items-center justify-between bg-gray-800/50 hover:bg-gray-800 border border-gray-700 rounded-xl p-3 transition-all mb-1">
+                          <div className="flex items-center gap-2"><span>🥤</span><span className="text-white text-sm font-bold">Bebidas</span></div>
+                          <span className="text-gray-400 text-sm">{showBebidas[mp.id] ? '▼' : '▶'}</span>
+                        </button>
+                        {showBebidas[mp.id] && (
+                          <div className="space-y-1.5 mt-1">
+                            {[{ id:"agua-mineral",name:"Agua mineral",emoji:"💧",price:4},{id:"coca-cola",name:"Coca Cola 500ml",emoji:"🥤",price:4},{id:"inka-cola",name:"Inka Cola 500ml",emoji:"🥤",price:4},{id:"sprite",name:"Sprite 500ml",emoji:"🥤",price:4},{id:"fanta",name:"Fanta 500ml",emoji:"🥤",price:4}].map((bebida) => {
+                              const bebidaProduct: Product = { id:bebida.id, name:bebida.name, description:bebida.name, price:bebida.price, image:bebida.emoji, category:"bebida" };
+                              const wasRecentlyAdded = recentlyAdded.has(`${mp.id}-${bebida.id}`);
+                              const count = getComplementCount(mp.id, bebida.id);
+                              return (
+                                <div key={bebida.id} className="flex items-center justify-between bg-gray-800/40 rounded-xl p-3 border border-gray-700/50">
+                                  <div className="flex items-center gap-2"><span>{bebida.emoji}</span><span className="text-white text-sm">{bebida.name}</span></div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-amber-400 text-sm font-bold">S/ {bebida.price.toFixed(2)}</span>
+                                    {count > 0 && (<><button onClick={() => handleRemoveComplement(mp.id,bebida.id)} className="w-7 h-7 flex items-center justify-center rounded-full bg-red-600/80 hover:bg-red-500 text-white font-bold">−</button><span className="text-sm bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold">{count}</span></>)}
+                                    <button onClick={() => handleAddComplement(mp.id,bebidaProduct)} className={`w-7 h-7 flex items-center justify-center rounded-full font-bold text-white ${wasRecentlyAdded?'bg-green-500':'bg-red-600 hover:bg-red-500'}`}>{wasRecentlyAdded?'✓':'+'}</button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                      {/* Extras */}
+                      <div>
+                        <button onClick={() => setShowExtras(prev => ({ ...prev, [mp.id]: !prev[mp.id] }))} className="w-full flex items-center justify-between bg-gray-800/50 hover:bg-gray-800 border border-gray-700 rounded-xl p-3 transition-all mb-1">
+                          <div className="flex items-center gap-2"><span>🍟</span><span className="text-white text-sm font-bold">Extras</span></div>
+                          <span className="text-gray-400 text-sm">{showExtras[mp.id] ? '▼' : '▶'}</span>
+                        </button>
+                        {showExtras[mp.id] && (
+                          <div className="space-y-1.5 mt-1">
+                            {[{ id:"extra-papas", name:"Extra papas", emoji:"🍟", price:5 }].map((extra) => {
+                              const extraProduct: Product = { id:extra.id, name:extra.name, description:extra.name, price:extra.price, image:extra.emoji, category:"bebida" };
+                              const wasRecentlyAdded = recentlyAdded.has(`${mp.id}-${extra.id}`);
+                              const count = getComplementCount(mp.id, extra.id);
+                              return (
+                                <div key={extra.id} className="flex items-center justify-between bg-gray-800/40 rounded-xl p-3 border border-gray-700/50">
+                                  <div className="flex items-center gap-2"><span>{extra.emoji}</span><span className="text-white text-sm">{extra.name}</span></div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-amber-400 text-sm font-bold">S/ {extra.price.toFixed(2)}</span>
+                                    {count > 0 && (<><button onClick={() => handleRemoveComplement(mp.id,extra.id)} className="w-7 h-7 flex items-center justify-center rounded-full bg-red-600/80 hover:bg-red-500 text-white font-bold">−</button><span className="text-sm bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold">{count}</span></>)}
+                                    <button onClick={() => handleAddComplement(mp.id,extraProduct)} className={`w-7 h-7 flex items-center justify-center rounded-full font-bold text-white ${wasRecentlyAdded?'bg-green-500':'bg-red-600 hover:bg-red-500'}`}>{wasRecentlyAdded?'✓':'+'}</button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {Array.from(new Set(selectedSalsas[mp.id] || [])).map((salsaId) => {
+                              const salsaData = salsas.find(s => s.id === salsaId);
+                              if (!salsaData) return null;
+                              const extraSalsa = { id:`extra-salsa-${salsaId}`, name:`Extra salsa - ${salsaData.name}`, emoji:"🥫", price:3 };
+                              const extraProduct: Product = { id:extraSalsa.id, name:extraSalsa.name, description:extraSalsa.name, price:extraSalsa.price, image:extraSalsa.emoji, category:"bebida" };
+                              const wasRecentlyAdded = recentlyAdded.has(`${mp.id}-${extraSalsa.id}`);
+                              const count = getComplementCount(mp.id, extraSalsa.id);
+                              return (
+                                <div key={extraSalsa.id} className="flex items-center justify-between bg-gray-800/40 rounded-xl p-3 border border-gray-700/50">
+                                  <div className="flex items-center gap-2"><span>{extraSalsa.emoji}</span><span className="text-white text-sm">{extraSalsa.name}</span></div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-amber-400 text-sm font-bold">S/ {extraSalsa.price.toFixed(2)}</span>
+                                    {count > 0 && (<><button onClick={() => handleRemoveComplement(mp.id,extraSalsa.id)} className="w-7 h-7 flex items-center justify-center rounded-full bg-red-600/80 hover:bg-red-500 text-white font-bold">−</button><span className="text-sm bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold">{count}</span></>)}
+                                    <button onClick={() => handleAddComplement(mp.id,extraProduct)} className={`w-7 h-7 flex items-center justify-center rounded-full font-bold text-white ${wasRecentlyAdded?'bg-green-500':'bg-red-600 hover:bg-red-500'}`}>{wasRecentlyAdded?'✓':'+'}</button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sticky confirm button */}
+                <div className="flex-shrink-0 px-4 pt-3 pb-6 bg-gray-900 border-t border-gray-800">
+                  <button
+                    onClick={() => { handleCompleteOrder(mp); setIsEditingOrder(false); }}
+                    disabled={!mCanAdd || mSoldOut}
+                    className={`w-full py-4 rounded-xl font-black text-base transition-all ${mCanAdd && !mSoldOut ? 'bg-red-500 hover:bg-red-400 text-white cursor-pointer active:scale-[0.98]' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}
+                  >
+                    {mSoldOut ? 'No disponible'
+                      : !mCanAdd ? `Selecciona ${mRequired} salsa${mRequired > 1 ? 's' : ''}`
+                      : isEditingOrder ? `Confirmar cambios — S/ ${((mPromo?.promoPrice ?? mDiscount ?? mEffPrice) * mQty).toFixed(2)}`
+                      : `Agregar orden — S/ ${((mPromo?.promoPrice ?? mDiscount ?? mEffPrice) * mQty).toFixed(2)}`
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Sección de órdenes agregadas */}
         {completedOrders.length > 0 && (
