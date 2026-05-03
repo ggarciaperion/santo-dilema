@@ -315,7 +315,7 @@ export default function FatPage() {
   const comboDiscountAmount = comboResult.totalSavings;
 
   const completedTotal = completedOrders.reduce((total, order) => {
-    const basePrice = order.originalPrice ?? order.finalPrice ?? (() => {
+    const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fitProducts.find(p => p.id === order.productId);
       if (!product) product = tacoProducts.find(p => p.id === order.productId);
@@ -1526,7 +1526,7 @@ export default function FatPage() {
                                   <span className="text-amber-400 font-bold text-sm gold-glow">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                                 </span>
                               ) : (
-                                <span className="text-amber-400 font-bold text-sm gold-glow">S/ {(((hasComboDiscount && order.discountApplied) ? (order.originalPrice ?? (menuPrices[product.id] || product.price)) : (order.finalPrice ?? (menuPrices[product.id] || product.price))) * order.quantity).toFixed(2)}</span>
+                                <span className="text-amber-400 font-bold text-sm gold-glow">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                               )}
                             </div>
 

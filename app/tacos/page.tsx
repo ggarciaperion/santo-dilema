@@ -320,7 +320,7 @@ export default function TacosPage() {
   const comboDiscountAmount = comboResult.totalSavings;
 
   const baseTotal = completedOrders.length * duoEffectivePrice + bebidasTotal +
-    crossCategoryOrders.reduce((sum, o) => sum + (o.originalPrice ?? o.finalPrice ?? 0) * o.quantity, 0);
+    crossCategoryOrders.reduce((sum, o) => sum + (o.finalPrice ?? o.originalPrice ?? 0) * o.quantity, 0);
   const total = hasComboDiscount ? baseTotal - comboDiscountAmount : baseTotal;
   const duoCount = completedOrders.length;
   const hasAnyOrder = completedOrders.length > 0 || crossCategoryOrders.length > 0 || bebidasTotal > 0;
@@ -876,7 +876,7 @@ export default function TacosPage() {
                 // ── Individual cross-category order ───────────────────────
                 const prod = CROSS_PRODUCTS[order.productId];
                 if (!prod) return null;
-                const unitPrice = order.originalPrice ?? order.finalPrice ?? prod.price;
+                const unitPrice = order.finalPrice ?? order.originalPrice ?? prod.price;
                 return (
                   <div
                     key={`cross-${index}`}
