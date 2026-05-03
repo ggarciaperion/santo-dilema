@@ -7,7 +7,6 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
 import CombosButton from "../components/CombosButton";
-import BannerCarousel from "../components/BannerCarousel";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import { detectCombos } from "../../lib/combos";
 
@@ -210,8 +209,6 @@ export default function FitPage() {
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isDragging, setIsDragging] = useState(false);
   const [showBebidas, setShowBebidas] = useState<Record<string, boolean>>({});
-  const [showExtras, setShowExtras] = useState<Record<string, boolean>>({});
-  const [showCartModal, setShowCartModal] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
@@ -223,8 +220,6 @@ export default function FitPage() {
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
   const [editingOrderIndex, setEditingOrderIndex] = useState<number | null>(null);
-  const [bannerWidth, setBannerWidth] = useState<number | null>(null);
-  const [bannerSlide, setBannerSlide] = useState(0);
   const [isOpen, setIsOpen] = useState(isBusinessOpen);
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
@@ -335,32 +330,6 @@ export default function FitPage() {
     }
   }, [completedOrders]);
 
-  // Auto-avanzar carrusel de banner cada 5 segundos
-  useEffect(() => {
-    const t = setInterval(() => setBannerSlide(s => (s + 1) % 2), 5000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Medir ancho real de la fila de carteles para alinear el banner (solo desktop)
-  useEffect(() => {
-    const measure = () => {
-      if (window.innerWidth < 768) {
-        setBannerWidth(null);
-        return;
-      }
-      const ids = products.map(p => p.id);
-      const first = cardRefs.current[ids[0]];
-      const last = cardRefs.current[ids[ids.length - 1]];
-      if (first && last) {
-        const w = last.getBoundingClientRect().right - first.getBoundingClientRect().left;
-        if (w > 0) setBannerWidth(Math.round(w));
-      }
-    };
-    const t = setTimeout(measure, 200);
-    window.addEventListener('resize', measure);
-    return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
-  }, []);
-
   useEffect(() => {
     const interval = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
     return () => clearInterval(interval);
@@ -382,131 +351,28 @@ export default function FitPage() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (expandedCard && window.innerWidth < 768) {
-      const el = cardRefs.current[expandedCard];
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 80);
-      }
-    }
-  }, [expandedCard]);
-
-  // Nota: El cartel solo se cierra cuando la cantidad llega a 0, no al hacer clic fuera
-
-  const handleExpandCard = (productId: string) => {
+  const handleCardClick = (productId: string) => {
     if (isDragging) return;
     setExpandedCard(productId);
     setIsEditingOrder(false);
+    if (!orderQuantity[productId]) {
+      setOrderQuantity(prev => ({ ...prev, [productId]: 1 }));
+    }
     if (!selectedComplements[productId]) {
-      setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
-    }
-  };
-
-  const handleCloseCard = () => {
-    setExpandedCard(null);
-    setIsEditingOrder(false);
-    setEditingOrderIndex(null);
-    if (expandedCard) {
-      setShowBebidas((prev) => ({ ...prev, [expandedCard]: false }));
-      setShowExtras((prev) => ({ ...prev, [expandedCard]: false }));
-    }
-  };
-
-  const handleCardClick = (productId: string) => {
-    const currentQty = orderQuantity[productId] || 0;
-
-    // Helper: reset previous card qty to 0 if it has no completed order
-    const resetPreviousCard = (prevId: string) => {
-      const hasOrder = completedOrders.some(o => o.productId === prevId);
-      if (!hasOrder) {
-        setOrderQuantity((prev) => ({ ...prev, [prevId]: 0 }));
-      }
-      setShowBebidas((prev) => ({ ...prev, [prevId]: false }));
-      setShowExtras((prev) => ({ ...prev, [prevId]: false }));
-    };
-
-    if (currentQty === 0) {
-      if (expandedCard === productId) {
-        // Colapsar: volver a 0
-        setExpandedCard(null);
-        setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
-        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
-        setShowExtras((prev) => ({ ...prev, [productId]: false }));
-      } else {
-        // Si había otro cartel expandido, resetear su contador
-        if (expandedCard) resetPreviousCard(expandedCard);
-
-        // Expandir y poner qty = 1 automáticamente
-        setExpandedCard(productId);
-        setOrderQuantity((prev) => ({ ...prev, [productId]: 1 }));
-        if (!selectedComplements[productId]) {
-          setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
-        }
-
-        setTimeout(() => {
-          const card = cardRefs.current[productId];
-          if (card) {
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 600);
-      }
-    } else if (currentQty > 0 && expandedCard !== productId) {
-      if (expandedCard) resetPreviousCard(expandedCard);
-      setExpandedCard(productId);
-
-      setTimeout(() => {
-        const card = cardRefs.current[productId];
-        if (card) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 600);
+      setSelectedComplements(prev => ({ ...prev, [productId]: [] }));
     }
   };
 
   const handleIncreaseQuantity = (productId: string) => {
-    const currentQty = orderQuantity[productId] || 0;
-    setOrderQuantity((prev) => ({
-      ...prev,
-      [productId]: currentQty + 1
-    }));
-    // Expandir automáticamente cuando se agrega unidad (de 0 a 1 o de 1 a 2, etc)
-    if (expandedCard !== productId && currentQty >= 0) {
-      setExpandedCard(productId);
-      if (!selectedComplements[productId]) {
-        setSelectedComplements((prev) => ({ ...prev, [productId]: [] }));
-      }
-    }
+    const currentQty = orderQuantity[productId] || 1;
+    setOrderQuantity(prev => ({ ...prev, [productId]: currentQty + 1 }));
   };
 
   const handleDecreaseQuantity = (productId: string) => {
-    const currentQty = orderQuantity[productId] || 0;
-    if (currentQty > 0) {
-      setOrderQuantity((prev) => ({
-        ...prev,
-        [productId]: currentQty - 1
-      }));
-      if (currentQty === 1) {
-        setExpandedCard(null);
-        setIsEditingOrder(false);
-        setEditingOrderIndex(null);
-        setShowBebidas((prev) => ({ ...prev, [productId]: false }));
-        setShowExtras((prev) => ({ ...prev, [productId]: false }));
-        if (mainProductsInCart[productId]) {
-          removeFromCart(mainProductsInCart[productId]);
-          setMainProductsInCart((prev) => {
-            const newState = { ...prev };
-            delete newState[productId];
-            return newState;
-          });
-        }
-      }
+    const currentQty = orderQuantity[productId] || 1;
+    if (currentQty > 1) {
+      setOrderQuantity(prev => ({ ...prev, [productId]: currentQty - 1 }));
     }
-  };
-
-  const canAddProduct = (productId: string): boolean => {
-    return true; // Ya no necesita validar aderezos
   };
 
   const handleCompleteOrder = (product: Product) => {
@@ -578,19 +444,6 @@ export default function FitPage() {
     setComplementsInCart((prev) => ({ ...prev, [order.productId]: order.complementIds }));
     setIsEditingOrder(true);
     setExpandedCard(order.productId);
-
-    setTimeout(() => {
-      const card = cardRefs.current[order.productId];
-      if (card && scrollContainerRef.current) {
-        const container = scrollContainerRef.current;
-        const cardLeft = card.offsetLeft;
-        const cardWidth = card.offsetWidth;
-        const containerWidth = container.offsetWidth;
-        const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
-
-        container.scrollTo({ left: scrollPosition, behavior: 'smooth' });
-      }
-    }, 100);
   };
 
   const handleDeleteOrder = (orderIndex: number) => {
@@ -668,46 +521,6 @@ export default function FitPage() {
     return complementsForProduct.filter(id => id === complementId).length;
   };
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 300;
-      const newScrollLeft = direction === 'left'
-        ? scrollContainerRef.current.scrollLeft - scrollAmount
-        : scrollContainerRef.current.scrollLeft + scrollAmount;
-
-      scrollContainerRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const handleCardHover = (productId: string) => {
-    if (expandedCard) return;
-    setHoveredCard(productId);
-    const cardElement = cardRefs.current[productId];
-    const container = scrollContainerRef.current;
-
-    if (cardElement && container) {
-      const cardRect = cardElement.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-
-      if (cardRect.right > containerRect.right) {
-        const scrollAmount = cardRect.right - containerRect.right + 20;
-        container.scrollBy({
-          left: scrollAmount,
-          behavior: 'smooth'
-        });
-      } else if (cardRect.left < containerRect.left) {
-        const scrollAmount = cardRect.left - containerRect.left - 20;
-        container.scrollBy({
-          left: scrollAmount,
-          behavior: 'smooth'
-        });
-      }
-    }
-  };
-
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
@@ -731,23 +544,8 @@ export default function FitPage() {
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  const resetExpandedCard = (productId: string) => {
-    const hasOrder = completedOrders.some(o => o.productId === productId);
-    if (!hasOrder) {
-      setOrderQuantity((prev) => ({ ...prev, [productId]: 0 }));
-    }
-    setShowBebidas((prev) => ({ ...prev, [productId]: false }));
-    setShowExtras((prev) => ({ ...prev, [productId]: false }));
-  };
-
-  const collapseExpandedCard = () => {
-    if (!expandedCard) return;
-    resetExpandedCard(expandedCard);
-    setExpandedCard(null);
-  };
-
   return (
-    <div className="min-h-screen bg-black relative" onClick={collapseExpandedCard}>
+    <div className="min-h-screen bg-black relative">
       {/* Decoración carnavalesca sutil */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Cadeneta de carnaval */}
@@ -977,92 +775,45 @@ export default function FitPage() {
             className={`flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
-            {products.map((product, productIndex) => {
-              const isExpanded = expandedCard === product.id;
+            {products.map((product) => {
               const isSoldOut = !!menuStock[product.id];
-              const isHoraLoca    = horaLocaActive && product.id !== 'ensalada-clasica';
+              const isHoraLoca = horaLocaActive && product.id !== 'ensalada-clasica';
               const discountPrice = isHoraLoca ? 20 : menuDiscounts[product.id];
-              const isLastOdd = productIndex === products.length - 1 && products.length % 2 !== 0;
               const effectivePrice = menuPrices[product.id] || product.price;
 
               return (
-                <React.Fragment key={product.id}>
-                  {productIndex === 4 && (
-                    <div className="basis-full hidden md:block" />
-                  )}
-                  <div className={isLastOdd ? 'md:contents overflow-visible' : 'contents'} style={isLastOdd ? { overflow: 'visible' } : undefined}>
-                  <div
+                <div
+                  key={product.id}
                   ref={(el) => { cardRefs.current[product.id] = el; }}
-                  onClick={(e) => { e.stopPropagation(); if (!isSoldOut && !isExpanded) handleCardClick(product.id); }}
-                  onMouseEnter={() => { if (!isSoldOut) handleCardHover(product.id); }}
+                  onClick={() => { if (!isSoldOut && !isDragging) handleCardClick(product.id); }}
+                  onMouseEnter={() => { if (!isSoldOut) setHoveredCard(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink shadow-xl ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-xl shadow-purple-500/40' : discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' : 'border-2 md:border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
-                    ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
-                    ${isExpanded
-                      ? `w-full md:w-[340px] lg:w-[360px] z-20`
-                      : 'w-full md:w-[240px] lg:w-[260px]'
-                    }
-                    ${!isSoldOut && !isExpanded && hoveredCard === product.id && !expandedCard
-                      ? 'md:scale-105 md:-translate-y-2 z-10'
-                      : !isExpanded && !expandedCard ? 'scale-100 translate-y-0' : ''
-                    }
-                    ${(orderQuantity[product.id] || 0) > 0 && !isExpanded && !isSoldOut ? 'cursor-pointer' : ''}
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink w-full md:w-[240px] lg:w-[260px] shadow-xl relative
+                    ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-purple-500/40' :
+                      discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' :
+                      'border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
+                    ${isSoldOut ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+                    ${hoveredCard === product.id ? 'md:scale-105 md:-translate-y-2 z-10' : ''}
                   `}
-                  style={{
-                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
-                    transformOrigin: 'center center',
-                    borderRadius: isMobile ? 16 : 0,
-                    overflow: isMobile ? 'hidden' : 'visible',
-                    position: 'relative',
-                    zIndex: isExpanded ? 50 : isMobile ? productIndex + 1 : undefined,
-                  }}
+                  style={{ transition: 'transform 0.3s ease, box-shadow 0.3s ease', borderRadius: isMobile ? 16 : 0, overflow: 'hidden' }}
                 >
-                  <div
-                    className={`relative flex items-center justify-center ${
-                      product.image.startsWith('/')
-                        ? 'bg-black h-44 md:h-40 border-0 overflow-hidden md:overflow-visible'
-                        : 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 h-20 md:h-24 overflow-hidden rounded-t-lg md:rounded-t-xl border-b-2 border-cyan-500/30'
-                    } ${isExpanded ? 'cursor-pointer' : ''}`}
-                    onClick={(e) => {
-                      if (isExpanded && !isSoldOut) {
-                        e.stopPropagation();
-                        resetExpandedCard(product.id);
-                        setExpandedCard(null);
-                      }
-                    }}
-                  >
+                  <div className="relative h-44 bg-black overflow-hidden">
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
                         alt={product.name}
                         width={300}
                         height={300}
-                        className="absolute object-cover drop-shadow-2xl"
-                        style={{
-                          width: isMobile ? '100%' : (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '120%' : '150%',
-                          height: isMobile ? '100%' : (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '125%' : '160%',
-                          top: isMobile ? '0' : (product.id === 'cobb-supreme-bowl' || product.id === 'pasta-power-bowl' || product.id === 'crispy-chicken-bowl') ? '-15%' : '-30%',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          objectPosition: 'center 40%',
-                          zIndex: 10
-                        }}
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 40%' }}
                       />
                     ) : (
-                      <span className="text-4xl md:text-5xl filter drop-shadow-lg">{product.image}</span>
+                      <span className="text-4xl flex items-center justify-center h-full">{product.image}</span>
                     )}
                     {isSoldOut && (
-                      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ background: 'rgba(0,0,0,0.45)' }}>
-                        <div
-                          className="border-4 border-red-500 rounded-sm px-3 py-1 select-none"
-                          style={{
-                            transform: 'rotate(-20deg)',
-                            boxShadow: '0 0 12px rgba(239,68,68,0.7)',
-                          }}
-                        >
-                          <span className="text-red-500 font-black text-xl md:text-2xl tracking-widest uppercase" style={{ textShadow: '0 0 8px rgba(239,68,68,0.8)' }}>
-                            AGOTADO
-                          </span>
+                      <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/45">
+                        <div className="border-4 border-red-500 rounded-sm px-3 py-1 select-none" style={{ transform: 'rotate(-20deg)', boxShadow: '0 0 12px rgba(239,68,68,0.7)' }}>
+                          <span className="text-red-500 font-black text-xl tracking-widest uppercase" style={{ textShadow: '0 0 8px rgba(239,68,68,0.8)' }}>AGOTADO</span>
                         </div>
                       </div>
                     )}
@@ -1073,286 +824,230 @@ export default function FitPage() {
                         </span>
                       </div>
                     )}
+                    {discountPrice && !isHoraLoca && (
+                      <div className="absolute top-2 left-2 bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded z-20">OFERTA</div>
+                    )}
                   </div>
-                  <div className="p-3 md:p-2.5">
-                    <h4 className="text-base md:text-sm font-bold text-white mb-1.5 md:mb-1 truncate">
-                      {product.name}
-                    </h4>
-                    <p
-                      className="text-cyan-200/70 text-sm md:text-[11px] mb-1.5 md:mb-2"
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
-                    <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                      <div className="flex flex-col gap-0.5">
+                  <div className="p-3.5">
+                    <h4 className="text-base font-bold text-white mb-1 truncate">{product.name}</h4>
+                    <p className="text-cyan-200/60 text-sm mb-3 line-clamp-2">{product.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
                         {discountPrice ? (
                           <>
-                            <span className="text-xs md:text-sm font-bold text-gray-500 line-through opacity-70">S/ {effectivePrice.toFixed(2)}</span>
-                            <span className="text-lg md:text-2xl font-black text-amber-400 promo-price-pulse">S/ {discountPrice.toFixed(2)}</span>
+                            <span className="text-xs text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                            <span className="text-lg font-black text-amber-400">S/ {discountPrice.toFixed(2)}</span>
                           </>
                         ) : (
-                          <span className="text-sm md:text-base font-black text-amber-400 gold-glow">S/ {effectivePrice.toFixed(2)}</span>
+                          <span className="text-base font-black text-amber-400 gold-glow">S/ {effectivePrice.toFixed(2)}</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-0.5 md:gap-1">
+                      {!isSoldOut && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isSoldOut) handleDecreaseQuantity(product.id);
-                          }}
-                          disabled={isSoldOut}
-                          className={`w-11 h-11 md:w-6 md:h-6 text-white rounded text-base md:text-xs font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-cyan-600 hover:bg-cyan-500'}`}
-                        >
-                          −
-                        </button>
-                        <span className="text-white font-bold w-6 md:w-8 text-center text-xs md:text-sm">
-                          {orderQuantity[product.id] || 0}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isSoldOut) handleIncreaseQuantity(product.id);
-                          }}
-                          disabled={isSoldOut}
-                          className={`w-11 h-11 md:w-6 md:h-6 text-white rounded text-base md:text-xs font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-cyan-600 hover:bg-cyan-500'}`}
+                          onClick={(e) => { e.stopPropagation(); handleCardClick(product.id); }}
+                          className="w-10 h-10 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-bold text-2xl flex items-center justify-center transition-all active:scale-90"
                         >
                           +
                         </button>
-                      </div>
+                      )}
                     </div>
                   </div>
-
-                  <div
-                    className={`overflow-hidden transition-all origin-top ${
-                      isExpanded
-                        ? 'max-h-[2500px] scale-y-100 opacity-100 duration-600 ease-out'
-                        : 'max-h-0 scale-y-95 opacity-0 duration-400 ease-in-out'
-                    }`}
-                    style={{
-                      transition: isExpanded
-                        ? 'max-height 0.6s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out'
-                        : 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, transform 0.4s ease-in-out'
-                    }}
-                  >
-                    <div className="px-2.5 md:px-4 pb-2.5 md:pb-4 border-t-2 border-cyan-500/30 pt-2.5 md:pt-3">
-                      <div className="flex justify-end mb-1.5 md:mb-2">
-                        <button
-                          onClick={handleCloseCard}
-                          className="text-cyan-400 hover:text-cyan-300 text-[10px] md:text-xs font-bold flex items-center gap-0.5 md:gap-1 transition-colors"
-                        >
-                          <span>Mostrar menos</span>
-                          <span className="text-sm md:text-lg">×</span>
-                        </button>
-                      </div>
-
-                      <div className="mb-3">
-                        <h5 className="text-xs font-bold text-white mb-2">Extras</h5>
-                        <div className="mb-2">
-                          <div className="space-y-1">
-                            {(() => {
-                              const extraAderezo = {
-                                id: "extra-aderezo",
-                                name: "Extra aderezo",
-                                emoji: "🥗",
-                                price: 3.00
-                              };
-                              const extraProduct: Product = {
-                                id: extraAderezo.id,
-                                name: extraAderezo.name,
-                                description: extraAderezo.name,
-                                price: extraAderezo.price,
-                                image: extraAderezo.emoji,
-                                category: "bebida"
-                              };
-                              const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${extraAderezo.id}`);
-                              const count = getComplementCount(product.id, extraAderezo.id);
-                              return (
-                                <div className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-sm">{extraAderezo.emoji}</span>
-                                    <span className="text-white text-[10px]">{extraAderezo.name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-amber-400 text-[10px] font-bold">S/ {extraAderezo.price.toFixed(2)}</span>
-                                    {count > 0 && (
-                                      <>
-                                        <button
-                                          onClick={() => handleRemoveComplement(product.id, extraAderezo.id)}
-                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
-                                        >
-                                          −
-                                        </button>
-                                        <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                          {count}
-                                        </span>
-                                      </>
-                                    )}
-                                    <button
-                                      onClick={() => handleAddComplement(product.id, extraProduct)}
-                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                                        wasRecentlyAdded
-                                          ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                          : 'bg-cyan-600 hover:bg-cyan-500'
-                                      } text-white`}
-                                    >
-                                      {wasRecentlyAdded ? '✓' : '+'}
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })()}
-
-                            {/* Pollo grillado - solo para Clásica Fresh Bowl */}
-                            {product.id === "ensalada-clasica" && (() => {
-                              const polloGrillado = {
-                                id: "pollo-grillado",
-                                name: "Pollo grillado",
-                                emoji: "🍗",
-                                price: 5.00
-                              };
-                              const polloProduct: Product = {
-                                id: polloGrillado.id,
-                                name: polloGrillado.name,
-                                description: polloGrillado.name,
-                                price: polloGrillado.price,
-                                image: polloGrillado.emoji,
-                                category: "bebida"
-                              };
-                              const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${polloGrillado.id}`);
-                              const count = getComplementCount(product.id, polloGrillado.id);
-                              return (
-                                <div className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-sm">{polloGrillado.emoji}</span>
-                                    <span className="text-white text-[10px]">{polloGrillado.name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-amber-400 text-[10px] font-bold">S/ {polloGrillado.price.toFixed(2)}</span>
-                                    {count > 0 && (
-                                      <>
-                                        <button
-                                          onClick={() => handleRemoveComplement(product.id, polloGrillado.id)}
-                                          className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
-                                        >
-                                          −
-                                        </button>
-                                        <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                          {count}
-                                        </span>
-                                      </>
-                                    )}
-                                    <button
-                                      onClick={() => handleAddComplement(product.id, polloProduct)}
-                                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                                        wasRecentlyAdded
-                                          ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                          : 'bg-cyan-600 hover:bg-cyan-500'
-                                      } text-white`}
-                                    >
-                                      {wasRecentlyAdded ? '✓' : '+'}
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        </div>
-
-                        <div className="mb-2">
-                          <h5 className="text-xs font-bold text-white mb-2">Complementos</h5>
-                          <button
-                            onClick={() => setShowBebidas((prev) => ({ ...prev, [product.id]: !prev[product.id] }))}
-                            className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg p-2 transition-all"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">🥤</span>
-                              <span className="text-white text-xs font-bold">Bebidas</span>
-                            </div>
-                            <span className="text-cyan-400 text-xs">{showBebidas[product.id] ? '▼' : '▶'}</span>
-                          </button>
-
-                          {showBebidas[product.id] && (
-                            <div className="mt-2 space-y-1">
-                              {[
-                                { id: "agua-mineral", name: "Agua mineral", emoji: "💧", price: 4.00 },
-                                { id: "coca-cola", name: "Coca Cola 500ml", emoji: "🥤", price: 4.00 },
-                                { id: "inka-cola", name: "Inka Cola 500ml", emoji: "🥤", price: 4.00 },
-                                { id: "sprite", name: "Sprite 500ml", emoji: "🥤", price: 4.00 },
-                                { id: "fanta", name: "Fanta 500ml", emoji: "🥤", price: 4.00 },
-                              ].map((bebida) => {
-                                const bebidaProduct: Product = {
-                                  id: bebida.id,
-                                  name: bebida.name,
-                                  description: bebida.name,
-                                  price: bebida.price,
-                                  image: bebida.emoji,
-                                  category: "bebida"
-                                };
-                                const wasRecentlyAdded = recentlyAdded.has(`${product.id}-${bebida.id}`);
-                                const count = getComplementCount(product.id, bebida.id);
-                                return (
-                                  <div
-                                    key={bebida.id}
-                                    className="flex items-center justify-between bg-gray-800/30 rounded p-1.5 border border-cyan-500/10"
-                                  >
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-sm">{bebida.emoji}</span>
-                                      <span className="text-white text-[10px]">{bebida.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-amber-400 text-[10px] font-bold">S/ {bebida.price.toFixed(2)}</span>
-                                      {count > 0 && (
-                                        <>
-                                          <button
-                                            onClick={() => handleRemoveComplement(product.id, bebida.id)}
-                                            className="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-cyan-600 hover:bg-cyan-500 text-white"
-                                          >
-                                            −
-                                          </button>
-                                          <span className="text-[10px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-bold">
-                                            {count}
-                                          </span>
-                                        </>
-                                      )}
-                                      <button
-                                        onClick={() => handleAddComplement(product.id, bebidaProduct)}
-                                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                                          wasRecentlyAdded
-                                            ? 'bg-green-600 hover:bg-green-500 scale-110'
-                                            : 'bg-cyan-600 hover:bg-cyan-500'
-                                        } text-white`}
-                                      >
-                                        {wasRecentlyAdded ? '✓' : '+'}
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          if (!isSoldOut && (orderQuantity[product.id] || 0) > 0) {
-                            handleCompleteOrder(product);
-                            setIsEditingOrder(false);
-                          }
-                        }}
-                        disabled={isSoldOut || (orderQuantity[product.id] || 0) === 0}
-                        className={`w-full py-2.5 rounded font-bold text-sm transition-all ${isSoldOut || (orderQuantity[product.id] || 0) === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit cursor-pointer active:scale-95'}`}
-                      >
-                        {isSoldOut ? 'No disponible' : (orderQuantity[product.id] || 0) === 0 ? 'Agrega al menos 1 unidad' : isEditingOrder ? 'Confirmar orden' : 'Agregar orden'}
-                      </button>
+                  {completedOrders.some(o => o.productId === product.id) && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full z-20">
+                      ✓ En orden
                     </div>
-                  </div>
+                  )}
                 </div>
-                </div>
-                </React.Fragment>
               );
             })}
           </div>
         </div>
+
+        {expandedCard && (() => {
+          const mp = products.find(p => p.id === expandedCard);
+          if (!mp) return null;
+          const mQty = orderQuantity[expandedCard] || 1;
+          const mDiscount = menuDiscounts[expandedCard];
+          const mHoraLoca = horaLocaActive && expandedCard !== 'ensalada-clasica';
+          const mEffPrice = menuPrices[expandedCard] || mp.price;
+          const mFinalPrice = mHoraLoca ? 20 : (mDiscount || mEffPrice);
+          const mSoldOut = !!menuStock[expandedCard];
+          return (
+            <div
+              className="fixed inset-0 z-[100] flex flex-col justify-end md:items-center md:justify-center"
+              style={{ animation: 'fadeInOverlay 0.2s ease-out' }}
+            >
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setExpandedCard(null)} />
+              <div
+                className="relative bg-gray-900 w-full md:max-w-lg md:rounded-2xl rounded-t-3xl flex flex-col shadow-2xl border-t-2 border-cyan-500/40"
+                style={{ maxHeight: '92vh', animation: 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)' }}
+              >
+                {/* Drag handle */}
+                <div className="flex justify-center pt-3 pb-1 md:hidden">
+                  <div className="w-10 h-1 bg-gray-600 rounded-full" />
+                </div>
+                {/* Close button */}
+                <button
+                  onClick={() => setExpandedCard(null)}
+                  className="absolute top-3 right-4 z-10 w-8 h-8 bg-gray-800 hover:bg-gray-700 text-white rounded-full flex items-center justify-center text-lg font-bold transition-all"
+                >
+                  ×
+                </button>
+                {/* Scrollable content */}
+                <div className="flex-1 overflow-y-auto">
+                  {/* Image */}
+                  <div className="relative h-56 bg-black overflow-hidden rounded-t-3xl md:rounded-t-2xl">
+                    {mp.image.startsWith('/') ? (
+                      <Image
+                        src={mp.image}
+                        alt={mp.name}
+                        width={500}
+                        height={300}
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 40%' }}
+                      />
+                    ) : (
+                      <span className="text-6xl flex items-center justify-center h-full">{mp.image}</span>
+                    )}
+                    {(mDiscount || mHoraLoca) && (
+                      <div className="absolute top-3 left-3 bg-amber-400 text-black text-xs font-black px-2 py-1 rounded z-10">
+                        {mHoraLoca ? '🎉 HORA LOCA' : 'OFERTA'}
+                      </div>
+                    )}
+                  </div>
+                  {/* Name & description */}
+                  <div className="px-4 pt-4 pb-2">
+                    <h3 className="text-xl font-black text-white mb-1">{mp.name}</h3>
+                    <p className="text-cyan-200/70 text-sm">{mp.description}</p>
+                  </div>
+                  {/* Price + Qty */}
+                  <div className="px-4 py-3 flex items-center justify-between border-b border-gray-800">
+                    <div className="flex flex-col">
+                      {(mDiscount || mHoraLoca) ? (
+                        <>
+                          <span className="text-xs text-gray-500 line-through">S/ {mEffPrice.toFixed(2)}</span>
+                          <span className="text-2xl font-black text-amber-400 gold-glow">S/ {mFinalPrice.toFixed(2)}</span>
+                        </>
+                      ) : (
+                        <span className="text-2xl font-black text-amber-400 gold-glow">S/ {mEffPrice.toFixed(2)}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleDecreaseQuantity(expandedCard)}
+                        className="w-10 h-10 bg-gray-700 hover:bg-gray-600 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all"
+                      >
+                        −
+                      </button>
+                      <span className="text-white font-black text-xl w-6 text-center">{mQty}</span>
+                      <button
+                        onClick={() => handleIncreaseQuantity(expandedCard)}
+                        className="w-10 h-10 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  {/* Extras */}
+                  <div className="px-4 py-3 border-b border-gray-800">
+                    <h5 className="text-sm font-bold text-white mb-2">Extras</h5>
+                    {[
+                      { id: 'extra-aderezo', name: 'Extra aderezo', emoji: '🥗', price: 3.00 },
+                      ...(expandedCard === 'ensalada-clasica' ? [{ id: 'pollo-grillado', name: 'Pollo grillado', emoji: '🍗', price: 5.00 }] : []),
+                    ].map((extra) => {
+                      const count = getComplementCount(expandedCard, extra.id);
+                      const wasRecent = recentlyAdded.has(`${expandedCard}-${extra.id}`);
+                      const extraProduct: Product = { id: extra.id, name: extra.name, description: extra.name, price: extra.price, image: extra.emoji, category: 'bebida' };
+                      return (
+                        <div key={extra.id} className="flex items-center justify-between bg-gray-800/40 rounded-lg p-2.5 mb-2 border border-cyan-500/10">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">{extra.emoji}</span>
+                            <span className="text-white text-sm">{extra.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-amber-400 text-sm font-bold">+S/ {extra.price.toFixed(2)}</span>
+                            {count > 0 && (
+                              <>
+                                <button onClick={() => handleRemoveComplement(expandedCard, extra.id)} className="w-7 h-7 bg-cyan-700 hover:bg-cyan-600 text-white rounded-full text-sm font-bold flex items-center justify-center">−</button>
+                                <span className="text-white text-sm font-bold w-4 text-center">{count}</span>
+                              </>
+                            )}
+                            <button onClick={() => handleAddComplement(expandedCard, extraProduct)} className={`w-7 h-7 rounded-full text-sm font-bold flex items-center justify-center transition-all ${wasRecent ? 'bg-green-600 text-white' : 'bg-cyan-600 hover:bg-cyan-500 text-white'}`}>
+                              {wasRecent ? '✓' : '+'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Bebidas */}
+                  <div className="px-4 py-3">
+                    <button
+                      onClick={() => setShowBebidas(prev => ({ ...prev, [expandedCard]: !prev[expandedCard] }))}
+                      className="w-full flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-xl p-3 transition-all mb-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>🥤</span>
+                        <span className="text-white font-bold text-sm">Bebidas</span>
+                      </div>
+                      <span className="text-cyan-400">{showBebidas[expandedCard] ? '▼' : '▶'}</span>
+                    </button>
+                    {showBebidas[expandedCard] && (
+                      <div className="space-y-2">
+                        {[
+                          { id: 'agua-mineral', name: 'Agua mineral', emoji: '💧', price: 4.00 },
+                          { id: 'coca-cola', name: 'Coca Cola 500ml', emoji: '🥤', price: 4.00 },
+                          { id: 'inka-cola', name: 'Inka Cola 500ml', emoji: '🥤', price: 4.00 },
+                          { id: 'sprite', name: 'Sprite 500ml', emoji: '🥤', price: 4.00 },
+                          { id: 'fanta', name: 'Fanta 500ml', emoji: '🥤', price: 4.00 },
+                        ].map((beb) => {
+                          const count = getComplementCount(expandedCard, beb.id);
+                          const wasRecent = recentlyAdded.has(`${expandedCard}-${beb.id}`);
+                          const bebProduct: Product = { id: beb.id, name: beb.name, description: beb.name, price: beb.price, image: beb.emoji, category: 'bebida' };
+                          return (
+                            <div key={beb.id} className="flex items-center justify-between bg-gray-800/40 rounded-lg p-2.5 border border-cyan-500/10">
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">{beb.emoji}</span>
+                                <span className="text-white text-sm">{beb.name}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-amber-400 text-sm font-bold">+S/ {beb.price.toFixed(2)}</span>
+                                {count > 0 && (
+                                  <>
+                                    <button onClick={() => handleRemoveComplement(expandedCard, beb.id)} className="w-7 h-7 bg-cyan-700 hover:bg-cyan-600 text-white rounded-full text-sm font-bold flex items-center justify-center">−</button>
+                                    <span className="text-white text-sm font-bold w-4 text-center">{count}</span>
+                                  </>
+                                )}
+                                <button onClick={() => handleAddComplement(expandedCard, bebProduct)} className={`w-7 h-7 rounded-full text-sm font-bold flex items-center justify-center transition-all ${wasRecent ? 'bg-green-600 text-white' : 'bg-cyan-600 hover:bg-cyan-500 text-white'}`}>
+                                  {wasRecent ? '✓' : '+'}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* CTA button */}
+                <div className="flex-shrink-0 px-4 pt-3 pb-6 bg-gray-900 border-t border-gray-800">
+                  <button
+                    onClick={() => {
+                      if (!mSoldOut) {
+                        handleCompleteOrder(mp);
+                        setIsEditingOrder(false);
+                      }
+                    }}
+                    disabled={mSoldOut}
+                    className={`w-full py-4 rounded-xl font-black text-base transition-all active:scale-95 ${mSoldOut ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-400 text-black neon-border-fit'}`}
+                  >
+                    {mSoldOut ? 'No disponible' : isEditingOrder ? `Confirmar cambios — S/ ${(mFinalPrice * mQty).toFixed(2)}` : `Agregar orden — S/ ${(mFinalPrice * mQty).toFixed(2)}`}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
 
         {completedOrders.length > 0 && (
