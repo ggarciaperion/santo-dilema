@@ -425,7 +425,9 @@ export default function FitPage() {
     setSuccessProductName(product.name);
     setShowSuccessToast(true);
     setTimeout(() => setShowSuccessToast(false), 2800);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
+    setTimeout(() => {
+      document.getElementById('tu-orden-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   };
 
   const handleEditOrder = (orderIndex: number) => {
@@ -555,14 +557,14 @@ export default function FitPage() {
 
       {/* Toast de orden agregada */}
       {showSuccessToast && (
-        <div className="fixed top-5 left-1/2 z-[300] pointer-events-none" style={{ transform: 'translateX(-50%)', animation: 'slideUp 0.3s ease-out' }}>
-          <div className="bg-gray-900/95 border border-cyan-400/60 rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-2xl shadow-cyan-500/20 backdrop-blur-sm">
-            <div className="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center flex-shrink-0">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+        <div className="fixed bottom-24 left-1/2 z-[400] pointer-events-none" style={{ transform: 'translateX(-50%)', animation: 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)' }}>
+          <div className="bg-gray-900 border-2 border-cyan-400/80 rounded-2xl px-6 py-4 flex items-center gap-3 shadow-2xl shadow-cyan-500/40">
+            <div className="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div>
-              <p className="text-white font-bold text-sm whitespace-nowrap">¡Orden agregada!</p>
-              <p className="text-cyan-300/70 text-xs whitespace-nowrap">{successProductName}</p>
+              <p className="text-white font-black text-sm whitespace-nowrap">¡Orden agregada!</p>
+              <p className="text-cyan-300 text-xs whitespace-nowrap font-medium">{successProductName}</p>
             </div>
           </div>
         </div>
