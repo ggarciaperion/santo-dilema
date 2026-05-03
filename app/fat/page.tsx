@@ -1102,6 +1102,14 @@ export default function FatPage() {
                         <span className="text-5xl">{product.image}</span>
                       </div>
                     )}
+                    {/* Papas fritas decorativas */}
+                    <Image
+                      src="/papas-fritas.png"
+                      alt="Papas fritas"
+                      width={145}
+                      height={105}
+                      className="absolute bottom-0 left-0 object-contain pointer-events-none z-10"
+                    />
                     {discountPrice && (
                       <div className="absolute top-2 left-2 bg-amber-400 text-black text-xs font-black px-2 py-0.5 rounded-full">OFERTA</div>
                     )}
@@ -1196,6 +1204,14 @@ export default function FatPage() {
                         <span className="text-7xl">{mp.image}</span>
                       </div>
                     )}
+                    {/* Papas fritas decorativas */}
+                    <Image
+                      src="/papas-fritas.png"
+                      alt="Papas fritas"
+                      width={190}
+                      height={140}
+                      className="absolute bottom-0 left-0 object-contain pointer-events-none z-10"
+                    />
                     {mDiscount && <div className="absolute top-3 left-3 bg-amber-400 text-black text-xs font-black px-2.5 py-1 rounded-full">OFERTA</div>}
                   </div>
 
