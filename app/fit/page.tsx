@@ -198,6 +198,7 @@ export default function FitPage() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successProductName, setSuccessProductName] = useState('');
+  const [isClosingModal, setIsClosingModal] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -420,13 +421,18 @@ export default function FitPage() {
       delete newState[product.id];
       return newState;
     });
-    setExpandedCard(null);
-    setSuccessProductName(product.name);
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 2800);
+    const _name = product.name;
+    setIsClosingModal(true);
+    setTimeout(() => {
+      setExpandedCard(null);
+      setIsClosingModal(false);
+      setSuccessProductName(_name);
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3200);
+    }, 380);
     setTimeout(() => {
       document.getElementById('tu-orden-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 300);
+    }, 700);
   };
 
   const handleEditOrder = (orderIndex: number) => {
@@ -556,7 +562,7 @@ export default function FitPage() {
 
       {/* Toast de orden agregada */}
       {showSuccessToast && (
-        <div className="fixed bottom-24 left-1/2 z-[400] pointer-events-none" style={{ transform: 'translateX(-50%)', animation: 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)' }}>
+        <div className="fixed bottom-24 left-1/2 z-[400] pointer-events-none" style={{ animation: 'toastLifecycle 3.2s cubic-bezier(0.22,1,0.36,1) forwards' }}>
           <div className="bg-gray-900 border-2 border-cyan-400/80 rounded-2xl px-6 py-4 flex items-center gap-3 shadow-2xl shadow-cyan-500/40">
             <div className="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
               <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -897,12 +903,12 @@ export default function FitPage() {
           return (
             <div
               className="fixed inset-0 z-[100] flex flex-col justify-end md:items-center md:justify-center"
-              style={{ animation: 'fadeInOverlay 0.2s ease-out' }}
+              style={{ animation: isClosingModal ? 'fadeOutOverlay 0.38s ease-in forwards' : 'fadeInOverlay 0.25s ease-out' }}
             >
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setExpandedCard(null)} />
               <div
                 className="relative bg-gray-900 w-full md:max-w-lg md:rounded-2xl rounded-t-3xl flex flex-col shadow-2xl border-t-2 border-cyan-500/40"
-                style={{ maxHeight: '92vh', animation: 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)' }}
+                style={{ maxHeight: '92vh', animation: isClosingModal ? 'slideDownPanel 0.38s cubic-bezier(0.4,0,1,1) forwards' : 'slideUp 0.42s cubic-bezier(0.22,1,0.36,1)' }}
               >
                 {/* Drag handle */}
                 <div className="flex justify-center pt-3 pb-1 md:hidden">

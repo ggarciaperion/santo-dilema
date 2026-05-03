@@ -259,6 +259,7 @@ export default function FatPage() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successProductName, setSuccessProductName] = useState('');
+  const [isClosingModal, setIsClosingModal] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -676,11 +677,16 @@ export default function FatPage() {
       delete newState[product.id];
       return newState;
     });
-    setExpandedCard(null);
-    setSuccessProductName(product.name);
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 2800);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
+    const _name = product.name;
+    setIsClosingModal(true);
+    setTimeout(() => {
+      setExpandedCard(null);
+      setIsClosingModal(false);
+      setSuccessProductName(_name);
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3200);
+    }, 380);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 700);
   };
 
   const handleEditOrder = (orderIndex: number) => {
@@ -844,14 +850,14 @@ export default function FatPage() {
 
       {/* Toast de orden agregada */}
       {showSuccessToast && (
-        <div className="fixed top-5 left-1/2 z-[300] pointer-events-none" style={{ transform: 'translateX(-50%)', animation: 'slideUp 0.3s ease-out' }}>
-          <div className="bg-gray-900/95 border border-red-400/60 rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-2xl shadow-red-500/20 backdrop-blur-sm">
-            <div className="w-7 h-7 rounded-full bg-red-500/20 border border-red-400/50 flex items-center justify-center flex-shrink-0">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+        <div className="fixed bottom-24 left-1/2 z-[400] pointer-events-none" style={{ animation: 'toastLifecycle 3.2s cubic-bezier(0.22,1,0.36,1) forwards' }}>
+          <div className="bg-gray-900 border-2 border-red-400/80 rounded-2xl px-6 py-4 flex items-center gap-3 shadow-2xl shadow-red-500/40">
+            <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div>
-              <p className="text-white font-bold text-sm whitespace-nowrap">¡Orden agregada!</p>
-              <p className="text-red-300/70 text-xs whitespace-nowrap">{successProductName}</p>
+              <p className="text-white font-black text-sm whitespace-nowrap">¡Orden agregada!</p>
+              <p className="text-red-300 text-xs whitespace-nowrap font-medium">{successProductName}</p>
             </div>
           </div>
         </div>
@@ -1192,14 +1198,14 @@ export default function FatPage() {
           const mDynPromos = salsaPromos.filter((p: any) => p.active && p.productId === mp.id);
 
           return (
-            <div className="fixed inset-0 z-[100] flex flex-col justify-end md:items-center md:justify-center" style={{ animation: 'fadeInOverlay 0.2s ease-out' }}>
+            <div className="fixed inset-0 z-[100] flex flex-col justify-end md:items-center md:justify-center" style={{ animation: isClosingModal ? 'fadeOutOverlay 0.38s ease-in forwards' : 'fadeInOverlay 0.25s ease-out' }}>
               {/* Overlay */}
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setExpandedCard(null)} />
 
               {/* Panel */}
               <div
                 className="relative bg-gray-900 w-full md:max-w-lg md:rounded-2xl rounded-t-3xl flex flex-col shadow-2xl"
-                style={{ maxHeight: '92vh', animation: 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)' }}
+                style={{ maxHeight: '92vh', animation: isClosingModal ? 'slideDownPanel 0.38s cubic-bezier(0.4,0,1,1) forwards' : 'slideUp 0.42s cubic-bezier(0.22,1,0.36,1)' }}
               >
                 {/* Drag handle */}
                 <div className="flex justify-center pt-3 pb-1 md:hidden flex-shrink-0">

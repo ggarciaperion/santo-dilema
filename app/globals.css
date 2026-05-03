@@ -260,6 +260,24 @@ body {
   to   { opacity: 1; }
 }
 
+@keyframes fadeOutOverlay {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes slideDownPanel {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(60%);  opacity: 0; }
+}
+
+@keyframes toastLifecycle {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.94); }
+  12%  { opacity: 1; transform: translateX(-50%) translateY(-4px) scale(1.03); }
+  20%  { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1);    }
+  74%  { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1);    }
+  100% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.96); }
+}
+
 @keyframes motoDrive {
   0% {
     transform: translateX(0);
