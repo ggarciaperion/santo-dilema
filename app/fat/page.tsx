@@ -1131,7 +1131,7 @@ export default function FatPage() {
                       </div>
                     )}
                     {/* Papas fritas decorativas */}
-                    {product.id !== "pequeno-dilema" && (
+                    {!["pequeno-dilema", "santo-pecado", "duo-dilema"].includes(product.id) && (
                       <Image
                         src="/papas-fritas.png"
                         alt="Papas fritas"
