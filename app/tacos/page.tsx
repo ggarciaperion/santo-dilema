@@ -725,7 +725,7 @@ export default function TacosPage() {
         </div>
 
         {/* ── Flavor cards grid ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:flex md:flex-row md:flex-wrap md:justify-center items-center gap-3 md:gap-6 lg:gap-8 px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10">
+        <div className="flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10">
           {flavors.map((flavor) => {
             const isSoldOut = !!menuStock[flavor.id];
             const isChosen = completedOrders.some(o => o.salsas.includes(flavor.id));
@@ -744,7 +744,7 @@ export default function TacosPage() {
                 }}
               >
                 {/* Image */}
-                <div className="relative h-36 md:h-52 bg-black overflow-hidden">
+                <div className="relative aspect-video md:aspect-auto md:h-52 bg-black overflow-hidden">
                   {isSoldOut && (
                     <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
                       <div className="border-4 border-red-500 rounded px-3 py-1 select-none" style={{ transform: "rotate(-15deg)" }}>

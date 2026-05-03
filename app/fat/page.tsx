@@ -1109,7 +1109,7 @@ export default function FatPage() {
                   }}
                 >
                   {/* Image */}
-                  <div className="relative h-40 md:h-52 bg-black overflow-hidden">
+                  <div className="relative aspect-video md:aspect-auto md:h-52 bg-black overflow-hidden">
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
                         <div className="border-4 border-red-500 rounded px-3 py-1 select-none" style={{ transform: 'rotate(-15deg)' }}>

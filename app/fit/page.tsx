@@ -826,7 +826,7 @@ export default function FitPage() {
                   `}
                   style={{ transition: 'transform 0.3s ease, box-shadow 0.3s ease', borderRadius: isMobile ? 16 : 0, overflow: 'hidden' }}
                 >
-                  <div className="relative h-44 md:h-52 bg-black overflow-hidden">
+                  <div className="relative aspect-video md:aspect-auto md:h-52 bg-black overflow-hidden">
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
