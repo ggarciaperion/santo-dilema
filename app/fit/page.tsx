@@ -817,7 +817,7 @@ export default function FitPage() {
                   onClick={() => { if (!isSoldOut && !isDragging) handleCardClick(product.id); }}
                   onMouseEnter={() => { if (!isSoldOut) setHoveredCard(product.id); }}
                   onMouseLeave={() => setHoveredCard(null)}
-                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink w-full md:w-[240px] lg:w-[260px] shadow-xl relative
+                  className={`bg-gray-900 flex-shrink-0 md:flex-shrink w-full md:w-[280px] lg:w-[300px] shadow-xl relative
                     ${isHoraLoca ? 'border-4 border-purple-400 hora-loca-glow shadow-purple-500/40' :
                       discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-amber-500/40' :
                       'border-2 border-cyan-400 shadow-cyan-500/30 neon-border-fit'}
@@ -826,7 +826,7 @@ export default function FitPage() {
                   `}
                   style={{ transition: 'transform 0.3s ease, box-shadow 0.3s ease', borderRadius: isMobile ? 16 : 0, overflow: 'hidden' }}
                 >
-                  <div className="relative h-52 bg-black overflow-hidden">
+                  <div className="relative h-44 md:h-52 bg-black overflow-hidden">
                     {product.image.startsWith('/') ? (
                       <Image
                         src={product.image}
@@ -856,24 +856,24 @@ export default function FitPage() {
                       <div className="absolute top-2 left-2 bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded z-20">OFERTA</div>
                     )}
                   </div>
-                  <div className="p-3.5">
-                    <h4 className="text-base font-bold text-white mb-1 truncate">{product.name}</h4>
-                    <p className="text-cyan-200/60 text-sm mb-3 line-clamp-2">{product.description}</p>
+                  <div className="p-3 md:p-3.5">
+                    <h4 className="text-sm md:text-base font-bold text-white mb-1 truncate">{product.name}</h4>
+                    <p className="text-cyan-200/60 text-xs md:text-sm mb-2 md:mb-3 line-clamp-2">{product.description}</p>
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         {discountPrice ? (
                           <>
                             <span className="text-xs text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                            <span className="text-lg font-black text-amber-400">S/ {discountPrice.toFixed(2)}</span>
+                            <span className="text-sm md:text-lg font-black text-amber-400">S/ {discountPrice.toFixed(2)}</span>
                           </>
                         ) : (
-                          <span className="text-base font-black text-amber-400 gold-glow">S/ {effectivePrice.toFixed(2)}</span>
+                          <span className="text-sm md:text-base font-black text-amber-400 gold-glow">S/ {effectivePrice.toFixed(2)}</span>
                         )}
                       </div>
                       {!isSoldOut && (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleCardClick(product.id); }}
-                          className="w-10 h-10 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-bold text-2xl flex items-center justify-center transition-all active:scale-90"
+                          className="w-8 h-8 md:w-10 md:h-10 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-bold text-xl md:text-2xl flex items-center justify-center transition-all active:scale-90"
                         >
                           +
                         </button>

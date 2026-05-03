@@ -1109,7 +1109,7 @@ export default function FatPage() {
                   }}
                 >
                   {/* Image */}
-                  <div className="relative h-52 bg-black overflow-hidden">
+                  <div className="relative h-40 md:h-52 bg-black overflow-hidden">
                     {isSoldOut && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
                         <div className="border-4 border-red-500 rounded px-3 py-1 select-none" style={{ transform: 'rotate(-15deg)' }}>
@@ -1145,9 +1145,9 @@ export default function FatPage() {
                     )}
                   </div>
                   {/* Info */}
-                  <div className="p-3.5">
-                    <h4 className="text-base font-bold text-white mb-1 truncate">{product.name}</h4>
-                    <p className="text-orange-200/60 text-sm mb-3 line-clamp-2" dangerouslySetInnerHTML={{ __html: product.description }} />
+                  <div className="p-3 md:p-3.5">
+                    <h4 className="text-sm md:text-base font-bold text-white mb-1 truncate">{product.name}</h4>
+                    <p className="text-orange-200/60 text-xs md:text-sm mb-2 md:mb-3 line-clamp-2" dangerouslySetInnerHTML={{ __html: product.description }} />
                     <div className="flex items-center justify-between">
                       {activePromo ? (
                         <div className="flex flex-col">

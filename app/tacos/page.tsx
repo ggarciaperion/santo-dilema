@@ -725,7 +725,7 @@ export default function TacosPage() {
         </div>
 
         {/* ── Flavor cards grid ─────────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10">
+        <div className="grid grid-cols-2 md:flex md:flex-row md:flex-wrap md:justify-center items-center gap-3 md:gap-6 lg:gap-8 px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10">
           {flavors.map((flavor) => {
             const isSoldOut = !!menuStock[flavor.id];
             const isChosen = completedOrders.some(o => o.salsas.includes(flavor.id));
@@ -734,7 +734,7 @@ export default function TacosPage() {
               <div
                 key={flavor.id}
                 onClick={() => { if (!isSoldOut) openModal(flavor.id); }}
-                className={`bg-gray-900 flex-shrink-0 w-full md:w-[280px] lg:w-[300px] relative neon-border-taco shadow-xl shadow-emerald-500/30 border-2 border-emerald-400/40
+                className={`bg-gray-900 w-full md:w-[280px] lg:w-[300px] relative neon-border-taco shadow-xl shadow-emerald-500/30 border-2 border-emerald-400/40
                   ${isSoldOut ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
                 `}
                 style={{
@@ -744,7 +744,7 @@ export default function TacosPage() {
                 }}
               >
                 {/* Image */}
-                <div className="relative h-52 bg-black overflow-hidden">
+                <div className="relative h-36 md:h-52 bg-black overflow-hidden">
                   {isSoldOut && (
                     <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
                       <div className="border-4 border-red-500 rounded px-3 py-1 select-none" style={{ transform: "rotate(-15deg)" }}>
@@ -762,25 +762,25 @@ export default function TacosPage() {
                 </div>
 
                 {/* Info */}
-                <div className="p-3.5">
-                  <h4 className="text-base font-bold text-white mb-1 truncate">{flavor.name}</h4>
-                  <p className="text-emerald-200/60 text-sm mb-3 line-clamp-2">{flavor.description}</p>
+                <div className="p-2.5 md:p-3.5">
+                  <h4 className="text-sm md:text-base font-bold text-white mb-1 truncate">{flavor.name}</h4>
+                  <p className="text-emerald-200/60 text-xs md:text-sm mb-2 md:mb-3 line-clamp-2">{flavor.description}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       {duoOfferPrice ? (
                         <>
                           <span className="text-xs text-gray-500 line-through">S/ {duoRealPrice.toFixed(2)}</span>
-                          <span className="text-lg font-black text-emerald-400">S/ {duoOfferPrice.toFixed(2)}</span>
+                          <span className="text-sm md:text-lg font-black text-emerald-400">S/ {duoOfferPrice.toFixed(2)}</span>
                         </>
                       ) : (
-                        <span className="text-lg font-black text-amber-400 gold-glow">S/ {duoRealPrice.toFixed(2)}</span>
+                        <span className="text-sm md:text-lg font-black text-amber-400 gold-glow">S/ {duoRealPrice.toFixed(2)}</span>
                       )}
                       <span className="text-[10px] text-gray-500">el dúo</span>
                     </div>
                     {!isSoldOut && (
                       <button
                         onClick={(e) => { e.stopPropagation(); openModal(flavor.id); }}
-                        className="w-10 h-10 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold text-2xl flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-emerald-500/40"
+                        className="w-8 h-8 md:w-10 md:h-10 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold text-xl md:text-2xl flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-emerald-500/40"
                       >
                         +
                       </button>
