@@ -1123,7 +1123,7 @@ export default function FatPage() {
                         alt={product.name}
                         fill
                         sizes="(max-width: 768px) 100vw, 300px"
-                        className="object-contain"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
@@ -1226,7 +1226,7 @@ export default function FatPage() {
                       </div>
                     )}
                     {mp.image.startsWith('/') ? (
-                      <Image src={mp.image} alt={mp.name} fill sizes="100vw" className="object-contain" />
+                      <Image src={mp.image} alt={mp.name} fill sizes="100vw" className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
                         <span className="text-7xl">{mp.image}</span>

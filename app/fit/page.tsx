@@ -833,7 +833,7 @@ export default function FitPage() {
                         alt={product.name}
                         fill
                         sizes="(max-width: 768px) 100vw, 280px"
-                        className="object-contain"
+                        className="object-cover"
                       />
                     ) : (
                       <span className="text-4xl flex items-center justify-center h-full">{product.image}</span>
@@ -931,7 +931,7 @@ export default function FitPage() {
                         alt={mp.name}
                         fill
                         sizes="100vw"
-                        className="object-contain"
+                        className="object-cover"
                       />
                     ) : (
                       <span className="text-6xl flex items-center justify-center h-full">{mp.image}</span>
