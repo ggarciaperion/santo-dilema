@@ -405,7 +405,6 @@ export default function FitPage() {
 
     setSelectedComplements((prev) => ({ ...prev, [product.id]: [] }));
     setShowBebidas((prev) => ({ ...prev, [product.id]: false }));
-    setShowExtras((prev) => ({ ...prev, [product.id]: false }));
     setMainProductsInCart((prev) => {
       const newState = { ...prev };
       delete newState[product.id];
