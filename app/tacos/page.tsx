@@ -211,9 +211,10 @@ export default function TacosPage() {
   }, [crossCategoryOrders, completedOrders]);
 
   // ── Modal helpers ─────────────────────────────────────────────────────────
-  const openModal = useCallback(() => {
-    setTaco1(null);
+  const openModal = useCallback((flavorId?: string) => {
+    setTaco1(flavorId ?? null);
     setTaco2(null);
+    setSelectedComplemento(null);
     setModalOpen(true);
   }, []);
 
@@ -248,16 +249,20 @@ export default function TacosPage() {
       quantity: 1,
       salsas: [taco1, taco2],
       complementIds: [selectedComplemento],
-      finalPrice: 24.9,
-      originalPrice: 24.9,
+      finalPrice: duoEffectivePrice,
+      originalPrice: duoRealPrice,
       category: "taco",
     };
     setCompletedOrders((prev) => [...prev, newOrder]);
     closeModal();
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 2800);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
-  }, [taco1, taco2, selectedComplemento, closeModal]);
+    setTimeout(() => {
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3200);
+    }, 450);
+    setTimeout(() => {
+      document.getElementById('tu-orden-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 750);
+  }, [taco1, taco2, selectedComplemento, duoEffectivePrice, duoRealPrice, closeModal]);
 
   const handleDeleteOrder = useCallback((index: number) => {
     setDeleteOrderIndex(index);
@@ -337,7 +342,10 @@ export default function TacosPage() {
 
       {/* Toast de orden agregada */}
       {showSuccessToast && (
-        <div className="fixed top-5 left-1/2 z-[300] pointer-events-none" style={{ transform: 'translateX(-50%)', animation: 'slideUp 0.3s ease-out' }}>
+        <div
+          className="fixed bottom-24 left-1/2 z-[400] pointer-events-none"
+          style={{ animation: 'toastLifecycle 3.2s ease forwards' }}
+        >
           <div className="bg-gray-900/95 border border-emerald-400/60 rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-2xl shadow-emerald-500/20 backdrop-blur-sm">
             <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center flex-shrink-0">
               <svg viewBox="0 0 24 24" className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -741,7 +749,7 @@ export default function TacosPage() {
                     transition: "transform 0.3s ease, box-shadow 0.3s ease",
                   }}
                   onClick={() => {
-                    if (!isSoldOut) openModal();
+                    if (!isSoldOut) openModal(flavor.id);
                   }}
                 >
                   {/* Image area */}
@@ -770,7 +778,7 @@ export default function TacosPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          openModal();
+                          openModal(flavor.id);
                         }}
                         className="absolute top-2 right-2 z-10 w-7 h-7 text-white rounded-full text-base font-bold transition-all flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 shadow-lg"
                         style={{ boxShadow: "0 0 8px rgba(52,211,153,0.6)" }}
@@ -812,7 +820,7 @@ export default function TacosPage() {
 
       {/* ── Orders list ─────────────────────────────────────────────────────── */}
       {hasAnyOrder && (
-        <div className="container mx-auto px-3 md:px-4 pb-28 mt-0">
+        <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 pb-28 mt-0">
           <h3 className="text-base md:text-lg lg:text-xl font-black text-emerald-400 mb-2 md:mb-3 neon-glow-taco">
             Tu orden
           </h3>
