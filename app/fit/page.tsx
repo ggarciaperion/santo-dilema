@@ -38,14 +38,6 @@ interface CompletedOrder {
 
 const products: Product[] = [
   {
-    id: "ensalada-clasica",
-    name: "CLÁSICA FRESH BOWL",
-    description: "Todo en un bowl sin excusas. Lechuga bogi, palta, huevo, tomate cherry, zanahoria, pepino y maíz americano. Vinagreta de la casa que lo amarra todo.",
-    price: 18.50,
-    image: "/1.png",
-    category: "fit",
-  },
-  {
     id: "ensalada-proteica",
     name: "CÉSAR POWER BOWL",
     description: "El clásico que no falla — acá lo hacemos mejor. Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. César cremosa de la casa incluida.",
@@ -91,6 +83,14 @@ const products: Product[] = [
     description: "Fideos tipo tornillo combinados con zanahoria en cubos, maíz americano, arvejitas, jamón y brócoli, acompañados de jugosos dados de pollo grillado y bañados con nuestro aderezo especial de la casa.",
     price: 22.50,
     image: "/pasta.png",
+    category: "fit",
+  },
+  {
+    id: "ensalada-clasica",
+    name: "CLÁSICA FRESH BOWL",
+    description: "Todo en un bowl sin excusas. Lechuga bogi, palta, huevo, tomate cherry, zanahoria, pepino y maíz americano. Vinagreta de la casa que lo amarra todo.",
+    price: 18.50,
+    image: "/1.png",
     category: "fit",
   },
 ];
