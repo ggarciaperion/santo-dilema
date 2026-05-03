@@ -1317,7 +1317,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`grid grid-cols-2 md:flex md:flex-wrap md:justify-center items-center gap-x-3 gap-y-12 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-10 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
             {products.map((product, index) => {
@@ -1336,7 +1336,7 @@ export default function FatPage() {
               return (
                 <div
                   key={product.id}
-                  className={isLastOdd ? 'col-span-2 md:contents flex justify-center overflow-visible' : 'contents'}
+                  className={isLastOdd ? 'md:contents overflow-visible' : 'contents'}
                   style={isLastOdd ? { overflow: 'visible' } : undefined}
                 >
                 <div
@@ -1346,8 +1346,8 @@ export default function FatPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`bg-gray-900 flex-shrink-0 md:flex-shrink ${discountPrice ? 'border-4 border-amber-400 super-promo-glow shadow-xl shadow-amber-500/40' : 'neon-border-fat shadow-xl shadow-red-500/30 border-2 md:border-0 border-red-400'} ${isSoldOut ? 'opacity-70 cursor-not-allowed' : ''}
                     ${isExpanded
-                      ? `${isLastOdd ? 'w-[calc(50%-0.375rem)]' : 'w-full'} md:w-[400px] lg:w-[420px] z-20`
-                      : isLastOdd ? 'w-[calc(50%-0.375rem)] md:w-[280px] lg:w-[300px]' : 'w-full md:w-[280px] lg:w-[300px]'
+                      ? `w-full md:w-[400px] lg:w-[420px] z-20`
+                      : 'w-full md:w-[280px] lg:w-[300px]'
                     }
                     ${!isExpanded && hoveredCard === product.id && !expandedCard
                       ? 'md:scale-105 md:-translate-y-2 md:shadow-2xl md:shadow-red-500/50 z-10'
@@ -1358,7 +1358,7 @@ export default function FatPage() {
                   style={{
                     transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease',
                     transformOrigin: 'center center',
-                    borderRadius: 0,
+                    borderRadius: isMobile ? 16 : 0,
                     overflow: 'visible',
                     position: 'relative',
                     zIndex: isExpanded ? 50 : isMobile ? index + 1 : undefined,
@@ -1410,11 +1410,11 @@ export default function FatPage() {
                     )}
                   </div>
                   <div className="p-3 md:p-3.5">
-                    <h4 className="text-xs md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
+                    <h4 className="text-base md:text-base font-bold text-white mb-1.5 md:mb-1.5 truncate">
                       {product.name}
                     </h4>
                     <p
-                      className="text-orange-200/70 text-[10px] md:text-xs mb-1.5 md:mb-2 md:line-clamp-3 md:h-12"
+                      className="text-orange-200/70 text-sm md:text-xs mb-1.5 md:mb-2 md:line-clamp-3 md:h-12"
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
@@ -1438,7 +1438,7 @@ export default function FatPage() {
                             if (!isSoldOut) handleDecreaseQuantity(product.id);
                           }}
                           disabled={isSoldOut}
-                          className={`w-5 h-5 md:w-7 md:h-7 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
+                          className={`w-11 h-11 md:w-7 md:h-7 text-white rounded text-base md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
                         >
                           −
                         </button>
@@ -1451,7 +1451,7 @@ export default function FatPage() {
                             if (!isSoldOut) handleIncreaseQuantity(product.id);
                           }}
                           disabled={isSoldOut}
-                          className={`w-5 h-5 md:w-7 md:h-7 text-white rounded text-xs md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
+                          className={`w-11 h-11 md:w-7 md:h-7 text-white rounded text-base md:text-sm font-bold transition-all flex items-center justify-center ${isSoldOut ? 'bg-gray-700 cursor-not-allowed opacity-40' : 'bg-red-600 hover:bg-red-500'}`}
                         >
                           +
                         </button>
