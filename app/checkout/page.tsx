@@ -297,44 +297,39 @@ export default function CheckoutPage() {
   const hasAnyActivePromotion = hasComboDiscount || hasIndividualDiscount;
   // ─────────────────────────────────────────────────────────────────
 
-  // Calcular subtotal BASE (sin promociones) - para aplicar cupones
+  // Calcular subtotal BASE (precios lista sin ninguna promo) — usado solo para cupones
   const subtotalBase = completedOrders.reduce((total, order) => {
     const fatProduct = fatProducts.find((p) => p.id === order.productId);
     const fitProduct = fitProducts.find((p) => p.id === order.productId);
     const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
     const product = fatProduct || fitProduct || tacoProduct;
-
     if (!product) return total;
-
-    // Usar SIEMPRE el precio original del producto (sin descuentos)
     const originalPrice = order.originalPrice ?? product.price;
-    const productTotal = originalPrice * order.quantity;
-
-    // Calcular total de complementos
     const complementsTotal = order.complementIds.reduce((sum, compId) => {
       return sum + (availableComplements[compId]?.price || 0);
     }, 0);
-
-    return total + productTotal + complementsTotal;
+    return total + originalPrice * order.quantity + complementsTotal;
   }, 0);
 
-  // Calcular subtotal REAL (con promociones individuales de salsas, SIN combo)
-  // El combo se descuenta por separado en realTotal para evitar doble sustracción
+  // Calcular subtotal CON PROMOS individuales (finalPrice) — base correcta para combos
+  // Los combos son descuentos ADICIONALES sobre los precios ya promociados
+  const subtotalWithPromos = completedOrders.reduce((total, order) => {
+    const fatProduct = fatProducts.find((p) => p.id === order.productId);
+    const fitProduct = fitProducts.find((p) => p.id === order.productId);
+    const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
+    const product = fatProduct || fitProduct || tacoProduct;
+    if (!product) return total;
+    const effectivePrice = order.finalPrice ?? order.originalPrice ?? product.price;
+    const complementsTotal = order.complementIds.reduce((sum, compId) => {
+      return sum + (availableComplements[compId]?.price || 0);
+    }, 0);
+    return total + effectivePrice * order.quantity + complementsTotal;
+  }, 0);
+
+  // subtotal: con promos individuales, sin combo ni cupón
   const subtotal = hasComboDiscount
-    ? subtotalBase  // combo activo: usar precio base; realTotal aplica el descuento
-    : completedOrders.reduce((total, order) => {
-        const fatProduct = fatProducts.find((p) => p.id === order.productId);
-        const fitProduct = fitProducts.find((p) => p.id === order.productId);
-        const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
-        const product = fatProduct || fitProduct || tacoProduct;
-        if (!product) return total;
-        const basePrice = order.finalPrice ?? product.price;
-        const productTotal = basePrice * order.quantity;
-        const complementsTotal = order.complementIds.reduce((sum, compId) => {
-          return sum + (availableComplements[compId]?.price || 0);
-        }, 0);
-        return total + productTotal + complementsTotal;
-      }, 0);
+    ? subtotalWithPromos  // combo: partir de precios promociados y restar descuento combo
+    : subtotalWithPromos; // sin combo: igual usa precios promociados
 
   // Delivery siempre incluido — sin cobro de zona
   const deliveryCost = 0;
@@ -831,11 +826,9 @@ export default function CheckoutPage() {
 
                   if (!product) return null;
 
-                  const basePrice = order.finalPrice ?? product.price;
-                  const productPrice = (hasComboDiscount && order.discountApplied)
-                    ? (order.originalPrice ?? product.price)
-                    : basePrice;
-                  const productTotal = productPrice * order.quantity;
+                  // Siempre usar finalPrice (precio con promo) para display y cálculo
+                  const basePrice = order.finalPrice ?? order.originalPrice ?? product.price;
+                  const productTotal = basePrice * order.quantity;
                   const complementsTotal = order.complementIds.reduce((sum, compId) => {
                     return sum + (availableComplements[compId]?.price || 0);
                   }, 0);
@@ -896,16 +889,16 @@ export default function CheckoutPage() {
                         </div>
 
                         <div className="text-right flex-shrink-0">
-                          {order.discountApplied && !hasComboDiscount && (
+                          {order.finalPrice != null && order.originalPrice != null && order.finalPrice < order.originalPrice && !hasComboDiscount && (
                             <div className="flex flex-col items-end gap-1 mb-1">
                               <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">🔥 PROMO</span>
                               <span className="text-gray-500 line-through text-[10px] font-mono">
-                                S/ {((order.originalPrice ?? productPrice) * order.quantity).toFixed(2)}
+                                S/ {(order.originalPrice * order.quantity).toFixed(2)}
                               </span>
                             </div>
                           )}
                           <span className={`font-black text-sm font-mono ${hasComboDiscount ? 'text-orange-300' : 'text-amber-400'}`}>
-                            S/ {(hasComboDiscount ? (order.originalPrice ?? productPrice) * order.quantity : productTotal).toFixed(2)}
+                            S/ {productTotal.toFixed(2)}
                           </span>
                         </div>
                       </div>
