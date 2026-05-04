@@ -818,124 +818,117 @@ export default function CheckoutPage() {
 
               {/* Lista de productos */}
               <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto custom-scrollbar">
-                {completedOrders.map((order, index) => {
-                  const fatProduct = fatProducts.find((p) => p.id === order.productId);
-                  const fitProduct = fitProducts.find((p) => p.id === order.productId);
-                  const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
-                  const product = fatProduct || fitProduct || tacoProduct;
-
-                  if (!product) return null;
-
-                  // Siempre usar finalPrice (precio con promo) para display y cálculo
-                  const basePrice = order.finalPrice ?? order.originalPrice ?? product.price;
-                  const productTotal = basePrice * order.quantity;
-                  const complementsTotal = order.complementIds.reduce((sum, compId) => {
-                    return sum + (availableComplements[compId]?.price || 0);
-                  }, 0);
-
+                {/* Combos detectados — mostrar como un solo item unificado */}
+                {comboResult.appliedCombos.map((combo, i) => {
+                  const comboItemNames = combo.resolvedProducts.map(pid => {
+                    const p = fatProducts.find(x => x.id === pid) || fitProducts.find(x => x.id === pid) || tacoProducts.find(x => x.id === pid);
+                    return p?.name ?? pid;
+                  });
                   return (
                     <div
-                      key={`${order.productId}-${index}`}
-                      className="bg-black/30 rounded-xl p-3 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-all"
+                      key={`combo-${combo.rule.id}-${i}`}
+                      className="bg-gradient-to-r from-emerald-900/50 to-teal-900/40 rounded-xl p-3 border border-emerald-500/40"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 border border-fuchsia-400/20">
-                          {product.image.startsWith('/') ? (
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-2xl">{product.image}</span>
-                          )}
+                        <div className="w-14 h-14 rounded-lg bg-emerald-800/60 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 text-2xl">
+                          {combo.rule.emoji}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-bold text-sm leading-tight">
-                            {order.quantity > 1 && <span className="text-fuchsia-400">{order.quantity}x </span>}
-                            {product.name}
-                          </p>
-
-                          {order.salsas && order.salsas.length > 0 && (
-                            <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
-                              <span>{order.productId === "taco-duo" ? "🌮" : "🌶️"}</span>
-                              <span className="flex-1">
-                                {order.productId === "taco-duo"
-                                  ? order.salsas.map((id) => tacoFlavors[id] || id).join(" + ")
-                                  : order.salsas
-                                      .map((sId) => salsas.find((s) => s.id === sId)?.name)
-                                      .filter((name) => name)
-                                      .join(", ")}
-                              </span>
-                            </div>
-                          )}
-
-                          {order.complementIds.length > 0 && (
-                            <div className="text-xs text-fuchsia-300 space-y-1 mt-1.5">
-                              {order.complementIds.map((compId, i) => {
-                                const comp = availableComplements[compId];
-                                if (!comp) return null;
-                                return (
-                                  <div key={`${compId}-${i}`} className="flex justify-between items-center">
-                                    <span className="opacity-80">+ {comp.name}</span>
-                                    {comp.price > 0 && (
-                                      <span className="font-mono text-xs">S/ {comp.price.toFixed(2)}</span>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                          <p className="text-emerald-300 font-black text-sm leading-tight">{combo.rule.name}</p>
+                          <p className="text-emerald-400/70 text-xs mt-0.5">{comboItemNames.join(' + ')}</p>
+                          <p className="text-emerald-400 text-[10px] font-bold mt-1">🎉 Ahorro: S/ {combo.savings.toFixed(2)}</p>
                         </div>
-
                         <div className="text-right flex-shrink-0">
-                          {order.finalPrice != null && order.originalPrice != null && order.finalPrice < order.originalPrice && !hasComboDiscount && (
-                            <div className="flex flex-col items-end gap-1 mb-1">
-                              <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">🔥 PROMO</span>
-                              <span className="text-gray-500 line-through text-[10px] font-mono">
-                                S/ {(order.originalPrice * order.quantity).toFixed(2)}
-                              </span>
-                            </div>
-                          )}
-                          <span className={`font-black text-sm font-mono ${hasComboDiscount ? 'text-orange-300' : 'text-amber-400'}`}>
-                            S/ {productTotal.toFixed(2)}
-                          </span>
+                          <p className="text-gray-500 line-through text-[10px] font-mono">S/ {combo.originalTotal.toFixed(2)}</p>
+                          <p className="text-emerald-300 font-black text-sm font-mono">S/ {combo.comboPrice.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
                   );
                 })}
-              </div>
 
-              {/* Combos aplicados */}
-              {hasComboDiscount && (
-                <div className="space-y-2 mb-4">
-                  {comboResult.appliedCombos.map((combo, i) => (
-                    <div
-                      key={`${combo.rule.id}-${i}`}
-                      className="bg-gradient-to-r from-emerald-900/40 to-teal-900/30 border border-emerald-500/40 rounded-xl px-3 py-2.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-emerald-300 font-black text-xs tracking-wide">
-                            {combo.rule.emoji} {combo.rule.name.toUpperCase()} — ACTIVADO
-                          </p>
-                          <p className="text-emerald-400/70 text-[10px] mt-0.5">{combo.rule.description}</p>
-                        </div>
-                        <div className="text-right ml-3 flex-shrink-0">
-                          <p className="text-gray-500 line-through text-[10px] font-mono">S/ {combo.originalTotal.toFixed(2)}</p>
-                          <p className="text-emerald-300 font-black text-sm font-mono">S/ {combo.comboPrice.toFixed(2)}</p>
+                {/* Productos standalone (no consumidos por ningún combo) */}
+                {(() => {
+                  const remaining = new Map<string, number>();
+                  for (const combo of comboResult.appliedCombos) {
+                    for (const pid of combo.resolvedProducts) {
+                      remaining.set(pid, (remaining.get(pid) ?? 0) + 1);
+                    }
+                  }
+                  return completedOrders.map((order, index) => {
+                    const consumed = Math.min(order.quantity, remaining.get(order.productId) ?? 0);
+                    remaining.set(order.productId, (remaining.get(order.productId) ?? 0) - consumed);
+                    const standaloneQty = order.quantity - consumed;
+                    if (standaloneQty === 0) return null;
+
+                    const product = fatProducts.find((p) => p.id === order.productId) || fitProducts.find((p) => p.id === order.productId) || tacoProducts.find((p) => p.id === order.productId);
+                    if (!product) return null;
+
+                    const basePrice = order.finalPrice ?? order.originalPrice ?? product.price;
+                    const productTotal = basePrice * standaloneQty;
+
+                    return (
+                      <div
+                        key={`${order.productId}-${index}`}
+                        className="bg-black/30 rounded-xl p-3 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-all"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 border border-fuchsia-400/20">
+                            {product.image.startsWith('/') ? (
+                              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-2xl">{product.image}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-bold text-sm leading-tight">
+                              {standaloneQty > 1 && <span className="text-fuchsia-400">{standaloneQty}x </span>}
+                              {product.name}
+                            </p>
+                            {order.salsas && order.salsas.length > 0 && (
+                              <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
+                                <span>{order.productId === "taco-duo" ? "🌮" : "🌶️"}</span>
+                                <span className="flex-1">
+                                  {order.productId === "taco-duo"
+                                    ? order.salsas.map((id) => tacoFlavors[id] || id).join(" + ")
+                                    : order.salsas.map((sId) => salsas.find((s) => s.id === sId)?.name).filter(Boolean).join(", ")}
+                                </span>
+                              </div>
+                            )}
+                            {order.complementIds.length > 0 && (
+                              <div className="text-xs text-fuchsia-300 space-y-1 mt-1.5">
+                                {order.complementIds.map((compId, ci) => {
+                                  const comp = availableComplements[compId];
+                                  if (!comp) return null;
+                                  return (
+                                    <div key={`${compId}-${ci}`} className="flex justify-between items-center">
+                                      <span className="opacity-80">+ {comp.name}</span>
+                                      {comp.price > 0 && <span className="font-mono text-xs">S/ {comp.price.toFixed(2)}</span>}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            {order.finalPrice != null && order.originalPrice != null && order.finalPrice < order.originalPrice && (
+                              <div className="flex flex-col items-end gap-1 mb-1">
+                                <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">🔥 PROMO</span>
+                                <span className="text-gray-500 line-through text-[10px] font-mono">
+                                  S/ {(order.originalPrice * standaloneQty).toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                            <span className="font-black text-sm font-mono text-amber-400">
+                              S/ {productTotal.toFixed(2)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      {combo.savings > 0 && (
-                        <p className="text-emerald-400 text-[10px] font-bold mt-1">
-                          🎉 Ahorro: S/ {combo.savings.toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                    );
+                  });
+                })()}
+              </div>
 
               {/* Sección de cupón */}
               <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
@@ -982,7 +975,7 @@ export default function CheckoutPage() {
                   <>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-400">Subtotal:</span>
-                      <span className="text-gray-400 line-through font-mono text-xs">S/ {subtotalBase.toFixed(2)}</span>
+                      <span className="text-gray-400 line-through font-mono text-xs">S/ {subtotalWithPromos.toFixed(2)}</span>
                     </div>
                     {hasComboDiscount && (
                       <div className="flex justify-between items-center text-sm">

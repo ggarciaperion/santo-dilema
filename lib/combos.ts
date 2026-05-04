@@ -66,7 +66,7 @@ export const COMBO_RULES: ComboRule[] = [
     description: '4 Alitas + Crunch Supreme Taco',
     requiredProducts: ['chiguan-alitas', 'taco-duo'],
     price: 20,
-    priority: 2,
+    priority: 3,
   },
 ];
 
