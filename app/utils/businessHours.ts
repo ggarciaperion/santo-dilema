@@ -2,8 +2,8 @@
 // Dominio de pruebas: siempre abierto
 const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app"];
 
-// Sin apertura temporal activa
-const TEMP_OPEN_UNTIL = new Date("2026-04-11T22:30:00Z");
+// Apertura temporal para pruebas en producción
+const TEMP_OPEN_UNTIL = new Date("2026-05-15T06:00:00Z");
 // Cierre por Día del Trabajador (1 mayo) — reabre el 2 mayo a las 6:00 PM hora Perú
 const TEMP_CLOSURE_UNTIL = new Date("2026-05-02T23:00:00Z");
 
