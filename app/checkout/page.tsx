@@ -1700,7 +1700,7 @@ export default function CheckoutPage() {
             <div className="flex justify-center mb-5">
               <div className="bg-white rounded-2xl p-3 shadow-xl" style={{ width: '160px', height: '160px' }}>
                 <img
-                  src="/nuevoqrfinal.jpg"
+                  src="/yape.png"
                   alt="QR Pago"
                   className="w-full h-full object-contain"
                 />
