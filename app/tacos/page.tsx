@@ -647,7 +647,7 @@ export default function TacosPage() {
               alt="Santo Dilema"
               width={300}
               height={75}
-              className="h-10 md:h-9 w-auto"
+              className="h-8 md:h-9 w-auto"
               priority
             />
           </Link>
@@ -663,7 +663,7 @@ export default function TacosPage() {
               href="/fat"
               className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors px-2 py-1 rounded border border-red-500/30 hover:border-red-400 sm:hidden"
             >
-              Ver menú Alitas
+              Alitas
             </Link>
             <Link
               href="/fit"
@@ -676,7 +676,19 @@ export default function TacosPage() {
               href="/fit"
               className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors px-2 py-1 rounded border border-cyan-500/30 hover:border-cyan-400 sm:hidden"
             >
-              Ver menú Ensaladas
+              Ensaladas
+            </Link>
+            <Link
+              href="/combos"
+              className="text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors gold-glow px-2 md:px-3 py-1 md:py-1.5 rounded border border-amber-500/30 hover:border-amber-400 hidden sm:block"
+            >
+              Ver Combos →
+            </Link>
+            <Link
+              href="/combos"
+              className="text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors gold-glow px-2 py-1 rounded border border-amber-500/30 hover:border-amber-400 sm:hidden"
+            >
+              Combos
             </Link>
           </div>
         </div>

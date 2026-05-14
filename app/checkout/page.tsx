@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import MpCardModal from "../components/MpCardModal";
-import { detectCombos } from "../../lib/combos";
+import type { ComboResult } from "../../lib/combos";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -284,8 +284,39 @@ export default function CheckoutPage() {
     setShowMobileFormModal(true);
   }, []);
 
-  // ── DETECCIÓN DE COMBOS ──────────────────────────────────────────
-  const comboResult = useMemo(() => detectCombos(completedOrders), [completedOrders]);
+  // ── COMBOS EXPLÍCITOS (solo los que vienen de /combos con comboGroupId) ──
+  const comboResult = useMemo((): ComboResult => {
+    const groups = new Map<string, typeof completedOrders>();
+    for (const order of completedOrders) {
+      if (!order.comboGroupId) continue;
+      if (!groups.has(order.comboGroupId)) groups.set(order.comboGroupId, []);
+      groups.get(order.comboGroupId)!.push(order);
+    }
+    const appliedCombos: ComboResult["appliedCombos"] = [];
+    for (const [, items] of groups) {
+      const first = items[0];
+      const comboPrice = first.comboPrice ?? 0;
+      const originalTotal = items.reduce((s, o) => s + (o.originalPrice ?? 0) * o.quantity, 0);
+      const savings = parseFloat((originalTotal - comboPrice).toFixed(2));
+      appliedCombos.push({
+        rule: {
+          id: first.comboGroupId!,
+          name: first.comboName ?? "Combo",
+          emoji: "🔥",
+          description: "",
+          requiredProducts: items.map(o => o.productId),
+          price: comboPrice,
+          priority: 1,
+        },
+        resolvedProducts: items.map(o => o.productId),
+        originalTotal,
+        comboPrice,
+        savings,
+      });
+    }
+    const totalSavings = appliedCombos.reduce((s, c) => s + c.savings, 0);
+    return { appliedCombos, totalSavings };
+  }, [completedOrders]);
   const hasComboDiscount = comboResult.appliedCombos.length > 0;
   const comboDiscountAmount = comboResult.totalSavings;
 
@@ -811,7 +842,7 @@ export default function CheckoutPage() {
 
           {/* Columna Derecha - Resumen del Pedido (4 cols en desktop) */}
           <div className="lg:col-span-4">
-            <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-fuchsia-500/20 p-4 md:p-5 shadow-xl sticky top-24">
+            <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-fuchsia-500/20 p-4 md:p-5 shadow-xl lg:sticky lg:top-24">
               <h2 className="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 mb-4">
                 Resumen del Pedido
               </h2>

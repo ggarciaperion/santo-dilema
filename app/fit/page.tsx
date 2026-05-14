@@ -749,7 +749,7 @@ export default function FitPage() {
               alt="Santo Dilema"
               width={300}
               height={75}
-              className="h-10 md:h-9 w-auto"
+              className="h-8 md:h-9 w-auto"
               priority
             />
           </Link>
@@ -764,7 +764,7 @@ export default function FitPage() {
               href="/fat"
               className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors neon-glow-fat px-2 py-1 rounded border border-red-500/30 hover:border-red-400 sm:hidden"
             >
-              Ver menú Alitas
+              Alitas
             </Link>
             <Link
               href="/tacos"
@@ -776,13 +776,33 @@ export default function FitPage() {
               href="/tacos"
               className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 py-1 rounded border border-emerald-500/30 hover:border-emerald-400 sm:hidden"
             >
-              Ver menú Tacos
+              Tacos
+            </Link>
+            <Link
+              href="/combos"
+              className="text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors gold-glow px-2 md:px-3 py-1 md:py-1.5 rounded border border-amber-500/30 hover:border-amber-400 hidden sm:block"
+            >
+              Ver Combos →
+            </Link>
+            <Link
+              href="/combos"
+              className="text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors gold-glow px-2 py-1 rounded border border-amber-500/30 hover:border-amber-400 sm:hidden"
+            >
+              Combos
             </Link>
           </div>
         </div>
       </header>
       {/* Spacer for fixed header on mobile */}
       <div className="h-14 md:hidden" />
+
+      {/* ── Business closed banner ── */}
+      {!isOpen && (
+        <div className="bg-gray-900 border-b-2 border-cyan-500/30 px-4 py-3 text-center">
+          <p className="text-cyan-400 text-sm font-bold">⏰ Estamos cerrados por ahora</p>
+          <p className="text-gray-400 text-xs mt-0.5">{getNextOpenMessage()}</p>
+        </div>
+      )}
 
 
       <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
@@ -824,7 +844,7 @@ export default function FitPage() {
                     ${isSoldOut ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
                     ${hoveredCard === product.id ? 'md:scale-105 md:-translate-y-2 z-10' : ''}
                   `}
-                  style={{ transition: 'transform 0.3s ease, box-shadow 0.3s ease', borderRadius: isMobile ? 16 : 0, overflow: 'hidden' }}
+                  style={{ transition: 'transform 0.3s ease, box-shadow 0.3s ease', borderRadius: 16, overflow: 'hidden' }}
                 >
                   <div className="relative aspect-video md:aspect-auto md:h-52 bg-black overflow-hidden">
                     {product.image.startsWith('/') ? (

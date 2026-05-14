@@ -1026,7 +1026,7 @@ export default function FatPage() {
               alt="Santo Dilema"
               width={300}
               height={75}
-              className="h-10 md:h-9 w-auto"
+              className="h-8 md:h-9 w-auto"
               priority
             />
           </Link>
@@ -1041,7 +1041,7 @@ export default function FatPage() {
               href="/fit"
               className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors neon-glow-fit px-2 py-1 rounded border border-cyan-500/30 hover:border-cyan-400 sm:hidden"
             >
-              Ver menú Ensaladas
+              Ensaladas
             </Link>
             <Link
               href="/tacos"
@@ -1053,13 +1053,33 @@ export default function FatPage() {
               href="/tacos"
               className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 py-1 rounded border border-emerald-500/30 hover:border-emerald-400 sm:hidden"
             >
-              Ver menú Tacos
+              Tacos
+            </Link>
+            <Link
+              href="/combos"
+              className="text-xs md:text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors gold-glow px-2 md:px-3 py-1 md:py-1.5 rounded border border-amber-500/30 hover:border-amber-400 hidden sm:block"
+            >
+              Ver Combos →
+            </Link>
+            <Link
+              href="/combos"
+              className="text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors gold-glow px-2 py-1 rounded border border-amber-500/30 hover:border-amber-400 sm:hidden"
+            >
+              Combos
             </Link>
           </div>
         </div>
       </header>
       {/* Spacer for fixed header on mobile */}
       <div className="h-14 md:hidden" />
+
+      {/* ── Business closed banner ── */}
+      {!isOpen && (
+        <div className="bg-gray-900 border-b-2 border-red-500/30 px-4 py-3 text-center">
+          <p className="text-red-400 text-sm font-bold">⏰ Estamos cerrados por ahora</p>
+          <p className="text-gray-400 text-xs mt-0.5">{getNextOpenMessage()}</p>
+        </div>
+      )}
 
 
       {/* Products Carousel */}

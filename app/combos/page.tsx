@@ -111,6 +111,50 @@ const emptySelections = (): Selections => ({ sauces: {}, salad: "", tacos: [], t
 
 const COMBOS: ComboConfig[] = [
   {
+    id: "combo-chiguan",
+    name: "Combo Chiguan",
+    emoji: "🔥",
+    tagline: "Alitas, taco y punto",
+    description: "El combo que no necesita justificación. 4 alitas con tu salsa, un Crunch Supreme Taco con nachos. Todo en uno, sin complicaciones.",
+    price: 20,
+    maxSavings: 0,
+    includes: [
+      "4 alitas de pollo · salsa a elección",
+      "Crunch Supreme Taco · Nachos incluidos",
+    ],
+    steps: [
+      {
+        type: "sauces",
+        productId: "chiguan-alitas",
+        productName: "4 Alitas",
+        count: 1,
+        label: "Elige tu salsa para las alitas",
+        excludeSauceIds: ["anticuchos"],
+      },
+    ],
+    fixedItems: [
+      {
+        productId: "taco-duo",
+        cartSalsas: ["santo-crujiente"],
+        cartComplementIds: ["nachos"],
+        cartOriginalPrice: REF_PRICES["taco-duo"] ?? 0,
+        summaryLabel: "Crunch Supreme Taco",
+        summaryImage: "/crunch.png",
+        summaryDetails: ["Sabor fijo · Nachos incluidos"],
+      },
+    ],
+    images: ["/pequeno-dilema.png", "/crunch.png"],
+    colors: {
+      text:    "text-violet-400",
+      border:  "border-violet-500/30",
+      badge:   "bg-violet-500/15 text-violet-300 border border-violet-500/30",
+      btn:     "bg-violet-600 hover:bg-violet-500 text-white",
+      stepDot: "bg-violet-500",
+      glow:    "0 0 35px rgba(139,92,246,0.18)",
+      rgb:     "139,92,246",
+    },
+  },
+  {
     id: "combo-perfecto",
     name: "Combo Perfecto",
     emoji: "🥗",
@@ -205,50 +249,6 @@ const COMBOS: ComboConfig[] = [
       stepDot: "bg-red-500",
       glow:    "0 0 35px rgba(239,68,68,0.18)",
       rgb:     "239,68,68",
-    },
-  },
-  {
-    id: "combo-chiguan",
-    name: "Combo Chiguan",
-    emoji: "🔥",
-    tagline: "Alitas, taco y punto",
-    description: "El combo que no necesita justificación. 4 alitas con tu salsa, un Crunch Supreme Taco con nachos. Todo en uno, sin complicaciones.",
-    price: 20,
-    maxSavings: 0,
-    includes: [
-      "4 alitas de pollo · salsa a elección",
-      "Crunch Supreme Taco · Nachos incluidos",
-    ],
-    steps: [
-      {
-        type: "sauces",
-        productId: "chiguan-alitas",
-        productName: "4 Alitas",
-        count: 1,
-        label: "Elige tu salsa para las alitas",
-        excludeSauceIds: ["anticuchos"],
-      },
-    ],
-    fixedItems: [
-      {
-        productId: "taco-duo",
-        cartSalsas: ["santo-crujiente"],
-        cartComplementIds: ["nachos"],
-        cartOriginalPrice: REF_PRICES["taco-duo"] ?? 0,
-        summaryLabel: "Crunch Supreme Taco",
-        summaryImage: "/crunch.png",
-        summaryDetails: ["Sabor fijo · Nachos incluidos"],
-      },
-    ],
-    images: ["/pequeno-dilema.png", "/crunch.png"],
-    colors: {
-      text:    "text-violet-400",
-      border:  "border-violet-500/30",
-      badge:   "bg-violet-500/15 text-violet-300 border border-violet-500/30",
-      btn:     "bg-violet-600 hover:bg-violet-500 text-white",
-      stepDot: "bg-violet-500",
-      glow:    "0 0 35px rgba(139,92,246,0.18)",
-      rgb:     "139,92,246",
     },
   },
 ];
@@ -506,89 +506,179 @@ export default function CombosPage() {
   // ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#080808] text-white">
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-30 border-b border-white/5 bg-[#0a0a0a]/90 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/" className="shrink-0">
-            <Image src="/logoprincipal.png" alt="Santo Dilema" width={34} height={34} className="rounded-full" />
+      {/* ── KEYFRAMES ── */}
+      <style>{`
+        @keyframes combosCardIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes combosPulse {
+          0%, 100% { opacity: 0.04; }
+          50%       { opacity: 0.09; }
+        }
+      `}</style>
+
+      {/* ── FONDO con textura ── */}
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: "linear-gradient(rgba(245,158,11,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.07) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          animation: "combosPulse 4s ease-in-out infinite",
+        }}
+      />
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%)" }}
+      />
+
+      {/* ── ICONOS DECORATIVOS DE FONDO ── */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: 0.14 }}>
+
+        {/* Llama grande izquierda */}
+        <svg className="absolute top-20 left-6 w-24 h-24 text-amber-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M50 90 Q20 75 22 50 Q24 35 35 25 Q30 40 40 42 Q32 28 42 15 Q44 30 52 33 Q48 20 58 10 Q65 28 60 42 Q72 35 68 50 Q75 65 50 90Z"/>
+        </svg>
+
+        {/* Llama pequeña derecha arriba */}
+        <svg className="absolute top-32 right-10 w-16 h-16 text-orange-400 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 88 Q25 72 27 50 Q29 36 40 26 Q36 40 44 43 Q38 30 46 18 Q52 32 58 35 Q54 22 63 14 Q68 30 64 44 Q74 36 70 52 Q74 68 50 88Z"/>
+        </svg>
+
+        {/* Alita izquierda centro */}
+        <svg className="absolute top-1/2 left-8 w-28 h-28 text-amber-300 sway-left" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.6">
+          <path d="M20 70 Q15 50 25 35 Q35 22 55 20 Q70 20 78 30 Q85 40 80 55 Q75 68 60 72 Q45 76 20 70Z"/>
+          <path d="M25 65 Q30 48 42 40 Q54 33 65 38"/>
+          <path d="M30 60 Q38 47 50 43"/>
+          <circle cx="60" cy="55" r="5" fill="currentColor" opacity="0.4"/>
+        </svg>
+
+        {/* Taco derecha centro */}
+        <svg className="absolute top-1/2 right-6 w-24 h-24 text-amber-400 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M15 65 Q50 20 85 65Z"/>
+          <path d="M25 65 Q30 52 40 48"/>
+          <path d="M60 65 Q65 50 75 47"/>
+          <ellipse cx="50" cy="56" rx="12" ry="6"/>
+          <path d="M38 65 Q42 58 50 56 Q58 54 62 65"/>
+        </svg>
+
+        {/* Bowl ensalada abajo izquierda */}
+        <svg className="absolute bottom-28 left-12 w-20 h-20 text-amber-300 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <ellipse cx="50" cy="65" rx="38" ry="10"/>
+          <path d="M12 65 Q12 90 50 95 Q88 90 88 65"/>
+          <path d="M30 60 Q25 48 32 38 Q40 30 48 44"/>
+          <path d="M52 58 Q48 44 54 36 Q62 28 68 44"/>
+          <circle cx="42" cy="50" r="5" fill="currentColor" opacity="0.3"/>
+          <circle cx="62" cy="48" r="4" fill="currentColor" opacity="0.25"/>
+        </svg>
+
+        {/* Estrella/chispa arriba centro */}
+        <svg className="absolute top-24 left-1/2 w-14 h-14 text-yellow-400 float-slow" style={{ marginLeft: -80 }} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 10 L54 40 L82 38 L60 58 L68 88 L50 70 L32 88 L40 58 L18 38 L46 40Z"/>
+        </svg>
+
+        {/* Chispa pequeña derecha abajo */}
+        <svg className="absolute bottom-40 right-14 w-12 h-12 text-orange-300 float-medium" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M50 15 L53 43 L78 40 L60 58 L66 85 L50 68 L34 85 L40 58 L22 40 L47 43Z"/>
+        </svg>
+
+        {/* Plus neon pequeño */}
+        <svg className="absolute top-1/3 right-24 w-10 h-10 text-amber-500 bounce-subtle" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round">
+          <line x1="50" y1="15" x2="50" y2="85"/>
+          <line x1="15" y1="50" x2="85" y2="50"/>
+        </svg>
+
+        {/* Plus neon pequeño 2 */}
+        <svg className="absolute bottom-1/3 left-20 w-8 h-8 text-amber-400 bounce-subtle" style={{ animationDelay: "0.5s" }} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round">
+          <line x1="50" y1="15" x2="50" y2="85"/>
+          <line x1="15" y1="50" x2="85" y2="50"/>
+        </svg>
+
+        {/* Alita pequeña abajo derecha */}
+        <svg className="absolute bottom-20 right-8 w-16 h-16 text-orange-300 sway-right" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M22 68 Q18 50 28 36 Q38 24 56 22 Q70 22 77 32 Q83 42 78 56 Q72 68 57 71 Q42 74 22 68Z"/>
+          <path d="M28 63 Q34 48 45 41 Q56 34 66 40"/>
+          <circle cx="58" cy="54" r="4" fill="currentColor" opacity="0.4"/>
+        </svg>
+      </div>
+
+      {/* ── HEADER ── */}
+      <header className="fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto z-30 backdrop-blur-md" style={{ background: "rgba(8,8,8,0.92)", borderBottom: "1px solid rgba(245,158,11,0.15)" }}>
+        <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(245,158,11,0.5), transparent)" }} />
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3 relative z-10">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Image src="/logoprincipal.png" alt="Santo Dilema" width={300} height={75} className="h-10 md:h-9 w-auto" priority />
           </Link>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "var(--font-graffiti)" }}>
-              Combos
-            </h1>
-            <p className="text-xs text-gray-500 leading-none mt-0.5">Elige, personaliza y pide</p>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <Link href="/fat" className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors neon-glow-fat px-2 py-1 rounded border border-red-500/30 hover:border-red-400 hidden sm:block">
+              Ver menú Alitas →
+            </Link>
+            <Link href="/fat" className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors neon-glow-fat px-2 py-1 rounded border border-red-500/30 hover:border-red-400 sm:hidden">
+              Alitas
+            </Link>
+            <Link href="/fit" className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors neon-glow-fit px-2 py-1 rounded border border-cyan-500/30 hover:border-cyan-400 hidden sm:block">
+              Ver menú Ensaladas →
+            </Link>
+            <Link href="/fit" className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors neon-glow-fit px-2 py-1 rounded border border-cyan-500/30 hover:border-cyan-400 sm:hidden">
+              Ensaladas
+            </Link>
+            <Link href="/tacos" className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 py-1 rounded border border-emerald-500/30 hover:border-emerald-400 hidden sm:block">
+              Ver menú Tacos →
+            </Link>
+            <Link href="/tacos" className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors neon-glow-taco px-2 py-1 rounded border border-emerald-500/30 hover:border-emerald-400 sm:hidden">
+              Tacos
+            </Link>
           </div>
-          <Link href="/" className="shrink-0 p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </Link>
         </div>
       </header>
 
-      {/* CLOSED BANNER */}
+      {/* Spacer for fixed header on mobile */}
+      <div className="h-[56px] md:hidden" />
+
+      {/* ── CLOSED BANNER ── */}
       {!isOpen && (
-        <div className="border-b border-red-500/20 bg-red-950/30 px-4 py-3 text-center">
-          <p className="text-sm text-red-300 font-medium">🔒 Estamos cerrados — <span className="text-red-200">{openMessage}</span></p>
+        <div className="relative z-10 bg-gray-900 border-b-2 border-amber-500/30 px-4 py-3 text-center">
+          <p className="text-amber-400 text-sm font-bold">⏰ Estamos cerrados por ahora</p>
+          <p className="text-gray-400 text-xs mt-0.5">{getNextOpenMessage()}</p>
         </div>
       )}
 
-      {/* HERO */}
-      <section className="max-w-3xl mx-auto px-4 pt-10 pb-4 text-center">
-        <span className="inline-block bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold uppercase tracking-widest rounded-full px-4 py-1.5 mb-5">
-          Precio especial · Descuento automático
-        </span>
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "var(--font-graffiti)" }}>
-          Combos para todos los pecados
-        </h2>
-        <p className="text-gray-400 text-sm md:text-base max-w-sm mx-auto leading-relaxed">
-          Elige tu combo, personaliza las opciones y el precio especial se aplica solo al hacer el pedido.
-        </p>
-      </section>
-
-      {/* CATEGORY NAV */}
-      <section className="max-w-3xl mx-auto px-4 pb-6">
-        <div className="flex gap-2">
-          <Link
-            href="/fat"
-            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900/80 border border-red-500/30 rounded-xl px-2 py-3 text-[11px] md:text-xs font-bold text-red-400 hover:border-red-400 hover:bg-red-950/30 transition-all text-center leading-tight"
-            style={{ boxShadow: "0 0 8px rgba(239,68,68,0.08)" }}
-          >
-            🍗 Ver menú alitas
-          </Link>
-          <Link
-            href="/fit"
-            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900/80 border border-cyan-500/30 rounded-xl px-2 py-3 text-[11px] md:text-xs font-bold text-cyan-400 hover:border-cyan-400 hover:bg-cyan-950/30 transition-all text-center leading-tight"
-            style={{ boxShadow: "0 0 8px rgba(6,182,212,0.08)" }}
-          >
-            🥗 Ver menú ensaladas
-          </Link>
-          <Link
-            href="/tacos"
-            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900/80 border border-emerald-500/30 rounded-xl px-2 py-3 text-[11px] md:text-xs font-bold text-emerald-400 hover:border-emerald-400 hover:bg-emerald-950/30 transition-all text-center leading-tight"
-            style={{ boxShadow: "0 0 8px rgba(16,185,129,0.08)" }}
-          >
-            🌮 Ver menú tacos
-          </Link>
+      {/* ── HERO ── */}
+      <section className="relative z-10 max-w-3xl mx-auto px-4 pt-10 pb-6 text-center">
+        <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[11px] font-black uppercase tracking-widest rounded-full px-4 py-1.5 mb-5"
+          style={{ boxShadow: "0 0 16px rgba(245,158,11,0.12)" }}>
+          🔥 Precio especial · Descuento automático
         </div>
+        <h2
+          className="font-black text-white mb-3 leading-tight"
+          style={{ fontFamily: "var(--font-graffiti)", fontSize: "clamp(2rem, 8vw, 3rem)", textShadow: "0 0 30px rgba(245,158,11,0.25)" }}
+        >
+          Combos para todos los <span style={{ color: "#fbbf24", textShadow: "0 0 20px rgba(245,158,11,0.7)" }}>pecados</span>
+        </h2>
+        <p className="text-gray-400 text-sm max-w-sm mx-auto leading-relaxed">
+          Elige tu combo, personaliza y el descuento se aplica solo al pedir.
+        </p>
+
+        {/* Línea decorativa */}
+        <div className="mt-6 mx-auto h-px w-32" style={{ background: "linear-gradient(90deg, transparent, rgba(245,158,11,0.5), transparent)" }} />
       </section>
 
-      {/* COMBO GRID */}
-      <main className="max-w-3xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-5">
-        {COMBOS.map(combo => (
-          <ComboCard key={combo.id} combo={combo} isOpen={isOpen} onSelect={() => openModal(combo)} />
+
+      {/* ── COMBO GRID ── */}
+      <main className="relative z-10 max-w-3xl mx-auto px-4 pb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {COMBOS.map((combo, i) => (
+          <ComboCard key={combo.id} combo={combo} isOpen={isOpen} index={i} onSelect={() => openModal(combo)} />
         ))}
       </main>
 
-      <p className="text-center text-xs text-gray-700 pb-8 px-4">
+      <p className="relative z-10 text-center text-[10px] text-gray-700 pb-8 px-4 tracking-wide">
         El descuento se calcula automáticamente en el checkout · No acumulable con cupones
       </p>
 
       {/* ── TU ORDEN ──────────────────────────────────────────────── */}
       {showTuOrden && savedOrders.length > 0 && (
-        <section ref={tuOrdenRef} className="max-w-3xl mx-auto px-4 pb-36">
+        <section ref={tuOrdenRef} className="relative z-10 max-w-3xl mx-auto px-4 pb-36">
           <h3 className="text-xl font-black text-amber-400 mb-4" style={{ textShadow: "0 0 16px rgba(251,191,36,0.4)" }}>
             Tu orden
           </h3>
@@ -923,14 +1013,35 @@ function PreCheckoutModal({
 //  COMBO CARD
 // ──────────────────────────────────────────────────────────────────
 
-function ComboCard({ combo, isOpen, onSelect }: { combo: ComboConfig; isOpen: boolean; onSelect: () => void }) {
+function ComboCard({ combo, isOpen, index, onSelect }: { combo: ComboConfig; isOpen: boolean; index: number; onSelect: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  const { rgb } = combo.colors;
+
   return (
     <article
-      className={`flex flex-col rounded-2xl border bg-gray-900/40 overflow-hidden ${combo.colors.border}`}
-      style={{ boxShadow: combo.colors.glow }}
+      className="flex flex-col rounded-2xl overflow-hidden cursor-pointer"
+      style={{
+        background: "rgba(12,12,12,0.9)",
+        border: `1.5px solid rgba(${rgb},${hovered ? 0.55 : 0.2})`,
+        boxShadow: hovered
+          ? `0 0 0 1px rgba(${rgb},0.15), 0 8px 32px rgba(${rgb},0.22), 0 2px 8px rgba(0,0,0,0.6)`
+          : `0 0 20px rgba(${rgb},0.08), 0 2px 8px rgba(0,0,0,0.4)`,
+        transform: hovered ? "translateY(-4px) scale(1.01)" : "translateY(0) scale(1)",
+        transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)",
+        animation: `combosCardIn 0.5s ease ${index * 0.08}s both`,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onTouchStart={() => setHovered(true)}
+      onTouchEnd={() => setTimeout(() => setHovered(false), 300)}
+      onClick={isOpen ? onSelect : undefined}
     >
-      {/* Image area */}
-      <div className="relative h-48 bg-black overflow-hidden">
+      {/* ── TOP NEON LINE ── */}
+      <div className="h-0.5 shrink-0" style={{ background: `linear-gradient(90deg, transparent, rgba(${rgb},0.8), transparent)` }} />
+
+      {/* ── IMAGE AREA ── */}
+      <div className="relative bg-black overflow-hidden" style={{ height: 200 }}>
+        {/* Product images */}
         {combo.images.length === 3 ? (
           <div className="flex h-full items-center">
             <div className="w-1/3 relative h-full"><Image src={combo.images[0]} alt="" fill className="object-contain p-3" /></div>
@@ -941,54 +1052,115 @@ function ComboCard({ combo, isOpen, onSelect }: { combo: ComboConfig; isOpen: bo
           </div>
         ) : (
           <div className="flex h-full items-center">
-            <div className="w-1/2 relative h-full"><Image src={combo.images[0]} alt="" fill className="object-contain p-4" /></div>
+            <div className="w-1/2 relative h-full"
+              style={{ transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform 0.4s ease" }}>
+              <Image src={combo.images[0]} alt="" fill className="object-contain p-4" />
+            </div>
             <PlusSeparator colors={combo.colors} />
-            <div className="w-1/2 relative h-full"><Image src={combo.images[1]} alt="" fill className="object-contain p-4" /></div>
+            <div className="w-1/2 relative h-full"
+              style={{ transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform 0.4s ease 0.04s" }}>
+              <Image src={combo.images[1]} alt="" fill className="object-contain p-4" />
+            </div>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-transparent to-transparent pointer-events-none" />
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: `linear-gradient(to top, rgba(12,12,12,0.95) 0%, rgba(12,12,12,0.2) 50%, transparent 100%)` }} />
+
+        {/* Color tint on hover */}
+        <div className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+          style={{ background: `radial-gradient(ellipse at center, rgba(${rgb},0.1) 0%, transparent 70%)`, opacity: hovered ? 1 : 0 }} />
+
+        {/* Savings badge */}
         {combo.maxSavings > 0 && (
-          <span className={`absolute top-3 right-3 text-[11px] font-bold rounded-full px-2.5 py-1 ${combo.colors.badge}`}>
-            Ahorra hasta S/ {combo.maxSavings.toFixed(2)}
+          <span
+            className="absolute top-3 left-3 text-[10px] font-black rounded-full px-2.5 py-1 uppercase tracking-wider"
+            style={{
+              background: `rgba(${rgb},0.15)`,
+              border: `1px solid rgba(${rgb},0.4)`,
+              color: `rgb(${rgb})`,
+              boxShadow: `0 0 8px rgba(${rgb},0.2)`,
+            }}
+          >
+            Ahorra S/ {combo.maxSavings.toFixed(2)}
           </span>
         )}
+
+        {/* Emoji badge */}
+        <span className="absolute top-3 right-3 text-2xl select-none"
+          style={{ filter: `drop-shadow(0 0 8px rgba(${rgb},0.6))`, transform: hovered ? "scale(1.15)" : "scale(1)", transition: "transform 0.3s ease" }}>
+          {combo.emoji}
+        </span>
       </div>
 
-      {/* Body */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
+      {/* ── BODY ── */}
+      <div className="flex flex-col flex-1 px-4 pt-3 pb-4 gap-3">
+        {/* Title + tagline */}
         <div>
-          <h3 className={`text-lg font-bold leading-tight ${combo.colors.text}`} style={{ fontFamily: "var(--font-graffiti)" }}>
+          <h3
+            className="font-black leading-tight"
+            style={{
+              fontFamily: "var(--font-graffiti)",
+              fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+              color: `rgb(${rgb})`,
+              textShadow: hovered ? `0 0 16px rgba(${rgb},0.7), 0 0 32px rgba(${rgb},0.3)` : `0 0 8px rgba(${rgb},0.3)`,
+              transition: "text-shadow 0.3s ease",
+            }}
+          >
             {combo.name}
           </h3>
-          <p className="text-xs text-gray-500 mt-0.5 font-medium">{combo.tagline}</p>
+          <p className="text-xs text-gray-500 font-medium mt-0.5 italic">{combo.tagline}</p>
           <p className="text-sm text-gray-400 mt-2 leading-relaxed">{combo.description}</p>
         </div>
-        <ul className="space-y-1">
+
+        {/* Includes list */}
+        <ul className="space-y-1.5">
           {combo.includes.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-gray-400">
-              <span className={`mt-0.5 ${combo.colors.text} opacity-60`}>✓</span>
+            <li key={i} className="flex items-start gap-2 text-xs text-gray-300">
+              <span className="mt-0.5 shrink-0 w-4 h-4 rounded-full flex items-center justify-center"
+                style={{ background: `rgba(${rgb},0.15)`, border: `1px solid rgba(${rgb},0.4)`, color: `rgb(${rgb})`, fontSize: 8 }}>
+                ✓
+              </span>
               {item}
             </li>
           ))}
         </ul>
-        <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t border-white/5">
+
+        {/* Price + CTA */}
+        <div className="flex items-center justify-between gap-3 pt-3 mt-auto"
+          style={{ borderTop: `1px solid rgba(${rgb},0.12)` }}>
           <div className="leading-none">
             {combo.maxSavings > 0 && (
-              <div className="text-xs text-gray-500 line-through mb-0.5">
+              <div className="text-[11px] text-gray-600 line-through mb-0.5">
                 S/ {(combo.price + combo.maxSavings).toFixed(2)}
               </div>
             )}
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-white">S/ {combo.price.toFixed(2)}</span>
-              <span className={`text-xs font-bold ${combo.colors.text}`}>combo</span>
+              <span
+                className="text-2xl font-black"
+                style={{
+                  color: "#fff",
+                  textShadow: `0 0 12px rgba(${rgb},0.5)`,
+                }}
+              >
+                S/ {combo.price.toFixed(2)}
+              </span>
+              <span className="text-xs font-bold" style={{ color: `rgb(${rgb})` }}>combo</span>
             </div>
           </div>
           <button
-            onClick={onSelect}
+            onClick={(e) => { e.stopPropagation(); if (isOpen) onSelect(); }}
             disabled={!isOpen}
-            className={`flex-1 max-w-[150px] py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${combo.colors.btn}`}
+            className="flex-1 max-w-[160px] py-3 rounded-xl text-sm font-black transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: `linear-gradient(135deg, rgba(${rgb},0.85), rgba(${rgb},0.65))`,
+              boxShadow: isOpen ? `0 0 16px rgba(${rgb},0.3), 0 2px 8px rgba(0,0,0,0.4)` : "none",
+              color: "#fff",
+              border: `1px solid rgba(${rgb},0.4)`,
+            }}
           >
-            {isOpen ? "Elegir combo" : "Cerrado"}
+            {isOpen ? "Elegir combo →" : "Cerrado"}
           </button>
         </div>
       </div>
