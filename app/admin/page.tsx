@@ -1,8370 +1,1012 @@
 "use client";
-// VERSION: 2.5.3 - FIX: Sonido de entrega confirmada con useRef para status
+// ADMIN v3.0 — Reingeniería completa: dashboard focalizado, 4 tabs esenciales
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 
-// Definiciones de salsas y complementos (igual que en checkout)
-const salsas: { id: string; name: string }[] = [
-  { id: "barbecue", name: "BBQ ahumada" },
-  { id: "buffalo-picante", name: "Santo Picante" },
-  { id: "ahumada", name: "Acevichada Imperial" },
-  { id: "parmesano-ajo", name: "Crispy Celestial" },
-  { id: "anticuchos", name: "Parrillera" },
-  { id: "honey-mustard", name: "Honey mustard" },
-  { id: "teriyaki", name: "Oriental Teriyaki" },
-  { id: "macerichada", name: "Sweet & Sour" },
+// ─── Menu products reference ───────────────────────────────────────────────
+const MENU_PRODUCTS = [
+  { id: "pequeno-dilema",      name: "Pequeño Dilema",      category: "fat",  price: 22.00 },
+  { id: "duo-dilema",          name: "Dúo Dilema",          category: "fat",  price: 34.00 },
+  { id: "santo-pecado",        name: "Santo Pecado",        category: "fat",  price: 47.00 },
+  { id: "chiguan-alitas",      name: "4 Alitas · Chiguan",  category: "fat",  price: 12.00 },
+  { id: "ensalada-clasica",    name: "Clásica Fresh Bowl",  category: "fit",  price: 18.50 },
+  { id: "ensalada-proteica",   name: "César Power Bowl",    category: "fit",  price: 20.00 },
+  { id: "ensalada-caesar",     name: "Protein Fit Bowl",    category: "fit",  price: 20.00 },
+  { id: "ensalada-mediterranea", name: "Tuna Fresh Bowl",   category: "fit",  price: 23.50 },
+  { id: "cobb-supreme-bowl",   name: "Cobb Supreme Bowl",   category: "fit",  price: 23.50 },
+  { id: "crispy-chicken-bowl", name: "Crispy Chicken Bowl", category: "fit",  price: 22.50 },
+  { id: "pasta-power-bowl",    name: "Pasta Power Bowl",    category: "fit",  price: 22.50 },
+  { id: "taco-duo",            name: "Dúo de Tacos",        category: "taco", price: 24.90 },
 ];
 
-const generateAvailableComplements = () => {
-  const complements: Record<string, { name: string; price: number }> = {
-    "agua-mineral": { name: "Agua mineral", price: 4.00 },
-    "coca-cola": { name: "Coca Cola 500ml", price: 4.00 },
-    "inka-cola": { name: "Inka Cola 500ml", price: 4.00 },
-    "sprite": { name: "Sprite 500ml", price: 4.00 },
-    "fanta": { name: "Fanta 500ml", price: 4.00 },
-    "extra-papas": { name: "Extra papas", price: 5.00 },
-    "extra-salsa": { name: "Extra salsa", price: 3.00 },
-    "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
-    "pollo-grillado": { name: "Pollo grillado", price: 5.00 },
-    "nachos": { name: "Nachos", price: 0 },
-    "chifles": { name: "Chifles", price: 0 },
-    "papas-fritas": { name: "Papas fritas", price: 0 },
-  };
+const SALSAS: { id: string; name: string }[] = [
+  { id: "barbecue",       name: "BBQ Ahumada" },
+  { id: "buffalo-picante",name: "Santo Picante" },
+  { id: "ahumada",        name: "Acevichada Imperial" },
+  { id: "parmesano-ajo",  name: "Crispy Celestial" },
+  { id: "anticuchos",     name: "Parrillera" },
+  { id: "honey-mustard",  name: "Honey Mustard" },
+  { id: "teriyaki",       name: "Oriental Teriyaki" },
+  { id: "macerichada",    name: "Sweet & Sour" },
+];
 
-  salsas.forEach(salsa => {
-    complements[`extra-salsa-${salsa.id}`] = {
-      name: `Extra salsa - ${salsa.name}`,
-      price: 3.00
-    };
-  });
-
-  return complements;
+const COMPLEMENTS: Record<string, string> = {
+  "agua-mineral": "Agua mineral",
+  "coca-cola": "Coca Cola 500ml",
+  "inka-cola": "Inka Cola 500ml",
+  "sprite": "Sprite 500ml",
+  "fanta": "Fanta 500ml",
+  "extra-papas": "Extra papas",
+  "extra-salsa": "Extra salsa",
+  "extra-aderezo": "Extra aderezo",
+  "pollo-grillado": "Pollo grillado",
+  "nachos": "Nachos",
+  "chifles": "Chifles",
+  "papas-fritas": "Papas fritas",
 };
-
-const availableComplements = generateAvailableComplements();
 
 interface Order {
   id: string;
   name: string;
   phone: string;
   address: string;
-  notes?: string;
-  cart?: any[];
   totalItems?: number;
   totalPrice?: number;
-  timestamp?: string;
-  status: "pending" | "pendiente-verificacion" | "confirmed" | "en-camino" | "delivered" | "cancelled";
-  createdAt: string;
-  updatedAt?: string;
-  confirmedAt?: string;
-  enCaminoAt?: string;
-  deliveredAt?: string;
+  comboDiscount?: number;
+  couponDiscount?: number;
+  deliveryCost?: number;
+  deliveryOption?: string;
   paymentMethod?: string;
   paymentProofPath?: string;
+  status: "pending" | "pendiente-verificacion" | "confirmed" | "en-camino" | "delivered" | "cancelled";
+  createdAt: string;
+  completedOrders?: any[];
+  cart?: any[];
   isCanje?: boolean;
-  canjeNote?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
 }
 
-// Componente para el contador de tiempo
-function TimeCounter({ createdAt, status, onOvertime, audioCtx }: { createdAt: string; orderId: string; status: string; onOvertime?: () => void; audioCtx?: AudioContext | null }) {
+// ─── Time Counter ─────────────────────────────────────────────────────────
+function TimeCounter({ createdAt, status, audioCtx, onOvertime }: {
+  createdAt: string; status: string; audioCtx?: AudioContext | null; onOvertime?: () => void;
+}) {
   const [elapsed, setElapsed] = useState("");
   const [isOvertime, setIsOvertime] = useState(false);
   const alertedRef = useRef(false);
-  // Momento en que este pedido apareció en pantalla — fallback ante desfase de reloj
-  const mountTimeRef = useRef<number>(Date.now());
-  // Evitar que callbacks (referencia nueva en cada render) disparen re-montajes del efecto
+  const mountRef = useRef(Date.now());
   const onOvertimeRef = useRef(onOvertime);
   const audioCtxRef = useRef(audioCtx);
   useEffect(() => { onOvertimeRef.current = onOvertime; }, [onOvertime]);
   useEffect(() => { audioCtxRef.current = audioCtx; }, [audioCtx]);
 
   useEffect(() => {
-    if (status === 'cancelled' || status === 'delivered') return;
-
+    if (status === "cancelled" || status === "delivered") return;
     const playAlert = () => {
       try {
-        // Usar el AudioContext ya inicializado por el admin (requiere interacción previa del usuario)
         const ctx = audioCtxRef.current;
         if (!ctx) return;
-        if (ctx.state === 'suspended') ctx.resume();
-        [0, 0.35, 0.7].forEach(delay => {
+        if (ctx.state === "suspended") ctx.resume();
+        [0, 0.35, 0.7].forEach(d => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.frequency.value = 880;
-          osc.type = 'square';
-          gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
-          osc.start(ctx.currentTime + delay);
-          osc.stop(ctx.currentTime + delay + 0.3);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.frequency.value = 880; osc.type = "square";
+          gain.gain.setValueAtTime(0.3, ctx.currentTime + d);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.3);
+          osc.start(ctx.currentTime + d); osc.stop(ctx.currentTime + d + 0.3);
         });
       } catch {}
     };
-
-    const updateElapsed = () => {
+    const tick = () => {
       const created = new Date(createdAt);
       let diff = Math.floor((Date.now() - created.getTime()) / 1000);
-
-      // Corrección para timestamps en formato antiguo (Lima-hora almacenada como UTC, 5h offset)
-      if (diff > 4 * 60 * 60) diff -= 5 * 60 * 60;
-
-      // Tiempo local desde que el pedido apareció en pantalla
-      const localDiff = Math.floor((Date.now() - mountTimeRef.current) / 1000);
-
-      // Usar siempre el mayor de los dos valores:
-      // - si diff < 0 (reloj server adelantado): localDiff arranca desde 0 sin congelarse
-      // - cuando los relojes se sincronizan: evita que el contador retroceda (no-jump)
-      // - para pedidos pre-existentes cargados al abrir admin: diff real es mayor, se usa ese
-      diff = Math.max(diff, localDiff);
-
-      const minutes = Math.floor(diff / 60);
-      const seconds = diff % 60;
-
-      if (minutes >= 20 && !alertedRef.current &&
-          (status === 'pending' || status === 'pendiente-verificacion' || status === 'confirmed' || status === 'en-camino')) {
-        setIsOvertime(true);
-        alertedRef.current = true;
-        playAlert();
-        onOvertimeRef.current?.();
+      if (diff > 4 * 3600) diff -= 5 * 3600;
+      diff = Math.max(diff, Math.floor((Date.now() - mountRef.current) / 1000));
+      const m = Math.floor(diff / 60), s = diff % 60;
+      if (m >= 20 && !alertedRef.current) {
+        setIsOvertime(true); alertedRef.current = true;
+        playAlert(); onOvertimeRef.current?.();
       }
-
-      setElapsed(minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`);
+      setElapsed(m > 0 ? `${m}m ${s}s` : `${s}s`);
     };
-
-    updateElapsed();
-    const interval = setInterval(updateElapsed, 1000);
-    return () => clearInterval(interval);
-  // onOvertime excluido de deps — se accede vía ref para evitar reinicios del intervalo
+    tick();
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createdAt, status]);
 
   return (
-    <span className={`font-mono text-lg font-black ${isOvertime ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
-      {isOvertime ? '⚠️ ' : ''}{elapsed}
+    <span className={`font-mono text-sm font-bold ${isOvertime ? "text-red-400 animate-pulse" : "text-amber-400"}`}>
+      {isOvertime ? "⚠️ " : "⏱ "}{elapsed}
     </span>
   );
 }
 
+// ─── Status helpers ────────────────────────────────────────────────────────
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+  "pending":                { label: "Nuevo",        color: "text-amber-400",  bg: "bg-amber-400/10 border-amber-400/30",  dot: "bg-amber-400" },
+  "pendiente-verificacion": { label: "Verificando",  color: "text-orange-400", bg: "bg-orange-400/10 border-orange-400/30", dot: "bg-orange-400" },
+  "confirmed":              { label: "Confirmado",   color: "text-blue-400",   bg: "bg-blue-400/10 border-blue-400/30",    dot: "bg-blue-400" },
+  "en-camino":              { label: "En camino",    color: "text-purple-400", bg: "bg-purple-400/10 border-purple-400/30", dot: "bg-purple-400" },
+  "delivered":              { label: "Entregado",    color: "text-green-400",  bg: "bg-green-400/10 border-green-400/30",  dot: "bg-green-400" },
+  "cancelled":              { label: "Cancelado",    color: "text-red-400",    bg: "bg-red-400/10 border-red-400/30",      dot: "bg-red-400" },
+};
+
+const PAYMENT_LABELS: Record<string, string> = {
+  "efectivo": "Efectivo",
+  "yape": "Yape",
+  "plin": "Plin",
+  "anticipado": "Transferencia",
+};
+
+// ─── KPI Card ─────────────────────────────────────────────────────────────
+function KpiCard({ label, value, sub, color = "amber", icon }: {
+  label: string; value: string; sub?: string; color?: string; icon: string;
+}) {
+  const colors: Record<string, string> = {
+    amber:  "border-amber-500/20  text-amber-400",
+    green:  "border-green-500/20  text-green-400",
+    blue:   "border-blue-500/20   text-blue-400",
+    red:    "border-red-500/20    text-red-400",
+    purple: "border-purple-500/20 text-purple-400",
+  };
+  return (
+    <div className={`bg-white/[0.03] border rounded-2xl p-4 flex flex-col gap-1 ${colors[color]}`}>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+        <span className="text-lg">{icon}</span>
+      </div>
+      <p className={`text-2xl font-black ${colors[color].split(" ")[1]}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-500">{sub}</p>}
+    </div>
+  );
+}
+
+// ─── Main Admin ────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [checkingAuth, setCheckingAuth]       = useState(true);
 
-  // Verificar autenticación
+  // Data
+  const [orders,        setOrders]        = useState<Order[]>([]);
+  const [inventory,     setInventory]     = useState<any[]>([]);
+  const [menuStock,     setMenuStock]     = useState<Record<string, boolean>>({});
+  const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
+  const [menuPrices,    setMenuPrices]    = useState<Record<string, number>>({});
+  const [products,      setProducts]      = useState<any[]>([]);
+  const [loading,       setLoading]       = useState(true);
+
+  // UI
+  const [activeTab,    setActiveTab]    = useState<"dashboard"|"pedidos"|"finanzas"|"carta">("dashboard");
+  const [orderFilter,  setOrderFilter]  = useState<"activos"|"hoy"|"todos">("activos");
+  const [expandedId,   setExpandedId]   = useState<string|null>(null);
+  const [voucherModal, setVoucherModal] = useState<string|null>(null);
+  const [priceInputs,  setPriceInputs]  = useState<Record<string,string>>({});
+  const [discInputs,   setDiscInputs]   = useState<Record<string,string>>({});
+  const [savingId,     setSavingId]     = useState<string|null>(null);
+  const [finMonth,     setFinMonth]     = useState(() => {
+    const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}`;
+  });
+
+  // Audio + notifications
+  const [audioCtx,          setAudioCtx]          = useState<AudioContext|null>(null);
+  const [deliveryToast,     setDeliveryToast]     = useState<{id:string;name:string}|null>(null);
+  const [overtimeIds,       setOvertimeIds]       = useState<Set<string>>(new Set());
+  const previousIdsRef      = useRef<Set<string>>(new Set());
+  const previousStatusRef   = useRef<Map<string,string>>(new Map());
+  const announcedDelivRef   = useRef<Set<string>>(new Set());
+
+  // ── Auth ────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const checkAuth = async () => {
+    const check = async () => {
       const token = localStorage.getItem("admin_token");
-
-      if (!token) {
-        router.push("/admin/login");
-        return;
-      }
-
+      if (!token) { router.push("/admin/login"); return; }
       try {
-        const response = await fetch(`/api/auth?token=${token}`);
-        const data = await response.json();
-
-        if (data.authenticated) {
-          setIsAuthenticated(true);
-          setCheckingAuth(false);
-        } else {
-          localStorage.removeItem("admin_token");
-          router.push("/admin/login");
-        }
-      } catch (error) {
-        console.error("Error verificando autenticación:", error);
-        localStorage.removeItem("admin_token");
-        router.push("/admin/login");
-      }
+        const r = await fetch(`/api/auth?token=${token}`);
+        const d = await r.json();
+        if (d.authenticated) { setIsAuthenticated(true); setCheckingAuth(false); }
+        else { localStorage.removeItem("admin_token"); router.push("/admin/login"); }
+      } catch { localStorage.removeItem("admin_token"); router.push("/admin/login"); }
     };
-
-    checkAuth();
+    check();
   }, [router]);
 
-  // Función para cerrar sesión
-  const handleLogout = () => {
-    localStorage.removeItem("admin_token");
-    router.push("/admin/login");
-  };
-
-  // Helper para obtener fecha/hora en zona horaria de Perú (UTC-5)
-  const getPeruDate = (date?: Date | string) => {
-    const d = date ? new Date(date) : new Date();
-    // Convertir a hora de Perú (UTC-5)
-    return new Date(d.toLocaleString('en-US', { timeZone: 'America/Lima' }));
-  };
-
-  // Helper para verificar si dos fechas son del mismo día en Perú
-  const isSameDayPeru = (date1: Date | string, date2?: Date | string) => {
-    const d1 = getPeruDate(date1);
-    const d2 = date2 ? getPeruDate(date2) : getPeruDate();
-
-    return (
-      d1.getDate() === d2.getDate() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getFullYear() === d2.getFullYear()
-    );
-  };
-
-  // Helper para obtener nombre del mes en español
-  const getMonthName = (yearMonth: string) => {
-    const months = [
-      "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
-      "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
-    ];
-    const [year, month] = yearMonth.split('-');
-    return `${months[parseInt(month) - 1]} ${year}`;
-  };
-
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const previousOrderIdsRef = useRef<Set<string>>(new Set());
-  const previousOrderStatusRef = useRef<Map<string, string>>(new Map());
-  // Set permanente: una vez anunciado como entregado, NUNCA se vuelve a anunciar
-  const announcedDeliveredRef = useRef<Set<string>>(new Set());
-  const [filter, setFilter] = useState<string>("all");
-  const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
-  const [chartTimeFilter, setChartTimeFilter] = useState<"days" | "weeks" | "months" | "years">("days");
-  const [previousOrderCount, setPreviousOrderCount] = useState(0);
-  const [audioContextInitialized, setAudioContextInitialized] = useState(false);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing" | "carta">("orders");
-  const [overtimeOrderIds, setOvertimeOrderIds] = useState<Set<string>>(new Set());
-  const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
-  const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
-  const [showPromo13, setShowPromo13] = useState(false);
-  const [challengeData, setChallengeData] = useState<{ salesAmount: number; goal: number; active: boolean; deadline: string }>({ salesAmount: 0, goal: 5000, active: true, deadline: '2026-03-28' });
-  const [challengeSalesInput, setChallengeSalesInput] = useState('');
-  const [challengeSaving, setChallengeSaving] = useState(false);
-  const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
-  const [discountInputs, setDiscountInputs] = useState<Record<string, string>>({});
-  const [discountSaving, setDiscountSaving] = useState<string | null>(null);
-  const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
-  const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
-  const [priceSaving, setPriceSaving] = useState<string | null>(null);
-  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock" | "canjes">("dashboard");
-  const [canjeModal, setCanjeModal] = useState<{ orderId: string } | null>(null);
-  const [canjeNoteInput, setCanjeNoteInput] = useState("");
-  const [canjeSaving, setCanjeSaving] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  // Estados de filtro de fechas para la pestaña "Gestión de Pedidos"
-  const [ordersDateFrom, setOrdersDateFrom] = useState<string>("");
-  const [ordersDateTo, setOrdersDateTo] = useState<string>("");
-  const [isOrdersDateFiltered, setIsOrdersDateFiltered] = useState(false);
-  const [showOrdersDateModal, setShowOrdersDateModal] = useState(false);
-  // Estados de filtro de fechas para la pestaña "Analytics & CRM"
-  const [analyticsDateFrom, setAnalyticsDateFrom] = useState<string>("");
-  const [analyticsDateTo, setAnalyticsDateTo] = useState<string>("");
-  const [isAnalyticsDateFiltered, setIsAnalyticsDateFiltered] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
-  const [customerSegment, setCustomerSegment] = useState<string>("all");
-  const [deliveryToast, setDeliveryToast] = useState<{ orderId: string; customerName: string } | null>(null);
-  const [customerSortKey, setCustomerSortKey] = useState<string>("totalOrders");
-  const [customerSortDir, setCustomerSortDir] = useState<"asc" | "desc">("desc");
-  // CRM
-  const [customerProfiles, setCustomerProfiles] = useState<any[]>([]);
-  const [showCrmModal, setShowCrmModal] = useState(false);
-  const [crmEditPhone, setCrmEditPhone] = useState('');
-  const [crmForm, setCrmForm] = useState({ birthday: '', tags: [] as string[], notes: '' });
-  const [crmSaving, setCrmSaving] = useState(false);
-  const [showCampaignModal, setShowCampaignModal] = useState(false);
-  const [campaignSegment, setCampaignSegment] = useState('inactive30');
-  const [customersView, setCustomersView] = useState<'list' | 'dashboard' | 'birthdays'>('list');
-  const [couponCampaignCode, setCouponCampaignCode] = useState('CUMPLE20');
-  const [couponCampaignExpiry, setCouponCampaignExpiry] = useState('2026-03-08T23:00');
-  const [generatingCouponFor, setGeneratingCouponFor] = useState<string | null>(null);
-  const [generatedCoupons, setGeneratedCoupons] = useState<Record<string, boolean>>({});
-  const [salesDateFrom, setSalesDateFrom] = useState<string>("");
-  const [salesDateTo, setSalesDateTo] = useState<string>("");
-  const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
-  const [salesDateInitialized, setSalesDateInitialized] = useState(false);
-  const [dashboardDateFrom, setDashboardDateFrom] = useState<string>("");
-  const [dashboardDateTo, setDashboardDateTo] = useState<string>("");
-  const [isDashboardDateFiltered, setIsDashboardDateFiltered] = useState(false);
-  const [dashboardDateInitialized, setDashboardDateInitialized] = useState(false);
-  const [inventory, setInventory] = useState<any[]>([]);
-  const [cajaData, setCajaData] = useState<{ snapshotBalance: number; snapshotDate: string; snapshotCreatedAt?: string } | null>(null);
-  const [cajaEditMode, setCajaEditMode] = useState(false);
-  const [cajaEditBalance, setCajaEditBalance] = useState("");
-  const [cajaEditDate, setCajaEditDate] = useState("");
-  const [deductions, setDeductions] = useState<any[]>([]);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [showInventoryModal, setShowInventoryModal] = useState(false);
-  const [showNewMaterialForm, setShowNewMaterialForm] = useState(false);
-  const [newMaterialForm, setNewMaterialForm] = useState({ productName: "", unit: "" });
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [productForm, setProductForm] = useState({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] as Array<{ productName: string; unit: string; quantity: number }> });
-  const [showVoucherModal, setShowVoucherModal] = useState(false);
-  const [selectedVoucherPath, setSelectedVoucherPath] = useState<string>("");
-  const [inventoryForm, setInventoryForm] = useState({
-    supplier: "",
-    supplierRuc: "",
-    supplierPhone: "",
-    paymentMethod: "plin-yape",
-    category: "operativos",
-    items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
-    totalAmount: 0,
-    purchaseDate: new Date().toISOString().split('T')[0]
-  });
-  const [promotions, setPromotions] = useState<any[]>([]);
-  const [coupons, setCoupons] = useState<any[]>([]);
-  const [showPromotionModal, setShowPromotionModal] = useState(false);
-  const [editingPromotion, setEditingPromotion] = useState<any>(null);
-  const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty" | "challenge">("promotions");
-  const [inventorySection, setInventorySection] = useState<"purchases" | "stock">("purchases");
-  const [purchasesSubTab, setPurchasesSubTab] = useState<"history" | "stock">("history"); // Sub-tabs dentro de Compras y Gastos
-  const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
-  const [stockSearchTerm, setStockSearchTerm] = useState<string>("");
-  const [stockConsumptions, setStockConsumptions] = useState<Map<string, number>>(new Map());
-  const [showHistoricalSaleModal, setShowHistoricalSaleModal] = useState(false);
-  const [historicalSaleRegistered, setHistoricalSaleRegistered] = useState(false);
-  const [inventoryDateFilter, setInventoryDateFilter] = useState<string>("");
-  const [inventoryMonthFilter, setInventoryMonthFilter] = useState<string>(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  });
-  const [inventoryCategoryFilter, setInventoryCategoryFilter] = useState<string>("all");
-  const [liquidadoFilter, setLiquidadoFilter] = useState<'all' | 'pendiente' | 'liquidado'>('all');
-  const [showInventoryDetailModal, setShowInventoryDetailModal] = useState(false);
-  const [selectedPurchaseDetail, setSelectedPurchaseDetail] = useState<any>(null);
-  const [showInventoryEditModal, setShowInventoryEditModal] = useState(false);
-  const [editingPurchase, setEditingPurchase] = useState<any>(null);
-  const [showRecipeModal, setShowRecipeModal] = useState(false);
-  const [editingRecipeProduct, setEditingRecipeProduct] = useState<any>(null);
-  const [recipeComponents, setRecipeComponents] = useState<Array<{ productName: string; unit: string; quantity: number; cost?: number }>>([]);
-  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
-  const [showCatalogModal, setShowCatalogModal] = useState(false);
-  const [editingCatalogProduct, setEditingCatalogProduct] = useState<any>(null);
-  const [catalogForm, setCatalogForm] = useState({ productId: "", name: "", category: "", unit: "" });
-  const [productSearchTerms, setProductSearchTerms] = useState<string[]>([]);
-  const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(null);
-  const [promotionForm, setPromotionForm] = useState({
-    name: "",
-    description: "",
-    type: "percentage" as "percentage" | "fixed" | "combo" | "shipping",
-    value: 0,
-    minAmount: 0,
-    applicableProducts: [] as string[],
-    applicableCategories: [] as string[],
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: "",
-    active: true,
-    code: "",
-    usageLimit: 0,
-    targetSegment: "all"
-  });
-
-  // Salsa promos
-  const [salsaPromos, setSalsaPromos] = useState<any[]>([]);
-  const [showSalsaPromoModal, setShowSalsaPromoModal] = useState(false);
-  const [editingPromo, setEditingPromo] = useState<any>(null);
-  const [promoForm, setPromoForm] = useState({ productId: 'pequeno-dilema', salsas: [] as string[], promoPrice: 0, active: true });
-  const [promoSaving, setPromoSaving] = useState(false);
-
-  // Resetear cliente seleccionado cuando cambia el segmento de clientes
+  // ── Audio init ──────────────────────────────────────────────────────────
   useEffect(() => {
-    setSelectedCustomer(null);
-  }, [customerSegment]);
-
-  // Inicializar filtro de fechas en Productos de Venta (mes actual por defecto)
-  useEffect(() => {
-    if (activeTab === "financial" && financialSection === "products" && !salesDateInitialized) {
-      const today = new Date();
-      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const todayStr = today.toISOString().split('T')[0];
-      const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
-
-      setSalesDateFrom(firstDayStr);
-      setSalesDateTo(todayStr);
-      setIsSalesDateFiltered(true);
-      setSalesDateInitialized(true);
-    }
-  }, [activeTab, financialSection, salesDateInitialized]);
-
-  // Inicializar filtro de fechas en Dashboard (mes actual por defecto)
-  useEffect(() => {
-    if (activeTab === "financial" && financialSection === "dashboard" && !dashboardDateInitialized) {
-      const now = new Date();
-      const today = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-      const firstDayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`;
-
-      setDashboardDateFrom(firstDayStr);
-      setDashboardDateTo(todayStr);
-      setIsDashboardDateFiltered(true);
-      setDashboardDateInitialized(true);
-    }
-  }, [activeTab, financialSection, dashboardDateInitialized]);
-
-  // Inicializar AudioContext con interacción del usuario (requerido por navegadores)
-  useEffect(() => {
-    const initAudio = () => {
-      if (!audioContextInitialized) {
-        try {
-          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-          setAudioContext(ctx);
-          setAudioContextInitialized(true);
-          console.log("✅ AudioContext inicializado");
-          // Remover listeners después de inicializar
-          document.removeEventListener('click', initAudio);
-          document.removeEventListener('keydown', initAudio);
-        } catch (error) {
-          console.error("Error al inicializar AudioContext:", error);
-        }
-      }
+    const init = () => {
+      if (audioCtx) return;
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioCtx(ctx);
+        document.removeEventListener("click",   init);
+        document.removeEventListener("keydown", init);
+      } catch {}
     };
+    document.addEventListener("click",   init);
+    document.addEventListener("keydown", init);
+    return () => { document.removeEventListener("click",init); document.removeEventListener("keydown",init); };
+  }, [audioCtx]);
 
-    // Escuchar clicks o teclas para inicializar el audio
-    document.addEventListener('click', initAudio);
-    document.addEventListener('keydown', initAudio);
-
-    return () => {
-      document.removeEventListener('click', initAudio);
-      document.removeEventListener('keydown', initAudio);
-    };
-  }, [audioContextInitialized]);
-
+  // ── Data loading ────────────────────────────────────────────────────────
   useEffect(() => {
-    loadOrders();
-    loadProducts();
-    loadInventory();
-    loadDeductions();
-    loadPromotions();
-    loadCoupons();
-    loadCatalogProducts();
-    loadMenuStock();
-    loadMenuDiscounts();
-    loadMenuPrices();
-    loadChallengeData();
-    checkHistoricalSale();
-    loadCustomerProfiles();
-    loadSalsaPromos();
-    loadCaja();
-    // Auto-refresh cada 10 segundos
-    const interval = setInterval(() => {
-      loadOrders();
-      loadProducts();
-      loadInventory();
-      loadDeductions();
-      loadPromotions();
-      loadCoupons();
-      loadCatalogProducts();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!isAuthenticated) return;
+    loadAll();
+    const iv = setInterval(() => { loadOrders(); loadInventory(); }, 10000);
+    return () => clearInterval(iv);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.product-autocomplete')) {
-        setActiveDropdownIndex(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const loadAll = () => {
+    loadOrders(); loadInventory(); loadMenuStock();
+    loadMenuDiscounts(); loadMenuPrices(); loadProducts();
+  };
 
   const loadOrders = async () => {
     try {
-      const response = await fetch("/api/orders");
-      const data = await response.json();
-
-      console.log(`📊 [ADMIN] loadOrders - Total pedidos recibidos: ${data.length}`);
-      console.log(`📊 [ADMIN] IDs previos guardados: ${previousOrderIdsRef.current.size}`);
-
-      // Detectar NUEVOS pedidos por ID usando useRef (evita stale closure)
-      if (previousOrderIdsRef.current.size > 0) {
-        const currentIds = new Set(data.map((o: Order) => o.id));
-        const newOrders = data.filter((order: Order) => !previousOrderIdsRef.current.has(order.id));
-
-        console.log(`📊 [ADMIN] IDs actuales: ${currentIds.size}`);
-        console.log(`📊 [ADMIN] Nuevos pedidos detectados: ${newOrders.length}`);
-
-        if (newOrders.length > 0) {
-          console.log(`🔔 [ADMIN] ¡${newOrders.length} pedido(s) NUEVO(S) detectado(s)!`);
-          console.log(`🔔 [ADMIN] IDs nuevos:`, newOrders.map(o => o.id));
-          console.log(`🔔 [ADMIN] Llamando a playNotificationSound()...`);
-          playNotificationSound();
-        } else {
-          console.log(`✅ [ADMIN] No hay pedidos nuevos (solo actualizaciones)`);
-        }
-
-        // Detectar pedidos recién entregados (delivery confirmó entrega) usando useRef
-        const newlyDelivered = data.filter((order: Order) => {
-          // announcedDeliveredRef es permanente: si ya fue anunciado, NUNCA vuelve a disparar
-          if (announcedDeliveredRef.current.has(order.id)) return false;
-          const previousStatus = previousOrderStatusRef.current.get(order.id);
-          const isNewlyDelivered = previousStatus !== 'delivered' && previousStatus !== undefined && order.status === 'delivered';
-
-          if (isNewlyDelivered) {
-            console.log(`📦 [ADMIN] Pedido ${order.id} cambió: ${previousStatus} → ${order.status}`);
-          }
-
-          return isNewlyDelivered;
-        });
-
+      const r = await fetch("/api/orders");
+      const data: Order[] = await r.json();
+      if (previousIdsRef.current.size > 0) {
+        const newOnes = data.filter(o => !previousIdsRef.current.has(o.id));
+        if (newOnes.length > 0) playNewOrder();
+        const newlyDelivered = data.filter(o =>
+          !announcedDelivRef.current.has(o.id) &&
+          previousStatusRef.current.get(o.id) !== "delivered" &&
+          previousStatusRef.current.has(o.id) &&
+          o.status === "delivered"
+        );
         if (newlyDelivered.length > 0) {
-          console.log(`✅ [ADMIN] ¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
-          console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
-          // Registrar PERMANENTEMENTE para que nunca vuelva a disparar (race condition + refresh)
-          newlyDelivered.forEach((o: Order) => {
-            announcedDeliveredRef.current.add(o.id);
-            previousOrderStatusRef.current.set(o.id, 'delivered');
-          });
-          console.log(`🔊 [ADMIN] Llamando a playDeliveryConfirmSound()...`);
-          playDeliveryConfirmSound();
-          // Mostrar toast con el primer pedido entregado detectado
-          const firstDelivered = newlyDelivered[0];
-          setDeliveryToast({ orderId: firstDelivered.id, customerName: firstDelivered.name || 'Cliente' });
-          setTimeout(() => setDeliveryToast(null), 6000);
+          newlyDelivered.forEach(o => announcedDelivRef.current.add(o.id));
+          playDelivered();
+          setDeliveryToast({ id: newlyDelivered[0].id, name: newlyDelivered[0].name });
+          setTimeout(() => setDeliveryToast(null), 5000);
         }
       } else {
-        // Primera carga: pre-registrar todos los ya-entregados para que NUNCA disparen notificación
-        data.forEach((order: Order) => {
-          if (order.status === 'delivered') {
-            announcedDeliveredRef.current.add(order.id);
-          }
-        });
-        console.log("📋 [ADMIN] Primera carga de pedidos (no reproducir sonido)");
+        data.filter(o => o.status === "delivered").forEach(o => announcedDelivRef.current.add(o.id));
       }
-
-      // Actualizar refs con los datos actuales
-      previousOrderIdsRef.current = new Set(data.map((o: Order) => o.id));
-      previousOrderStatusRef.current = new Map(data.map((o: Order) => [o.id, o.status]));
-      console.log(`💾 [ADMIN] Refs actualizados - IDs: ${previousOrderIdsRef.current.size}, Status: ${previousOrderStatusRef.current.size}`);
-
-      const unique = data.filter((o: Order, i: number, arr: Order[]) => arr.findIndex((x: Order) => x.id === o.id) === i);
+      previousIdsRef.current    = new Set(data.map(o => o.id));
+      previousStatusRef.current = new Map(data.map(o => [o.id, o.status]));
+      const unique = data.filter((o,i,a) => a.findIndex(x=>x.id===o.id)===i);
       setOrders(unique);
-    } catch (error) {
-      console.error("❌ [ADMIN] Error al cargar pedidos:", error);
-    } finally {
-      setLoading(false);
-    }
+    } catch {} finally { setLoading(false); }
   };
 
-  const loadMenuStock = async () => {
-    try {
-      const res = await fetch("/api/menu-stock");
-      const data = await res.json();
-      setMenuStock(data);
-    } catch (error) {
-      console.error("Error al cargar menu stock:", error);
-    }
-  };
-
-  const loadChallengeData = async () => {
-    try {
-      const res = await fetch("/api/challenge");
-      const data = await res.json();
-      setChallengeData(data);
-      setChallengeSalesInput(String(data.salesAmount));
-    } catch (error) {
-      console.error("Error al cargar desafío:", error);
-    }
-  };
-
-  const saveChallengeData = async (updates: Partial<typeof challengeData>) => {
-    setChallengeSaving(true);
-    try {
-      const res = await fetch("/api/challenge", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      });
-      const result = await res.json();
-      if (result.success) setChallengeData(result.data);
-    } catch (error) {
-      console.error("Error al guardar desafío:", error);
-    } finally {
-      setChallengeSaving(false);
-    }
-  };
-
+  const loadInventory     = async () => { try { const r=await fetch("/api/inventory"); setInventory(await r.json()); }catch{} };
+  const loadMenuStock     = async () => { try { const r=await fetch("/api/menu-stock"); setMenuStock(await r.json()); }catch{} };
+  const loadProducts      = async () => { try { const r=await fetch("/api/products"); setProducts(await r.json()); }catch{} };
   const loadMenuDiscounts = async () => {
     try {
-      const res = await fetch("/api/menu-discounts");
-      const data = await res.json();
-      setMenuDiscounts(data);
-      const inputs: Record<string, string> = {};
-      Object.entries(data).forEach(([id, price]) => { inputs[id] = String(price); });
-      setDiscountInputs(inputs);
-    } catch (error) {
-      console.error("Error al cargar descuentos:", error);
-    }
+      const r=await fetch("/api/menu-discounts"); const d=await r.json();
+      setMenuDiscounts(d);
+      const inp: Record<string,string>={};
+      Object.entries(d).forEach(([k,v])=>{ inp[k]=String(v); });
+      setDiscInputs(inp);
+    }catch{}
   };
-
   const loadMenuPrices = async () => {
     try {
-      const res = await fetch("/api/menu-prices");
-      const data = await res.json();
-      setMenuPrices(data);
-      const inputs: Record<string, string> = {};
-      Object.entries(data).forEach(([id, price]) => { inputs[id] = String(price); });
-      setPriceInputs(inputs);
-    } catch (error) {
-      console.error("Error al cargar precios:", error);
-    }
+      const r=await fetch("/api/menu-prices"); const d=await r.json();
+      setMenuPrices(d);
+      const inp: Record<string,string>={};
+      Object.entries(d).forEach(([k,v])=>{ inp[k]=String(v); });
+      setPriceInputs(inp);
+    }catch{}
   };
 
-  const savePrice = async (productId: string, defaultPrice: number) => {
-    const inputVal = priceInputs[productId] || '';
-    const price = parseFloat(inputVal);
-    const validPrice = !isNaN(price) && price > 0 ? price : 0;
-    setPriceSaving(productId);
+  // ── Audio ────────────────────────────────────────────────────────────────
+  const beep = (ctx: AudioContext, freq: number, t: number, dur: number, vol=0.4) => {
+    const osc=ctx.createOscillator(), g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.frequency.value=freq; osc.type="sine";
+    g.gain.setValueAtTime(0,ctx.currentTime+t);
+    g.gain.linearRampToValueAtTime(vol,ctx.currentTime+t+0.05);
+    g.gain.linearRampToValueAtTime(0.001,ctx.currentTime+t+dur);
+    osc.start(ctx.currentTime+t); osc.stop(ctx.currentTime+t+dur);
+  };
+  const playNewOrder = () => {
     try {
-      await fetch("/api/menu-prices", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, price: validPrice }),
-      });
-      setMenuPrices(prev => {
-        const next = { ...prev };
-        if (validPrice <= 0) { delete next[productId]; } else { next[productId] = validPrice; }
-        return next;
-      });
-      if (validPrice <= 0) setPriceInputs(prev => { const n = { ...prev }; delete n[productId]; return n; });
-    } catch (error) {
-      console.error("Error al guardar precio:", error);
-    } finally {
-      setPriceSaving(null);
-    }
+      const ctx = audioCtx ?? new (window.AudioContext||(window as any).webkitAudioContext)();
+      if (!audioCtx) setAudioCtx(ctx);
+      if (ctx.state==="suspended") ctx.resume();
+      beep(ctx,880,0,0.3,0.5); beep(ctx,880,0.35,0.3,0.5); beep(ctx,1047,0.75,0.8,0.6); beep(ctx,784,1.6,0.4,0.3);
+    }catch{}
   };
-
-  const saveDiscount = async (productId: string, originalPrice: number) => {
-    const inputVal = discountInputs[productId] || '';
-    const price = parseFloat(inputVal);
-    const validPrice = !isNaN(price) && price > 0 && price < originalPrice ? price : 0;
-    setDiscountSaving(productId);
+  const playDelivered = () => {
     try {
-      await fetch("/api/menu-discounts", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, price: validPrice }),
-      });
-      setMenuDiscounts(prev => {
-        const next = { ...prev };
-        if (validPrice <= 0) { delete next[productId]; } else { next[productId] = validPrice; }
-        return next;
-      });
-      if (validPrice <= 0) {
-        setDiscountInputs(prev => { const n = { ...prev }; delete n[productId]; return n; });
-      }
-    } catch (error) {
-      console.error("Error al guardar descuento:", error);
-    } finally {
-      setDiscountSaving(null);
-    }
+      const ctx = audioCtx ?? new (window.AudioContext||(window as any).webkitAudioContext)();
+      if (!audioCtx) setAudioCtx(ctx);
+      if (ctx.state==="suspended") ctx.resume();
+      beep(ctx,523,0,0.2,0.3); beep(ctx,659,0.25,0.2,0.3); beep(ctx,784,0.5,0.2,0.3); beep(ctx,1047,0.75,0.6,0.4);
+    }catch{}
   };
 
-  const toggleMenuStock = async (productId: string, currentValue: boolean) => {
-    setMenuStockSaving(productId);
+  // ── Order actions ────────────────────────────────────────────────────────
+  const updateStatus = async (id: string, status: Order["status"]) => {
+    if (status==="delivered"||status==="cancelled")
+      setOvertimeIds(prev=>{const n=new Set(prev);n.delete(id);return n;});
     try {
-      await fetch("/api/menu-stock", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, soldOut: !currentValue }),
-      });
-      setMenuStock((prev) => ({ ...prev, [productId]: !currentValue }));
-    } catch (error) {
-      console.error("Error al actualizar menu stock:", error);
-    } finally {
-      setMenuStockSaving(null);
-    }
-  };
-
-  // Función para reproducir sonido de notificación (2+ segundos)
-  const playNotificationSound = () => {
-    console.log("🔊 [ADMIN] ═══ playNotificationSound INICIADO ═══");
-    try {
-      // Usar el audioContext inicializado o crear uno nuevo
-      let ctx = audioContext;
-      if (!ctx) {
-        console.log("📢 [ADMIN] Creando NUEVO AudioContext...");
-        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        setAudioContext(ctx);
-        setAudioContextInitialized(true);
-        console.log("✅ [ADMIN] AudioContext creado exitosamente");
-      } else {
-        console.log("✅ [ADMIN] Usando AudioContext existente");
-      }
-
-      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
-
-      // Resume el contexto si está suspendido (requerido en Chrome/Edge)
-      if (ctx.state === 'suspended') {
-        console.log("⏸️ [ADMIN] AudioContext está SUSPENDIDO, intentando resume...");
-        ctx.resume().then(() => {
-          console.log("▶️ [ADMIN] AudioContext RESUMIDO exitosamente");
-        });
-      }
-
-      // Función para crear un beep con volumen y duración personalizados
-      const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.4) => {
-        const oscillator = ctx!.createOscillator();
-        const gainNode = ctx!.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx!.destination);
-
-        oscillator.frequency.value = frequency;
-        oscillator.type = 'sine';
-
-        // Envelope: fade in y fade out suaves
-        gainNode.gain.setValueAtTime(0, ctx!.currentTime + startTime);
-        gainNode.gain.linearRampToValueAtTime(volume, ctx!.currentTime + startTime + 0.05);
-        gainNode.gain.linearRampToValueAtTime(volume * 0.7, ctx!.currentTime + startTime + duration - 0.05);
-        gainNode.gain.linearRampToValueAtTime(0.001, ctx!.currentTime + startTime + duration);
-
-        oscillator.start(ctx!.currentTime + startTime);
-        oscillator.stop(ctx!.currentTime + startTime + duration);
-      };
-
-      // Secuencia de beeps tipo "notificación de pedido" - Duración total: 2.5 segundos
-      // Patrón: BEEP-BEEP-BEEEEP (ding-ding-dooong)
-      console.log("🎶 [ADMIN] Reproduciendo secuencia de tonos...");
-      playBeep(880, 0, 0.3, 0.5);        // Primer tono (La alto)
-      playBeep(880, 0.35, 0.3, 0.5);     // Segundo tono (repetición)
-      playBeep(1047, 0.75, 0.8, 0.6);    // Tercer tono largo (Do más alto y sostenido)
-
-      // Tono de confirmación final (más suave)
-      playBeep(784, 1.6, 0.4, 0.3);      // Cuarto tono (Sol, confirmación suave)
-
-      console.log("✅ [ADMIN] ═══ Sonido de NUEVO PEDIDO reproducido exitosamente ═══");
-      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
-    } catch (error) {
-      console.error("❌ [ADMIN] ERROR al reproducir sonido:", error);
-      console.error("❌ [ADMIN] Stack trace:", error);
-    }
-  };
-
-  const playDeliveryConfirmSound = () => {
-    console.log("🚚 [ADMIN] ═══ playDeliveryConfirmSound INICIADO ═══");
-    try {
-      // Usar el audioContext inicializado o crear uno nuevo
-      let ctx = audioContext;
-      if (!ctx) {
-        console.log("📢 [ADMIN] Creando NUEVO AudioContext para sonido de entrega...");
-        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        setAudioContext(ctx);
-        setAudioContextInitialized(true);
-        console.log("✅ [ADMIN] AudioContext creado exitosamente");
-      } else {
-        console.log("✅ [ADMIN] Usando AudioContext existente");
-      }
-
-      console.log(`🎵 [ADMIN] Estado del AudioContext: ${ctx.state}`);
-
-      // Resume el contexto si está suspendido
-      if (ctx.state === 'suspended') {
-        console.log("⏸️ [ADMIN] AudioContext está SUSPENDIDO, intentando resume...");
-        ctx.resume().then(() => {
-          console.log("▶️ [ADMIN] AudioContext RESUMIDO exitosamente");
-        });
-      }
-
-      // Función para crear un beep
-      const playBeep = (frequency: number, startTime: number, duration: number, volume: number = 0.3) => {
-        const oscillator = ctx!.createOscillator();
-        const gainNode = ctx!.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx!.destination);
-
-        oscillator.frequency.value = frequency;
-        oscillator.type = 'sine';
-
-        gainNode.gain.setValueAtTime(0, ctx!.currentTime + startTime);
-        gainNode.gain.linearRampToValueAtTime(volume, ctx!.currentTime + startTime + 0.05);
-        gainNode.gain.linearRampToValueAtTime(0.001, ctx!.currentTime + startTime + duration);
-
-        oscillator.start(ctx!.currentTime + startTime);
-        oscillator.stop(ctx!.currentTime + startTime + duration);
-      };
-
-      // Sonido de confirmación tipo "check" - Patrón ascendente más agudo
-      console.log("🎶 [ADMIN] Reproduciendo sonido de ENTREGA CONFIRMADA...");
-      playBeep(1300, 0, 0.15, 0.5);      // Mi6
-      playBeep(1600, 0.15, 0.2, 0.6);    // Sol#6
-      playBeep(2000, 0.35, 0.3, 0.7);    // Si6 (más largo y fuerte)
-
-      console.log("✅ [ADMIN] ═══ Sonido de ENTREGA CONFIRMADA reproducido exitosamente ═══");
-      console.log(`🎵 [ADMIN] Estado final del AudioContext: ${ctx.state}`);
-    } catch (error) {
-      console.error("❌ [ADMIN] ERROR al reproducir sonido de confirmación:", error);
-      console.error("❌ [ADMIN] Stack trace:", error);
-    }
-  };
-
-  const loadProducts = async () => {
-    try {
-      const response = await fetch("/api/products");
-      const data = await response.json();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error al cargar productos:", error);
-    }
-  };
-
-  const loadInventory = async () => {
-    try {
-      const response = await fetch("/api/inventory");
-      const data = await response.json();
-      setInventory(data);
-    } catch (error) {
-      console.error("Error al cargar inventario:", error);
-    }
-  };
-
-  const loadCaja = async () => {
-    try {
-      const response = await fetch("/api/caja");
-      const data = await response.json();
-      setCajaData(data);
-    } catch (error) {
-      console.error("Error al cargar caja:", error);
-    }
-  };
-
-  const saveCajaSnapshot = async () => {
-    const balance = parseFloat(cajaEditBalance);
-    if (isNaN(balance) || !cajaEditDate) return;
-    try {
-      await fetch("/api/caja", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ snapshotBalance: balance, snapshotDate: cajaEditDate }),
-      });
-      setCajaEditMode(false);
-      loadCaja();
-    } catch (error) {
-      console.error("Error al guardar caja:", error);
-    }
-  };
-
-  const loadDeductions = async () => {
-    try {
-      const response = await fetch("/api/deductions");
-      const data = await response.json();
-      setDeductions(data);
-    } catch (error) {
-      console.error("Error al cargar deducciones:", error);
-    }
-  };
-
-  const loadPromotions = async () => {
-    try {
-      const response = await fetch("/api/promotions");
-      const data = await response.json();
-      setPromotions(data);
-    } catch (error) {
-      console.error("Error al cargar promociones:", error);
-    }
-  };
-
-  const loadCoupons = async () => {
-    try {
-      const response = await fetch("/api/coupons");
-      const data = await response.json();
-      setCoupons(data);
-    } catch (error) {
-      console.error("Error al cargar cupones:", error);
-    }
-  };
-
-  const loadCustomerProfiles = async () => {
-    try {
-      const res = await fetch("/api/customer-profiles");
-      const data = await res.json();
-      setCustomerProfiles(Array.isArray(data) ? data : []);
-    } catch {}
-  };
-
-  const loadSalsaPromos = async () => {
-    try {
-      const res = await fetch('/api/salsa-promos');
-      const data = await res.json();
-      setSalsaPromos(Array.isArray(data) ? data : []);
-    } catch {}
-  };
-
-  const handleSavePromo = async () => {
-    setPromoSaving(true);
-    try {
-      if (editingPromo) {
-        await fetch(`/api/salsa-promos?id=${editingPromo.id}`, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(promoForm),
-        });
-      } else {
-        await fetch('/api/salsa-promos', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(promoForm),
-        });
-      }
-      await loadSalsaPromos();
-      setShowSalsaPromoModal(false);
-      setEditingPromo(null);
-    } finally { setPromoSaving(false); }
-  };
-
-  const handleDeletePromo = async (id: string) => {
-    await fetch(`/api/salsa-promos?id=${id}`, { method: 'DELETE' });
-    loadSalsaPromos();
-  };
-
-  const loadCatalogProducts = async () => {
-    try {
-      const response = await fetch("/api/products");
-      const data = await response.json();
-      setCatalogProducts(data);
-    } catch (error) {
-      console.error("Error al cargar catálogo de productos:", error);
-    }
-  };
-
-
-  const handleCreateCatalogProduct = async () => {
-    try {
-      if (!catalogForm.name.trim()) {
-        alert("El nombre del producto es requerido");
-        return;
-      }
-
-      if (!catalogForm.category.trim()) {
-        alert("La categoría es requerida");
-        return;
-      }
-
-      if (!catalogForm.unit.trim()) {
-        alert("La unidad de medida es requerida");
-        return;
-      }
-
-      const isEditing = !!editingCatalogProduct;
-      const url = isEditing
-        ? `/api/products?id=${editingCatalogProduct.id}`
-        : "/api/products";
-      const method = isEditing ? "PATCH" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(catalogForm),
-      });
-
-      if (response.ok) {
-        await loadCatalogProducts();
-        setShowCatalogModal(false);
-        setCatalogForm({ productId: "", name: "", category: "", unit: "" });
-        setEditingCatalogProduct(null);
-        alert(isEditing ? "Producto actualizado exitosamente" : "Producto registrado exitosamente");
-      } else {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error || "No se pudo " + (isEditing ? "actualizar" : "registrar") + " el producto"}`);
-      }
-    } catch (error) {
-      console.error("Error al crear/actualizar producto:", error);
-      alert("Error al procesar el producto");
-    }
-  };
-
-  const handleDeleteCatalogProduct = async (id: string) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este producto del catálogo?")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/products?id=${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        await loadCatalogProducts();
-        alert("Producto eliminado exitosamente");
-      } else {
-        alert("Error al eliminar producto");
-      }
-    } catch (error) {
-      console.error("Error al eliminar producto:", error);
-      alert("Error al eliminar producto");
-    }
-  };
-
-  const updateOrderStatus = async (
-    orderId: string,
-    newStatus: Order["status"]
-  ) => {
-    try {
-      // Buscar el pedido para obtener su información
-      const order = orders.find((o) => o.id === orderId);
-
-      // Si el nuevo estado es "delivered" o "cancelled", quitar borde overtime
-      if (newStatus === "delivered" || newStatus === "cancelled") {
-        setOvertimeOrderIds(prev => { const next = new Set(prev); next.delete(orderId); return next; });
-      }
-
-      // Si el nuevo estado es "delivered", deducir stock automáticamente
-      if (newStatus === "delivered" && order && order.status !== "delivered") {
-        await deductStockFromOrder(order);
-      }
-
-      await fetch("/api/orders", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: orderId, status: newStatus }),
-      });
+      await fetch("/api/orders",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,status})});
       loadOrders();
-    } catch (error) {
-      console.error("Error al actualizar pedido:", error);
-    }
+    }catch{}
   };
 
-  // Función para marcar/desmarcar una orden como canje
-  const handleToggleCanje = async (orderId: string, markAs: boolean, note: string) => {
-    setCanjeSaving(true);
+  const deleteOrder = async (id: string) => {
+    if (!confirm("¿Eliminar este pedido?")) return;
+    try { await fetch(`/api/orders?id=${id}`,{method:"DELETE"}); loadOrders(); }catch{}
+  };
+
+  // ── Menu actions ─────────────────────────────────────────────────────────
+  const toggleStock = async (id: string, cur: boolean) => {
+    setSavingId(id);
+    try { await fetch("/api/menu-stock",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:id,soldOut:!cur})}); setMenuStock(p=>({...p,[id]:!cur})); }
+    finally { setSavingId(null); }
+  };
+  const savePrice = async (id: string, def: number) => {
+    const v=parseFloat(priceInputs[id]||"0");
+    setSavingId(id+"_price");
     try {
-      await fetch("/api/orders", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: orderId, isCanje: markAs, canjeNote: note }),
-      });
-      await loadOrders();
-      setCanjeModal(null);
-    } finally {
-      setCanjeSaving(false);
-    }
+      await fetch("/api/menu-prices",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:id,price:v>0?v:0})});
+      setMenuPrices(p=>{const n={...p};if(v<=0)delete n[id];else n[id]=v;return n;});
+    }finally{setSavingId(null);}
   };
-
-  // Función para deducir stock automáticamente cuando se entrega un pedido
-  const deductStockFromOrder = async (order: Order) => {
+  const saveDiscount = async (id: string, def: number) => {
+    const v=parseFloat(discInputs[id]||"0");
+    setSavingId(id+"_disc");
     try {
-      // Calcular los componentes/empaques usados
-      const itemsToDeduct: Array<{ productName: string; quantity: number; unit: string }> = [];
-
-      // Recorrer los productos del carrito (soportar tanto completedOrders como cart)
-      const orderItems = (order as any).completedOrders || order.cart || [];
-      orderItems.forEach((cartItem: any) => {
-        // Buscar el producto en la lista de productos para obtener su receta
-        const itemName = cartItem.name || cartItem.product?.name;
-        const product = products.find((p: any) => p.name === itemName);
-
-        if (product && product.components && product.components.length > 0) {
-          // Si el producto tiene componentes/receta, calcular cuánto se usó
-          product.components.forEach((component: any) => {
-            const totalUsed = component.quantity * cartItem.quantity;
-
-            // Buscar si ya existe este componente en la lista
-            const existingItem = itemsToDeduct.find(
-              (item) => item.productName === component.productName && item.unit === component.unit
-            );
-
-            if (existingItem) {
-              existingItem.quantity += totalUsed;
-            } else {
-              itemsToDeduct.push({
-                productName: component.productName,
-                quantity: totalUsed,
-                unit: component.unit
-              });
-            }
-          });
-        }
-      });
-
-      // Si hay componentes para deducir, registrar la deducción
-      if (itemsToDeduct.length > 0) {
-        const deduction = {
-          orderId: order.id,
-          orderName: order.name,
-          items: itemsToDeduct,
-          deductionDate: new Date().toISOString(),
-        };
-
-        // Guardar la deducción en el sistema
-        const response = await fetch("/api/deductions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(deduction),
-        });
-
-        if (response.ok) {
-          console.log("✅ Stock deducido automáticamente:", itemsToDeduct);
-          // Recargar deducciones para actualizar el stock
-          loadDeductions();
-        } else {
-          console.error("❌ Error al registrar deducción automática");
-        }
-      } else {
-        console.log("ℹ️ No hay componentes configurados para los productos de este pedido");
-      }
-    } catch (error) {
-      console.error("Error al deducir stock:", error);
-    }
+      await fetch("/api/menu-discounts",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:id,price:v>0&&v<def?v:0})});
+      setMenuDiscounts(p=>{const n={...p};if(v<=0||v>=def)delete n[id];else n[id]=v;return n;});
+    }finally{setSavingId(null);}
   };
 
-  // Función para aplicar filtro de fechas en la pestaña "Gestión de Pedidos"
-  const applyOrdersDateFilter = () => {
-    if (ordersDateFrom && ordersDateTo) {
-      setIsOrdersDateFiltered(true);
-      setShowOrdersDateModal(false);
-    }
-  };
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const getPeruDate = (d?: Date|string) => new Date(new Date(d??Date.now()).toLocaleString("en-US",{timeZone:"America/Lima"}));
+  const isSameDay   = (d: string) => { const a=getPeruDate(d),b=getPeruDate(); return a.getDate()===b.getDate()&&a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear(); };
+  const fmtSoles    = (n: number) => `S/ ${n.toFixed(2)}`;
+  const fmtHour     = (s: string) => { try { return new Date(s).toLocaleTimeString("es-PE",{hour:"2-digit",minute:"2-digit",timeZone:"America/Lima"}); }catch{ return ""; } };
+  const fmtDate     = (s: string) => { try { return new Date(s).toLocaleDateString("es-PE",{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"America/Lima"}); }catch{ return ""; } };
 
-  const clearOrdersDateFilter = () => {
-    setOrdersDateFrom("");
-    setOrdersDateTo("");
-    setIsOrdersDateFiltered(false);
-    setShowOrdersDateModal(false);
-  };
+  // ── Financial calculations ────────────────────────────────────────────────
+  const delivered = orders.filter(o=>o.status==="delivered"&&!o.isCanje);
 
-  // Función para aplicar filtro de fechas en la pestaña "Analytics & CRM"
-  const applyAnalyticsDateFilter = () => {
-    if (analyticsDateFrom && analyticsDateTo) {
-      setIsAnalyticsDateFiltered(true);
-    }
-  };
+  const now        = getPeruDate();
+  const startMonth = new Date(now.getFullYear(),now.getMonth(),1);
+  const startToday = new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
-  const clearAnalyticsDateFilter = () => {
-    setAnalyticsDateFrom("");
-    setAnalyticsDateTo("");
-    setIsAnalyticsDateFiltered(false);
-  };
+  const todayDelivered  = delivered.filter(o=>getPeruDate(o.createdAt)>=startToday);
+  const monthDelivered  = delivered.filter(o=>getPeruDate(o.createdAt)>=startMonth);
 
-  // Verificar si ya existe la venta histórica
-  const checkHistoricalSale = async () => {
-    try {
-      const response = await fetch("/api/historical-sale");
-      const data = await response.json();
-      setHistoricalSaleRegistered(data.exists);
-    } catch (error) {
-      console.error("Error al verificar venta histórica:", error);
-    }
-  };
+  const todaySales   = todayDelivered.reduce((s,o)=>s+(o.totalPrice||0),0);
+  const monthlySales = monthDelivered.reduce((s,o)=>s+(o.totalPrice||0),0);
+  const avgTicket    = todayDelivered.length>0 ? todaySales/todayDelivered.length : 0;
 
-  // Registrar venta histórica del 13 de febrero
-  const registerHistoricalSale = async () => {
-    try {
-      const response = await fetch("/api/historical-sale", {
-        method: "POST",
-      });
-      const data = await response.json();
+  // Expenses for selected finance month
+  const [finYear, finMonthNum] = finMonth.split("-").map(Number);
+  const finMonthStart = new Date(finYear, finMonthNum-1, 1);
+  const finMonthEnd   = new Date(finYear, finMonthNum, 0, 23, 59, 59);
+  const finDelivered  = delivered.filter(o => { const d=getPeruDate(o.createdAt); return d>=finMonthStart&&d<=finMonthEnd; });
+  const finSales      = finDelivered.reduce((s,o)=>s+(o.totalPrice||0),0);
+  const finExpenses   = inventory
+    .filter(p=>{ const d=new Date(p.purchaseDate||p.createdAt||""); return d>=finMonthStart&&d<=finMonthEnd; })
+    .reduce((s,p)=>s+(p.totalAmount||0),0);
+  const finProfit  = finSales - finExpenses;
+  const finMargin  = finSales>0 ? (finProfit/finSales)*100 : 0;
 
-      if (response.ok) {
-        alert("✅ Venta histórica del 13 de febrero registrada exitosamente");
-        setHistoricalSaleRegistered(true);
-        setShowHistoricalSaleModal(false);
-        loadOrders(); // Recargar pedidos
-      } else {
-        alert(`❌ Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error al registrar venta histórica:", error);
-      alert("❌ Error al registrar la venta histórica");
-    }
-  };
+  // Current month for dashboard
+  const monthExpenses = inventory
+    .filter(p=>{ const d=new Date(p.purchaseDate||p.createdAt||""); return d>=startMonth; })
+    .reduce((s,p)=>s+(p.totalAmount||0),0);
+  const monthProfit = monthlySales - monthExpenses;
+  const monthMargin = monthlySales>0 ? (monthProfit/monthlySales)*100 : 0;
 
-  // Exportar todos los pedidos a CSV (formato tabla Excel mejorado)
-  const exportOrdersToCSV = () => {
-    const allOrders = orders;
-    if (allOrders.length === 0) return;
-
-    // Ordenar por fecha (más recientes primero)
-    const sortedOrders = [...allOrders].sort((a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    const headers = [
-      "N°",
-      "ID Pedido",
-      "Fecha",
-      "Hora",
-      "Cliente",
-      "Teléfono",
-      "Dirección",
-      "Productos",
-      "Cantidad Items",
-      "Subtotal",
-      "Descuento Combo",
-      "Descuento Cupón",
-      "Costo Delivery",
-      "TOTAL",
-      "Zona",
-      "Método Pago",
-      "Estado",
-      "Cupón Usado",
-      "Canje",
-      "Nota Canje"
-    ];
-
-    const rows = sortedOrders.map((order: any, index: number) => {
-      const orderDate = new Date(order.createdAt);
-      const fecha = orderDate.toLocaleDateString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric' });
-      const hora = orderDate.toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' });
-
-      // Productos en lista vertical (salto de línea)
-      const productos = (order.cart || [])
-        .map((item: any) => `${item.name} x${item.quantity}`)
-        .join('\n');
-
-      const cantidadItems = (order.cart || []).reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-
-      // Calcular subtotal (total - delivery + descuentos)
-      const subtotal = (order.totalPrice || 0) - (order.deliveryCost || 0) + (order.comboDiscount || 0) + (order.couponDiscount || 0);
-
-      // Estado traducido
-      const estadoMap: Record<string, string> = {
-        'pending': 'Pendiente',
-        'in-progress': 'En Preparación',
-        'ready': 'Listo',
-        'delivered': 'Entregado',
-        'cancelled': 'Cancelado',
-        'Entregado': 'Entregado'
-      };
-      const estadoTraducido = estadoMap[order.status] || order.status || '';
-
-      return [
-        index + 1, // Número correlativo
-        order.id,
-        fecha,
-        hora,
-        order.name,
-        order.phone,
-        order.address,
-        productos,
-        cantidadItems,
-        subtotal.toFixed(2),
-        (order.comboDiscount || 0).toFixed(2),
-        (order.couponDiscount || 0).toFixed(2),
-        (order.deliveryCost || 0).toFixed(2),
-        (order.totalPrice || 0).toFixed(2),
-        order.deliveryOption === 'centro' ? 'Chancay centro' : order.deliveryOption === 'alrededores' ? 'Chancay alrededores' : 'Recojo en tienda',
-        order.paymentMethod || '',
-        estadoTraducido,
-        order.couponCode || 'Sin cupón',
-        order.isCanje ? 'SÍ' : 'NO',
-        order.canjeNote || '',
-      ];
-    });
-
-    // Usar TABULADORES en lugar de comas para que Excel lo abra correctamente
-    const tsvContent = [headers, ...rows]
-      .map(row => row.map((cell: any) => String(cell).replace(/\t/g, ' ')).join('\t'))
-      .join('\n');
-
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + tsvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const now = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
-    link.href = url;
-    link.download = `pedidos-santo-dilema-${now}.xls`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // Filtrar pedidos según el filtro de fecha (pestaña "Gestión de Pedidos")
-  let dateFilteredOrders = orders;
-
-  if (isOrdersDateFiltered && ordersDateFrom && ordersDateTo) {
-    // Filtro por rango de fechas personalizado
-    dateFilteredOrders = orders.filter((order) => {
-      const orderDateStr = new Date(order.createdAt).toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
-      return orderDateStr >= ordersDateFrom && orderDateStr <= ordersDateTo;
-    });
-  } else {
-    // Por defecto, solo pedidos de hoy
-    dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
-  }
-
-  // Filtrar pedidos por estado y búsqueda
-  const filteredOrders = dateFilteredOrders.filter((order) => {
-    // Filtro por estado
-    const statusMatch = filter === "all" || order.status === filter;
-
-    // Filtro de búsqueda en tiempo real
-    const searchMatch = searchTerm === "" ||
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.phone.includes(searchTerm) ||
-      order.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ((order as any).completedOrders && (order as any).completedOrders.some((item: any) => {
-        const productName = item.product?.name || item.name || '';
-        return productName.toLowerCase().includes(searchTerm.toLowerCase());
-      })) ||
-      (order.cart && order.cart.some((item: any) => {
-        const productName = item.product?.name || item.name || '';
-        return productName.toLowerCase().includes(searchTerm.toLowerCase());
-      }));
-
-    return statusMatch && searchMatch;
+  // Daily breakdown for finance tab
+  const dailyMap = new Map<string,{orders:number;sales:number}>();
+  finDelivered.forEach(o=>{
+    const d=getPeruDate(o.createdAt);
+    const k=`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
+    const prev=dailyMap.get(k)||{orders:0,sales:0};
+    dailyMap.set(k,{orders:prev.orders+1,sales:prev.sales+(o.totalPrice||0)});
   });
+  const dailyRows = Array.from(dailyMap.entries()).sort((a,b)=>a[0].localeCompare(b[0])).reverse();
 
-  const statusColors = {
-    pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500",
-    "pendiente-verificacion": "bg-purple-500/20 text-purple-400 border-purple-500",
-    confirmed: "bg-cyan-500/20 text-cyan-400 border-cyan-500",
-    "en-camino": "bg-blue-500/20 text-blue-400 border-blue-500",
-    delivered: "bg-green-500/20 text-green-400 border-green-500",
-    cancelled: "bg-red-500/20 text-red-400 border-red-500",
-    programado: "bg-indigo-500/20 text-indigo-300 border-indigo-500",
-  };
-
-  const statusLabels = {
-    pending: "Pendiente",
-    "pendiente-verificacion": "Por Verificar",
-    confirmed: "Confirmado",
-    "en-camino": "En Camino",
-    delivered: "Entregado",
-    cancelled: "Cancelado",
-    programado: "Programado",
-  };
-
-  // Product CRUD functions
-  const handleCreateProduct = async () => {
-    try {
-      // Siempre marcar como producto de venta (type: "sale") cuando se crea desde Órdenes
-      await fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...productForm, type: "sale" }),
-      });
-      loadProducts();
-      setShowProductModal(false);
-      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
-    } catch (error) {
-      console.error("Error al crear producto:", error);
-    }
-  };
-
-  const handleUpdateProduct = async () => {
-    try {
-      await fetch(`/api/products?id=${editingProduct.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productForm),
-      });
-      loadProducts();
-      setShowProductModal(false);
-      setEditingProduct(null);
-      setProductForm({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
-    } catch (error) {
-      console.error("Error al actualizar producto:", error);
-    }
-  };
-
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este producto?")) return;
-    try {
-      await fetch(`/api/products?id=${id}`, { method: "DELETE" });
-      loadProducts();
-    } catch (error) {
-      console.error("Error al eliminar producto:", error);
-    }
-  };
-
-  // Funciones para configurar recetas
-  const openRecipeModal = (product: any) => {
-    setEditingRecipeProduct(product);
-    setRecipeComponents(product.components || []);
-    setShowRecipeModal(true);
-  };
-
-  const addRecipeComponent = () => {
-    setRecipeComponents([...recipeComponents, { productName: "", unit: "UNIDAD", quantity: 1, cost: 0 }]);
-  };
-
-  const updateRecipeComponent = (index: number, field: string, value: any) => {
-    const updated = [...recipeComponents];
-    updated[index] = { ...updated[index], [field]: value };
-    setRecipeComponents(updated);
-  };
-
-  const removeRecipeComponent = (index: number) => {
-    setRecipeComponents(recipeComponents.filter((_, i) => i !== index));
-  };
-
-  const saveRecipe = async () => {
-    try {
-      if (!editingRecipeProduct) return;
-
-      // Validar que todos los componentes tengan nombre
-      const invalidComponents = recipeComponents.filter(c => !c.productName.trim());
-      if (invalidComponents.length > 0) {
-        alert("Por favor completa todos los nombres de componentes");
-        return;
-      }
-
-      // Actualizar el producto con la nueva receta
-      const response = await fetch(`/api/products?id=${editingRecipeProduct.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ components: recipeComponents }),
-      });
-
-      if (response.ok) {
-        alert("✅ Receta guardada exitosamente!");
-        setShowRecipeModal(false);
-        setEditingRecipeProduct(null);
-        setRecipeComponents([]);
-        loadProducts();
-      } else {
-        alert("Error al guardar la receta");
-      }
-    } catch (error) {
-      console.error("Error al guardar receta:", error);
-      alert("Error al guardar la receta");
-    }
-  };
-
-  const openEditProduct = (product: any) => {
-    setEditingProduct(product);
-    setProductForm({
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      cost: product.cost,
-      active: product.active,
-      stock: product.stock || 0,
-      minStock: product.minStock || 10,
-      maxStock: product.maxStock || 100,
-      components: product.components || [],
-    });
-    setShowProductModal(true);
-  };
-
-  // Inventory functions
-  const handleCreateInventory = async () => {
-    try {
-      console.log("📦 Datos a enviar:", inventoryForm);
-      console.log("📦 Items a enviar:", inventoryForm.items);
-      console.log("📦 Total de items:", inventoryForm.items.length);
-      console.log("📦 Detalle de cada item:");
-      inventoryForm.items.forEach((item, idx) => {
-        console.log(`   Item ${idx + 1}:`, {
-          productName: item.productName,
-          quantity: item.quantity,
-          unit: item.unit,
-          volume: item.volume,
-          unitCost: item.unitCost,
-          total: item.total
-        });
-      });
-
-      const response = await fetch("/api/inventory", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inventoryForm),
-      });
-
-      console.log("📦 Response status:", response.status);
-      console.log("📦 Response ok:", response.ok);
-
-      if (response.ok) {
-        const savedData = await response.json();
-        console.log("📦 Datos guardados en servidor:", savedData);
-        await loadInventory();
-        setShowInventoryModal(false);
-        setInventoryForm({
-          supplier: "",
-          supplierRuc: "",
-          supplierPhone: "",
-          paymentMethod: "plin-yape",
-          category: "operativos",
-          items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
-          totalAmount: 0,
-          purchaseDate: new Date().toISOString().split('T')[0]
-        });
-        setProductSearchTerms([""]);
-        alert("Compra registrada exitosamente");
-      } else {
-        const errorData = await response.json();
-        console.error("❌ Error al registrar compra:", errorData);
-        alert("Error al registrar la compra. Por favor, intenta de nuevo.");
-      }
-    } catch (error) {
-      console.error("❌ Error de conexión:", error);
-      alert("Error de conexión. Por favor, intenta de nuevo.");
-    }
-  };
-
-  const handleDeleteInventory = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este registro?")) return;
-    try {
-      await fetch(`/api/inventory?id=${id}`, { method: "DELETE" });
-      loadInventory();
-    } catch (error) {
-      console.error("Error al eliminar compra:", error);
-    }
-  };
-
-  const toggleLiquidado = async (purchaseId: string, currentValue: boolean) => {
-    try {
-      await fetch('/api/inventory', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: purchaseId, liquidado: !currentValue }),
-      });
-      loadInventory();
-    } catch (error) {
-      console.error('Error al actualizar estado de liquidación:', error);
-    }
-  };
-
-  const addInventoryItem = () => {
-    setInventoryForm({
-      ...inventoryForm,
-      items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }]
-    });
-    setProductSearchTerms([...productSearchTerms, ""]);
-  };
-
-  const removeInventoryItem = (index: number) => {
-    const newItems = inventoryForm.items.filter((_, i) => i !== index);
-    const newSearchTerms = productSearchTerms.filter((_, i) => i !== index);
-    setInventoryForm({ ...inventoryForm, items: newItems });
-    setProductSearchTerms(newSearchTerms);
-  };
-
-  const updateInventoryItem = (index: number, field: string, value: any) => {
-    const newItems = [...inventoryForm.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-
-    // Auto-calculate unit cost (Costo total / (Cantidad × Volumen))
-    if (field === 'quantity' || field === 'unitCost' || field === 'volume') {
-      const quantity = newItems[index].quantity || 0;
-      const volume = newItems[index].volume || 1;
-      const totalUnits = quantity * volume;
-
-      if (totalUnits > 0) {
-        newItems[index].total = newItems[index].unitCost / totalUnits;
-      } else {
-        newItems[index].total = 0;
-      }
-    }
-
-    // Calculate total amount
-    const totalAmount = newItems.reduce((sum, item) => sum + item.unitCost, 0);
-
-    setInventoryForm({ ...inventoryForm, items: newItems, totalAmount });
-  };
-
-  // Promotion CRUD functions
-  const handleCreatePromotion = async () => {
-    try {
-      await fetch("/api/promotions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(promotionForm),
-      });
-      loadPromotions();
-      setShowPromotionModal(false);
-      resetPromotionForm();
-    } catch (error) {
-      console.error("Error al crear promoción:", error);
-    }
-  };
-
-  const handleUpdatePromotion = async () => {
-    try {
-      await fetch("/api/promotions", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...promotionForm, id: editingPromotion.id }),
-      });
-      loadPromotions();
-      setShowPromotionModal(false);
-      setEditingPromotion(null);
-      resetPromotionForm();
-    } catch (error) {
-      console.error("Error al actualizar promoción:", error);
-    }
-  };
-
-  const handleDeletePromotion = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar esta promoción?")) return;
-    try {
-      await fetch(`/api/promotions?id=${id}`, { method: "DELETE" });
-      loadPromotions();
-    } catch (error) {
-      console.error("Error al eliminar promoción:", error);
-    }
-  };
-
-  const openEditPromotion = (promo: any) => {
-    setEditingPromotion(promo);
-    setPromotionForm({
-      name: promo.name,
-      description: promo.description,
-      type: promo.type,
-      value: promo.value,
-      minAmount: promo.minAmount || 0,
-      applicableProducts: promo.applicableProducts || [],
-      applicableCategories: promo.applicableCategories || [],
-      startDate: promo.startDate.split('T')[0],
-      endDate: promo.endDate.split('T')[0],
-      active: promo.active,
-      code: promo.code || "",
-      usageLimit: promo.usageLimit || 0,
-      targetSegment: promo.targetSegment || "all"
-    });
-    setShowPromotionModal(true);
-  };
-
-  const resetPromotionForm = () => {
-    setPromotionForm({
-      name: "",
-      description: "",
-      type: "percentage",
-      value: 0,
-      minAmount: 0,
-      applicableProducts: [],
-      applicableCategories: [],
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: "",
-      active: true,
-      code: "",
-      usageLimit: 0,
-      targetSegment: "all"
-    });
-  };
-
-  // Agrupar pedidos por cliente (DNI) - con filtro de fechas (usa filtro de Analytics)
-  const getCustomersData = () => {
-    const customersMap = new Map();
-
-    // Usar pedidos filtrados por fecha
-    const ordersToProcess = isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo
-      ? orders.filter((order: any) => {
-          const orderDate = getPeruDate(order.createdAt);
-          // Crear fechas en zona horaria de Perú (UTC-5)
-          const fromDate = new Date(analyticsDateFrom + "T00:00:00-05:00");
-          const toDate = new Date(analyticsDateTo + "T23:59:59-05:00");
-          return orderDate >= fromDate && orderDate <= toDate;
-        })
-      : orders;
-
-    ordersToProcess.forEach((order: any) => {
-      const phone = order.phone;
-      if (!phone) return;
-
-      // Solo contabilizar pedidos entregados
-      const isDelivered =
-        order.status === "delivered" ||
-        order.status === "Entregado" ||
-        order.status?.toLowerCase() === "entregado";
-
-      if (!isDelivered) {
-        // No procesar pedidos que no están entregados
-        return;
-      }
-
-      if (!customersMap.has(phone)) {
-        customersMap.set(phone, {
-          phone: phone,
-          name: order.name,
-          address: order.address,
-          orders: [],
-          totalOrders: 0,
-          totalSpent: 0,
-          lastOrderDate: order.createdAt,
-        });
-      }
-
-      const customer = customersMap.get(phone);
-      customer.orders.push(order);
-      customer.totalOrders += 1;
-      customer.totalSpent += order.totalPrice || 0;
-
-      // Actualizar última orden si es más reciente
-      if (new Date(order.createdAt) > new Date(customer.lastOrderDate)) {
-        customer.lastOrderDate = order.createdAt;
-        customer.name = order.name;
-        customer.address = order.address;
-      }
-    });
-
-    const base = Array.from(customersMap.values()).sort((a, b) => b.totalOrders - a.totalOrders);
-    return base.map((c: any) => {
-      const profile = customerProfiles.find((p: any) => p.phone === c.phone);
-      return {
-        ...c,
-        avgTicket: c.totalOrders > 0 ? c.totalSpent / c.totalOrders : 0,
-        birthday: profile?.birthday,
-        tags: profile?.tags || [],
-        notes: profile?.notes,
-      };
-    });
-  };
-
-  const allCustomers = activeTab === "customers" || activeTab === "analytics" ? getCustomersData() : [];
-
-  // Segmentación avanzada de clientes
-  const getCustomerSegments = () => {
-    const now = getPeruDate(); // Usar hora de Perú
-    const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
-
-    // Obtener primer y último día del mes actual en Perú
-    const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-
-    // Obtener primer y último día del mes pasado en Perú
-    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-
-    return {
-      all: allCustomers,
-
-      // VIP: Mejores clientes del mes pasado (5+ pedidos O S/ 200+ gastados en el mes pasado)
-      vip: allCustomers.filter((c: any) => {
-        if (!c.orders || c.orders.length === 0) return false;
-        const lastMonthOrders = c.orders.filter((order: any) => {
-          const isDelivered =
-            order.status === "delivered" ||
-            order.status === "Entregado" ||
-            order.status?.toLowerCase() === "entregado";
-          if (!isDelivered) return false;
-          const orderDate = getPeruDate(order.createdAt);
-          return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
-        });
-        const lastMonthSpent = lastMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-        return lastMonthOrders.length >= 5 || lastMonthSpent >= 200;
-      }),
-
-      // NUEVOS: Primer pedido en el mes actual
-      new: allCustomers.filter((c: any) => {
-        if (!c.orders || c.orders.length === 0) return false;
-        // Filtrar solo pedidos entregados
-        const deliveredOrders = c.orders.filter((order: any) =>
-          order.status === "delivered" ||
-          order.status === "Entregado" ||
-          order.status?.toLowerCase() === "entregado"
-        );
-        if (deliveredOrders.length === 0) return false;
-        // Encontrar el primer pedido entregado del cliente
-        const firstOrder = deliveredOrders.reduce((earliest: any, order: any) => {
-          return new Date(order.createdAt) < new Date(earliest.createdAt) ? order : earliest;
-        });
-        const firstOrderDate = getPeruDate(firstOrder.createdAt);
-        return firstOrderDate >= firstDayOfCurrentMonth && firstOrderDate <= lastDayOfCurrentMonth;
-      }),
-
-      // ACTIVOS: Al menos un pedido en el mes actual
-      active: allCustomers.filter((c: any) => {
-        if (!c.orders || c.orders.length === 0) return false;
-        const currentMonthOrders = c.orders.filter((order: any) => {
-          const isDelivered =
-            order.status === "delivered" ||
-            order.status === "Entregado" ||
-            order.status?.toLowerCase() === "entregado";
-          if (!isDelivered) return false;
-          const orderDate = getPeruDate(order.createdAt);
-          return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
-        });
-        return currentMonthOrders.length >= 1;
-      }),
-
-      // RECURRENTES: Al menos 4 pedidos en el mes pasado
-      recurrent: allCustomers.filter((c: any) => {
-        if (!c.orders || c.orders.length < 4) return false;
-        const lastMonthOrders = c.orders.filter((order: any) => {
-          const isDelivered =
-            order.status === "delivered" ||
-            order.status === "Entregado" ||
-            order.status?.toLowerCase() === "entregado";
-          if (!isDelivered) return false;
-          const orderDate = getPeruDate(order.createdAt);
-          return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
-        });
-        return lastMonthOrders.length >= 4;
-      }),
-
-      // INACTIVOS: Más de 15 días sin comprar
-      inactive: allCustomers.filter((c: any) => {
-        const lastOrder = getPeruDate(c.lastOrderDate);
-        return lastOrder < fifteenDaysAgo;
-      }),
-
-      inactive30: allCustomers.filter((c: any) => {
-        const last = getPeruDate(c.lastOrderDate);
-        return last < new Date(now.getTime() - 30*24*60*60*1000) && last >= new Date(now.getTime() - 60*24*60*60*1000);
-      }),
-      inactive60: allCustomers.filter((c: any) => {
-        const last = getPeruDate(c.lastOrderDate);
-        return last < new Date(now.getTime() - 60*24*60*60*1000) && last >= new Date(now.getTime() - 90*24*60*60*1000);
-      }),
-      inactive90: allCustomers.filter((c: any) => {
-        const last = getPeruDate(c.lastOrderDate);
-        return last < new Date(now.getTime() - 90*24*60*60*1000);
-      }),
-
-    };
-  };
-
-  const customerSegments = getCustomerSegments();
-  const segmentCustomers = customerSegment === 'birthday'
-    ? allCustomers.filter((c: any) => !!c.birthday)
-    : customerSegments[customerSegment as keyof typeof customerSegments] || allCustomers;
-
-  // CRM Dashboard
-  const getCrmDashboard = () => {
-    const now = getPeruDate();
-    const todayMD = `${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    const total = allCustomers.length;
-    const repeaters = allCustomers.filter((c: any) => c.totalOrders >= 2).length;
-    const avgTicket = total > 0 ? allCustomers.reduce((s: number, c: any) => s + (c.avgTicket||0), 0) / total : 0;
-    const avgFrequency = total > 0 ? (allCustomers.reduce((s: number, c: any) => s + c.totalOrders, 0) / total).toFixed(1) : '0';
-    return {
-      total, repeaters,
-      repurchaseRate: total > 0 ? Math.round((repeaters/total)*100) : 0,
-      avgTicket, avgFrequency,
-      birthdaysToday: allCustomers.filter((c: any) => c.birthday === todayMD),
-    };
-  };
-  const crmDashboard = activeTab === 'customers' ? getCrmDashboard() : null;
-
-  const getCampaignTemplate = (segment: string, customer: any): string => {
-    const first = (customer?.name || 'amigo').split(' ')[0];
-    const msgs: Record<string, string> = {
-      vip:        `Hola ${first}! 👑 Eres uno de nuestros clientes más especiales en Santo Dilema.\nTenemos algo exclusivo para ti esta semana. Escríbenos y te contamos 🌶️\nwww.santodilema.com`,
-      new:        `Hola ${first}! Gracias por tu primer pedido en Santo Dilema 🔥\nEsperamos que hayas disfrutado. Vuelve cuando quieras 😊\nwww.santodilema.com`,
-      recurrent:  `Hola ${first}! 🙌 Eres de los que más nos visitan y lo apreciamos.\nTenemos novedades en carta — pide cuando quieras en www.santodilema.com`,
-      inactive30: `Hola ${first}! Hace un mes que no te vemos por Santo Dilema 😢\nTe extrañamos. Nuestras alitas siguen igual de buenas 🔥\nwww.santodilema.com`,
-      inactive60: `Hola ${first}! Han pasado 2 meses desde tu último pedido en Santo Dilema.\nTenemos novedades en carta 🌶️\nwww.santodilema.com`,
-      inactive90: `Hola ${first}! Te echamos de menos en Santo Dilema 🥺\nHace 3 meses que no sabemos de ti. Seguimos con el mismo sabor 🔥\nwww.santodilema.com`,
-      birthday:   `Hola ${first}! Hoy es tu día especial 🎉\nDesde Santo Dilema te deseamos un feliz cumpleaños!\nEscríbenos para reclamar tu regalo de cumpleaños 🎁\n🌶️ Santo Dilema`,
-    };
-    return msgs[segment] || msgs['inactive30'];
-  };
-  const buildWhatsApp = (phone: string, msg: string) =>
-    `https://wa.me/51${phone}?text=${encodeURIComponent(msg)}`;
-
-  const handleCrmSave = async () => {
-    setCrmSaving(true);
-    try {
-      const parts = (crmForm.birthday || '').split('/');
-      const birthdayForApi = parts.length === 2 && parts[0].length === 2 && parts[1].length === 2
-        ? `${parts[1]}-${parts[0]}`
-        : undefined;
-      await fetch('/api/customer-profiles', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: crmEditPhone, birthday: birthdayForApi, tags: crmForm.tags, notes: crmForm.notes }),
-      });
-      await loadCustomerProfiles();
-      // Actualizar selectedCustomer para que el modal refleje los datos recién guardados
-      if (selectedCustomer?.phone === crmEditPhone) {
-        setSelectedCustomer((prev: any) => ({
-          ...prev,
-          birthday: birthdayForApi,
-          tags: crmForm.tags,
-          notes: crmForm.notes,
-        }));
-      }
-      setShowCrmModal(false);
-    } finally { setCrmSaving(false); }
-  };
-
-  // Filtrar clientes por búsqueda en tiempo real
-  const customers = segmentCustomers.filter((customer: any) => {
-    if (customerSearchTerm === "") return true;
-    const searchLower = customerSearchTerm.toLowerCase();
-    return (
-      customer.name?.toLowerCase().includes(searchLower) ||
-      customer.phone?.includes(customerSearchTerm) ||
-      customer.address?.toLowerCase().includes(searchLower)
-    );
+  // Monthly breakdown (all time)
+  const monthlyMap = new Map<string,{orders:number;sales:number;expenses:number}>();
+  delivered.forEach(o=>{
+    const d=getPeruDate(o.createdAt);
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    const prev=monthlyMap.get(k)||{orders:0,sales:0,expenses:0};
+    monthlyMap.set(k,{...prev,orders:prev.orders+1,sales:prev.sales+(o.totalPrice||0)});
   });
+  inventory.forEach(p=>{
+    const d=new Date(p.purchaseDate||p.createdAt||"");
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    const prev=monthlyMap.get(k)||{orders:0,sales:0,expenses:0};
+    monthlyMap.set(k,{...prev,expenses:prev.expenses+(p.totalAmount||0)});
+  });
+  const monthlyRows = Array.from(monthlyMap.entries()).sort((a,b)=>b[0].localeCompare(a[0]));
 
-  // Analytics - con filtro de fechas (usa filtro de Analytics)
-  const getAnalytics = () => {
-    const now = getPeruDate();
+  // ── Active orders filter ──────────────────────────────────────────────────
+  const activeStatuses = ["pending","pendiente-verificacion","confirmed","en-camino"];
+  const filteredOrders = (() => {
+    if (orderFilter==="activos")  return [...orders].filter(o=>activeStatuses.includes(o.status)).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+    if (orderFilter==="hoy")      return [...orders].filter(o=>isSameDay(o.createdAt)).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+    return [...orders].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0,100);
+  })();
 
-    // Filtrar solo pedidos entregados
-    let deliveredOrders = orders.filter((order: any) =>
-      order.status === "delivered" ||
-      order.status === "Entregado" ||
-      order.status?.toLowerCase() === "entregado"
-    );
+  const activeCount = orders.filter(o=>activeStatuses.includes(o.status)).length;
 
-    // Si hay filtro de fechas aplicado, filtrar por ese rango
-    if (isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo) {
-      // Crear fechas en zona horaria de Perú (UTC-5)
-      const filterStart = new Date(analyticsDateFrom + "T00:00:00-05:00");
-      const filterEnd = new Date(analyticsDateTo + "T23:59:59-05:00");
-
-      deliveredOrders = deliveredOrders.filter((order: any) => {
-        const orderDate = getPeruDate(order.createdAt);
-        return orderDate >= filterStart && orderDate <= filterEnd;
-      });
-    }
-
-    // Si hay filtro activo, usar directamente los pedidos filtrados para TODOS los cálculos
-    let todayOrders, dailySales, currentMonthOrders, monthlySales;
-    let lastMonthOrders, lastMonthSales, progressPercentage, lastMonthAverageTicket, totalRevenue;
-
-    // Calcular métricas de canje (sobre TODOS los pedidos, sin filtro de fechas)
-    const allCanjeOrders = orders.filter((o: any) => o.isCanje);
-    const todayCanjeOrders = allCanjeOrders.filter((o: any) => isSameDayPeru(o.createdAt));
-    const nowForCanje = getPeruDate();
-    const firstDayCurrentMonthForCanje = new Date(nowForCanje.getFullYear(), nowForCanje.getMonth(), 1);
-    const lastDayCurrentMonthForCanje = new Date(nowForCanje.getFullYear(), nowForCanje.getMonth() + 1, 0, 23, 59, 59, 999);
-    const monthCanjeOrders = allCanjeOrders.filter((o: any) => {
-      const d = getPeruDate(o.createdAt);
-      return d >= firstDayCurrentMonthForCanje && d <= lastDayCurrentMonthForCanje;
+  // ── Product top sellers ───────────────────────────────────────────────────
+  const productSales = new Map<string,{name:string;qty:number;revenue:number}>();
+  monthDelivered.forEach(o=>{
+    (o.completedOrders||o.cart||[]).forEach((item:any)=>{
+      const id=item.productId||item.product?.id||"?";
+      const name=item.name||item.product?.name||id;
+      const qty=item.quantity||1;
+      const rev=(item.finalPrice??item.price??0)*qty;
+      const prev=productSales.get(id)||{name,qty:0,revenue:0};
+      productSales.set(id,{name,qty:prev.qty+qty,revenue:prev.revenue+rev});
     });
-    const canjeStats = {
-      dailyCanjeCount: todayCanjeOrders.length,
-      dailyCanjeValue: todayCanjeOrders.reduce((s: number, o: any) => s + (o.totalPrice || 0), 0),
-      monthlyCanjeCount: monthCanjeOrders.length,
-      monthlyCanjeValue: monthCanjeOrders.reduce((s: number, o: any) => s + (o.totalPrice || 0), 0),
-      totalCanjeCount: allCanjeOrders.length,
-      totalCanjeValue: allCanjeOrders.reduce((s: number, o: any) => s + (o.totalPrice || 0), 0),
-    };
+  });
+  const topProducts = Array.from(productSales.values()).sort((a,b)=>b.qty-a.qty).slice(0,6);
 
-    if (isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo) {
-      // MODO FILTRADO: usar deliveredOrders (ya filtrados) para todos los cálculos
-      // Excluir canjes de las ventas reales
-      const realDelivered = deliveredOrders.filter((o: any) => !o.isCanje);
-      todayOrders = realDelivered;
-      dailySales = realDelivered.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-      currentMonthOrders = realDelivered;
-      monthlySales = dailySales;
-      lastMonthOrders = [];
-      lastMonthSales = 0;
-      progressPercentage = 0;
-      lastMonthAverageTicket = 0;
-      totalRevenue = dailySales;
-    } else {
-      // MODO NORMAL: usar rangos de fechas predeterminados
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  // ── Month name ────────────────────────────────────────────────────────────
+  const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const monthLabel = `${MONTHS[finMonthNum-1]} ${finYear}`;
 
-      const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-
-      const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-
-      // Excluir canjes de ventas reales
-      const realDeliveredOrders = deliveredOrders.filter((o: any) => !o.isCanje);
-
-      todayOrders = realDeliveredOrders.filter((order: any) => {
-        const orderDate = getPeruDate(order.createdAt);
-        return orderDate >= startOfToday && orderDate <= endOfToday;
-      });
-      dailySales = todayOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-
-      currentMonthOrders = realDeliveredOrders.filter((order: any) => {
-        const orderDate = getPeruDate(order.createdAt);
-        return orderDate >= firstDayOfCurrentMonth && orderDate <= lastDayOfCurrentMonth;
-      });
-      monthlySales = currentMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-
-      lastMonthOrders = realDeliveredOrders.filter((order: any) => {
-        const orderDate = getPeruDate(order.createdAt);
-        return orderDate >= firstDayOfLastMonth && orderDate <= lastDayOfLastMonth;
-      });
-      lastMonthSales = lastMonthOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-
-      progressPercentage = lastMonthSales > 0 ? (monthlySales / lastMonthSales) * 100 : 0;
-      lastMonthAverageTicket = lastMonthOrders.length > 0 ? lastMonthSales / lastMonthOrders.length : 0;
-      totalRevenue = realDeliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-    }
-
-    // NUEVO: Productos vendidos en el MES ACTUAL (ordenados de mayor a menor)
-    const currentMonthProductSales = new Map();
-    currentMonthOrders.forEach((order: any) => {
-      const orderItems = order.completedOrders || order.cart || [];
-      const couponFactor = 1 - (order.couponDiscount || 0) / 100;
-      if (orderItems.length > 0) {
-        orderItems.forEach((item: any) => {
-          const productId = item.productId || item.product?.id;
-          const productName = item.name || item.product?.name;
-          const productPrice = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
-          const quantity = item.quantity;
-
-          if (currentMonthProductSales.has(productId)) {
-            const existing = currentMonthProductSales.get(productId);
-            existing.quantity += quantity;
-            existing.revenue += productPrice * quantity;
-          } else {
-            currentMonthProductSales.set(productId, {
-              id: productId,
-              name: productName,
-              quantity: quantity,
-              revenue: productPrice * quantity,
-              category: item.category || item.product?.category
-            });
-          }
-        });
-      }
-    });
-    const currentMonthProductsArray = Array.from(currentMonthProductSales.values()).sort((a, b) => b.quantity - a.quantity);
-
-    // Productos vendidos de TODOS LOS TIEMPOS (para mantener compatibilidad con otros componentes)
-    const productSales = new Map();
-    deliveredOrders.forEach((order: any) => {
-      const orderItems = order.completedOrders || order.cart || [];
-      const couponFactor = 1 - (order.couponDiscount || 0) / 100;
-      if (orderItems.length > 0) {
-        orderItems.forEach((item: any) => {
-          const productId = item.productId || item.product?.id;
-          const productName = item.name || item.product?.name;
-          const productPrice = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
-          const quantity = item.quantity;
-
-          if (productSales.has(productId)) {
-            const existing = productSales.get(productId);
-            existing.quantity += quantity;
-            existing.revenue += productPrice * quantity;
-          } else {
-            productSales.set(productId, {
-              name: productName,
-              quantity: quantity,
-              revenue: productPrice * quantity,
-              category: item.category || item.product?.category
-            });
-          }
-        });
-      }
-    });
-
-    const productsArray = Array.from(productSales.values()).sort((a, b) => b.quantity - a.quantity);
-
-    // NUEVO: Ranking de los 5 días con más órdenes del mes anterior
-    const dayOrdersMap = new Map<string, number>();
-    lastMonthOrders.forEach((order: any) => {
-      const orderDate = getPeruDate(order.createdAt);
-      const dayKey = orderDate.toLocaleDateString("es-PE"); // Formato: dd/mm/yyyy
-      dayOrdersMap.set(dayKey, (dayOrdersMap.get(dayKey) || 0) + 1);
-    });
-    const topDaysLastMonth = Array.from(dayOrdersMap.entries())
-      .map(([day, count]) => ({ day, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-    // NUEVO: Productos del mes anterior CON COMPARACIÓN vs mes actual
-    const lastMonthProductSales = new Map();
-    lastMonthOrders.forEach((order: any) => {
-      const orderItems = order.completedOrders || order.cart || [];
-      const couponFactor = 1 - (order.couponDiscount || 0) / 100;
-      if (orderItems.length > 0) {
-        orderItems.forEach((item: any) => {
-          const productId = item.productId || item.product?.id;
-          const productName = item.name || item.product?.name;
-          const productPrice = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
-          const quantity = item.quantity;
-
-          if (lastMonthProductSales.has(productId)) {
-            const existing = lastMonthProductSales.get(productId);
-            existing.quantity += quantity;
-            existing.revenue += productPrice * quantity;
-          } else {
-            lastMonthProductSales.set(productId, {
-              id: productId,
-              name: productName,
-              quantity: quantity,
-              revenue: productPrice * quantity,
-              category: item.category || item.product?.category
-            });
-          }
-        });
-      }
-    });
-
-    const lastMonthProductsArray = Array.from(lastMonthProductSales.values()).sort((a, b) => b.quantity - a.quantity);
-
-    // Crear mapas de posiciones para comparación
-    const lastMonthPositions = new Map();
-    lastMonthProductsArray.forEach((product: any, index) => {
-      lastMonthPositions.set(product.id, index + 1);
-    });
-
-    const currentMonthPositions = new Map();
-    currentMonthProductsArray.forEach((product: any, index) => {
-      currentMonthPositions.set(product.id, index + 1);
-    });
-
-    // Agregar comparación a productos del mes anterior
-    const lastMonthProductsWithComparison = lastMonthProductsArray.map((product: any) => {
-      const lastMonthPos = lastMonthPositions.get(product.id);
-      const currentMonthPos = currentMonthPositions.get(product.id);
-
-      let trend = "new"; // Producto nuevo (no estaba en mes actual)
-      let positionChange = 0;
-
-      if (currentMonthPos !== undefined) {
-        // Comparar posiciones: si bajó el número de posición = subió en ranking (mejor)
-        positionChange = lastMonthPos - currentMonthPos;
-        if (positionChange > 0) {
-          trend = "up"; // Subió en el ranking
-        } else if (positionChange < 0) {
-          trend = "down"; // Bajó en el ranking
-        } else {
-          trend = "same"; // Se mantuvo
-        }
-      }
-
-      // Diferencia de ventas
-      const lastMonthQuantity = product.quantity;
-      const currentMonthProduct = currentMonthProductSales.get(product.id);
-      const currentMonthQuantity = currentMonthProduct?.quantity || 0;
-      const salesDifference = currentMonthQuantity - lastMonthQuantity;
-
-      return {
-        ...product,
-        trend,
-        positionChange: Math.abs(positionChange),
-        salesDifference,
-        lastMonthQuantity,
-        currentMonthQuantity
-      };
-    });
-
-    const topProductLastMonth = lastMonthProductsArray[0] || null;
-    const leastProductLastMonth = lastMonthProductsArray[lastMonthProductsArray.length - 1] || null;
-
-    // Órdenes del día (solo entregadas) - respeta el filtro activo
-    const todayDeliveredOrders = isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo
-      ? deliveredOrders
-      : todayOrders;
-
-    // Progreso de órdenes: mes actual vs mes anterior
-    const ordersProgressPercentage = lastMonthOrders.length > 0
-      ? (currentMonthOrders.length / lastMonthOrders.length) * 100
-      : 0;
-
-    // Clientes frecuentes (solo con pedidos entregados, 3+ pedidos)
-    const frequentCustomers = allCustomers.filter((c: any) => c.totalOrders >= 3);
-
-    // Clientes inactivos (más de 15 días sin comprar)
-    const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
-    const inactiveCustomers = allCustomers.filter((c: any) =>
-      getPeruDate(c.lastOrderDate) < fifteenDaysAgo
-    );
-
-    // Ticket promedio del día
-    const todayAverageTicket = todayDeliveredOrders.length > 0
-      ? dailySales / todayDeliveredOrders.length
-      : 0;
-
-    // DATOS ADICIONALES ÚTILES
-
-    // 1. Método de pago más usado
-    const paymentMethodCount = new Map<string, number>();
-    currentMonthOrders.forEach((order: any) => {
-      const method = order.paymentMethod || 'No especificado';
-      paymentMethodCount.set(method, (paymentMethodCount.get(method) || 0) + 1);
-    });
-    const paymentMethodsArray = Array.from(paymentMethodCount.entries())
-      .map(([method, count]) => ({ method, count }))
-      .sort((a, b) => b.count - a.count);
-    const mostUsedPaymentMethod = paymentMethodsArray[0] || { method: 'Sin datos', count: 0 };
-
-    // 2. Horarios pico - Análisis por hora del día
-    const hourlyOrders = new Map<number, number>();
-    currentMonthOrders.forEach((order: any) => {
-      const orderDate = getPeruDate(order.createdAt);
-      const hour = orderDate.getHours();
-      hourlyOrders.set(hour, (hourlyOrders.get(hour) || 0) + 1);
-    });
-    const peakHourData = Array.from(hourlyOrders.entries())
-      .map(([hour, count]) => ({ hour, count }))
-      .sort((a, b) => b.count - a.count)[0];
-    const peakHour = peakHourData ? `${peakHourData.hour}:00 - ${peakHourData.hour + 1}:00` : 'Sin datos';
-    const peakHourCount = peakHourData?.count || 0;
-
-    // 3. Complementos/extras más vendidos - TODOS, agrupados por categoría
-    const complementSales = new Map<string, { id: string; name: string; count: number; revenue: number; category: string }>();
-    currentMonthOrders.forEach((order: any) => {
-      const orderItems = order.completedOrders || order.cart || [];
-      orderItems.forEach((item: any) => {
-        const complementIds = item.complementIds || [];
-        complementIds.forEach((compId: string) => {
-          const complement = availableComplements[compId];
-          if (complement) {
-            // Determinar categoría
-            let category = 'Otros';
-            if (compId.startsWith('extra-salsa-')) {
-              category = 'Salsas';
-            } else if (['agua-mineral', 'coca-cola', 'inka-cola', 'sprite', 'fanta'].includes(compId)) {
-              category = 'Bebidas';
-            } else if (['extra-papas', 'extra-salsa', 'extra-aderezo', 'pollo-grillado'].includes(compId)) {
-              category = 'Extras';
-            }
-
-            if (complementSales.has(compId)) {
-              const existing = complementSales.get(compId)!;
-              existing.count += 1;
-              existing.revenue += complement.price;
-            } else {
-              complementSales.set(compId, {
-                id: compId,
-                name: complement.name,
-                count: 1,
-                revenue: complement.price,
-                category
-              });
-            }
-          }
-        });
-      });
-    });
-
-    const allComplements = Array.from(complementSales.values()).sort((a, b) => b.count - a.count);
-    const mostSoldComplement = allComplements[0] || { name: 'Sin datos', count: 0, revenue: 0 };
-
-    // Agrupar por categoría
-    const complementsByCategory = {
-      'Bebidas': allComplements.filter(c => c.category === 'Bebidas'),
-      'Extras': allComplements.filter(c => c.category === 'Extras'),
-      'Salsas': allComplements.filter(c => c.category === 'Salsas'),
-      'Otros': allComplements.filter(c => c.category === 'Otros')
-    };
-
-    // Lista de IDs de bebidas conocidas
-    const beverageIds = ['agua-mineral', 'coca-cola', 'inka-cola', 'sprite', 'fanta'];
-
-    // 4a. Menús del día (excluyendo items sin nombre válido)
-    const menuSalesToday = new Map<string, { name: string; quantity: number }>();
-    todayOrders.forEach((order: any) => {
-      const orderItems = order.completedOrders || order.cart || [];
-      orderItems.forEach((item: any) => {
-        const productName = (item.name || item.product?.name || '').trim();
-        if (!productName) return; // Omitir items sin nombre
-        const quantity = item.quantity || 0;
-        if (quantity <= 0) return;
-
-        if (menuSalesToday.has(productName)) {
-          menuSalesToday.get(productName)!.quantity += quantity;
-        } else {
-          menuSalesToday.set(productName, { name: productName, quantity });
-        }
-      });
-    });
-    const menusSoldToday = Array.from(menuSalesToday.values()).sort((a, b) => b.quantity - a.quantity);
-
-    // 4b. Bebidas vendidas hoy (de los complementIds)
-    const beverageSalesToday = new Map<string, { name: string; quantity: number }>();
-    todayOrders.forEach((order: any) => {
-      const orderItems = order.completedOrders || order.cart || [];
-      orderItems.forEach((item: any) => {
-        const complementIds: string[] = item.complementIds || [];
-        complementIds.forEach((compId: string) => {
-          if (beverageIds.includes(compId)) {
-            const bev = availableComplements[compId];
-            if (!bev) return;
-            if (beverageSalesToday.has(compId)) {
-              beverageSalesToday.get(compId)!.quantity += 1;
-            } else {
-              beverageSalesToday.set(compId, { name: bev.name, quantity: 1 });
-            }
-          }
-        });
-      });
-    });
-    const beveragesSoldToday = Array.from(beverageSalesToday.values()).sort((a, b) => b.quantity - a.quantity);
-
-    // 5. Tasa de conversión (pedidos confirmados vs totales)
-    const confirmedOrders = orders.filter((o: any) =>
-      o.status === "confirmed" ||
-      o.status === "en-camino" ||
-      o.status === "delivered"
-    );
-    const conversionRate = orders.length > 0 ? (confirmedOrders.length / orders.length) * 100 : 0;
-
-    return {
-      dailySales,
-      monthlySales,
-      lastMonthSales,
-      progressPercentage,
-      lastMonthAverageTicket,
-      todayAverageTicket,
-      totalRevenue,
-      topProducts: productsArray.slice(0, 5),
-      leastSoldProducts: productsArray.slice(-5).reverse(),
-      allProducts: productsArray,
-      currentMonthOrdersCount: currentMonthOrders.length,
-      lastMonthOrdersCount: lastMonthOrders.length,
-      frequentCustomers,
-      inactiveCustomers,
-      topDaysLastMonth,
-      topProductLastMonth,
-      leastProductLastMonth,
-      currentMonthProductsArray,
-      lastMonthProductsWithComparison,
-      todayDeliveredOrdersCount: todayDeliveredOrders.length,
-      ordersProgressPercentage,
-      // Datos adicionales
-      mostUsedPaymentMethod,
-      paymentMethodsArray,
-      peakHour,
-      peakHourCount,
-      mostSoldComplement,
-      allComplements,
-      complementsByCategory,
-      conversionRate,
-      menusSoldToday,
-      beveragesSoldToday,
-      ...canjeStats
-    };
-  };
-
-  const analytics = activeTab === "analytics" ? getAnalytics() : {
-    dailySales: 0,
-    monthlySales: 0,
-    progressPercentage: 0,
-    lastMonthAverageTicket: 0,
-    todayAverageTicket: 0,
-    totalRevenue: 0,
-    todayDeliveredOrdersCount: 0,
-    currentMonthOrdersCount: 0,
-    lastMonthOrdersCount: 0,
-    ordersProgressPercentage: 0,
-    lastMonthSales: 0,
-    topProducts: [],
-    leastSoldProducts: [],
-    allProducts: [],
-    productsArray: [],
-    currentMonthProductsArray: [],
-    lastMonthProductsWithComparison: [],
-    topDaysLastMonth: [],
-    topProductLastMonth: null,
-    leastProductLastMonth: null,
-    frequentCustomers: [],
-    inactiveCustomers: [],
-    allComplementsList: [],
-    paymentMethodsArray: [],
-    mostUsedPaymentMethod: { method: 'Sin datos', count: 0 },
-    peakHour: "",
-    peakHourCount: 0,
-    mostSoldComplement: null,
-    allComplements: [],
-    complementsByCategory: {},
-    conversionRate: 0,
-    menusSoldToday: [],
-    beveragesSoldToday: [],
-    dailyCanjeCount: 0,
-    dailyCanjeValue: 0,
-    monthlyCanjeCount: 0,
-    monthlyCanjeValue: 0,
-    totalCanjeCount: 0,
-    totalCanjeValue: 0,
-  };
-
-  // Generar datos para la gráfica de órdenes entregadas en línea de tiempo
-  const getChartData = () => {
-    const deliveredOrders = orders.filter((order: any) =>
-      order.status === "delivered" ||
-      order.status === "Entregado" ||
-      order.status?.toLowerCase() === "entregado"
-    );
-
-    const dataMap = new Map<string, number>();
-
-    deliveredOrders.forEach((order: any) => {
-      const orderDate = getPeruDate(order.createdAt);
-      let key = "";
-
-      if (chartTimeFilter === "days") {
-        // Agrupar por día (últimos 30 días)
-        key = orderDate.toLocaleDateString("es-PE");
-      } else if (chartTimeFilter === "weeks") {
-        // Agrupar por semana (últimas 12 semanas)
-        const weekStart = new Date(orderDate);
-        weekStart.setDate(orderDate.getDate() - orderDate.getDay());
-        key = weekStart.toLocaleDateString("es-PE");
-      } else if (chartTimeFilter === "months") {
-        // Agrupar por mes
-        key = `${orderDate.getMonth() + 1}/${orderDate.getFullYear()}`;
-      } else if (chartTimeFilter === "years") {
-        // Agrupar por año
-        key = orderDate.getFullYear().toString();
-      }
-
-      dataMap.set(key, (dataMap.get(key) || 0) + 1);
-    });
-
-    // Convertir a array y ordenar
-    const chartData = Array.from(dataMap.entries())
-      .map(([label, count]) => ({ label, count }))
-      .sort((a, b) => {
-        if (chartTimeFilter === "years") {
-          return parseInt(a.label) - parseInt(b.label);
-        }
-        return 0; // Para días, semanas y meses mantener orden
-      });
-
-    return chartData;
-  };
-
-  const chartData = activeTab === "analytics" ? getChartData() : [];
-
-  // Mostrar pantalla de carga mientras se verifica la autenticación
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-fuchsia-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Verificando acceso...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si no está autenticado, no mostrar nada (el useEffect redirigirá)
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (checkingAuth) return (
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+  if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Toast de pedido entregado */}
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
+
+      {/* ── DELIVERY TOAST ── */}
       {deliveryToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-green-900 border border-green-500 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">✅</span>
-            <div className="flex-1">
-              <p className="text-green-300 text-xs font-bold uppercase tracking-wider mb-0.5">Pedido entregado</p>
-              <p className="text-white font-black text-base">#{deliveryToast.orderId}</p>
-              <p className="text-green-400 text-sm font-medium">{deliveryToast.customerName}</p>
-            </div>
-            <button onClick={() => setDeliveryToast(null)} className="text-green-500 hover:text-white text-sm leading-none mt-0.5">✕</button>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] bg-green-900 border border-green-500 rounded-2xl px-6 py-3 shadow-2xl flex items-center gap-3 animate-bounce">
+          <span className="text-xl">✅</span>
+          <div>
+            <p className="font-black text-green-300 text-sm">Pedido entregado</p>
+            <p className="text-xs text-green-400">#{deliveryToast.id} · {deliveryToast.name}</p>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Image
-                src="/logo.jpg"
-                alt="Santo Dilema"
-                width={60}
-                height={60}
-                className="rounded-full neon-border-purple"
-              />
-              <div>
-                <h1 className="text-4xl font-black text-fuchsia-400 neon-glow-purple">
-                  Panel de Administración
-                </h1>
-                <p className="text-amber-400 mt-1 gold-glow">Santo Dilema - Gestión de Pedidos</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {!historicalSaleRegistered && (
-                <button
-                  onClick={() => setShowHistoricalSaleModal(true)}
-                  className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-3 rounded-lg font-bold transition-all transform hover:scale-105 text-sm"
-                  title="Registrar venta histórica del 13 de febrero"
-                >
-                  📅 Venta Histórica
-                </button>
-              )}
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105"
-                title="Cerrar Sesión"
-              >
-                🚪 Salir
-              </button>
-              <Link
-                href="/"
-                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-              >
-                ← Volver al Sitio
-              </Link>
-            </div>
+      {/* ── HEADER ── */}
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/8">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Image src="/logoprincipal.png" alt="Santo Dilema" width={80} height={20} className="h-7 w-auto" />
+            <span className="text-xs font-bold text-amber-400/60 uppercase tracking-widest hidden sm:block">Admin</span>
           </div>
+          <div className="flex items-center gap-3">
+            {activeCount > 0 && (
+              <span className="bg-amber-500 text-black text-xs font-black px-2.5 py-0.5 rounded-full animate-pulse">
+                {activeCount} activo{activeCount>1?"s":""}
+              </span>
+            )}
+            <button
+              onClick={()=>{ localStorage.removeItem("admin_token"); router.push("/admin/login"); }}
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors border border-white/10 hover:border-white/20 rounded-lg px-3 py-1.5"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+        {/* ── TABS ── */}
+        <div className="max-w-6xl mx-auto px-4 flex gap-0 border-t border-white/5">
+          {([
+            { id: "dashboard", label: "Dashboard",  icon: "📊" },
+            { id: "pedidos",   label: "Pedidos",    icon: "📦" },
+            { id: "finanzas",  label: "Finanzas",   icon: "💰" },
+            { id: "carta",     label: "Carta",      icon: "🍔" },
+          ] as const).map(tab=>(
+            <button
+              key={tab.id}
+              onClick={()=>setActiveTab(tab.id)}
+              className={`relative px-4 py-3 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                activeTab===tab.id
+                  ? "text-amber-400 border-b-2 border-amber-400"
+                  : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              <span className="hidden sm:inline">{tab.icon}</span>
+              {tab.label}
+              {tab.id==="pedidos" && activeCount>0 && (
+                <span className="w-2 h-2 bg-amber-400 rounded-full absolute top-2 right-1" />
+              )}
+            </button>
+          ))}
         </div>
       </header>
 
-      {/* Tabs */}
-      <section className="container mx-auto px-4 pt-6">
-        <div className="flex gap-2 border-b-2 border-fuchsia-500/30 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-          <button
-            onClick={() => setActiveTab("orders")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "orders"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            📦 <span className="hidden sm:inline">Gestión de </span>Pedidos
-          </button>
-          <button
-            onClick={() => setActiveTab("analytics")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "analytics"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            📊 Inicio
-          </button>
-          <button
-            onClick={() => setActiveTab("customers")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "customers"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            👥 Clientes
-          </button>
-          <button
-            onClick={() => setActiveTab("financial")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "financial"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            💰 Finanzas
-          </button>
-          <button
-            onClick={() => setActiveTab("marketing")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "marketing"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            🎯 Promociones
-          </button>
-          <button
-            onClick={() => setActiveTab("carta")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "carta"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            🍽️ Carta
-          </button>
-        </div>
-      </section>
+      <main className="max-w-6xl mx-auto px-4 py-6">
 
-      {activeTab === "orders" ? (
-        <>
-          {/* Stats - Solo pedidos de HOY en hora de Perú */}
-          <section className="container mx-auto px-4 py-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
-              <button
-                onClick={() => setFilter("all")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "all"
-                    ? "border-fuchsia-500 neon-border-purple shadow-xl"
-                    : "border-fuchsia-500/30 hover:border-fuchsia-500/60"
-                }`}
-              >
-                <p className="text-gray-400 text-xs font-semibold text-left leading-tight">
-                  Total {isOrdersDateFiltered ? "(Filtrado)" : "(Hoy)"}
-                </p>
-                <p className="text-3xl font-black text-white mt-1 text-left">{dateFilteredOrders.length}</p>
-              </button>
-              <button
-                onClick={() => setFilter("pending")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "pending"
-                    ? "border-yellow-500 shadow-xl shadow-yellow-500/50"
-                    : "border-yellow-500/50 hover:border-yellow-500"
-                }`}
-              >
-                <p className="text-yellow-400 text-xs font-bold text-left">Pendientes</p>
-                <p className="text-3xl font-black text-yellow-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "pending").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("confirmed")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "confirmed"
-                    ? "border-cyan-500 shadow-xl shadow-cyan-500/50"
-                    : "border-cyan-500/50 hover:border-cyan-500"
-                }`}
-              >
-                <p className="text-cyan-400 text-xs font-bold text-left">Confirmados</p>
-                <p className="text-3xl font-black text-cyan-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "confirmed").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("en-camino")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "en-camino"
-                    ? "border-blue-500 shadow-xl shadow-blue-500/50"
-                    : "border-blue-500/50 hover:border-blue-500"
-                }`}
-              >
-                <p className="text-blue-400 text-xs font-bold text-left">🚚 En Camino</p>
-                <p className="text-3xl font-black text-blue-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "en-camino").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("delivered")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "delivered"
-                    ? "border-green-500 shadow-xl shadow-green-500/50"
-                    : "border-green-500/50 hover:border-green-500"
-                }`}
-              >
-                <p className="text-green-400 text-xs font-bold text-left">Entregados</p>
-                <p className="text-3xl font-black text-green-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "delivered").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("programado")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "programado"
-                    ? "border-indigo-500 shadow-xl shadow-indigo-500/50"
-                    : "border-indigo-500/50 hover:border-indigo-500"
-                }`}
-              >
-                <p className="text-indigo-400 text-xs font-bold text-left">🗓 Programados</p>
-                <p className="text-3xl font-black text-indigo-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "programado").length}
-                </p>
-              </button>
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* DASHBOARD                                                       */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {activeTab==="dashboard" && (
+          <div className="space-y-6">
+
+            {/* KPI grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <KpiCard label="Ventas hoy"    value={fmtSoles(todaySales)}   sub={`${todayDelivered.length} pedido${todayDelivered.length!==1?"s":""}`}  icon="💵" color="amber" />
+              <KpiCard label="Ticket prom."  value={fmtSoles(avgTicket)}    sub="hoy"                                                                    icon="🧾" color="blue"  />
+              <KpiCard label="Ventas mes"    value={fmtSoles(monthlySales)} sub={`${monthDelivered.length} pedidos`}                                     icon="📈" color="amber" />
+              <KpiCard label="Gastos mes"    value={fmtSoles(monthExpenses)}sub="compras + insumos"                                                      icon="🛒" color="red"   />
+              <KpiCard label="Utilidad mes"  value={fmtSoles(monthProfit)}  sub={`Margen ${monthMargin.toFixed(1)}%`}                                    icon="💰" color={monthProfit>=0?"green":"red"} />
+              <KpiCard label="Activos ahora" value={String(activeCount)}    sub="pedidos en curso"                                                       icon="🔥" color={activeCount>0?"purple":"amber"} />
             </div>
-          </section>
 
-      {/* Barra de herramientas */}
-      <section className="container mx-auto px-4 pb-6">
-        <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-center justify-end">
-          <div className="flex gap-2 justify-end">
-            {/* Botón exportar CSV */}
-            <button
-              onClick={exportOrdersToCSV}
-              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-green-400 hover:text-green-300 hover:border-green-700 transition-all"
-              title="Exportar TODOS los pedidos a CSV"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-            </button>
-
-            {/* Botón de calendario */}
-            <button
-              onClick={() => setShowOrdersDateModal(true)}
-              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
-              title="Filtrar por fechas"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Buscador en tiempo real */}
-          <div className="relative flex-1 md:flex-initial">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar pedido, cliente, dirección, menú..."
-              className="w-full md:w-80 px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all text-sm"
-            />
-            <svg
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            {/* Top productos del mes */}
+            {topProducts.length > 0 && (
+              <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-5">
+                <h3 className="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Top productos — este mes</h3>
+                <div className="space-y-2">
+                  {topProducts.map((p,i)=>(
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="text-xs font-black text-gray-600 w-4">{i+1}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-sm font-semibold text-white truncate">{p.name}</span>
+                          <span className="text-xs text-amber-400 font-bold ml-2">{p.qty} uds</span>
+                        </div>
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-amber-400 rounded-full"
+                            style={{width:`${Math.min(100,(p.qty/topProducts[0].qty)*100)}%`}}
+                          />
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-500 w-16 text-right">{fmtSoles(p.revenue)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-        </div>
-      </section>
 
-      {/* Modal de filtro de fechas - Gestión de Pedidos */}
-      {showOrdersDateModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowOrdersDateModal(false)}>
-          <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full mx-4 border-2 border-gray-700" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-black text-white mb-4">Filtrar por Fechas</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-gray-400 text-sm font-semibold block mb-2">Desde:</label>
-                <input
-                  type="date"
-                  value={ordersDateFrom}
-                  onChange={(e) => setOrdersDateFrom(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="text-gray-400 text-sm font-semibold block mb-2">Hasta:</label>
-                <input
-                  type="date"
-                  value={ordersDateTo}
-                  onChange={(e) => setOrdersDateTo(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={applyOrdersDateFilter}
-                  disabled={!ordersDateFrom || !ordersDateTo}
-                  className="flex-1 px-6 py-3 bg-fuchsia-600 text-white rounded-lg font-bold hover:bg-fuchsia-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-all"
-                >
-                  Aplicar Filtro
-                </button>
-                {isOrdersDateFiltered && (
-                  <button
-                    onClick={clearOrdersDateFilter}
-                    className="px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all"
-                  >
-                    Limpiar
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowOrdersDateModal(false)}
-                  className="px-6 py-3 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition-all"
-                >
-                  Cerrar
-                </button>
-              </div>
-
-              {isOrdersDateFiltered && ordersDateFrom && ordersDateTo && (
-                <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
-                  <p className="text-sm text-gray-400">
-                    📊 Filtrando desde <span className="text-white font-bold">{new Date(ordersDateFrom + 'T12:00:00').toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(ordersDateTo + 'T12:00:00').toLocaleDateString('es-PE')}</span>
-                  </p>
+            {/* Pedidos activos quick-view */}
+            {activeCount > 0 && (
+              <div className="bg-white/[0.03] border border-amber-500/20 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider">Pedidos activos</h3>
+                  <button onClick={()=>setActiveTab("pedidos")} className="text-xs text-gray-400 hover:text-amber-400 transition-colors">Ver todos →</button>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Orders List */}
-      <section className="container mx-auto px-4 pb-12">
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-2xl text-fuchsia-400 neon-glow-purple">Cargando pedidos...</p>
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
-            <p className="text-2xl text-gray-400">No hay pedidos</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredOrders.map((order) => (
-              <div
-                key={order.id}
-                className={`bg-gray-900 rounded-lg overflow-hidden shadow-2xl transition-all ${
-                  overtimeOrderIds.has(order.id) && order.status !== 'delivered' && order.status !== 'cancelled' ? 'ring-4 ring-red-500 overtime-pulse' :
-                  order.status === 'pending' ? 'ring-2 ring-yellow-500/50' :
-                  order.status === 'pendiente-verificacion' ? 'ring-2 ring-purple-500/50' :
-                  order.status === 'confirmed' ? 'ring-2 ring-cyan-500/50' :
-                  order.status === 'en-camino' ? 'ring-2 ring-blue-500/50' :
-                  order.status === 'delivered' ? 'ring-2 ring-green-500/30 opacity-60' :
-                  order.status === 'programado' ? 'ring-2 ring-indigo-500/70' :
-                  'ring-2 ring-red-500/30 opacity-50'
-                }`}
-              >
-                {/* LAYOUT HORIZONTAL COMPACTO (altura conservada) */}
-                <div className="flex flex-col md:flex-row md:items-center gap-3 p-3">
-
-                  {/* HEADER: ESTADO Y NÚMERO */}
-                  <div className={`flex-shrink-0 px-3 py-2 rounded md:w-auto ${
-                    order.status === 'pending' ? 'bg-yellow-500/20' :
-                    order.status === 'pendiente-verificacion' ? 'bg-purple-500/20' :
-                    order.status === 'confirmed' ? 'bg-cyan-500/20' :
-                    order.status === 'en-camino' ? 'bg-blue-500/20' :
-                    order.status === 'delivered' ? 'bg-green-500/20' :
-                    order.status === 'programado' ? 'bg-indigo-500/20' :
-                    'bg-red-500/20'
-                  }`}>
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className={`px-2 py-0.5 rounded text-xs font-black uppercase ${statusColors[order.status]}`}>
-                        {statusLabels[order.status]}
-                      </span>
-                      <button
-                        onClick={async () => {
-                          if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
-                          await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
-                          setOrders(prev => prev.filter(o => o.id !== order.id));
-                        }}
-                        className="text-gray-600 hover:text-red-400 text-sm transition-colors leading-none"
-                        title="Eliminar pedido"
-                      >
-                        🗑
-                      </button>
-                    </div>
-                    <span className="font-mono font-black text-base text-white block">#{order.id}</span>
-                    <p className="text-[10px] text-gray-300 font-medium mt-1">
-                      {new Date(order.createdAt).toLocaleString("es-PE", {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                    {/* CONTADOR DE TIEMPO EN COLA */}
-                    <div className="mt-2">
-                      <TimeCounter
-                        createdAt={order.createdAt}
-                        orderId={order.id}
-                        status={order.status}
-                        audioCtx={audioContext}
-                        onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))}
-                      />
-                    </div>
-
-                    {/* PEDIDO PROGRAMADO */}
-                    {(order as any).scheduledTime && (
-                      <div className="mt-2 border-t border-indigo-500/30 pt-2">
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-wider">🗓 Entrega programada</p>
-                        {(() => {
-                          const [hh, mm] = ((order as any).scheduledTime as string).split(':');
-                          const h = parseInt(hh);
-                          const schedDate = (order as any).scheduledDate as string | undefined;
-                          let dayLabel = 'Hoy';
-                          if (schedDate) {
-                            const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-                            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-                            if (schedDate !== todayStr) {
-                              const d = new Date(schedDate + 'T12:00:00');
-                              const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-                              dayLabel = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
-                            }
-                          }
-                          return (
-                            <p className="text-white font-black text-sm mt-0.5">
-                              {dayLabel} – {h > 12 ? h - 12 : h}:{mm} {h >= 12 ? 'PM' : 'AM'}
-                            </p>
-                          );
-                        })()}
-                      </div>
-                    )}
-
-                    {/* RASTRO DE TIEMPOS POR ETAPA */}
-                    {(() => {
-                      const steps: { label: string; time: string | undefined; color: string }[] = [
-                        { label: 'Ingresó', time: order.createdAt, color: 'text-gray-400' },
-                        { label: 'Confirmado', time: order.confirmedAt, color: 'text-cyan-400' },
-                        { label: 'En camino', time: order.enCaminoAt, color: 'text-blue-400' },
-                        { label: 'Entregado', time: order.deliveredAt, color: 'text-green-400' },
-                      ];
-                      const filled = steps.filter(s => s.time);
-                      if (filled.length < 2) return null;
-                      return (
-                        <div className="mt-2 border-t border-white/10 pt-2 space-y-0.5">
-                          {filled.map((step, i) => {
-                            const prev = filled[i - 1];
-                            const elapsed = prev
-                              ? Math.round((new Date(step.time!).getTime() - new Date(prev.time!).getTime()) / 60000)
-                              : null;
-                            return (
-                              <div key={i} className="flex items-center gap-1 text-[9px]">
-                                <span className={`font-mono font-bold ${step.color}`}>
-                                  {new Date(step.time!).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                                <span className="text-gray-500">{step.label}</span>
-                                {elapsed !== null && (
-                                  <span className="text-yellow-500 font-bold">+{elapsed}m</span>
-                                )}
-                              </div>
-                            );
-                          })}
+                <div className="space-y-2">
+                  {orders.filter(o=>activeStatuses.includes(o.status)).slice(0,5).map(o=>{
+                    const sc=STATUS_CONFIG[o.status];
+                    return (
+                      <div key={o.id} className={`flex items-center gap-3 rounded-xl p-3 border ${sc.bg}`}>
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${sc.dot}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-white truncate">{o.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{o.address}</p>
                         </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* SECCIÓN 1: PRODUCTOS */}
-                  <div className="flex-1 bg-black rounded border border-white/10 px-3 py-2">
-                    <h3 className="text-xs font-black text-white uppercase mb-2">🍽️ PEDIDO</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
-                        (() => {
-                          const allItems = (order as any).completedOrders;
-                          const seenComboGroups = new Set<string>();
-                          return allItems.map((item: any, idx: number) => {
-                            // --- COMBO GROUP ---
-                            if (item.comboGroupId) {
-                              if (seenComboGroups.has(item.comboGroupId)) return null;
-                              seenComboGroups.add(item.comboGroupId);
-                              const groupItems = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
-                              const comboName = item.comboName || 'Combo';
-                              const comboPrice = item.comboPrice || 0;
-                              const comboOriginalTotal = item.comboOriginalTotal || comboPrice;
-                              const savings = parseFloat((comboOriginalTotal - comboPrice).toFixed(2));
-                              return (
-                                <div key={`combo-${item.comboGroupId}`} className="bg-amber-900/30 border border-amber-500/40 rounded px-2 py-1.5 w-full">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[10px] font-black text-amber-400 uppercase">🔥 {comboName}</span>
-                                    <div className="flex items-center gap-1">
-                                      {savings > 0 && <span className="text-[9px] bg-amber-500/30 text-amber-300 px-1 rounded font-bold">-S/ {savings.toFixed(2)}</span>}
-                                      <span className="text-sm font-black text-amber-300">S/ {comboPrice.toFixed(2)}</span>
-                                    </div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    {groupItems.map((gi: any, giIdx: number) => (
-                                      <div key={giIdx} className="bg-amber-900/20 rounded px-1.5 py-1">
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-amber-400 font-black text-xs">{gi.quantity}x</span>
-                                          <span className="text-xs text-amber-100 font-semibold">{gi.name}</span>
-                                        </div>
-                                        {gi.productId === 'taco-duo' && gi.salsas && gi.salsas.length > 0 && (
-                                          <div className="text-[10px] text-yellow-300 mt-0.5 ml-3">
-                                            🌮 {gi.salsas.map((id: string) => (
-                                              ({ 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' } as Record<string,string>)[id] || id
-                                            )).join(' + ')}
-                                          </div>
-                                        )}
-                                        {gi.productId !== 'taco-duo' && gi.salsas && gi.salsas.length > 0 && (
-                                          <div className="text-[10px] text-yellow-300 mt-0.5 ml-3">
-                                            🌶️ {gi.salsas.map((salsaId: string) => {
-                                              const salsa = salsas.find((s: any) => s.id === salsaId);
-                                              return salsa?.name || salsaId;
-                                            }).join(', ')}
-                                          </div>
-                                        )}
-                                        {gi.complementIds && gi.complementIds.length > 0 && (
-                                          <div className="text-[10px] text-green-300 mt-0.5 ml-3">
-                                            + {gi.complementIds.map((cId: string) => availableComplements[cId]?.name || cId).join(', ')}
-                                          </div>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              );
-                            }
-
-                            // --- INDIVIDUAL ITEM ---
-                            const productName = item.name || 'Sin nombre';
-                            const catalogPrice = item.price || 0;
-                            const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
-                            const productPrice = catalogPrice * couponFactor;
-                            const quantity = item.quantity || 0;
-                            const itemSalsas = item.salsas || [];
-                            const itemComplementIds = item.complementIds || [];
-                            const hasCouponDiscount = (order as any).couponDiscount > 0;
-
-                            return (
-                              <div key={idx} className="bg-white/5 rounded px-2 py-1.5">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
-                                    <span className="text-white font-black text-sm">{quantity}</span>
-                                  </div>
-                                  <div className="flex-1">
-                                    <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                    {hasCouponDiscount ? (
-                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                        <span className="text-gray-500 line-through text-xs">S/ {(catalogPrice * quantity).toFixed(2)}</span>
-                                        <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                        <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>
-                                      </div>
-                                    ) : (
-                                      <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Mostrar salsas / sabores de taco si existen */}
-                                {itemSalsas.length > 0 && (
-                                  <div className="mt-1 ml-8 text-[10px] text-yellow-300">
-                                    {item.productId === 'taco-duo' ? (
-                                      <>
-                                        <span className="font-bold">🌮 Sabores: </span>
-                                        {itemSalsas.map((id: string) => (
-                                          { 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' }[id] || id
-                                        )).join(' + ')}
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span className="font-bold">🌶️ Salsas: </span>
-                                        {itemSalsas.map((salsaId: string) => {
-                                          const salsa = salsas.find(s => s.id === salsaId);
-                                          return salsa?.name || salsaId;
-                                        }).join(', ')}
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Mostrar complementos si existen - agrupados por tipo */}
-                                {itemComplementIds.length > 0 && (() => {
-                                  const complementCounts: { [key: string]: number } = {};
-                                  itemComplementIds.forEach((compId: string) => {
-                                    complementCounts[compId] = (complementCounts[compId] || 0) + 1;
-                                  });
-                                  return (
-                                    <div className="mt-1 ml-8 space-y-0.5">
-                                      {Object.entries(complementCounts).map(([compId, count], compIdx) => {
-                                        const complement = availableComplements[compId];
-                                        if (!complement) return null;
-                                        const totalPrice = complement.price * count;
-                                        return (
-                                          <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
-                                            <span className="font-bold">+</span>
-                                            {count > 1 && <span className="text-green-400 font-black">{count}x</span>}
-                                            <span>{complement.name}</span>
-                                            {complement.price > 0
-                                              ? <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
-                                              : <span className="text-emerald-400 font-bold">(incluido)</span>
-                                            }
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-                            );
-                          });
-                        })()
-                      ) : order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
-                        order.cart.map((item: any, idx: number) => {
-                          const productName = item.product?.name || item.name || 'Sin nombre';
-                          const productPrice = item.product?.price || item.price || 0;
-                          const quantity = item.quantity || 0;
-                          const subtotal = productPrice * quantity;
-
-                          return (
-                            <div key={idx} className="flex items-center gap-2 bg-white/5 rounded px-2 py-1">
-                              <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-black text-sm">{quantity}</span>
-                              </div>
-                              <div>
-                                <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                <span className="text-sm font-black text-cyan-400">S/ {subtotal.toFixed(2)}</span>
-                              </div>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <span className="text-xs text-gray-500">Sin productos</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* SECCIÓN 2: CLIENTE */}
-                  <div className="flex-shrink-0 w-full md:w-48 bg-gray-800 rounded px-3 py-2">
-                    <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">👤 Cliente</h4>
-                    <p className="text-xs font-bold text-white mb-1 truncate">{order.name}</p>
-                    <p className="text-xs font-bold text-white flex items-center gap-1 mb-1">
-                      <span>📱</span>
-                      <span className="font-mono">{order.phone}</span>
-                    </p>
-                    <p className="text-xs font-bold text-white flex items-start gap-1 mb-1">
-                      <span>📍</span>
-                      <span className="line-clamp-2">{order.address}</span>
-                    </p>
-                    {(order as any).deliveryOption ? (
-                      <div className={`mt-1 rounded px-1.5 py-0.5 text-[9px] font-bold flex items-center gap-1 ${(order as any).deliveryCost > 0 ? 'bg-sky-900/60 text-sky-200' : 'bg-gray-700 text-gray-300'}`}>
-                        <span>🛵</span>
-                        <span>
-                          {(order as any).deliveryOption === 'centro'
-                            ? `Chancay centro +S/ ${((order as any).deliveryCost || 0).toFixed(2)}`
-                            : 'Chancay alrededores'}
-                        </span>
-                      </div>
-                    ) : null}
-                    {order.notes && (
-                      <div className="mt-1 bg-yellow-500/20 border border-yellow-400 rounded px-1.5 py-1 text-[9px]">
-                        <span className="text-yellow-400 font-bold">⚠️ {order.notes}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* SECCIÓN 3: TOTAL */}
-                  <div className="flex-shrink-0 bg-gradient-to-br from-cyan-600 to-blue-600 rounded px-3 py-2 text-center w-full md:w-auto md:min-w-[100px]">
-                    <p className="text-[10px] text-cyan-100 font-bold uppercase mb-0.5">Total</p>
-                    <p className="text-xl font-black text-white">
-                      S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
-                    </p>
-                    <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
-                    {(() => {
-                      const items = (order as any).completedOrders;
-                      if (items && Array.isArray(items)) {
-                        const seenGroups = new Set<string>();
-                        let totalSavings = 0;
-                        const comboNames: string[] = [];
-                        items.forEach((item: any) => {
-                          if (item.comboGroupId && !seenGroups.has(item.comboGroupId)) {
-                            seenGroups.add(item.comboGroupId);
-                            const savings = (item.comboOriginalTotal || 0) - (item.comboPrice || 0);
-                            if (savings > 0) {
-                              totalSavings += savings;
-                              if (item.comboName && !comboNames.includes(item.comboName)) comboNames.push(item.comboName);
-                            }
-                          }
-                        });
-                        if (totalSavings > 0) {
-                          return (
-                            <p className="text-[9px] bg-amber-900/60 text-amber-200 rounded px-1 mt-1 font-bold">
-                              🔥 {comboNames.length > 0 ? comboNames.join(' + ') : 'Combo'} -S/ {totalSavings.toFixed(2)}
-                            </p>
-                          );
-                        }
-                      }
-                      // fallback para pedidos del sistema anterior
-                      if ((order as any).comboDiscount > 0) {
-                        return (
-                          <p className="text-[9px] bg-fuchsia-900/60 text-fuchsia-200 rounded px-1 mt-1 font-bold">
-                            🔥 Combo -S/ {((order as any).comboDiscount).toFixed(2)}
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
-                    {(order as any).couponDiscount > 0 && (
-                      <p className="text-[9px] bg-purple-900/60 text-purple-200 rounded px-1 mt-1 font-bold">
-                        Cupón -{(order as any).couponDiscount}% aplicado
-                      </p>
-                    )}
-                    {(order as any).deliveryCost > 0 && (
-                      <p className="text-[9px] bg-sky-900/60 text-sky-200 rounded px-1 mt-1 font-bold">
-                        🛵 +S/ {(order as any).deliveryCost.toFixed(2)} delivery
-                      </p>
-                    )}
-                    {(order as any).deliveryOption && (
-                      <p className="text-[9px] text-sky-300 mt-0.5">
-                        {(order as any).deliveryOption === 'centro' ? 'Chancay centro' : 'Chancay alrededores'}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* SECCIÓN 4: PAGO */}
-                  <div className={`flex-shrink-0 rounded px-3 py-2 w-full md:w-auto md:min-w-[110px] ${
-                    order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
-                    order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
-                    order.paymentMethod === 'tarjeta-mp' ? 'bg-gradient-to-br from-blue-600 to-cyan-600' :
-                    'bg-gradient-to-br from-orange-600 to-red-600'
-                  }`}>
-                    <p className="text-[10px] text-white/80 font-bold uppercase mb-0.5">Pago</p>
-                    {order.paymentMethod === 'anticipado' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">✓ PAGADO</p>
-                        <p className="text-[10px] text-white/80">Yape/Plin</p>
-                        {order.paymentProofPath && (
-                          <button
-                            onClick={() => {
-                              setSelectedVoucherPath(order.paymentProofPath || "");
-                              setShowVoucherModal(true);
-                            }}
-                            className="mt-1 w-full bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1"
-                          >
-                            📄 Ver comprobante
-                          </button>
-                        )}
-                      </div>
-                    ) : order.paymentMethod === 'contraentrega-yape-plin' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">YAPE/PLIN</p>
-                        <p className="text-[10px] text-white/80">Al recibir</p>
-                      </div>
-                    ) : order.paymentMethod === 'contraentrega-efectivo-exacto' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">EFECTIVO</p>
-                        <p className="text-[10px] text-white/80">Exacto</p>
-                      </div>
-                    ) : order.paymentMethod === 'contraentrega-efectivo-cambio' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">EFECTIVO</p>
-                        {(order as any).cantoCancelo && (
-                          <>
-                            <p className="text-[10px] text-white/90 font-bold">
-                              Cancela con: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}
-                            </p>
-                            <p className="text-[10px] text-white/90 font-bold">
-                              Vuelto: S/ {(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    ) : order.paymentMethod === 'tarjeta-mp' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">✓ PAGADO</p>
-                        <p className="text-[10px] text-white/80">Mercado Pago</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm font-black text-white">Contraentrega</p>
-                    )}
-                  </div>
-
-                  {/* NOTA SI EXISTE */}
-                  {order.notes && (
-                    <div className="flex-shrink-0 bg-yellow-500/20 border border-yellow-500 rounded px-2 py-2 w-full md:max-w-[150px]">
-                      <p className="text-[10px] text-yellow-400 font-bold uppercase mb-1">⚠️ NOTA</p>
-                      <p className="text-xs font-medium text-yellow-100 line-clamp-2">{order.notes}</p>
-                    </div>
-                  )}
-
-                  {/* BOTONES DE ACCIÓN */}
-                  <div className="flex-shrink-0 flex gap-2 w-full md:w-auto">
-                    {order.status === "programado" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Aceptar pedido
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "pendiente-verificacion" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Verificar y Confirmar
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Confirmar
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "confirmed" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "en-camino")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          🚚 En Camino
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "en-camino" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "delivered")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Entregado
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕ Cancelar
-                        </button>
-                      </>
-                    )}
-                    {order.status === "delivered" && (
-                      <div className="flex gap-2 items-center">
-                        <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase flex-1">
-                          ✓ Entregado
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-black text-amber-400">{fmtSoles(o.totalPrice||0)}</p>
+                          <p className={`text-xs font-semibold ${sc.color}`}>{sc.label}</p>
                         </div>
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
-                            await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
-                            setOrders(prev => prev.filter(o => o.id !== order.id));
-                          }}
-                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs font-black uppercase transition-all"
-                          title="Eliminar pedido"
-                        >
-                          🗑
-                        </button>
                       </div>
-                    )}
-                    {order.status === "cancelled" && (
-                      <div className="flex gap-2 items-center">
-                        <div className="bg-red-900/50 border border-red-500 text-red-400 px-4 py-2 rounded text-xs font-black text-center uppercase flex-1">
-                          ✕ Cancelado
-                        </div>
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
-                            await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
-                            setOrders(prev => prev.filter(o => o.id !== order.id));
-                          }}
-                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs font-black uppercase transition-all"
-                          title="Eliminar pedido"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    )}
-                </div>
-
+                    );
+                  })}
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
-      </section>
-        </>
-      ) : activeTab === "customers" ? (
-        /* Customers Tab */
-        <>
-          {/* Customer Stats */}
-          <section className="container mx-auto px-4 py-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-black text-fuchsia-400 neon-glow-purple mb-4">
-                Segmentación de Clientes
-              </h2>
-              <div className="flex gap-2 flex-wrap">
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* PEDIDOS                                                         */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {activeTab==="pedidos" && (
+          <div className="space-y-4">
+
+            {/* Filters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {(["activos","hoy","todos"] as const).map(f=>(
                 <button
-                  onClick={() => setCustomerSegment("all")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "all"
-                      ? "bg-fuchsia-600 text-white neon-border-purple"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                  key={f}
+                  onClick={()=>setOrderFilter(f)}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-all ${
+                    orderFilter===f
+                      ? "bg-amber-500 text-black"
+                      : "bg-white/5 text-gray-400 hover:bg-white/8 hover:text-white border border-white/8"
                   }`}
                 >
-                  Todos ({customerSegments.all.length})
+                  {f==="activos" ? `Activos (${activeCount})` : f==="hoy" ? "Hoy" : "Todos"}
                 </button>
-                <button
-                  onClick={() => setCustomerSegment("vip")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "vip"
-                      ? "bg-amber-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  👑 VIP ({customerSegments.vip.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("new")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "new"
-                      ? "bg-cyan-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  ✨ Nuevos ({customerSegments.new.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("active")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "active"
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  🟢 Activos ({customerSegments.active.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("recurrent")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "recurrent"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  🔁 Recurrentes ({customerSegments.recurrent.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("inactive")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "inactive"
-                      ? "bg-red-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  💤 Inactivos ({customerSegments.inactive.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("birthday")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "birthday"
-                      ? "bg-pink-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
-                  }`}
-                >
-                  🎂 Cumpleaños ({allCustomers.filter((c: any) => !!c.birthday).length})
-                </button>
-              </div>
+              ))}
+              {loading && <span className="text-xs text-gray-500 animate-pulse ml-2">Cargando…</span>}
             </div>
-          </section>
 
-          {/* Customers Table */}
-          <section className="container mx-auto px-4 pb-12">
-            {/* Modal de detalle de cliente */}
-            {selectedCustomer && (() => {
-              // Calcular productos más comprados
-              const productCount: Record<string, { name: string; qty: number; revenue: number }> = {};
-              selectedCustomer.orders.forEach((order: any) => {
-                const items = order.completedOrders || order.cart || [];
-                const couponFactor = 1 - (order.couponDiscount || 0) / 100;
-                items.forEach((item: any) => {
-                  const name = item.name || item.product?.name || 'Sin nombre';
-                  const qty = item.quantity || 0;
-                  const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
-                  if (!productCount[name]) productCount[name] = { name, qty: 0, revenue: 0 };
-                  productCount[name].qty += qty;
-                  productCount[name].revenue += price * qty;
-                });
-              });
-              const topProducts = Object.values(productCount).sort((a, b) => b.qty - a.qty).slice(0, 5);
-              const daysSince = Math.floor((new Date().getTime() - new Date(selectedCustomer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
-
-              return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setSelectedCustomer(null)}>
-                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                    {/* Header del modal */}
-                    <div className="flex items-start justify-between p-4 border-b border-fuchsia-500/30">
-                      <div>
-                        <h2 className="text-xl font-black text-white">{selectedCustomer.name}</h2>
-                        <p className="text-gray-400 text-xs mt-0.5">{selectedCustomer.phone}</p>
-                        <p className="text-gray-500 text-xs mt-0.5">{selectedCustomer.address}</p>
-                      </div>
-                      <button onClick={() => setSelectedCustomer(null)} className="text-gray-400 hover:text-white text-xl leading-none ml-4">✕</button>
-                    </div>
-
-                    {/* KPIs compactos */}
-                    <div className="grid grid-cols-3 gap-3 p-4">
-                      <div className="bg-black/50 rounded-lg p-3 border border-fuchsia-500/20 text-center">
-                        <p className="text-2xl font-black text-fuchsia-400">{selectedCustomer.totalOrders}</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Pedidos</p>
-                      </div>
-                      <div className="bg-black/50 rounded-lg p-3 border border-amber-500/30 text-center">
-                        <p className="text-2xl font-black text-amber-400">S/ {selectedCustomer.totalSpent.toFixed(0)}</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Total gastado</p>
-                      </div>
-                      <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/20 text-center">
-                        <p className="text-2xl font-black text-cyan-400">{daysSince}d</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Última compra</p>
-                      </div>
-                    </div>
-
-                    {/* Productos más comprados */}
-                    {topProducts.length > 0 && (
-                      <div className="px-4 pb-3">
-                        <p className="text-xs font-black text-fuchsia-400 uppercase tracking-wider mb-2">Productos favoritos</p>
-                        <div className="space-y-1.5">
-                          {topProducts.map((p, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-black/40 rounded px-3 py-1.5">
-                              <span className="text-[10px] font-black text-gray-500 w-4">{i + 1}</span>
-                              <span className="flex-1 text-sm text-white font-medium">{p.name}</span>
-                              <span className="text-xs font-black text-fuchsia-400 bg-fuchsia-500/10 px-2 py-0.5 rounded-full">{p.qty}x</span>
-                              <span className="text-xs text-amber-400 font-bold w-16 text-right">S/ {p.revenue.toFixed(0)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Historial de pedidos */}
-                    <div className="px-4 pb-4">
-                      <p className="text-xs font-black text-fuchsia-400 uppercase tracking-wider mb-2">Historial ({selectedCustomer.orders.length} pedidos)</p>
-                      <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
-                        {[...selectedCustomer.orders].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((order: any) => (
-                          <div key={order.id} className="bg-black/50 rounded-lg px-3 py-2 border border-fuchsia-500/10">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-black text-fuchsia-400">#{order.id}</span>
-                                <span className="text-[10px] text-gray-500">{new Date(order.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded ${statusColors[order.status as keyof typeof statusColors]}`}>
-                                  {statusLabels[order.status as keyof typeof statusLabels]}
-                                </span>
-                              </div>
-                              <span className="text-amber-400 font-black text-sm">S/ {order.totalPrice?.toFixed(2) || "0.00"}</span>
-                            </div>
-                            {/* Items compactos */}
-                            {(() => {
-                              const items = order.completedOrders || order.cart || [];
-                              if (!items.length) return null;
-                              return (
-                                <p className="text-[10px] text-gray-500 mt-0.5 ml-1">
-                                  {items.map((it: any) => `${it.name || it.product?.name || '?'} x${it.quantity || 0}`).join(' · ')}
-                                </p>
-                              );
-                            })()}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* CRM Profile */}
-                    <div className="px-4 pb-3 pt-3 border-t border-fuchsia-500/20">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider">Perfil CRM</p>
-                        <button onClick={() => {
-                          setCrmEditPhone(selectedCustomer.phone);
-                          setCrmForm({ birthday: selectedCustomer.birthday ? `${selectedCustomer.birthday.split('-')[1]}/${selectedCustomer.birthday.split('-')[0]}` : '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
-                          setShowCrmModal(true);
-                        }} className="text-[10px] text-fuchsia-400 hover:text-fuchsia-200 underline">Editar</button>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {(selectedCustomer.tags || []).length === 0
-                          ? <span className="text-[10px] text-gray-600">Sin etiquetas — haz clic en Editar para añadir</span>
-                          : (selectedCustomer.tags || []).map((t: string) => (
-                              <span key={t} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">{t}</span>
-                            ))
-                        }
-                      </div>
-                      <div className="flex flex-wrap gap-3 text-[10px] text-gray-500 mb-2">
-                        <span>Ticket prom: <span className="text-amber-400 font-bold">S/ {(selectedCustomer.avgTicket||0).toFixed(0)}</span></span>
-                        {selectedCustomer.birthday && (
-                          <span>Cumpleaños: <span className="text-pink-400 font-bold">{selectedCustomer.birthday.split('-')[1]}/{selectedCustomer.birthday.split('-')[0]}</span></span>
-                        )}
-                      </div>
-                      {selectedCustomer.notes && <p className="text-[10px] text-gray-500 italic mb-2">&quot;{selectedCustomer.notes}&quot;</p>}
-                      <a href={buildWhatsApp(selectedCustomer.phone, getCampaignTemplate('inactive30', selectedCustomer))}
-                         target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1 bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded text-[10px] font-bold">
-                        💬 WhatsApp
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {loading ? (
-              <div className="text-center py-12">
-                <p className="text-2xl text-fuchsia-400 neon-glow-purple">Cargando clientes...</p>
-              </div>
-            ) : customers.length === 0 ? (
-              <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
-                <p className="text-2xl text-gray-400">No hay clientes registrados</p>
+            {/* Order cards */}
+            {filteredOrders.length===0 ? (
+              <div className="text-center py-16 text-gray-600">
+                <p className="text-4xl mb-3">📭</p>
+                <p className="font-semibold">Sin pedidos</p>
               </div>
             ) : (
-              <>
-                {/* Buscador de clientes */}
-                <div className="mb-4">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={customerSearchTerm}
-                      onChange={(e) => setCustomerSearchTerm(e.target.value)}
-                      placeholder="Buscar cliente por nombre, teléfono o dirección..."
-                      className="w-full px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
-                    />
-                    <svg
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    {customerSearchTerm && (
-                      <button
-                        onClick={() => setCustomerSearchTerm("")}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {(() => {
-                  const handleSort = (key: string) => {
-                    if (customerSortKey === key) {
-                      setCustomerSortDir(d => d === "asc" ? "desc" : "asc");
-                    } else {
-                      setCustomerSortKey(key);
-                      setCustomerSortDir(key === "name" || key === "phone" ? "asc" : "desc");
-                    }
-                  };
-                  const SortIcon = ({ col }: { col: string }) => {
-                    if (customerSortKey !== col) return <span className="text-gray-600 ml-1">↕</span>;
-                    return <span className="text-fuchsia-300 ml-1">{customerSortDir === "asc" ? "↑" : "↓"}</span>;
-                  };
-                  const sortedCustomers = [...customers].sort((a: any, b: any) => {
-                    let aVal: any, bVal: any;
-                    if (customerSortKey === "phone") { aVal = a.phone || ""; bVal = b.phone || ""; }
-                    else if (customerSortKey === "name") { aVal = a.name || ""; bVal = b.name || ""; }
-                    else if (customerSortKey === "address") { aVal = a.address || ""; bVal = b.address || ""; }
-                    else if (customerSortKey === "totalOrders") { aVal = a.totalOrders; bVal = b.totalOrders; }
-                    else if (customerSortKey === "totalSpent") { aVal = a.totalSpent; bVal = b.totalSpent; }
-                    else if (customerSortKey === "lastOrderDate") { aVal = new Date(a.lastOrderDate).getTime(); bVal = new Date(b.lastOrderDate).getTime(); }
-                    else { aVal = 0; bVal = 0; }
-                    if (typeof aVal === "string") {
-                      return customerSortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                    }
-                    return customerSortDir === "asc" ? aVal - bVal : bVal - aVal;
-                  });
-
-                  return (
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-fuchsia-500/10 border-b-2 border-fuchsia-500/30">
-                          <tr>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("phone")}>
-                              Teléfono <SortIcon col="phone" />
-                            </th>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("name")}>
-                              Nombre <SortIcon col="name" />
-                            </th>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden md:table-cell" onClick={() => handleSort("address")}>
-                              Dirección <SortIcon col="address" />
-                            </th>
-                            <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalOrders")}>
-                              Pedidos <SortIcon col="totalOrders" />
-                            </th>
-                            <th className="text-right p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalSpent")}>
-                              Total Gastado <SortIcon col="totalSpent" />
-                            </th>
-                            <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
-                              Última Compra <SortIcon col="lastOrderDate" />
-                            </th>
-                            <th className="text-center p-3 text-fuchsia-400 font-bold hidden lg:table-cell">Estado</th>
-                            <th className="text-center p-3 text-amber-400 font-bold">🎟️</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sortedCustomers.map((customer: any, idx: number) => {
-                            const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
-                            const hasCoupon = generatedCoupons[customer.phone];
-                            return (
-                              <tr
-                                key={customer.phone}
-                                onClick={() => setSelectedCustomer(customer)}
-                                className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 cursor-pointer transition-all ${idx % 2 === 0 ? "bg-black/20" : ""}`}
-                              >
-                                <td className="p-3 text-fuchsia-400 font-bold text-sm">{customer.phone}</td>
-                                <td className="p-3 text-white text-sm">{customer.name}</td>
-                                <td className="p-3 text-gray-300 text-sm hidden md:table-cell">{customer.address}</td>
-                                <td className="p-3 text-center">
-                                  <span className="inline-block px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400 font-bold text-sm">
-                                    {customer.totalOrders}
-                                  </span>
-                                </td>
-                                <td className="p-3 text-right text-amber-400 font-black text-sm gold-glow">
-                                  S/ {customer.totalSpent.toFixed(2)}
-                                </td>
-                                <td className="p-3 text-center text-gray-300 text-sm hidden lg:table-cell">
-                                  {new Date(customer.lastOrderDate).toLocaleDateString("es-PE")}
-                                </td>
-                                <td className="p-3 text-center hidden lg:table-cell">
-                                  {customer.totalOrders > 1 ? (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500">⭐ Recurrente</span>
-                                  ) : daysSinceLastOrder > 30 ? (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">⚠️ Inactivo</span>
-                                  ) : (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">🆕 Nuevo</span>
-                                  )}
-                                </td>
-                                <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
-                                  {hasCoupon ? (
-                                    <span className="text-xs text-green-400 font-bold">✓ Enviado</span>
-                                  ) : (
-                                    <button
-                                      disabled={generatingCouponFor === customer.phone}
-                                      onClick={async () => {
-                                        if (!couponCampaignCode || !couponCampaignExpiry) return;
-                                        setGeneratingCouponFor(customer.phone);
-                                        try {
-                                          const expiresAt = new Date(couponCampaignExpiry + ':00-05:00').toISOString();
-                                          const res = await fetch('/api/coupons', {
-                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ action: 'create-campaign-single', code: couponCampaignCode, discount: 20, expiresAt, phone: customer.phone, customerName: customer.name }),
-                                          });
-                                          const data = await res.json();
-                                          if (data.success || data.alreadyHas) {
-                                            setGeneratedCoupons(prev => ({ ...prev, [customer.phone]: true }));
-                                          } else {
-                                            alert(data.error || 'Error');
-                                          }
-                                        } finally { setGeneratingCouponFor(null); }
-                                      }}
-                                      className="bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-bold transition-all"
-                                    >
-                                      {generatingCouponFor === customer.phone ? '...' : 'Dar cupón'}
-                                    </button>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  );
-                })()}
-              </>
-            )}
-          </section>
-          {/* Dashboard CRM - integrado en tab Inicio */}
-          {false && crmDashboard && (
-            <section className="container mx-auto px-4 py-6 space-y-6">
-              {/* 4 KPIs */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-fuchsia-400">{crmDashboard.total}</p>
-                  <p className="text-xs text-gray-400 uppercase mt-1">Clientes totales</p>
-                </div>
-                <div className="bg-gray-900 rounded-xl border-2 border-green-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-green-400">{crmDashboard.repurchaseRate}%</p>
-                  <p className="text-xs text-gray-400 uppercase mt-1">Tasa recompra</p>
-                </div>
-                <div className="bg-gray-900 rounded-xl border-2 border-amber-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-amber-400">S/ {crmDashboard.avgTicket.toFixed(0)}</p>
-                  <p className="text-xs text-gray-400 uppercase mt-1">Ticket promedio</p>
-                </div>
-                <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-cyan-400">{crmDashboard.avgFrequency}</p>
-                  <p className="text-xs text-gray-400 uppercase mt-1">Pedidos/cliente</p>
-                </div>
-              </div>
-
-              {/* Clientes en riesgo */}
-              <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-5">
-                <h3 className="text-sm font-black text-red-400 uppercase tracking-wider mb-4">Clientes en riesgo — Lanzar reactivación</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: '30 días', seg: 'inactive30' },
-                    { label: '60 días', seg: 'inactive60' },
-                    { label: '90+ días', seg: 'inactive90' },
-                  ].map(({ label, seg }) => (
-                    <button key={seg}
-                      onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
-                      className="bg-gray-800 border border-gray-700 hover:border-fuchsia-500 rounded-lg p-3 text-center transition-all">
-                      <p className="text-2xl font-black text-white">{(customerSegments as any)[seg]?.length ?? 0}</p>
-                      <p className="text-xs text-gray-400 mt-1">Inactivos {label}</p>
-                      <p className="text-xs text-fuchsia-400 mt-1">Enviar WhatsApp →</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Lanzar campaña por segmento */}
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-5">
-                <h3 className="text-sm font-black text-fuchsia-400 uppercase tracking-wider mb-4">Lanzar campaña WhatsApp</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {[
-                    { label: '👑 VIP', seg: 'vip' },
-                    { label: '✨ Nuevos', seg: 'new' },
-                    { label: '🔁 Recurrentes', seg: 'recurrent' },
-                    { label: '💤 Inactivos 30d', seg: 'inactive30' },
-                    { label: '💤 Inactivos 60d', seg: 'inactive60' },
-                    { label: '💀 Inactivos 90d', seg: 'inactive90' },
-                  ].map(({ label, seg }) => (
-                    <button key={seg}
-                      onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
-                      className="bg-gray-800 border border-gray-700 hover:border-fuchsia-500 rounded-lg p-3 text-left transition-all">
-                      <p className="text-white font-bold text-sm">{label}</p>
-                      <p className="text-gray-500 text-xs">{(customerSegments as any)[seg]?.length ?? 0} clientes</p>
-                      <p className="text-fuchsia-400 text-xs mt-1">Generar mensajes →</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Configuración cupón campaña */}
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 p-5">
-                <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider mb-1">🎟️ Configuración cupón campaña</h3>
-                <p className="text-xs text-gray-500 mb-4">El cupón se genera individualmente por cliente desde la tabla "Clientes" → columna 🎟️.</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-400 uppercase mb-1">Código</label>
-                    <input
-                      type="text"
-                      value={couponCampaignCode}
-                      onChange={e => setCouponCampaignCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 uppercase mb-1">Vence el</label>
-                    <input
-                      type="datetime-local"
-                      value={couponCampaignExpiry}
-                      onChange={e => setCouponCampaignExpiry(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-600 mt-3">El código activo es <span className="font-mono text-amber-400 font-bold">{couponCampaignCode}</span> · 20% desc · vence {couponCampaignExpiry.replace('T', ' ')}</p>
-              </div>
-            </section>
-          )}
-
-          {/* Cumpleaños - integrado como segmento en lista de clientes */}
-          {false && crmDashboard && (
-            <section className="container mx-auto px-4 py-6 space-y-4">
-              {crmDashboard.birthdaysToday.length > 0 && (
-                <div className="bg-pink-900/20 border-2 border-pink-500 rounded-xl p-4">
-                  <h3 className="text-pink-400 font-black text-sm uppercase mb-3">🎂 Cumpleaños hoy ({crmDashboard.birthdaysToday.length})</h3>
-                  {crmDashboard.birthdaysToday.map((c: any) => (
-                    <div key={c.phone} className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 mb-2">
-                      <div>
-                        <p className="text-white font-bold text-sm">{c.name}</p>
-                        <p className="text-gray-400 text-xs">{c.phone}</p>
-                      </div>
-                      <a href={buildWhatsApp(c.phone, getCampaignTemplate('birthday', c))}
-                         target="_blank" rel="noopener noreferrer"
-                         className="bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold">
-                        Felicitar 🎉
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="bg-gray-900 rounded-xl border border-gray-700 p-4">
-                <h3 className="text-fuchsia-400 font-black text-sm uppercase mb-3">
-                  Todos los cumpleaños registrados ({allCustomers.filter((c: any) => c.birthday).length})
-                </h3>
-                {allCustomers.filter((c: any) => c.birthday).length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center py-6">
-                    Sin cumpleaños registrados. Edita un cliente en &quot;Clientes&quot; para añadir su cumpleaños.
-                  </p>
-                ) : (
-                  [...allCustomers.filter((c: any) => c.birthday)]
-                    .sort((a: any, b: any) => a.birthday.localeCompare(b.birthday))
-                    .map((c: any) => {
-                      const [mm, dd] = c.birthday.split('-');
-                      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-                      return (
-                        <div key={c.phone} className="flex items-center gap-3 py-2 border-b border-gray-800 last:border-0">
-                          <span className="text-xl font-black text-fuchsia-400 w-8 text-center">{dd}</span>
-                          <span className="text-gray-500 text-xs w-8">{meses[parseInt(mm)-1]}</span>
-                          <span className="flex-1 text-white text-sm">{c.name}</span>
-                          <span className="text-gray-500 text-xs">{c.phone}</span>
-                        </div>
-                      );
-                    })
-                )}
-              </div>
-            </section>
-          )}
-        </>
-      ) : activeTab === "analytics" ? (
-        /* Analytics Tab */
-        <>
-          {/* Date Filter - Only for Analytics */}
-          <section className="container mx-auto px-4 pt-4">
-            <div className="bg-gray-900 rounded-lg border-2 border-fuchsia-500/30 p-4">
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Quick period buttons */}
-                <span className="text-xs font-bold text-fuchsia-400 uppercase tracking-wide">Período:</span>
-                {(() => {
-                  const todayStr = new Date().toISOString().split("T")[0];
-                  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
-                  const weekStr = weekAgo.toISOString().split("T")[0];
-                  const monthStart = new Date(); monthStart.setDate(1);
-                  const monthStr = monthStart.toISOString().split("T")[0];
-                  const periods = [
-                    { label: "Hoy", from: todayStr, to: todayStr },
-                    { label: "Esta semana", from: weekStr, to: todayStr },
-                    { label: "Este mes", from: monthStr, to: todayStr },
-                  ];
-                  return periods.map(({ label, from, to }) => {
-                    const isActive = isAnalyticsDateFiltered && analyticsDateFrom === from && analyticsDateTo === to;
-                    return (
-                      <button
-                        key={label}
-                        onClick={() => { setAnalyticsDateFrom(from); setAnalyticsDateTo(to); setIsAnalyticsDateFiltered(true); }}
-                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                          isActive
-                            ? "bg-fuchsia-600 text-white"
-                            : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  });
-                })()}
-
-                {/* Divider */}
-                <div className="w-px h-5 bg-gray-700 mx-1" />
-
-                {/* Custom date pickers */}
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-gray-400">Desde:</label>
-                  <input
-                    type="date"
-                    value={analyticsDateFrom}
-                    onChange={(e) => setAnalyticsDateFrom(e.target.value)}
-                    className="px-2 py-1.5 text-sm rounded-lg bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
-                    onClick={(e) => e.currentTarget.showPicker()}
-                  />
-                  <label className="text-xs text-gray-400">Hasta:</label>
-                  <input
-                    type="date"
-                    value={analyticsDateTo}
-                    onChange={(e) => setAnalyticsDateTo(e.target.value)}
-                    className="px-2 py-1.5 text-sm rounded-lg bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
-                    onClick={(e) => e.currentTarget.showPicker()}
-                  />
-                  <button
-                    onClick={applyAnalyticsDateFilter}
-                    disabled={!analyticsDateFrom || !analyticsDateTo}
-                    className="px-4 py-1.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Aplicar
-                  </button>
-                </div>
-
-                {isAnalyticsDateFiltered && (
-                  <button
-                    onClick={clearAnalyticsDateFilter}
-                    className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm transition-all"
-                  >
-                    ✕ Limpiar
-                  </button>
-                )}
-
-                {isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo && (
-                  <span className="text-xs text-green-400 font-bold">
-                    ✓ {new Date(analyticsDateFrom + "T12:00:00").toLocaleDateString("es-PE")} — {new Date(analyticsDateTo + "T12:00:00").toLocaleDateString("es-PE")}
-                  </span>
-                )}
-              </div>
-            </div>
-          </section>
-
-          <section className="container mx-auto px-4 py-8">
-            {/* CARTELES PRINCIPALES */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              {/* 1. VENTAS DEL DÍA */}
-              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
-                <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
-                <p className="text-gray-400 text-xs mt-2">
-                  {isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo ? `${new Date(analyticsDateFrom).toLocaleDateString("es-PE")} - ${new Date(analyticsDateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
-                </p>
-              </div>
-
-              {/* 2. PEDIDOS ENTREGADOS DEL DÍA */}
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold mb-2">📦 Pedidos Entregados</p>
-                <p className="text-4xl font-black text-green-400">{analytics.todayDeliveredOrdersCount}</p>
-                <p className="text-gray-400 text-xs mt-2">
-                  {isAnalyticsDateFiltered ? "Del período filtrado" : "Hoy"}
-                </p>
-              </div>
-
-              {/* 3. ACUMULADO DEL MES */}
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
-                <p className="text-purple-400 text-sm font-bold mb-2">📊 Acumulado del Mes</p>
-                <p className="text-4xl font-black text-purple-400">S/ {analytics.monthlySales.toFixed(2)}</p>
-                <p className="text-gray-400 text-xs mt-2">
-                  {analytics.currentMonthOrdersCount} pedidos
-                </p>
-              </div>
-
-              {/* 4. TICKET PROMEDIO DEL DÍA */}
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold mb-2">🎫 Ticket Promedio</p>
-                <p className="text-4xl font-black text-amber-400">S/ {analytics.todayAverageTicket.toFixed(2)}</p>
-                <p className="text-gray-400 text-xs mt-2">
-                  {isAnalyticsDateFiltered ? "Del período filtrado" : "Del día"} ({analytics.todayDeliveredOrdersCount} pedidos)
-                </p>
-              </div>
-            </div>
-
-            {/* SECCIÓN: PRODUCTOS ENTREGADOS DEL PERÍODO */}
-            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
-              <h3 className="text-2xl font-black text-fuchsia-400 mb-2">📦 Productos Entregados {isAnalyticsDateFiltered ? "del Período" : "del Mes"}</h3>
-              <p className="text-gray-400 text-sm mb-4">
-                Ranking de productos por cantidad vendida • Identifica los más y menos vendidos
-              </p>
-              {analytics.currentMonthProductsArray.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No hay productos vendidos en este período</p>
-              ) : (() => {
-                // Calcular total de ingresos del período
-                const totalRevenue = analytics.currentMonthProductsArray.reduce((sum: number, p: any) => sum + p.revenue, 0);
-
-                return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {analytics.currentMonthProductsArray.map((product: any, idx: number) => {
-                      const isMostSold = idx === 0;
-                      const isLeastSold = idx === analytics.currentMonthProductsArray.length - 1;
-                      const revenuePercentage = totalRevenue > 0 ? (product.revenue / totalRevenue) * 100 : 0;
-
-                      return (
-                        <div
-                          key={idx}
-                          className={`bg-black/50 rounded-lg p-4 border-2 ${
-                            isMostSold ? 'border-green-500/50 bg-green-500/5' :
-                            isLeastSold ? 'border-red-500/50 bg-red-500/5' :
-                            'border-gray-700/50'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between mb-2">
-                            <span className={`text-3xl font-black ${
-                              isMostSold ? 'text-green-400' :
-                              isLeastSold ? 'text-red-400' :
-                              'text-gray-400'
-                            }`}>
-                              #{idx + 1}
-                            </span>
-                            {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">🔥 MÁS VENDIDO</span>}
-                            {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">❄️ MENOS VENDIDO</span>}
-                          </div>
-                          <p className="text-white font-bold text-base mb-1">{product.name}</p>
-                          <p className="text-gray-400 text-xs mb-3">{product.category}</p>
-                          <div className="flex justify-between items-center mb-2">
-                            <div>
-                              <p className="text-xs text-gray-500">Cantidad</p>
-                              <p className="text-xl font-black text-cyan-400">{product.quantity}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500">Ingresos</p>
-                              <p className="text-xl font-black text-amber-400">S/ {product.revenue.toFixed(2)}</p>
-                            </div>
-                          </div>
-                          <div className="mt-2 pt-2 border-t border-gray-700">
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs text-gray-500">% del total</p>
-                              <p className="text-sm font-black text-fuchsia-400">{revenuePercentage.toFixed(1)}%</p>
-                            </div>
-                            <div className="bg-black/50 rounded-full h-1.5 overflow-hidden mt-1">
-                              <div
-                                className="h-full bg-gradient-to-r from-fuchsia-600 to-pink-600"
-                                style={{ width: `${revenuePercentage}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* SECCIÓN: INSIGHTS DEL NEGOCIO */}
-            <div className="mb-8">
-              <h3 className="text-2xl font-black text-cyan-400 mb-4">📊 Insights del Negocio</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* 1. MÉTODO DE PAGO MÁS USADO */}
-                <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                  <p className="text-green-400 text-sm font-bold mb-2">💳 Método de Pago Preferido</p>
-                  <p className="text-2xl font-black text-white mb-1">
-                    {analytics.mostUsedPaymentMethod.method === 'anticipado' ? '💰 Anticipado' :
-                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
-                     analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
-                     analytics.mostUsedPaymentMethod.method}
-                  </p>
-                  <p className="text-gray-400 text-xs mt-2">{analytics.mostUsedPaymentMethod.count} pedidos ({((analytics.mostUsedPaymentMethod.count / analytics.currentMonthOrdersCount) * 100).toFixed(0)}%)</p>
-                </div>
-
-                {/* 2. HORARIO PICO */}
-                <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                  <p className="text-amber-400 text-sm font-bold mb-2">⏰ Horario Pico</p>
-                  <p className="text-2xl font-black text-white mb-1">{analytics.peakHour}</p>
-                  <p className="text-gray-400 text-xs mt-2">{analytics.peakHourCount} pedidos en esa hora</p>
-                </div>
-
-                {/* 3. TASA DE CONVERSIÓN */}
-                <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
-                  <p className="text-cyan-400 text-sm font-bold mb-2">📈 Tasa de Conversión</p>
-                  <p className="text-3xl font-black text-white mb-1">{analytics.conversionRate.toFixed(1)}%</p>
-                  <p className="text-gray-400 text-xs mt-2">Pedidos confirmados vs totales</p>
-                </div>
-              </div>
-            </div>
-
-            {/* SECCIÓN: DISTRIBUCIÓN DE MÉTODOS DE PAGO - formato filas */}
-            <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6 mb-8">
-              <h3 className="text-xl font-black text-blue-400 mb-4">💳 Distribución de Métodos de Pago</h3>
               <div className="space-y-3">
-                {analytics.paymentMethodsArray.map((pm: any, idx: number) => (
-                  <div key={idx} className="flex items-center gap-4">
-                    <div className="w-44 flex-shrink-0">
-                      <p className="text-white font-bold text-sm">
-                        {pm.method === 'anticipado' ? '💰 Anticipado' :
-                         pm.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
-                         pm.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
-                         pm.method}
-                      </p>
-                    </div>
-                    <div className="flex-1 bg-black/50 rounded-full h-6 overflow-hidden border border-blue-500/20">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-end pr-2 transition-all duration-300"
-                        style={{ width: `${(pm.count / analytics.currentMonthOrdersCount) * 100}%` }}
-                      >
-                        <span className="text-white font-black text-xs">{pm.count}</span>
-                      </div>
-                    </div>
-                    <div className="w-14 text-right flex-shrink-0">
-                      <span className="text-cyan-400 font-black text-sm">{((pm.count / analytics.currentMonthOrdersCount) * 100).toFixed(1)}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-
-
-          </section>
-        </>
-      ) : activeTab === "financial" ? (
-        /* Financial Tab */
-        <>
-          <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">💰 Módulo Financiero</h2>
-
-            {/* Sub-tabs del Módulo Financiero */}
-            <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
-              <button
-                onClick={() => setFinancialSection("dashboard")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  financialSection === "dashboard"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                📊 Dashboard
-              </button>
-              <button
-                onClick={() => setFinancialSection("purchases")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  financialSection === "purchases"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                🛒 Compras y Gastos
-              </button>
-              {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
-            </div>
-
-            {/* DASHBOARD FINANCIERO */}
-            {financialSection === "dashboard" && (() => {
-              // Normaliza: quita tildes, mayúsculas, espacios extra
-              const normalize = (s: string) =>
-                s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
-
-              const saleProducts = products.filter((p: any) => p.type === "sale");
-
-              // Filtrar pedidos entregados por fecha (excluir canjes de ventas reales)
-              let deliveredOrders = orders.filter((o: any) =>
-                !o.isCanje &&
-                (o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado")
-              );
-
-              if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
-                const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
-                deliveredOrders = deliveredOrders.filter((o: any) => {
-                  const orderDate = getPeruDate(o.createdAt);
-                  return orderDate >= fromDate && orderDate <= toDate;
-                });
-              }
-
-              // Construir soldMap (igual que en Productos de Venta)
-              const soldMap: Record<string, { qty: number; revenue: number }> = {};
-              const addToSoldMap = (name: string, qty: number, revenue: number) => {
-                const key = normalize(name);
-                if (!key) return;
-                if (!soldMap[key]) soldMap[key] = { qty: 0, revenue: 0 };
-                soldMap[key].qty += qty;
-                soldMap[key].revenue += revenue;
-              };
-
-              deliveredOrders.forEach((order: any) => {
-                const items = order.completedOrders || order.cart || [];
-                const couponFactor = 1 - (order.couponDiscount || 0) / 100;
-                items.forEach((item: any) => {
-                  // 1. Menú principal
-                  const menuName = item.name || item.product?.name || "";
-                  const qty = item.quantity || 0;
-                  const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
-                  if (menuName) addToSoldMap(menuName, qty, price * qty);
-
-                  // 2. Salsas
-                  const itemSalsas: string[] = item.salsas || [];
-                  itemSalsas.forEach((salsaId: string) => {
-                    const salsa = salsas.find(s => s.id === salsaId);
-                    if (salsa) addToSoldMap(salsa.name, 1, 0);
-                  });
-
-                  // 3. Complementos pagados
-                  const compIds: string[] = item.complementIds || [];
-                  compIds.forEach((compId: string) => {
-                    const comp = availableComplements[compId];
-                    if (comp) addToSoldMap(comp.name, 1, comp.price);
-                  });
-                });
-              });
-
-              // ============================================
-              // FLUJO DE CAJA REAL - Dinero que entra vs sale
-              // ============================================
-
-              // 💰 INGRESOS: Dinero que entra (Ventas)
-              const totalVentas = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-
-              // 💸 EGRESOS: Dinero que sale (Compras REALES registradas)
-              let filteredPurchases = inventory;
-              if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                filteredPurchases = inventory.filter((purchase: any) => {
-                  const d = (purchase.purchaseDate || "").slice(0, 10);
-                  return d >= dashboardDateFrom && d <= dashboardDateTo;
-                });
-              }
-
-              // Separar COMPRAS REALES por categoría
-              const comprasInsumos = filteredPurchases
-                .filter(p => (p.category || "operativos") === "operativos")
-                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
-
-              const gastosFijos = filteredPurchases
-                .filter(p => (p.category || "operativos") === "fijos")
-                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
-
-              const gastosPersonal = filteredPurchases
-                .filter(p => (p.category || "operativos") === "personal")
-                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
-
-              const gastosMarketing = filteredPurchases
-                .filter(p => (p.category || "operativos") === "marketing")
-                .reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0);
-
-              const totalCompras = comprasInsumos + gastosFijos + gastosPersonal + gastosMarketing;
-
-              // 💰 CAJA CORRIENTE
-              // El snapshot representa el saldo REAL en un momento dado.
-              // Solo sumamos/restamos transacciones ocurridas DESPUÉS de ese momento exacto.
-              const cajaSnapshot = cajaData?.snapshotBalance || 0;
-              const cajaSnapshotDate = cajaData?.snapshotDate || "";
-              const cajaSnapshotTs = cajaData?.snapshotCreatedAt || "";
-              const ventasDesdeSnapshot = cajaSnapshotTs
-                ? orders.filter((o: any) =>
-                    !o.isCanje &&
-                    (o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado") &&
-                    (o.createdAt || "") > cajaSnapshotTs
-                  ).reduce((sum: number, o: any) => sum + (o.totalPrice || 0), 0)
-                : 0;
-              const pagosDesdeSnapshot = cajaSnapshotTs
-                ? inventory.filter((p: any) =>
-                    (p.createdAt || "") > cajaSnapshotTs
-                  ).reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0)
-                : 0;
-              const cajaActual = cajaSnapshot + ventasDesdeSnapshot - pagosDesdeSnapshot;
-
-              // 📊 INDICADORES DE FLUJO DE CAJA
-              const cajaUtilidad = totalVentas - totalCompras; // Dinero real que queda
-              const margenCaja = totalVentas > 0 ? (cajaUtilidad / totalVentas) * 100 : 0; // % de utilidad sobre ventas
-              const recuperacionCapital = totalCompras > 0 ? (totalVentas / totalCompras) * 100 : 0; // Cuánto recuperaste de lo invertido
-              const roi = totalCompras > 0 ? (cajaUtilidad / totalCompras) * 100 : 0; // Retorno sobre inversión
-
-              return (
-                <div>
-                  {/* Header con filtros */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                    <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-                      📊 Dashboard Financiero Profesional
-                    </h3>
-
-                    {/* Filtros rápidos y manuales */}
-                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            const today = new Date().toISOString().split('T')[0];
-                            setDashboardDateFrom(today);
-                            setDashboardDateTo(today);
-                            setIsDashboardDateFiltered(true);
-                          }}
-                          className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                        >
-                          Hoy
-                        </button>
-                        <button
-                          onClick={() => {
-                            const today = new Date();
-                            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                            setDashboardDateFrom(firstDay.toISOString().split('T')[0]);
-                            setDashboardDateTo(today.toISOString().split('T')[0]);
-                            setIsDashboardDateFiltered(true);
-                          }}
-                          className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                        >
-                          Mes actual
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDashboardDateFrom("");
-                            setDashboardDateTo("");
-                            setIsDashboardDateFiltered(false);
-                          }}
-                          className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                        >
-                          Ver histórico
-                        </button>
-                      </div>
-
-                      {/* Selectores de fecha */}
-                      <div className="flex gap-2 items-center text-xs">
-                        <input
-                          type="date"
-                          value={dashboardDateFrom}
-                          onChange={(e) => {
-                            setDashboardDateFrom(e.target.value);
-                            if (e.target.value && dashboardDateTo) setIsDashboardDateFiltered(true);
-                          }}
-                          className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-xs"
-                        />
-                        <span className="text-gray-400">→</span>
-                        <input
-                          type="date"
-                          value={dashboardDateTo}
-                          onChange={(e) => {
-                            setDashboardDateTo(e.target.value);
-                            if (dashboardDateFrom && e.target.value) setIsDashboardDateFiltered(true);
-                          }}
-                          className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Indicador del periodo */}
-                  {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
-                    <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 mb-6 text-xs text-cyan-300">
-                      📅 Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </div>
-                  )}
-
-                  {/* ===== CAJA CORRIENTE ===== */}
-                  <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/20 rounded-2xl border-2 border-emerald-400/60 p-6 mb-6">
-                    <div className="flex items-start justify-between gap-4 flex-wrap">
-                      <div className="flex-1">
-                        <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">💵 CAJA ACTUAL</p>
-                        <p className={`text-6xl font-black ${cajaActual >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                          S/ {cajaActual.toFixed(2)}
-                        </p>
-                        {cajaData && (
-                          <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-400">
-                            <span>Base {new Date(cajaData.snapshotDate + "T12:00:00").toLocaleDateString("es-PE")}: <span className="text-white font-bold">S/ {cajaSnapshot.toFixed(2)}</span></span>
-                            <span>+ Ventas desde entonces: <span className="text-emerald-400 font-bold">S/ {ventasDesdeSnapshot.toFixed(2)}</span></span>
-                            <span>− Pagos realizados: <span className="text-red-400 font-bold">S/ {pagosDesdeSnapshot.toFixed(2)}</span></span>
-                          </div>
-                        )}
-                        {!cajaData && (
-                          <p className="text-gray-500 text-sm mt-2">Configura el saldo inicial para empezar a llevar la caja.</p>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0">
-                        {!cajaEditMode ? (
-                          <button
-                            onClick={() => {
-                              setCajaEditBalance(cajaData ? String(cajaData.snapshotBalance) : "");
-                              setCajaEditDate(cajaData?.snapshotDate || new Date().toLocaleDateString("en-CA"));
-                              setCajaEditMode(true);
-                            }}
-                            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold transition-all"
-                          >
-                            ✏️ {cajaData ? "Ajustar base" : "Configurar caja"}
-                          </button>
-                        ) : (
-                          <div className="bg-gray-900 border border-emerald-500/40 rounded-xl p-4 space-y-3 min-w-[240px]">
-                            <p className="text-emerald-400 text-xs font-bold uppercase tracking-wide">Establecer base</p>
-                            <div>
-                              <label className="text-xs text-gray-400 mb-1 block">Saldo en caja (S/)</label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={cajaEditBalance}
-                                onChange={(e) => setCajaEditBalance(e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm rounded-lg bg-black border border-emerald-500/40 text-white focus:border-emerald-400 focus:outline-none"
-                                placeholder="521.80"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-xs text-gray-400 mb-1 block">Fecha de corte</label>
-                              <input
-                                type="date"
-                                value={cajaEditDate}
-                                onChange={(e) => setCajaEditDate(e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm rounded-lg bg-black border border-emerald-500/40 text-white focus:border-emerald-400 focus:outline-none [color-scheme:dark]"
-                              />
-                            </div>
-                            <div className="flex gap-2 pt-1">
-                              <button
-                                onClick={saveCajaSnapshot}
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 rounded-lg text-sm font-bold"
-                              >
-                                Guardar
-                              </button>
-                              <button
-                                onClick={() => setCajaEditMode(false)}
-                                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                            <p className="text-xs text-gray-500">Las ventas y pagos posteriores a esta fecha se suman/restan automáticamente.</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    {/* SECCIÓN 1: INGRESOS - Dinero que entra */}
-                    <div className="bg-gradient-to-br from-green-900/30 to-green-800/10 rounded-2xl border-2 border-green-500/40 p-6">
-                      <h4 className="text-lg font-black text-green-400 mb-4 flex items-center gap-2">
-                        <span className="text-2xl">💰</span> INGRESOS (Dinero que entra)
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                        <div className="bg-gradient-to-br from-green-600/20 to-green-500/10 rounded-xl border-2 border-green-400/60 p-6">
-                          <p className="text-green-300 text-xs font-bold mb-2 uppercase tracking-wide">💵 Ventas Totales</p>
-                          <p className="text-5xl font-black text-green-400">S/ {totalVentas.toFixed(2)}</p>
-                          <p className="text-sm text-green-300/80 mt-2 font-semibold">{deliveredOrders.length} pedidos entregados</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* SECCIÓN 2: EGRESOS - Dinero que sale */}
-                    <div className="bg-gradient-to-br from-red-900/30 to-orange-800/10 rounded-2xl border-2 border-red-500/40 p-6">
-                      <h4 className="text-lg font-black text-red-400 mb-4 flex items-center gap-2">
-                        <span className="text-2xl">💸</span> EGRESOS (Dinero que sale - Compras registradas)
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Compras de Insumos */}
-                        <div className="bg-gradient-to-br from-orange-600/20 to-orange-500/10 rounded-xl border-2 border-orange-400/60 p-5">
-                          <p className="text-orange-300 text-xs font-bold mb-2 uppercase tracking-wide">🛒 Compras de Insumos</p>
-                          <p className="text-3xl font-black text-orange-400">S/ {comprasInsumos.toFixed(2)}</p>
-                          <p className="text-xs text-orange-300/70 mt-2">Ingredientes, materiales</p>
-                        </div>
-
-                        {/* Gastos Fijos */}
-                        <div className="bg-gradient-to-br from-rose-600/20 to-rose-500/10 rounded-xl border-2 border-rose-400/60 p-5">
-                          <p className="text-rose-300 text-xs font-bold mb-2 uppercase tracking-wide">🏢 Gastos Fijos</p>
-                          <p className="text-3xl font-black text-rose-400">S/ {gastosFijos.toFixed(2)}</p>
-                          <p className="text-xs text-rose-300/70 mt-2">Alquiler, luz, agua, etc.</p>
-                        </div>
-
-                        {/* Gastos de Personal */}
-                        <div className="bg-gradient-to-br from-purple-600/20 to-purple-500/10 rounded-xl border-2 border-purple-400/60 p-5">
-                          <p className="text-purple-300 text-xs font-bold mb-2 uppercase tracking-wide">👥 Gastos de Personal</p>
-                          <p className="text-3xl font-black text-purple-400">S/ {gastosPersonal.toFixed(2)}</p>
-                          <p className="text-xs text-purple-300/70 mt-2">Salarios y beneficios</p>
-                        </div>
-
-                        {/* Gastos de Marketing */}
-                        <div className="bg-gradient-to-br from-pink-600/20 to-pink-500/10 rounded-xl border-2 border-pink-400/60 p-5">
-                          <p className="text-pink-300 text-xs font-bold mb-2 uppercase tracking-wide">📢 Gastos de Marketing</p>
-                          <p className="text-3xl font-black text-pink-400">S/ {gastosMarketing.toFixed(2)}</p>
-                          <p className="text-xs text-pink-300/70 mt-2">Publicidad y promociones</p>
-                        </div>
-
-                        {/* Total de Compras */}
-                        <div className="bg-gradient-to-br from-red-700/30 to-red-600/20 rounded-xl border-2 border-red-500/80 p-5">
-                          <p className="text-red-200 text-xs font-bold mb-2 uppercase tracking-wide">💸 Total Gastado</p>
-                          <p className="text-3xl font-black text-red-300">S/ {totalCompras.toFixed(2)}</p>
-                          <p className="text-xs text-red-200/70 mt-2">{filteredPurchases.length} compras registradas</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* SECCIÓN 3: TU CAJA - Simple y claro */}
-                    <div className="bg-gradient-to-br from-cyan-900/30 to-emerald-800/10 rounded-2xl border-2 border-cyan-500/40 p-6">
-                      <h4 className="text-lg font-black text-cyan-400 mb-4 flex items-center gap-2">
-                        <span className="text-2xl">💰</span> TU CAJA
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* CAJA DISPONIBLE */}
-                        <div className={`bg-gradient-to-br ${cajaUtilidad >= 0 ? 'from-emerald-600/30 to-emerald-500/20 border-emerald-400/80' : 'from-red-600/30 to-red-500/20 border-red-400/80'} rounded-xl border-2 p-6`}>
-                          <p className={`${cajaUtilidad >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-bold mb-2 uppercase tracking-wide`}>
-                            💵 Dinero Disponible
-                          </p>
-                          <p className={`text-5xl font-black ${cajaUtilidad >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            S/ {cajaUtilidad.toFixed(2)}
-                          </p>
-                          <p className={`text-sm ${cajaUtilidad >= 0 ? 'text-emerald-300/70' : 'text-red-300/70'} mt-3 font-semibold`}>
-                            Lo que tienes en caja
-                          </p>
-                          <div className="mt-3 pt-3 border-t border-emerald-500/30">
-                            <p className="text-xs text-gray-400">Ventas: S/ {totalVentas.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400">Gastos: S/ {totalCompras.toFixed(2)}</p>
-                          </div>
-                        </div>
-
-                        {/* RECUPERACIÓN DE INVERSIÓN */}
-                        <div className="bg-gradient-to-br from-blue-600/30 to-blue-500/20 rounded-xl border-2 border-blue-400/80 p-6">
-                          <p className="text-blue-300 text-sm font-bold mb-2 uppercase tracking-wide">🔄 Recuperación de Inversión</p>
-                          <p className="text-5xl font-black text-blue-400">{recuperacionCapital.toFixed(0)}%</p>
-                          <p className="text-sm text-blue-300/70 mt-3 font-semibold">
-                            {recuperacionCapital >= 100 ? '✅ Inversión recuperada' : 'Avance de recuperación'}
-                          </p>
-                          <div className="mt-3 pt-3 border-t border-blue-500/30">
-                            {recuperacionCapital < 100 ? (
-                              <>
-                                <p className="text-xs text-gray-400">Te falta: {(100 - recuperacionCapital).toFixed(0)}%</p>
-                                <p className="text-xs text-gray-400">Equivale a: S/ {(totalCompras - totalVentas).toFixed(2)}</p>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-xs text-emerald-400">¡Ya superaste tu inversión!</p>
-                                <p className="text-xs text-gray-400">Excedente: S/ {(totalVentas - totalCompras).toFixed(2)}</p>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* PROMEDIO DIARIO */}
-                        <div className="bg-gradient-to-br from-purple-600/30 to-purple-500/20 rounded-xl border-2 border-purple-400/80 p-6">
-                          <p className="text-purple-300 text-sm font-bold mb-2 uppercase tracking-wide">📊 Ventas Promedio</p>
-                          <p className="text-5xl font-black text-purple-400">
-                            S/ {deliveredOrders.length > 0 ? (totalVentas / deliveredOrders.length).toFixed(2) : '0.00'}
-                          </p>
-                          <p className="text-sm text-purple-300/70 mt-3 font-semibold">
-                            Ticket promedio por pedido
-                          </p>
-                          <div className="mt-3 pt-3 border-t border-purple-500/30">
-                            <p className="text-xs text-gray-400">Total pedidos: {deliveredOrders.length}</p>
-                            <p className="text-xs text-gray-400">
-                              {deliveredOrders.length > 0
-                                ? `Aprox. ${(totalVentas / deliveredOrders.length * 30).toFixed(0)} al mes si vendes 30 pedidos`
-                                : 'Sin pedidos aún'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Info adicional - Simplificada */}
-                    <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-500/30 rounded-xl p-5">
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚠️</span>
-                        <div>
-                          <p className="text-yellow-300 text-sm font-bold mb-2">IMPORTANTE: Registra TODAS tus compras</p>
-                          <p className="text-xs text-gray-300">
-                            Este dashboard solo muestra el dinero de las <span className="text-yellow-400 font-bold">compras que registres</span> en "Historial de Compras".
-                          </p>
-                          <p className="text-xs text-gray-300 mt-2">
-                            Si no has registrado tus compras de ingredientes (pollo, lechuga, pan, salsas, gas, etc.), tu "Dinero Disponible" estará <span className="text-red-400 font-bold">inflado</span> y NO es real.
-                          </p>
-                          <p className="text-xs text-emerald-400 mt-3 font-semibold">
-                            ✅ Registra cada compra → Verás tu caja real → Sabrás cuánto puedes sacar
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* COMPRAS Y GASTOS */}
-            {financialSection === "purchases" && (
-              <>
-                {(() => {
-                  // Filtrar inventario usando LOS MISMOS FILTROS del Dashboard
-                  let filteredInventory = inventory;
-
-                  // Aplicar el mismo filtro de fechas que usa el Dashboard
-                  if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                    const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
-                    const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
-                    filteredInventory = filteredInventory.filter((purchase: any) => {
-                      const purchaseDate = getPeruDate(purchase.purchaseDate);
-                      return purchaseDate >= fromDate && purchaseDate <= toDate;
-                    });
-                  }
-
-                  // Filtro por categoría
-                  if (inventoryCategoryFilter !== "all") {
-                    const purchaseCategory = (purchase: any) => purchase.category || "operativos";
-                    filteredInventory = filteredInventory.filter((purchase: any) => {
-                      return purchaseCategory(purchase) === inventoryCategoryFilter;
-                    });
-                  }
-
-                  // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
-                  if (inventorySearchTerm) {
-                    const searchLower = inventorySearchTerm.toLowerCase();
-                    filteredInventory = filteredInventory.filter((purchase: any) => {
-                      const hasMatchingProduct = purchase.items.some((item: any) =>
-                        item.productName.toLowerCase().includes(searchLower)
-                      );
-                      const hasMatchingSupplier = purchase.supplier?.toLowerCase().includes(searchLower);
-                      const hasMatchingPhone = purchase.supplierPhone?.includes(inventorySearchTerm);
-                      const hasMatchingPayment = purchase.paymentMethod?.toLowerCase().includes(searchLower);
-
-                      return hasMatchingProduct || hasMatchingSupplier || hasMatchingPhone || hasMatchingPayment;
-                    });
-                  }
-
-                  // Filtro por estado de liquidación
-                  if (liquidadoFilter !== 'all') {
-                    filteredInventory = filteredInventory.filter((purchase: any) =>
-                      liquidadoFilter === 'liquidado' ? !!purchase.liquidado : !purchase.liquidado
-                    );
-                  }
-
+                {filteredOrders.map(order=>{
+                  const sc=STATUS_CONFIG[order.status];
+                  const isExpanded=expandedId===order.id;
+                  const items=(order.completedOrders||order.cart||[]) as any[];
+                  const isActive=activeStatuses.includes(order.status);
                   return (
-                    <>
-                <div className="mb-6">
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
-                    <h3 className="text-2xl font-bold text-white">💰 Compras y Gastos</h3>
+                    <div key={order.id} className={`rounded-2xl border overflow-hidden transition-all ${
+                      overtimeIds.has(order.id) ? "border-red-500/60 shadow-red-500/20 shadow-lg" : isActive ? "border-amber-500/25" : "border-white/8"
+                    } bg-white/[0.03]`}>
 
-                    {/* Indicador de filtro sincronizado */}
-                    {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
-                      <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 text-xs text-cyan-300">
-                        🔗 Sincronizado con Dashboard: {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sub-tabs */}
-                  <div className="flex gap-2 mb-4 border-b-2 border-fuchsia-500/20">
-                    <button
-                      onClick={() => setPurchasesSubTab("history")}
-                      className={`px-6 py-3 font-bold transition-all text-sm ${
-                        purchasesSubTab === "history"
-                          ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                          : "text-gray-400 hover:text-gray-300"
-                      }`}
-                    >
-                      📋 Historial de Compras
-                    </button>
-                    <button
-                      onClick={() => setPurchasesSubTab("stock")}
-                      className={`px-6 py-3 font-bold transition-all text-sm ${
-                        purchasesSubTab === "stock"
-                          ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                          : "text-gray-400 hover:text-gray-300"
-                      }`}
-                    >
-                      📦 Control de Stock
-                    </button>
-                  </div>
-
-                  {/* Header con botón Nueva Compra */}
-                  <div className="flex justify-end items-center mb-4">
-                    {purchasesSubTab === "history" && (
-                      <button
-                        onClick={() => {
-                          console.log('🔥 Click en Nueva Compra');
-                          setShowInventoryModal(true);
-                          setProductSearchTerms([""]);
-                        }}
-                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                      {/* Card header */}
+                      <div
+                        className="p-4 cursor-pointer select-none"
+                        onClick={()=>setExpandedId(isExpanded?null:order.id)}
                       >
-                        + Nueva Compra
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* ========== HISTORIAL DE COMPRAS ========== */}
-                {purchasesSubTab === "history" && (
-                  <>
-                    {/* Carteles con totales por categoría */}
-                    {(() => {
-                      const operativos = filteredInventory.filter(p => (p.category || "operativos") === "operativos").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const fijos = filteredInventory.filter(p => (p.category || "operativos") === "fijos").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const personal = filteredInventory.filter(p => (p.category || "operativos") === "personal").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const marketing = filteredInventory.filter(p => (p.category || "operativos") === "marketing").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const total = filteredInventory.reduce((sum, p) => sum + p.totalAmount, 0);
-
-                      return (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-                          {/* Gastos Operativos */}
-                          <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 rounded-lg border-2 border-blue-500/50 p-4">
-                            <p className="text-blue-400 text-xs font-bold mb-1 uppercase">🍖 Operativos</p>
-                            <p className="text-2xl font-black text-blue-400">S/ {operativos.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Insumos y materias primas</p>
-                          </div>
-
-                          {/* Gastos Fijos */}
-                          <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 rounded-lg border-2 border-purple-500/50 p-4">
-                            <p className="text-purple-400 text-xs font-bold mb-1 uppercase">🏢 Fijos</p>
-                            <p className="text-2xl font-black text-purple-400">S/ {fijos.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Alquiler, servicios, etc.</p>
-                          </div>
-
-                          {/* Gastos de Personal */}
-                          <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-lg border-2 border-green-500/50 p-4">
-                            <p className="text-green-400 text-xs font-bold mb-1 uppercase">👥 Personal</p>
-                            <p className="text-2xl font-black text-green-400">S/ {personal.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Salarios y beneficios</p>
-                          </div>
-
-                          {/* Marketing y Publicidad */}
-                          <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 rounded-lg border-2 border-orange-500/50 p-4">
-                            <p className="text-orange-400 text-xs font-bold mb-1 uppercase">📢 Marketing</p>
-                            <p className="text-2xl font-black text-orange-400">S/ {marketing.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Publicidad y promoción</p>
-                          </div>
-
-                          {/* Total del Período */}
-                          <div className="bg-gradient-to-br from-fuchsia-900/40 to-fuchsia-800/20 rounded-lg border-2 border-fuchsia-500/50 p-4">
-                            <p className="text-fuchsia-400 text-xs font-bold mb-1 uppercase">💰 Total</p>
-                            <p className="text-2xl font-black text-fuchsia-400">S/ {total.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Suma de todos los gastos</p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Cards reembolso: pendiente vs liquidado */}
-                    {(() => {
-                      const pendiente = filteredInventory.filter((p: any) => !p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
-                      const liquidadoTotal = filteredInventory.filter((p: any) => !!p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
-                      const nPendiente = filteredInventory.filter((p: any) => !p.liquidado).length;
-                      const nLiquidado = filteredInventory.filter((p: any) => !!p.liquidado).length;
-                      return (
-                        <div className="grid grid-cols-2 gap-3 mb-4">
-                          <div className="bg-amber-900/20 rounded-lg border-2 border-amber-500/50 p-3 flex items-center gap-3">
-                            <span className="text-2xl">⏳</span>
-                            <div>
-                              <p className="text-amber-400 text-xs font-bold uppercase">Pendiente reembolso</p>
-                              <p className="text-xl font-black text-amber-400">S/ {pendiente.toFixed(2)}</p>
-                              <p className="text-xs text-gray-400">{nPendiente} gasto{nPendiente !== 1 ? 's' : ''} sin liquidar</p>
-                            </div>
-                          </div>
-                          <div className="bg-emerald-900/20 rounded-lg border-2 border-emerald-500/50 p-3 flex items-center gap-3">
-                            <span className="text-2xl">✅</span>
-                            <div>
-                              <p className="text-emerald-400 text-xs font-bold uppercase">Reembolsado</p>
-                              <p className="text-xl font-black text-emerald-400">S/ {liquidadoTotal.toFixed(2)}</p>
-                              <p className="text-xs text-gray-400">{nLiquidado} gasto{nLiquidado !== 1 ? 's' : ''} liquidado{nLiquidado !== 1 ? 's' : ''}</p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Filtros */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <button
-                        onClick={() => setInventoryCategoryFilter("all")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "all"
-                            ? "bg-fuchsia-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        Todos
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("operativos")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "operativos"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        🍖 Operativos
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("fijos")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "fijos"
-                            ? "bg-purple-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        🏢 Fijos
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("personal")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "personal"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        👥 Personal
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("marketing")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "marketing"
-                            ? "bg-orange-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        📢 Marketing
-                      </button>
-                      {/* Separador visual */}
-                      <span className="w-px bg-gray-700 self-stretch mx-1" />
-                      <button
-                        onClick={() => setLiquidadoFilter('all')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          liquidadoFilter === 'all'
-                            ? "bg-gray-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        Todos los estados
-                      </button>
-                      <button
-                        onClick={() => setLiquidadoFilter('pendiente')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          liquidadoFilter === 'pendiente'
-                            ? "bg-amber-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        ⏳ Pendientes
-                      </button>
-                      <button
-                        onClick={() => setLiquidadoFilter('liquidado')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          liquidadoFilter === 'liquidado'
-                            ? "bg-emerald-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                        }`}
-                      >
-                        ✅ Liquidados
-                      </button>
-                    </div>
-
-                {/* Buscador en tiempo real */}
-                <div className="mb-4">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="🔍 Buscar por producto, proveedor, teléfono o método de pago..."
-                      value={inventorySearchTerm}
-                      onChange={(e) => setInventorySearchTerm(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-900 border-2 border-fuchsia-500/30 rounded-lg text-white placeholder-gray-500 focus:border-fuchsia-400 focus:outline-none text-sm"
-                    />
-                    {inventorySearchTerm && (
-                      <button
-                        onClick={() => setInventorySearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-lg font-bold"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                  {inventorySearchTerm && (
-                    <p className="text-xs text-fuchsia-400 mt-2">
-                      📊 Mostrando {filteredInventory.length} resultado{filteredInventory.length !== 1 ? 's' : ''}
-                    </p>
-                  )}
-                </div>
-
-                {/* Inventory List - Formato Tabla Excel */}
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                  {filteredInventory.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-xl text-gray-400">
-                        {inventorySearchTerm ? `No se encontraron resultados para "${inventorySearchTerm}"` : 'No hay compras en este mes'}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-black/50">
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CATEGORÍA</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ESTADO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredInventory.map((purchase) =>
-                            purchase.items.map((item: any, itemIdx: number) => (
-                              <tr key={`${purchase.id}-${itemIdx}`} className="hover:bg-fuchsia-500/5 transition-all">
-                                <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
-                                  {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2">
-                                  <p className="text-xs font-bold text-white">{purchase.supplier}</p>
-                                  {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center">
-                                  {(() => {
-                                    const category = purchase.category || "operativos";
-                                    const categoryConfig: Record<string, {icon: string, color: string, label: string}> = {
-                                      operativos: { icon: "🍖", color: "text-blue-400", label: "Operativos" },
-                                      fijos: { icon: "🏢", color: "text-purple-400", label: "Fijos" },
-                                      personal: { icon: "👥", color: "text-green-400", label: "Personal" },
-                                      marketing: { icon: "📢", color: "text-orange-400", label: "Marketing" }
-                                    };
-                                    const config = categoryConfig[category] || categoryConfig.operativos;
-                                    return (
-                                      <span className={`text-xs font-bold ${config.color}`}>
-                                        {config.icon} {config.label}
-                                      </span>
-                                    );
-                                  })()}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-xs text-white font-bold">
-                                  {item.productName || '-'}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-white">
-                                  {item.originalQuantity || item.quantity}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-gray-300">
-                                  {item.unit}
-                                </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-cyan-400">
-                                  {purchase.paymentMethod === 'plin-yape' && 'PLIN-YAPE'}
-                                  {purchase.paymentMethod === 'efectivo' && 'EFECTIVO'}
-                                  {purchase.paymentMethod === 'transferencia' && 'TRANSFERENCIA'}
-                                  {purchase.paymentMethod === 'tarjeta' && 'TARJETA'}
-                                </td>
-                                {(() => {
-                                  // Operativos: unitCost=total pagado, total=costo/unidad (fórmula inversa)
-                                  // Marketing/Personal/Fijos: unitCost=costo/unidad, total=total pagado
-                                  const isOperativos = (purchase.category || "operativos") === "operativos";
-                                  const displayTotal = isOperativos ? item.unitCost : item.total;
-                                  const displayUnit  = isOperativos ? item.total    : item.unitCost;
-                                  return (
-                                    <>
-                                      <td className="border border-gray-700 px-3 py-2 text-right">
-                                        <p className="text-xs font-bold text-fuchsia-400">S/ {displayTotal.toFixed(2)}</p>
-                                      </td>
-                                      <td className="border border-gray-700 px-3 py-2 text-right">
-                                        <p className="text-xs font-bold text-amber-400">S/ {displayUnit.toFixed(2)}</p>
-                                      </td>
-                                    </>
-                                  );
-                                })()}
-                                {itemIdx === 0 ? (
-                                  <td
-                                    className="border border-gray-700 px-2 py-2 text-center"
-                                    rowSpan={purchase.items.length}
-                                  >
-                                    <button
-                                      onClick={() => toggleLiquidado(purchase.id, !!(purchase as any).liquidado)}
-                                      title={(purchase as any).liquidado ? 'Marcar como pendiente' : 'Marcar como liquidado'}
-                                      className={`flex flex-col items-center gap-0.5 mx-auto px-2 py-1.5 rounded-lg border transition-all active:scale-95 min-w-[80px] ${
-                                        (purchase as any).liquidado
-                                          ? 'border-emerald-500/50 bg-emerald-900/20 hover:bg-emerald-900/40'
-                                          : 'border-amber-500/40 bg-amber-900/10 hover:bg-amber-900/30'
-                                      }`}
-                                    >
-                                      <span className="text-base leading-none">
-                                        {(purchase as any).liquidado ? '✅' : '⏳'}
-                                      </span>
-                                      <span className={`text-[10px] font-black uppercase leading-none mt-0.5 ${
-                                        (purchase as any).liquidado ? 'text-emerald-400' : 'text-amber-400'
-                                      }`}>
-                                        {(purchase as any).liquidado ? 'Liquidado' : 'Pendiente'}
-                                      </span>
-                                    </button>
-                                  </td>
-                                ) : null}
-                                <td className="border border-gray-700 px-3 py-2 text-center">
-                                  {itemIdx === 0 && (
-                                    <div className="flex items-center justify-center gap-2">
-                                      <button
-                                        onClick={() => {
-                                          setEditingPurchase(purchase);
-                                          setShowInventoryEditModal(true);
-                                        }}
-                                        className="text-amber-400 hover:text-amber-300 text-sm"
-                                        title="Editar"
-                                      >
-                                        ✏️
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteInventory(purchase.id)}
-                                        className="text-red-400 hover:text-red-300 text-sm font-bold"
-                                        title="Eliminar"
-                                      >
-                                        ✕
-                                      </button>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-
-                {/* Modal de Detalles */}
-                {showInventoryDetailModal && selectedPurchaseDetail && (
-                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-2xl font-black text-fuchsia-400">Detalle de Compra</h3>
-                        <button
-                          onClick={() => setShowInventoryDetailModal(false)}
-                          className="text-gray-400 hover:text-white text-2xl"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {/* Información del Proveedor */}
-                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 Información del Proveedor</h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-gray-400">Proveedor:</p>
-                            <p className="text-white font-bold">{selectedPurchaseDetail.supplier}</p>
-                          </div>
-                          {selectedPurchaseDetail.supplierRuc && (
-                            <div>
-                              <p className="text-gray-400">RUC:</p>
-                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierRuc}</p>
-                            </div>
-                          )}
-                          {selectedPurchaseDetail.supplierPhone && (
-                            <div>
-                              <p className="text-gray-400">Teléfono:</p>
-                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierPhone}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-gray-400">Fecha de Compra:</p>
-                            <p className="text-white font-bold">
-                              {new Date(selectedPurchaseDetail.purchaseDate).toLocaleDateString('es-PE', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-400">Método de Pago:</p>
-                            <p className="text-cyan-400 font-bold uppercase">{selectedPurchaseDetail.paymentMethod.replace('-', ' ')}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Productos Comprados */}
-                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-cyan-500/30">
-                        <h4 className="text-sm font-bold text-cyan-400 mb-3">🛒 Productos Comprados</h4>
-                        <div className="space-y-2">
-                          {selectedPurchaseDetail.items.map((item: any, idx: number) => {
-                            const isOperativos = (selectedPurchaseDetail.category || "operativos") === "operativos";
-                            const displayTotal = isOperativos ? item.unitCost : item.total;
-                            const displayUnit  = isOperativos ? item.total    : item.unitCost;
-                            return (
-                              <div key={idx} className="flex justify-between items-center bg-gray-900 rounded px-3 py-2">
-                                <div className="flex-1">
-                                  <p className="text-white font-bold text-sm">{item.productName}</p>
-                                  <p className="text-xs text-gray-400">
-                                    {item.originalQuantity || item.quantity} {item.unit} x S/ {displayUnit.toFixed(2)}
-                                  </p>
-                                </div>
-                                <p className="text-fuchsia-400 font-bold">S/ {displayTotal.toFixed(2)}</p>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Total y Notas */}
-                      <div className="bg-black/50 rounded-lg p-4 border border-amber-500/30">
-                        <div className="flex justify-between items-center mb-3">
-                          <p className="text-gray-400">Total de la Compra:</p>
-                          <p className="text-2xl font-black text-amber-400">S/ {selectedPurchaseDetail.totalAmount.toFixed(2)}</p>
-                        </div>
-                        {selectedPurchaseDetail.notes && (
-                          <div className="border-t border-gray-700 pt-3 mt-3">
-                            <p className="text-gray-400 text-xs mb-1">Notas:</p>
-                            <p className="text-white text-sm">{selectedPurchaseDetail.notes}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                  </>
-                )}
-
-                {/* ========== CONTROL DE STOCK (NUEVA SECCIÓN) ========== */}
-                {purchasesSubTab === "stock" && (
-                  <div className="space-y-4">
-                    {/* Encabezado */}
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-black text-cyan-400">📦 Control de Stock</h3>
-                      <input
-                        type="text"
-                        placeholder="Buscar producto..."
-                        value={stockSearchTerm}
-                        onChange={(e) => setStockSearchTerm(e.target.value)}
-                        className="px-4 py-2 rounded bg-gray-900 border border-cyan-500/30 text-white focus:border-cyan-400 focus:outline-none text-sm"
-                      />
-                    </div>
-
-                    {/* Tabla de Stock */}
-                    <div className="bg-black/50 rounded-lg border border-cyan-500/20 overflow-hidden">
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="bg-cyan-900/20 border-b border-cyan-500/30">
-                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Producto</th>
-                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Categoría</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-green-400">Stock Actual</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-400">Unidad</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-red-400">Consumo Hoy</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-amber-400">Nuevo Stock</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400">Acción</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(() => {
-                              // Agrupar items por producto
-                              const stockMap = new Map<string, { productName: string; category: string; unit: string; totalStock: number }>();
-
-                              inventory.forEach((purchase: any) => {
-                                purchase.items.forEach((item: any) => {
-                                  // Excluir categoría SERVICIO
-                                  if (item.category === "SERVICIO") return;
-
-                                  const key = `${item.productName}-${item.unit}`;
-                                  const existing = stockMap.get(key);
-                                  const itemStock = item.stockUnits !== undefined
-                                    ? item.stockUnits
-                                    : (item.quantity || 0) * (item.volume || 1);
-
-                                  if (existing) {
-                                    existing.totalStock += itemStock;
-                                  } else {
-                                    stockMap.set(key, {
-                                      productName: item.productName,
-                                      category: item.category || "SIN CATEGORÍA",
-                                      unit: item.unit,
-                                      totalStock: itemStock
-                                    });
-                                  }
-                                });
-                              });
-
-                              // Filtrar por búsqueda
-                              const filteredStock = Array.from(stockMap.values()).filter(item =>
-                                item.productName.toLowerCase().includes(stockSearchTerm.toLowerCase()) ||
-                                item.category.toLowerCase().includes(stockSearchTerm.toLowerCase())
-                              );
-
-                              if (filteredStock.length === 0) {
-                                return (
-                                  <tr>
-                                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
-                                      {inventory.length === 0
-                                        ? "No hay compras registradas. Registra tu primera compra para comenzar el control de stock."
-                                        : "No se encontraron productos."}
-                                    </td>
-                                  </tr>
-                                );
-                              }
-
-                              return filteredStock.map((item, idx) => {
-                                const key = `${item.productName}-${item.unit}`;
-                                const consumption = stockConsumptions.get(key) || 0;
-                                const newStock = item.totalStock - consumption;
-
-                                return (
-                                  <tr key={idx} className="border-b border-gray-800 hover:bg-gray-900/50">
-                                    <td className="px-4 py-3 text-sm text-white font-medium">{item.productName}</td>
-                                    <td className="px-4 py-3 text-xs text-gray-300">
-                                      <span className="px-2 py-1 rounded bg-gray-800 border border-gray-700">
-                                        {item.category === "INSUMO" && "🥘 INSUMO"}
-                                        {item.category === "EMPAQUE" && "📦 EMPAQUE"}
-                                        {item.category === "SERVICIO" && "⚡ SERVICIO"}
-                                        {item.category === "UTENCILIO" && "🔧 UTENCILIO"}
-                                        {!["INSUMO", "EMPAQUE", "SERVICIO", "UTENCILIO"].includes(item.category) && item.category}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <span className="text-green-400 font-black text-base">{item.totalStock.toLocaleString()}</span>
-                                    </td>
-                                    <td className="px-4 py-3 text-center text-xs text-gray-400 font-medium">{item.unit}</td>
-                                    <td className="px-4 py-3 text-center">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max={item.totalStock}
-                                        value={consumption === 0 ? '' : consumption}
-                                        onChange={(e) => {
-                                          const value = parseInt(e.target.value) || 0;
-                                          const newConsumptions = new Map(stockConsumptions);
-                                          newConsumptions.set(key, Math.min(value, item.totalStock));
-                                          setStockConsumptions(newConsumptions);
-                                        }}
-                                        className="w-20 px-2 py-1 text-sm rounded bg-red-900/30 border border-red-500/50 text-red-300 text-center focus:border-red-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                      />
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <span className={`font-black text-base ${newStock < 0 ? 'text-red-400' : 'text-amber-400'}`}>
-                                        {newStock.toLocaleString()}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <button
-                                        onClick={async () => {
-                                          if (consumption > 0 && confirm(`¿Confirmar consumo de ${consumption} ${item.unit} de ${item.productName}?`)) {
-                                            try {
-                                              // Registrar deducción
-                                              const response = await fetch("/api/deductions", {
-                                                method: "POST",
-                                                headers: { "Content-Type": "application/json" },
-                                                body: JSON.stringify({
-                                                  orderId: "MANUAL",
-                                                  orderName: "Consumo Manual",
-                                                  items: [{
-                                                    productName: item.productName,
-                                                    quantity: consumption,
-                                                    unit: item.unit
-                                                  }],
-                                                  deductionDate: new Date().toISOString().split('T')[0]
-                                                })
-                                              });
-
-                                              if (!response.ok) {
-                                                throw new Error("Error al guardar el consumo");
-                                              }
-
-                                              // Recargar inventario para actualizar stock
-                                              const inventoryResponse = await fetch("/api/inventory");
-                                              const updatedInventory = await inventoryResponse.json();
-                                              setInventory(updatedInventory);
-
-                                              // Limpiar consumo después de guardar
-                                              const newConsumptions = new Map(stockConsumptions);
-                                              newConsumptions.delete(key);
-                                              setStockConsumptions(newConsumptions);
-
-                                              // Mostrar confirmación
-                                              alert(`✅ Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
-                                            } catch (error) {
-                                              console.error("Error al guardar consumo:", error);
-                                              alert("❌ Error al guardar el consumo. Intenta nuevamente.");
-                                            }
-                                          }
-                                        }}
-                                        disabled={consumption === 0}
-                                        className="px-3 py-1 text-xs rounded font-bold bg-fuchsia-600 hover:bg-fuchsia-500 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                      >
-                                        Guardar
-                                      </button>
-                                    </td>
-                                  </tr>
-                                );
-                              });
-                            })()}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Información adicional */}
-                    <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4">
-                      <p className="text-cyan-300 text-xs">
-                        <span className="font-bold">💡 Instrucciones:</span> Ingresa la cantidad consumida en la columna "Consumo Hoy" y presiona "Guardar" para actualizar el stock.
-                      </p>
-                    </div>
-                  </div>
-                )}
-                    </>
-                  );
-                })()}
-              </>
-            )}
-
-            {/* PRODUCTOS DE VENTA */}
-            {financialSection === "products" && (() => {
-              // Normaliza: quita tildes, mayúsculas, espacios extra → "Dúo Dilema" = "DUO DILEMA" = "duo dilema"
-              const normalize = (s: string) =>
-                s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
-
-              const saleProducts = products.filter((p: any) => p.type === "sale");
-
-              // --- Rendimiento: cruzar catálogo con pedidos entregados (excluir canjes) ---
-              let deliveredOrders = orders.filter((o: any) =>
-                !o.isCanje &&
-                (o.status === "delivered" || o.status === "Entregado" || o.status?.toLowerCase() === "entregado")
-              );
-
-              // Filtro por fechas
-              if (isSalesDateFiltered && salesDateFrom && salesDateTo) {
-                const fromDate = new Date(salesDateFrom + "T00:00:00-05:00");
-                const toDate = new Date(salesDateTo + "T23:59:59-05:00");
-                deliveredOrders = deliveredOrders.filter((o: any) => {
-                  const orderDate = getPeruDate(o.createdAt);
-                  return orderDate >= fromDate && orderDate <= toDate;
-                });
-              }
-              // Mapa nombre normalizado → { qty, revenue, originalName }
-              const soldMap: Record<string, { qty: number; revenue: number; originalName: string }> = {};
-              const addToSoldMap = (name: string, qty: number, revenue: number) => {
-                const key = normalize(name);
-                if (!key) return;
-                if (!soldMap[key]) soldMap[key] = { qty: 0, revenue: 0, originalName: name };
-                soldMap[key].qty += qty;
-                soldMap[key].revenue += revenue;
-              };
-
-              deliveredOrders.forEach((order: any) => {
-                const items = order.completedOrders || order.cart || [];
-                const couponFactor = 1 - (order.couponDiscount || 0) / 100;
-                items.forEach((item: any) => {
-                  // 1. Menú principal (Pequeño Dilema, Dúo Dilema, Santo Pecado, ensaladas)
-                  const menuName = item.name || item.product?.name || "";
-                  const qty = item.quantity || 0;
-                  const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
-                  if (menuName) addToSoldMap(menuName, qty, price * qty);
-
-                  // 2. Complementos y extras pagados (bebidas, papas extras, salsas extras)
-                  // NO incluye salsas base que vienen con el menú
-                  const compIds: string[] = item.complementIds || [];
-                  compIds.forEach((compId: string) => {
-                    const comp = availableComplements[compId];
-                    if (comp) addToSoldMap(comp.name, 1, comp.price);
-                  });
-                });
-              });
-
-              // Construir filas de rendimiento: TODOS los productos vendidos
-              const perfRowsMap = new Map<string, any>();
-
-              // 1. Primero agregar productos del catálogo (con costo conocido)
-              saleProducts.forEach((p: any) => {
-                const key = normalize(p.name || "");
-                const sold = soldMap[key] || { qty: 0, revenue: 0 };
-                const cost = p.cost || 0;
-                const totalCost = cost * sold.qty;
-                const netProfit = sold.revenue - totalCost;
-                const margin = cost > 0 ? (sold.qty > 0 ? (netProfit / totalCost) * 100 : ((p.price - cost) / cost) * 100) : 0;
-                perfRowsMap.set(key, { ...p, sold: sold.qty, revenue: sold.revenue, totalCost, netProfit, margin });
-              });
-
-              // 2. Agregar items vendidos que NO están en el catálogo (complementos, extras)
-              Object.keys(soldMap).forEach((key) => {
-                if (!perfRowsMap.has(key)) {
-                  const sold = soldMap[key];
-                  const originalName = sold.originalName || key;
-
-                  // Detectar venta histórica del día de apertura
-                  const isHistoricalSale = originalName.toLowerCase().includes("venta") &&
-                                          (originalName.toLowerCase().includes("apertura") ||
-                                           originalName.toLowerCase().includes("histórica") ||
-                                           originalName.toLowerCase().includes("historica"));
-
-                  // Buscar en availableComplements o products sin filtrar
-                  const complement = Object.values(availableComplements).find(
-                    (c: any) => c && c.name && normalize(c.name) === key
-                  );
-                  const productMatch = products.find((p: any) => p && p.name && normalize(p.name) === key);
-
-                  const product = complement || productMatch;
-
-                  // Si es venta histórica, asignar 50% del revenue como costo
-                  const cost = isHistoricalSale
-                    ? (sold.revenue * 0.5) / sold.qty  // 50% del total como costo unitario
-                    : (product?.cost || 0);
-
-                  const price = product?.price || (sold.qty > 0 ? sold.revenue / sold.qty : 0);
-                  const category = product?.category || "complemento";
-
-                  const totalCost = cost * sold.qty;
-                  const netProfit = sold.revenue - totalCost;
-                  const margin = cost > 0 ? (sold.qty > 0 ? (netProfit / totalCost) * 100 : 0) : 0;
-
-                  perfRowsMap.set(key, {
-                    id: key,
-                    name: originalName,
-                    category,
-                    price,
-                    cost,
-                    sold: sold.qty,
-                    revenue: sold.revenue,
-                    totalCost,
-                    netProfit,
-                    margin,
-                    type: "sale"
-                  });
-                }
-              });
-
-              const perfRows = Array.from(perfRowsMap.values()).sort((a: any, b: any) => b.sold - a.sold);
-
-              // KPIs globales - Calcular revenue directo de pedidos (más preciso)
-              const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
-              const totalCostAll = perfRows.reduce((s: number, r: any) => s + r.totalCost, 0);
-              const totalProfit = totalRevenue - totalCostAll;
-              // Margen promedio: solo productos con ventas
-              const soldProducts = perfRows.filter((r: any) => r.sold > 0);
-              const avgMargin = soldProducts.length > 0 ? soldProducts.reduce((s: number, r: any) => s + r.margin, 0) / soldProducts.length : 0;
-
-              const catLabel: Record<string, string> = {
-                fat: "🍗 FAT", fit: "🥗 FIT", bebida: "🥤 Bebida",
-                complemento: "➕ Complemento", extra: "⚡ Extra",
-                "extra-papas": "🍟 Extra Papas", "extra-salsas": "🌶️ Extra Salsas",
-              };
-
-              return (
-                <div className="space-y-8">
-                  {/* ── SECCIÓN 1: CATÁLOGO ── */}
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-black text-cyan-400">📋 Catálogo de Productos</h3>
-                      <button
-                        onClick={() => {
-                          setEditingProduct(null);
-                          setProductForm({ name: "", category: "fat", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
-                          setShowProductModal(true);
-                        }}
-                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
-                      >
-                        + Nuevo Producto
-                      </button>
-                    </div>
-
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-black/60 border-b-2 border-fuchsia-500/30">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase">Producto</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase hidden md:table-cell">Categoría</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Precio Venta</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
-                            <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400 uppercase">Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {saleProducts.length === 0 ? (
-                            <tr>
-                              <td colSpan={6} className="px-6 py-10 text-center text-gray-500 text-sm">
-                                Sin productos registrados. Usa "+ Nuevo Producto" para empezar.
-                              </td>
-                            </tr>
-                          ) : (
-                            saleProducts.map((product: any, idx: number) => {
-                              const margin = (product.cost || 0) > 0
-                                ? ((product.price - (product.cost || 0)) / (product.cost || 0)) * 100 : 0;
-                              return (
-                                <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 transition-all ${idx % 2 === 0 ? 'bg-black/20' : ''}`}>
-                                  <td className="px-4 py-3 text-white font-bold text-sm">{product.name}</td>
-                                  <td className="px-4 py-3 hidden md:table-cell">
-                                    <span className="text-xs text-gray-400">{catLabel[product.category] || product.category}</span>
-                                  </td>
-                                  <td className="px-4 py-3 text-right text-green-400 font-black text-sm">S/ {(product.price || 0).toFixed(2)}</td>
-                                  <td className="px-4 py-3 text-right text-red-400 text-sm">S/ {(product.cost || 0).toFixed(2)}</td>
-                                  <td className="px-4 py-3 text-right">
-                                    <span className={`font-black text-sm ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
-                                      {margin.toFixed(1)}%
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-3 text-center">
-                                    <div className="flex gap-1 justify-center">
-                                      <button onClick={() => openEditProduct(product)} className="bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-1 rounded text-xs font-bold">Editar</button>
-                                      <button onClick={() => handleDeleteProduct(product.id)} className="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">Eliminar</button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* ── SECCIÓN 2: RENDIMIENTO DE VENTAS ── */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-black text-amber-400">📊 Rendimiento de Ventas (Pedidos Entregados)</h3>
-                    </div>
-
-                    {/* Filtro de fechas */}
-                    <div className="bg-gray-900 rounded-lg border-2 border-amber-500/30 p-4 mb-5">
-                      <div className="flex flex-col gap-3">
-                        {/* Indicador período activo */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">Mostrando:</span>
-                          {isSalesDateFiltered && salesDateFrom && salesDateTo ? (
-                            <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 text-xs font-bold">
-                              📅 {new Date(salesDateFrom + "T12:00:00").toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo + "T12:00:00").toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
-                            </span>
-                          ) : (
-                            <span className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-full text-gray-300 text-xs font-bold">
-                              📊 Histórico completo
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Controles */}
-                        <div className="flex flex-wrap items-center gap-2">
-                          {/* Botones rápidos */}
-                          <button
-                            onClick={() => {
-                              const today = new Date().toISOString().split('T')[0];
-                              setSalesDateFrom(today);
-                              setSalesDateTo(today);
-                              setIsSalesDateFiltered(true);
-                            }}
-                            className="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg font-bold text-xs"
-                          >
-                            Hoy
-                          </button>
-                          <button
-                            onClick={() => {
-                              const today = new Date();
-                              const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                              setSalesDateFrom(firstDay.toISOString().split('T')[0]);
-                              setSalesDateTo(today.toISOString().split('T')[0]);
-                              setIsSalesDateFiltered(true);
-                            }}
-                            className="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white rounded-lg font-bold text-xs"
-                          >
-                            Mes actual
-                          </button>
-                          <button
-                            onClick={() => {
-                              setIsSalesDateFiltered(false);
-                              setSalesDateFrom("");
-                              setSalesDateTo("");
-                            }}
-                            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-xs"
-                          >
-                            Ver histórico
-                          </button>
-
-                          <div className="w-px h-6 bg-gray-700 mx-1"></div>
-
-                          {/* Date pickers */}
-                          <div className="flex items-center gap-2">
-                            <label className="text-xs text-gray-400">Desde:</label>
-                            <input
-                              type="date"
-                              value={salesDateFrom}
-                              onChange={(e) => setSalesDateFrom(e.target.value)}
-                              className="px-2 py-1 text-xs rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
-                            />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <label className="text-xs text-gray-400">Hasta:</label>
-                            <input
-                              type="date"
-                              value={salesDateTo}
-                              onChange={(e) => setSalesDateTo(e.target.value)}
-                              className="px-2 py-1 text-xs rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
-                            />
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (salesDateFrom && salesDateTo) setIsSalesDateFiltered(true);
-                            }}
-                            disabled={!salesDateFrom || !salesDateTo}
-                            className="px-3 py-1.5 bg-fuchsia-700 hover:bg-fuchsia-600 text-white rounded-lg font-bold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            Aplicar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* KPIs */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                      <div className="bg-gray-900 rounded-xl border border-green-500/40 p-4 text-center">
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Ingresos Totales</p>
-                        <p className="text-xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
-                      </div>
-                      <div className="bg-gray-900 rounded-xl border border-red-500/40 p-4 text-center">
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Costo Total</p>
-                        <p className="text-xl font-black text-red-400">S/ {totalCostAll.toFixed(2)}</p>
-                      </div>
-                      <div className="bg-gray-900 rounded-xl border border-amber-500/40 p-4 text-center">
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Utilidad Operativa</p>
-                        <p className={`text-xl font-black ${totalProfit >= 0 ? 'text-amber-400' : 'text-red-400'}`}>S/ {totalProfit.toFixed(2)}</p>
-                      </div>
-                      <div className="bg-gray-900 rounded-xl border border-purple-500/40 p-4 text-center">
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Margen Promedio</p>
-                        <p className={`text-xl font-black ${avgMargin >= 50 ? 'text-green-400' : avgMargin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>{avgMargin.toFixed(1)}%</p>
-                      </div>
-                    </div>
-
-                    {/* Tabla de rendimiento */}
-                    <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-black/60 border-b-2 border-amber-500/30">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-amber-400 uppercase">Producto</th>
-                            <th className="px-4 py-3 text-center text-xs font-bold text-amber-400 uppercase">Uds. Vendidas</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Ingresos</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo Total</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-amber-400 uppercase">Utilidad Operativa</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {perfRows.length === 0 ? (
-                            <tr>
-                              <td colSpan={6} className="px-6 py-10 text-center text-gray-500 text-sm">
-                                Registra productos en el catálogo para ver el rendimiento.
-                              </td>
-                            </tr>
-                          ) : (
-                            perfRows.map((row: any, idx: number) => (
-                              <tr key={row.id} className={`border-b border-amber-500/10 hover:bg-amber-500/5 transition-all ${idx % 2 === 0 ? 'bg-black/20' : ''}`}>
-                                <td className="px-4 py-3 text-white font-bold text-sm">{row.name}</td>
-                                <td className="px-4 py-3 text-center">
-                                  <span className="text-fuchsia-400 font-black text-sm">{row.sold}</span>
-                                </td>
-                                <td className="px-4 py-3 text-right text-green-400 font-bold text-sm">S/ {row.revenue.toFixed(2)}</td>
-                                <td className="px-4 py-3 text-right text-red-400 text-sm">S/ {row.totalCost.toFixed(2)}</td>
-                                <td className="px-4 py-3 text-right">
-                                  <span className={`font-black text-sm ${row.netProfit >= 0 ? 'text-amber-400' : 'text-red-500'}`}>
-                                    S/ {row.netProfit.toFixed(2)}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3 text-right">
-                                  <span className={`font-black text-sm ${row.margin >= 50 ? 'text-green-400' : row.margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>
-                                    {row.margin.toFixed(1)}%
-                                  </span>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                        {perfRows.length > 0 && (
-                          <tfoot className="border-t-2 border-amber-500/30 bg-black/40">
-                            <tr>
-                              <td className="px-4 py-3 text-white font-black text-sm">TOTAL</td>
-                              <td className="px-4 py-3 text-center text-fuchsia-400 font-black text-sm">
-                                {perfRows.reduce((s: number, r: any) => s + r.sold, 0)}
-                              </td>
-                              <td className="px-4 py-3 text-right text-green-400 font-black text-sm">S/ {totalRevenue.toFixed(2)}</td>
-                              <td className="px-4 py-3 text-right text-red-400 font-black text-sm">S/ {totalCostAll.toFixed(2)}</td>
-                              <td className="px-4 py-3 text-right text-amber-400 font-black text-sm">S/ {totalProfit.toFixed(2)}</td>
-                              <td className="px-4 py-3 text-right text-purple-400 font-black text-sm">{avgMargin.toFixed(1)}%</td>
-                            </tr>
-                          </tfoot>
-                        )}
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* STOCK DE EMPAQUES - ELIMINADO (Sistema ahora es 100% manual) */}
-          </section>
-
-          {/* Recipe Configuration Modal */}
-          {showRecipeModal && editingRecipeProduct && (
-            <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h3 className="text-2xl font-black text-purple-400">🧾 Configurar Receta</h3>
-                    <p className="text-cyan-400 text-lg font-bold mt-1">{editingRecipeProduct.name}</p>
-                    <p className="text-gray-400 text-sm mt-2">
-                      Define qué empaques/insumos se usan para preparar este producto y en qué cantidades
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowRecipeModal(false);
-                      setEditingRecipeProduct(null);
-                      setRecipeComponents([]);
-                    }}
-                    className="text-gray-400 hover:text-white text-2xl font-bold"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Components List */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-lg font-bold text-cyan-400">Componentes de la Receta</h4>
-                    <button
-                      onClick={addRecipeComponent}
-                      className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
-                    >
-                      + Agregar Componente
-                    </button>
-                  </div>
-
-                  {recipeComponents.length === 0 ? (
-                    <div className="bg-gray-800 rounded-lg border-2 border-purple-500/30 p-8 text-center">
-                      <p className="text-gray-400 text-lg">No hay componentes configurados</p>
-                      <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Componente" para empezar</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {/* Header */}
-                      <div className="grid grid-cols-12 gap-3 px-3 py-2 bg-black/50 rounded-lg border border-purple-500/30">
-                        <div className="col-span-4 text-xs font-bold text-purple-400">INGREDIENTE/EMPAQUE</div>
-                        <div className="col-span-2 text-xs font-bold text-purple-400">CANTIDAD</div>
-                        <div className="col-span-2 text-xs font-bold text-purple-400">UNIDAD</div>
-                        <div className="col-span-3 text-xs font-bold text-purple-400">COSTO (S/)</div>
-                        <div className="col-span-1 text-xs font-bold text-purple-400 text-center"></div>
-                      </div>
-
-                      {/* Components - MANUAL INPUT */}
-                      {recipeComponents.map((component, idx) => (
-                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-800 rounded-lg p-3 border border-purple-500/20">
-                          {/* Nombre del ingrediente/empaque - INPUT MANUAL */}
-                          <div className="col-span-4">
-                            <input
-                              type="text"
-                              value={component.productName || ""}
-                              onChange={(e) => updateRecipeComponent(idx, 'productName', e.target.value.toUpperCase())}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
-                              placeholder="Ej: PECHUGA, CAJA, LECHUGA"
-                            />
-                          </div>
-
-                          {/* Cantidad - INPUT MANUAL */}
-                          <div className="col-span-2">
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={component.quantity}
-                              onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm text-center focus:border-purple-400 focus:outline-none"
-                              placeholder="0"
-                            />
-                          </div>
-
-                          {/* Unidad - SELECT MANUAL */}
-                          <div className="col-span-2">
-                            <select
-                              value={component.unit || ""}
-                              onChange={(e) => updateRecipeComponent(idx, 'unit', e.target.value)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
-                            >
-                              <option value="">Seleccionar</option>
-                              <option value="UNIDAD">UNIDAD</option>
-                              <option value="KG">KG</option>
-                              <option value="GRAMOS">GRAMOS</option>
-                              <option value="LITROS">LITROS</option>
-                              <option value="ML">ML</option>
-                              <option value="CIENTO">CIENTO</option>
-                              <option value="PAQUETE">PAQUETE</option>
-                            </select>
-                          </div>
-
-                          {/* Costo - INPUT MANUAL */}
-                          <div className="col-span-3">
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={component.cost || 0}
-                              onChange={(e) => updateRecipeComponent(idx, 'cost', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
-                              placeholder="0.00"
-                            />
-                          </div>
-
-                          {/* Delete Button */}
-                          <div className="col-span-1 text-center">
-                            <button
-                              onClick={() => removeRecipeComponent(idx)}
-                              className="text-red-400 hover:text-red-300 font-bold text-lg"
-                              title="Eliminar componente"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Costo Total de la Receta */}
-                {recipeComponents.length > 0 && (
-                  <div className="bg-gradient-to-r from-purple-900/30 to-fuchsia-900/30 border-2 border-purple-500/50 rounded-lg p-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-gray-400 text-sm font-semibold">Costo Total de la Receta</p>
-                        <p className="text-xs text-gray-500 mt-1">{recipeComponents.length} componentes</p>
-                      </div>
-                      <p className="text-3xl font-black text-purple-400">
-                        S/ {recipeComponents.reduce((sum, comp) => sum + (comp.cost || 0), 0).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-
-                {/* Actions */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setShowRecipeModal(false);
-                      setEditingRecipeProduct(null);
-                      setRecipeComponents([]);
-                    }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={saveRecipe}
-                    className="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple"
-                  >
-                    ✓ Guardar Receta
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Product Modal - SIMPLE Y MANUAL */}
-          {showProductModal && (() => {
-            const price = productForm.price || 0;
-            const cost = productForm.cost || 0;
-            const margin = cost > 0 ? ((price - cost) / cost) * 100 : 0;
-            return (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => { setShowProductModal(false); setEditingProduct(null); }}>
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-xl font-black text-fuchsia-400">
-                    {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}
-                  </h3>
-                  <button onClick={() => { setShowProductModal(false); setEditingProduct(null); }} className="text-gray-400 hover:text-white text-xl">✕</button>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">Nombre *</label>
-                    <input
-                      type="text"
-                      value={productForm.name}
-                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value.toUpperCase() })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
-                      placeholder="Ej: PEQUEÑO DILEMA, COCA-COLA, EXTRA PAPAS"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">Categoría *</label>
-                    <select
-                      value={productForm.category}
-                      onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
-                    >
-                      <option value="fat">🍗 FAT (Alitas)</option>
-                      <option value="fit">🥗 FIT (Ensaladas)</option>
-                      <option value="bebida">🥤 Bebida</option>
-                      <option value="complemento">➕ Complemento</option>
-                      <option value="extra">⚡ Extra</option>
-                      <option value="extra-papas">🍟 Extra Papas</option>
-                      <option value="extra-salsas">🌶️ Extra Salsas</option>
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-green-400 uppercase mb-1">Precio de Venta (S/) *</label>
-                      <input
-                        type="number" step="0.01" min="0"
-                        value={productForm.price}
-                        onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-green-500/30 text-green-400 focus:border-green-400 focus:outline-none text-sm font-bold"
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-red-400 uppercase mb-1">Costo (S/) *</label>
-                      <input
-                        type="number" step="0.01" min="0"
-                        value={productForm.cost}
-                        onChange={(e) => setProductForm({ ...productForm, cost: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-red-500/30 text-red-400 focus:border-red-400 focus:outline-none text-sm font-bold"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Preview margen */}
-                  {price > 0 && (
-                    <div className={`rounded-lg px-4 py-2 text-center border ${margin >= 50 ? 'bg-green-900/20 border-green-500/30' : margin >= 30 ? 'bg-amber-900/20 border-amber-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
-                      <p className="text-xs text-gray-400">Margen calculado</p>
-                      <p className={`text-2xl font-black ${margin >= 50 ? 'text-green-400' : margin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>{margin.toFixed(1)}%</p>
-                      <p className="text-xs text-gray-500">Utilidad por unidad: S/ {(price - cost).toFixed(2)}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-3 mt-5">
-                  <button
-                    onClick={() => { setShowProductModal(false); setEditingProduct(null); setProductForm({ name: "", category: "fat", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] }); }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
-                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold text-sm"
-                  >
-                    {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
-                  </button>
-                </div>
-              </div>
-            </div>
-            );
-          })()}
-
-            {/* CANJES eliminado */}
-            {false && (() => {
-              const canjeOrders = orders.filter((o: any) => o.isCanje);
-              const nonCanjeOrders = orders.filter((o: any) => !o.isCanje);
-
-              return (
-                <>
-                  <div className="mb-6">
-                    <h3 className="text-xl font-black text-orange-400 mb-1">🎁 Gestión de Canjes / Cortesías</h3>
-                    <p className="text-gray-500 text-sm">
-                      Las órdenes marcadas como canje <span className="text-orange-300 font-bold">no se contabilizan en las ventas</span>. Uso interno — el equipo de cocina no ve esta clasificación.
-                    </p>
-                  </div>
-
-                  {/* Resumen */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-orange-500/10 rounded-xl border border-orange-500/30 p-4">
-                      <p className="text-orange-400 text-xs font-black uppercase tracking-wider mb-1">Canjes hoy</p>
-                      <p className="text-orange-400 text-3xl font-black">{analytics.dailyCanjeCount}</p>
-                      <p className="text-orange-300 text-sm font-bold mt-1">S/ {(analytics.dailyCanjeValue || 0).toFixed(2)} valor referencial</p>
-                    </div>
-                    <div className="bg-orange-500/10 rounded-xl border border-orange-500/30 p-4">
-                      <p className="text-orange-400 text-xs font-black uppercase tracking-wider mb-1">Canjes este mes</p>
-                      <p className="text-orange-400 text-3xl font-black">{analytics.monthlyCanjeCount}</p>
-                      <p className="text-orange-300 text-sm font-bold mt-1">S/ {(analytics.monthlyCanjeValue || 0).toFixed(2)} valor referencial</p>
-                    </div>
-                    <div className="bg-orange-500/10 rounded-xl border border-orange-500/30 p-4">
-                      <p className="text-orange-400 text-xs font-black uppercase tracking-wider mb-1">Total histórico</p>
-                      <p className="text-orange-400 text-3xl font-black">{analytics.totalCanjeCount}</p>
-                      <p className="text-orange-300 text-sm font-bold mt-1">S/ {(analytics.totalCanjeValue || 0).toFixed(2)} valor referencial</p>
-                    </div>
-                  </div>
-
-                  {/* Lista de canjes */}
-                  {canjeOrders.length > 0 && (
-                    <div className="mb-10">
-                      <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider mb-3">Órdenes marcadas como canje ({canjeOrders.length})</h4>
-                      <div className="space-y-2">
-                        {canjeOrders.map((order: any) => (
-                          <div key={order.id} className="bg-gray-900 rounded-xl border border-orange-500/40 p-4 flex items-center justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="text-orange-400 font-black text-xs">🎁 CANJE</span>
-                                <span className="text-gray-400 text-xs font-mono">{order.id}</span>
-                                <span className="text-gray-500 text-xs">
-                                  {new Date(order.createdAt).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}
-                                </span>
-                              </div>
-                              <p className="text-white font-bold text-sm truncate">{order.name}</p>
-                              {order.canjeNote && (
-                                <p className="text-orange-300 text-xs mt-0.5 italic">"{order.canjeNote}"</p>
-                              )}
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {(order.cart || []).slice(0, 3).map((item: any, idx: number) => (
-                                  <span key={idx} className="text-xs text-gray-400 bg-gray-800 px-1.5 py-0.5 rounded">
-                                    {item.name || item.product?.name} x{item.quantity}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-orange-400 font-black text-lg">S/ {(order.totalPrice || 0).toFixed(2)}</p>
-                              <button
-                                onClick={() => handleToggleCanje(order.id, false, "")}
-                                className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-3 py-1 rounded-lg mt-1 font-bold"
-                              >
-                                ↩ Desmarcar
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Marcar órdenes como canje */}
-                  <div>
-                    <h4 className="text-sm font-black text-gray-400 uppercase tracking-wider mb-3">Marcar una orden como canje</h4>
-                    <p className="text-gray-600 text-xs mb-4">Selecciona la orden y confirma para excluirla de las ventas.</p>
-                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                      {nonCanjeOrders.slice(0, 50).map((order: any) => (
-                        <div key={order.id} className="bg-gray-900 rounded-xl border border-gray-700 p-4 flex items-center justify-between gap-4">
+                        <div className="flex items-start gap-3">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <span className="text-gray-400 text-xs font-mono">{order.id}</span>
-                              <span className="text-gray-500 text-xs">
-                                {new Date(order.createdAt).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}
-                              </span>
-                              <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${
-                                order.status === 'delivered' ? 'bg-green-500/20 text-green-400' :
-                                order.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
-                                'bg-yellow-500/20 text-yellow-400'
-                              }`}>{order.status}</span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-black text-white text-sm">{order.name}</span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.color}`}>{sc.label}</span>
+                              {order.isCanje && <span className="text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full">CANJE</span>}
+                              {order.scheduledDate && <span className="text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">Programado</span>}
                             </div>
-                            <p className="text-white font-bold text-sm truncate">{order.name}</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {(order.cart || []).slice(0, 3).map((item: any, idx: number) => (
-                                <span key={idx} className="text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">
-                                  {item.name || item.product?.name} x{item.quantity}
-                                </span>
-                              ))}
+                            <div className="flex items-center gap-3 mt-1 flex-wrap">
+                              <span className="text-xs text-gray-400 truncate">{order.address}</span>
+                              <span className="text-xs text-gray-600">{fmtDate(order.createdAt)} {fmtHour(order.createdAt)}</span>
                             </div>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-gray-300 font-black text-sm">S/ {(order.totalPrice || 0).toFixed(2)}</p>
-                            <button
-                              onClick={() => { setCanjeModal({ orderId: order.id }); setCanjeNoteInput(""); }}
-                              className="text-xs text-orange-400 border border-orange-500/40 hover:border-orange-400 px-3 py-1 rounded-lg mt-1 font-bold"
-                            >
-                              🎁 Marcar canje
-                            </button>
+                            <p className="font-black text-amber-400 text-base">{fmtSoles(order.totalPrice||0)}</p>
+                            <p className="text-xs text-gray-500">{PAYMENT_LABELS[order.paymentMethod||""]||order.paymentMethod||""}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              );
-            })()}
 
-        </>
-      ) : activeTab === "marketing" ? (
-        /* Marketing Tab */
-        <>
-          <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Promociones</h2>
+                        {/* Timer + quick info */}
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-3">
+                            {isActive && (
+                              <TimeCounter
+                                createdAt={order.createdAt}
+                                status={order.status}
+                                audioCtx={audioCtx}
+                                onOvertime={()=>setOvertimeIds(prev=>{const n=new Set(prev);n.add(order.id);return n;})}
+                              />
+                            )}
+                            <span className="text-xs text-gray-600">#{order.id}</span>
+                          </div>
+                          <span className="text-gray-500 text-xs">{isExpanded?"▲":"▼"}</span>
+                        </div>
+                      </div>
 
-            {/* Sub-tabs */}
-            <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
-              <button
-                onClick={() => setMarketingSection("promotions")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  marketingSection === "promotions"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                🎟️ Promociones y Cupones
-              </button>
-              <button
-                onClick={() => setMarketingSection("campaigns")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  marketingSection === "campaigns"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                📢 Campañas de Marketing
-              </button>
-              <button
-                onClick={() => setMarketingSection("challenge")}
-                className={`px-6 py-3 font-bold transition-all text-sm ${
-                  marketingSection === "challenge"
-                    ? "text-red-400 border-b-4 border-red-500"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                🔥 Desafío del Cliente
-              </button>
-            </div>
+                      {/* Expanded detail */}
+                      {isExpanded && (
+                        <div className="border-t border-white/5 p-4 space-y-4">
 
-            {marketingSection === "promotions" && (
-              <>
-
-                {/* Promoción 13% - Sección Especial (colapsable, expirada) */}
-                <div className="mb-8">
-                  <button
-                    onClick={() => setShowPromo13(prev => !prev)}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-400 transition-colors mb-2"
-                  >
-                    <span>{showPromo13 ? '▼' : '▶'}</span>
-                    <span className="line-through">🎁 Promoción 13% - Primeros 13 Clientes</span>
-                    <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">Expirada · 28 Feb 2026</span>
-                  </button>
-                </div>
-
-                {showPromo13 && (
-                <div className="mb-8 bg-gradient-to-r from-fuchsia-900/30 to-purple-900/30 border-2 border-fuchsia-500/40 rounded-2xl p-6 opacity-60">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 flex items-center gap-2">
-                        🎁 Promoción 13% - Primeros 13 Clientes
-                      </h3>
-                      <p className="text-gray-400 text-sm mt-1">Cupones de descuento para pedidos con salsas promocionales</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-400">Válido hasta</p>
-                      <p className="text-lg font-bold text-red-400 line-through">28 Feb 2026</p>
-                    </div>
-                  </div>
-
-                  {/* Coupon Stats */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/30">
-                      <p className="text-gray-400 text-xs mb-1">Total Generados</p>
-                      <p className="text-3xl font-black text-white">{coupons.length} / 13</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-green-500/50">
-                      <p className="text-green-400 text-xs mb-1">Pendientes</p>
-                      <p className="text-3xl font-black text-green-400">
-                        {coupons.filter(c => c.status === 'pending').length}
-                      </p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-amber-500/50">
-                      <p className="text-amber-400 text-xs mb-1">Usados</p>
-                      <p className="text-3xl font-black text-amber-400">
-                        {coupons.filter(c => c.status === 'used').length}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Coupon Table */}
-                  {coupons.length === 0 ? (
-                    <div className="text-center py-8 bg-black/30 rounded-lg">
-                      <p className="text-gray-400">No hay cupones generados aún</p>
-                      <p className="text-gray-500 text-sm mt-2">Los cupones se generan automáticamente cuando un cliente hace un pedido con las salsas promocionales</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-fuchsia-500/30">
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Teléfono</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Cliente</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Código</th>
-                            <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Estado</th>
-                            <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Descuento</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Creado</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Usado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {coupons.map((coupon, index) => {
-                            const whatsappMessage = `*Hola! Somos Santo Dilema*
-
-Gracias por participar en nuestra *Yunza del Sabor!*
-
-*>> FELICIDADES! <<*
-*Ganaste: ${coupon.prize || `${coupon.discount}% de descuento`}*
-
-*Tu cupon promocional es:*
-*${coupon.code}*
-
-*Para canjear tu premio:*
-1. Ingresa a www.santodilema.com
-2. Elige tus productos favoritos
-3. En el checkout, ingresa tu cupon
-4. Disfruta de tu premio!
-
-_Valido por 30 dias._`;
-
-                            return (
-                            <tr key={coupon.id} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
-                              <td className="py-3 px-4">
-                                <span className="text-gray-300 text-sm font-mono flex items-center gap-2">
-                                  <span>📱</span>
-                                  {coupon.phone}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-white text-sm">{coupon.customerName || 'Cliente'}</span>
-                                  <button
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(whatsappMessage);
-                                      alert('Mensaje copiado al portapapeles');
-                                    }}
-                                    className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors p-1 rounded hover:bg-fuchsia-500/10"
-                                    title="Copiar mensaje de WhatsApp"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                  </button>
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <code className="text-fuchsia-400 text-xs font-bold bg-black/50 px-2 py-1 rounded">
-                                  {coupon.code}
-                                </code>
-                              </td>
-                              <td className="py-3 px-4 text-center">
-                                {coupon.status === 'pending' ? (
-                                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold">
-                                    Pendiente
-                                  </span>
-                                ) : (
-                                  <span className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-xs font-bold">
-                                    Usado
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4 text-center text-green-400 font-bold">
-                                {coupon.discount}%
-                              </td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">
-                                {new Date(coupon.createdAt).toLocaleDateString('es-PE', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
+                          {/* Items */}
+                          {items.length>0 && (
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">Pedido</p>
+                              <div className="space-y-2">
+                                {items.map((item:any,i:number)=>{
+                                  const salsaNms = (item.salsas||[]).map((sid:string)=>SALSAS.find(s=>s.id===sid)?.name||sid);
+                                  const compNms  = (item.complementIds||[]).map((cid:string)=>COMPLEMENTS[cid]||cid);
+                                  return (
+                                    <div key={i} className="flex gap-3 bg-white/[0.02] rounded-xl p-3">
+                                      <span className="bg-amber-500/20 text-amber-400 font-black text-xs rounded-lg w-7 h-7 flex items-center justify-center flex-shrink-0">{item.quantity||1}</span>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-white">{item.name||item.product?.name}</p>
+                                        {salsaNms.length>0 && <p className="text-xs text-amber-300/70 mt-0.5">🌶️ {salsaNms.join(", ")}</p>}
+                                        {compNms.length>0  && <p className="text-xs text-green-300/70 mt-0.5">+ {compNms.join(", ")}</p>}
+                                      </div>
+                                      <span className="text-sm font-bold text-amber-400 flex-shrink-0">{fmtSoles((item.finalPrice??item.price??0)*(item.quantity||1))}</span>
+                                    </div>
+                                  );
                                 })}
-                              </td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">
-                                {coupon.usedAt ? new Date(coupon.usedAt).toLocaleDateString('es-PE', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                }) : '-'}
-                              </td>
-                            </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-                )}
-
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">Promociones Activas</h3>
-                    <p className="text-gray-400 text-sm">Gestiona descuentos, cupones y ofertas especiales</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setEditingPromotion(null);
-                      resetPromotionForm();
-                      setShowPromotionModal(true);
-                    }}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-                  >
-                    + Nueva Promoción
-                  </button>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
-                    <p className="text-gray-400 text-sm font-semibold">Total Promociones</p>
-                    <p className="text-5xl font-black text-white mt-2">{promotions.length}</p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
-                    <p className="text-green-400 text-sm font-bold">Activas</p>
-                    <p className="text-5xl font-black text-green-400 mt-2">
-                      {promotions.filter((p) => p.active).length}
-                    </p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
-                    <p className="text-amber-400 text-sm font-bold">Uso Total</p>
-                    <p className="text-5xl font-black text-amber-400 mt-2">
-                      {promotions.reduce((sum, p) => sum + (p.usageCount || 0), 0)}
-                    </p>
-                  </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-red-500/50 p-6">
-                    <p className="text-red-400 text-sm font-bold">Por Vencer (7 días)</p>
-                    <p className="text-5xl font-black text-red-400 mt-2">
-                      {promotions.filter((p) => {
-                        const daysLeft = Math.ceil((new Date(p.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                        return daysLeft <= 7 && daysLeft >= 0;
-                      }).length}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Promotions List */}
-                <div className="space-y-4">
-                  {promotions.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
-                      <p className="text-2xl text-gray-400">No hay promociones creadas</p>
-                    </div>
-                  ) : (
-                    promotions.map((promo) => {
-                      const isExpired = new Date(promo.endDate) < new Date();
-                      const daysLeft = Math.ceil((new Date(promo.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                      return (
-                        <div key={promo.id} className={`bg-gray-900 rounded-xl border-2 p-6 transition-all ${promo.active ? 'border-fuchsia-500/30 hover:border-fuchsia-500' : 'border-gray-700 opacity-60'}`}>
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-xl font-black text-white">{promo.name}</h3>
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                  promo.active ? 'bg-green-500/20 text-green-400 border border-green-500' : 'bg-gray-500/20 text-gray-400 border border-gray-500'
-                                }`}>
-                                  {promo.active ? 'Activa' : 'Inactiva'}
-                                </span>
-                                {promo.code && (
-                                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500">
-                                    CÓDIGO: {promo.code}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-gray-400 text-sm mb-3">{promo.description}</p>
-                              <div className="flex gap-6 text-sm">
-                                <div>
-                                  <span className="text-gray-500">Tipo:</span>
-                                  <span className="text-white font-bold ml-2">
-                                    {promo.type === 'percentage' ? `${promo.value}% DESC` :
-                                     promo.type === 'fixed' ? `S/ ${promo.value} DESC` :
-                                     promo.type === 'shipping' ? 'Envío Gratis' : 'Combo'}
-                                  </span>
-                                </div>
-                                {promo.minAmount > 0 && (
-                                  <div>
-                                    <span className="text-gray-500">Compra mín:</span>
-                                    <span className="text-white font-bold ml-2">S/ {promo.minAmount}</span>
-                                  </div>
-                                )}
-                                <div>
-                                  <span className="text-gray-500">Segmento:</span>
-                                  <span className="text-white font-bold ml-2 capitalize">{promo.targetSegment}</span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-500">Usado:</span>
-                                  <span className="text-amber-400 font-bold ml-2">{promo.usageCount || 0} veces</span>
-                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              {isExpired ? (
-                                <span className="text-red-400 font-bold text-sm">Expirada</span>
-                              ) : daysLeft <= 7 ? (
-                                <span className="text-orange-400 font-bold text-sm">Vence en {daysLeft} días</span>
-                              ) : (
-                                <span className="text-green-400 font-bold text-sm">Vigente</span>
-                              )}
-                              <p className="text-xs text-gray-500 mt-1">
-                                {new Date(promo.startDate).toLocaleDateString('es-PE')} - {new Date(promo.endDate).toLocaleDateString('es-PE')}
-                              </p>
-                              <div className="flex gap-2 mt-3">
-                                <button
-                                  onClick={() => openEditPromotion(promo)}
-                                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                                >
-                                  Editar
-                                </button>
-                                <button
-                                  onClick={() => handleDeletePromotion(promo.id)}
-                                  className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                                >
-                                  Eliminar
-                                </button>
-                              </div>
+                          )}
+
+                          {/* Discounts / delivery */}
+                          {((order.comboDiscount||0)>0||(order.couponDiscount||0)>0||(order.deliveryCost||0)>0) && (
+                            <div className="text-xs text-gray-400 space-y-1 bg-white/[0.02] rounded-xl p-3">
+                              {(order.comboDiscount||0)>0  && <p>Combo desc: -S/ {(order.comboDiscount||0).toFixed(2)}</p>}
+                              {(order.couponDiscount||0)>0  && <p>Cupón desc: -{order.couponDiscount}%</p>}
+                              {(order.deliveryCost||0)>0   && <p>Delivery ({order.deliveryOption}): +S/ {order.deliveryCost?.toFixed(2)}</p>}
+                            </div>
+                          )}
+
+                          {/* Customer info */}
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="bg-white/[0.02] rounded-xl p-3">
+                              <p className="text-gray-500 mb-1">Cliente</p>
+                              <p className="font-semibold text-white">{order.name}</p>
+                              <p className="text-gray-400">{order.phone}</p>
+                            </div>
+                            <div className="bg-white/[0.02] rounded-xl p-3">
+                              <p className="text-gray-500 mb-1">Dirección</p>
+                              <p className="font-semibold text-white">{order.address}</p>
                             </div>
                           </div>
+
+                          {/* Scheduled */}
+                          {order.scheduledDate && (
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-300">
+                              <span className="font-bold">📅 Programado para:</span> {order.scheduledDate} a las {order.scheduledTime}
+                            </div>
+                          )}
+
+                          {/* Voucher */}
+                          {order.paymentProofPath && (
+                            <button
+                              onClick={()=>setVoucherModal(order.paymentProofPath!)}
+                              className="text-xs text-blue-400 hover:text-blue-300 underline transition-colors"
+                            >
+                              Ver comprobante de pago
+                            </button>
+                          )}
+
+                          {/* Action buttons */}
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {order.status==="pending" && (
+                              <button onClick={()=>updateStatus(order.id,"confirmed")} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all active:scale-95">✓ Confirmar</button>
+                            )}
+                            {order.status==="pendiente-verificacion" && (
+                              <button onClick={()=>updateStatus(order.id,"confirmed")} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all active:scale-95">✓ Verificar y confirmar</button>
+                            )}
+                            {order.status==="confirmed" && (
+                              <button onClick={()=>updateStatus(order.id,"en-camino")} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-all active:scale-95">🛵 En camino</button>
+                            )}
+                            {order.status==="en-camino" && (
+                              <button onClick={()=>updateStatus(order.id,"delivered")} className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-bold transition-all active:scale-95">✅ Entregado</button>
+                            )}
+                            {order.status==="delivered" && (
+                              <button onClick={()=>updateStatus(order.id,"en-camino")} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl text-xs font-bold transition-all active:scale-95">↩ Revertir</button>
+                            )}
+                            {!["delivered","cancelled"].includes(order.status) && (
+                              <button onClick={()=>updateStatus(order.id,"cancelled")} className="px-4 py-2 bg-red-900/50 hover:bg-red-800 text-red-300 rounded-xl text-xs font-bold border border-red-500/30 transition-all active:scale-95">✕ Cancelar</button>
+                            )}
+                            {["delivered","cancelled"].includes(order.status) && (
+                              <button onClick={()=>deleteOrder(order.id)} className="px-4 py-2 bg-gray-900 hover:bg-red-900/30 text-gray-500 hover:text-red-400 rounded-xl text-xs font-bold border border-white/8 hover:border-red-500/30 transition-all active:scale-95">🗑 Eliminar</button>
+                            )}
+                          </div>
                         </div>
-                      );
-                    })
-                  )}
-                </div>
-              </>
-            )}
-
-            {marketingSection === "campaigns" && (
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-8">
-                <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Campañas Segmentadas</h3>
-                  <p className="text-gray-400 mb-6">
-                    Crea campañas de marketing dirigidas a segmentos específicos de clientes
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">👑</div>
-                      <h4 className="text-lg font-bold text-white mb-2">Clientes VIP</h4>
-                      <p className="text-sm text-gray-400 mb-4">Promociones exclusivas para tus mejores clientes</p>
-                      <p className="text-2xl font-black text-fuchsia-400">{customerSegments.vip.length} clientes</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">💤</div>
-                      <h4 className="text-lg font-bold text-white mb-2">Clientes Inactivos</h4>
-                      <p className="text-sm text-gray-400 mb-4">Recupera clientes que dejaron de comprar</p>
-                      <p className="text-2xl font-black text-red-400">{customerSegments.inactive.length} clientes</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
-                      <div className="text-4xl mb-3">✨</div>
-                      <h4 className="text-lg font-bold text-white mb-2">Nuevos Clientes</h4>
-                      <p className="text-sm text-gray-400 mb-4">Bienvenida y primera compra especial</p>
-                      <p className="text-2xl font-black text-cyan-400">{customerSegments.new.length} clientes</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-8">
-                    Las campañas se integran con las promociones activas para enviar ofertas personalizadas
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {marketingSection === "loyalty" && (
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-8">
-                <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Programa de Fidelización</h3>
-                  <p className="text-gray-400 mb-8">
-                    Sistema de puntos y recompensas para incentivar compras recurrentes
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    <div className="bg-black/50 rounded-lg p-6 border border-amber-500/30 text-left">
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="text-4xl">⭐</span>
-                        <h4 className="text-xl font-bold text-amber-400">Sistema de Puntos</h4>
-                      </div>
-                      <ul className="space-y-3 text-sm text-gray-300">
-                        <li className="flex items-center gap-2">
-                          <span className="text-amber-400">•</span>
-                          <span>1 punto por cada S/ 10 gastado</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="text-amber-400">•</span>
-                          <span>100 puntos = S/ 10 de descuento</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="text-amber-400">•</span>
-                          <span>Puntos acumulables sin vencimiento</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-6 border border-purple-500/30 text-left">
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="text-4xl">🎁</span>
-                        <h4 className="text-xl font-bold text-purple-400">Beneficios VIP</h4>
-                      </div>
-                      <ul className="space-y-3 text-sm text-gray-300">
-                        <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
-                          <span>Acceso anticipado a nuevos productos</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
-                          <span>Envío gratis en compras mayores a S/ 50</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
-                          <span>Descuentos exclusivos en cumpleaños</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div className="mt-8 p-6 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/30 max-w-2xl mx-auto">
-                    <p className="text-fuchsia-300 text-sm">
-                      💡 <strong>Próximamente:</strong> Integración automática de puntos y niveles de fidelización con cada compra
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {marketingSection === "challenge" && (
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-red-900/30 to-orange-900/20 border-2 border-red-500/30 rounded-2xl p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="text-2xl font-black text-red-400 flex items-center gap-2">🔥 Desafío del Cliente — Marzo 2026</h3>
-                      <p className="text-gray-400 text-sm mt-1">
-                        Termómetro de ventas visible en las páginas FAT, FIT y Home. Sorteo: sábado 28 de marzo.
-                      </p>
-                    </div>
-                    <div className={`px-3 py-1.5 rounded-full text-xs font-black ${challengeData.active ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}>
-                      {challengeData.active ? '● ACTIVO' : '○ INACTIVO'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Progreso actual */}
-                <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                  <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">📊 Progreso Actual</h4>
-                  <div className="space-y-3">
-                    {/* Barra */}
-                    <div className="relative h-10 rounded-full overflow-hidden"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(255,255,255,0.1)' }}>
-                      <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-yellow-400/60 z-10" />
-                      <div
-                        className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-1000"
-                        style={{
-                          width: `${Math.max(45, Math.min(45 + (challengeData.salesAmount / challengeData.goal) * 55, 100))}%`,
-                          background: challengeData.salesAmount >= challengeData.goal
-                            ? 'linear-gradient(to right, #f59e0b, #ef4444, #fbbf24)'
-                            : 'linear-gradient(to right, #7f1d1d, #dc2626, #ef4444, #f87171)',
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center z-10">
-                        <span className="text-white font-black text-sm drop-shadow-lg">
-                          S/ {challengeData.salesAmount.toLocaleString()} / S/ {challengeData.goal.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-500 font-semibold">
-                      <span>S/ 0</span>
-                      <span className="text-yellow-400/70">🏆 Meta: S/ {challengeData.goal.toLocaleString()}</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4 mt-4">
-                      <div className="bg-gray-800 rounded-lg p-3 text-center">
-                        <p className="text-gray-400 text-[10px] uppercase font-bold">Ventas actuales</p>
-                        <p className="text-2xl font-black text-white mt-1">S/ {challengeData.salesAmount.toLocaleString()}</p>
-                      </div>
-                      <div className="bg-gray-800 rounded-lg p-3 text-center">
-                        <p className="text-gray-400 text-[10px] uppercase font-bold">Progreso</p>
-                        <p className="text-2xl font-black text-red-400 mt-1">{Math.round((challengeData.salesAmount / challengeData.goal) * 100)}%</p>
-                      </div>
-                      <div className="bg-gray-800 rounded-lg p-3 text-center">
-                        <p className="text-gray-400 text-[10px] uppercase font-bold">Faltan</p>
-                        <p className="text-2xl font-black text-amber-400 mt-1">S/ {Math.max(0, challengeData.goal - challengeData.salesAmount).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actualizar ventas */}
-                <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                  <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">✏️ Actualizar Ventas de Marzo</h4>
-                  <p className="text-gray-500 text-xs mb-4">
-                    Ingresa el monto total de ventas acumuladas en marzo. El termómetro se actualiza en tiempo real para todos los clientes.
-                  </p>
-                  <div className="flex gap-3">
-                    <div className="flex-1 relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">S/</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="10000"
-                        placeholder="Ej: 2350.50"
-                        value={challengeSalesInput}
-                        onChange={e => setChallengeSalesInput(e.target.value)}
-                        className="w-full bg-gray-800 border-2 border-gray-600 rounded-xl pl-9 pr-4 py-3 text-white text-lg font-bold focus:border-red-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const amount = parseFloat(challengeSalesInput);
-                        if (!isNaN(amount) && amount >= 0) {
-                          await saveChallengeData({ salesAmount: amount });
-                        }
-                      }}
-                      disabled={challengeSaving}
-                      className="px-6 py-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-black rounded-xl transition-all hover:scale-105"
-                    >
-                      {challengeSaving ? 'Guardando...' : '🔥 Actualizar'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Activar / Desactivar + Meta */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
-                    <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-3">⚡ Estado del Desafío</h4>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => saveChallengeData({ active: true })}
-                        disabled={challengeSaving || challengeData.active}
-                        className="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white"
-                      >
-                        ✅ Activar
-                      </button>
-                      <button
-                        onClick={() => saveChallengeData({ active: false })}
-                        disabled={challengeSaving || !challengeData.active}
-                        className="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all bg-gray-600 hover:bg-gray-500 disabled:opacity-40 text-white"
-                      >
-                        ⏸ Desactivar
-                      </button>
-                    </div>
-                  </div>
-                  <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
-                    <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-3">🎯 Meta de ventas</h4>
-                    <div className="flex gap-2">
-                      <div className="flex-1 relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">S/</span>
-                        <input
-                          type="number"
-                          step="100"
-                          min="500"
-                          defaultValue={challengeData.goal}
-                          onBlur={e => {
-                            const val = parseFloat(e.target.value);
-                            if (!isNaN(val) && val > 0) saveChallengeData({ goal: val });
-                          }}
-                          className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-8 pr-3 py-2.5 text-white text-sm font-bold focus:border-red-500 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Premio */}
-                <div className="bg-gradient-to-r from-yellow-900/20 to-amber-900/10 border border-yellow-500/20 rounded-xl p-5">
-                  <h4 className="text-yellow-300 font-bold text-sm uppercase tracking-wider mb-2">🏡 Premio del Sorteo</h4>
-                  <p className="text-white font-black text-lg">Full Day en Casa de Campo</p>
-                  <p className="text-gray-400 text-xs mt-1">Sorteo en vivo — Sábado 28 de Marzo 2026. Entre todos los clientes que compraron en marzo.</p>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* Promotion Modal */}
-          {showPromotionModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-2xl w-full my-8">
-                <h3 className="text-2xl font-black text-fuchsia-400 mb-4">
-                  {editingPromotion ? 'Editar Promoción' : 'Nueva Promoción'}
-                </h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Nombre</label>
-                      <input
-                        type="text"
-                        value={promotionForm.name}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, name: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="Black Friday 2024"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Código de Cupón (opcional)</label>
-                      <input
-                        type="text"
-                        value={promotionForm.code}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, code: e.target.value.toUpperCase() })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none uppercase"
-                        placeholder="VERANO2024"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Descripción</label>
-                    <textarea
-                      value={promotionForm.description}
-                      onChange={(e) => setPromotionForm({ ...promotionForm, description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      rows={2}
-                      placeholder="Descripción de la promoción"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Tipo</label>
-                      <select
-                        value={promotionForm.type}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, type: e.target.value as any })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                      >
-                        <option value="percentage">Porcentaje</option>
-                        <option value="fixed">Monto Fijo</option>
-                        <option value="shipping">Envío Gratis</option>
-                        <option value="combo">Combo</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">
-                        {promotionForm.type === 'percentage' ? 'Porcentaje (%)' : 'Monto (S/)'}
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={promotionForm.value}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, value: parseFloat(e.target.value) || 0 })}
-                        disabled={promotionForm.type === 'shipping'}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none disabled:opacity-50"
-                        placeholder="10"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Compra Mínima</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={promotionForm.minAmount}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, minAmount: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Fecha Inicio</label>
-                      <input
-                        type="date"
-                        value={promotionForm.startDate}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, startDate: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Fecha Fin</label>
-                      <input
-                        type="date"
-                        value={promotionForm.endDate}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, endDate: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Límite de Uso</label>
-                      <input
-                        type="number"
-                        value={promotionForm.usageLimit}
-                        onChange={(e) => setPromotionForm({ ...promotionForm, usageLimit: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        placeholder="0 = ilimitado"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Segmento de Clientes</label>
-                    <select
-                      value={promotionForm.targetSegment}
-                      onChange={(e) => setPromotionForm({ ...promotionForm, targetSegment: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                    >
-                      <option value="all">Todos los clientes</option>
-                      <option value="vip">Clientes VIP</option>
-                      <option value="frequent">Clientes Frecuentes</option>
-                      <option value="new">Clientes Nuevos</option>
-                      <option value="inactive">Clientes Inactivos</option>
-                      <option value="at_risk">Clientes en Riesgo</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={promotionForm.active}
-                      onChange={(e) => setPromotionForm({ ...promotionForm, active: e.target.checked })}
-                      className="w-4 h-4"
-                    />
-                    <label className="text-sm text-white">Promoción activa</label>
-                  </div>
-                </div>
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => {
-                      setShowPromotionModal(false);
-                      setEditingPromotion(null);
-                      resetPromotionForm();
-                    }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={editingPromotion ? handleUpdatePromotion : handleCreatePromotion}
-                    disabled={!promotionForm.name || !promotionForm.startDate || !promotionForm.endDate}
-                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {editingPromotion ? 'Guardar' : 'Crear Promoción'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      ) : activeTab === "carta" ? (
-        /* Carta Tab — control de stock de menús */
-        <section className="container mx-auto px-4 py-8">
-          <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-2">Stock de Carta</h2>
-          <p className="text-gray-400 text-sm mb-8">
-            Activa el sello <span className="text-red-400 font-bold">AGOTADO</span> para que los clientes no puedan pedir ese plato.
-            El cambio se refleja en la carta al instante.
-          </p>
-
-          {/* FAT */}
-          <div className="mb-10">
-            <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2">
-              🥩 Carta FAT
-            </h3>
-            {/* Stock FAT */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              {[
-                { id: "pequeno-dilema", name: "Pequeño Dilema", defaultPrice: 22.00 },
-                { id: "duo-dilema", name: "Dúo Dilema", defaultPrice: 34.00 },
-                { id: "santo-pecado", name: "Santo Pecado", defaultPrice: 47.00 },
-              ].map((item) => {
-                const isSoldOut = !!menuStock[item.id];
-                const isSaving = menuStockSaving === item.id;
-                const hasDiscount = !!menuDiscounts[item.id];
-                const isSavingDiscount = discountSaving === item.id;
-                const isSavingPrice = priceSaving === item.id;
-                const effectivePrice = menuPrices[item.id] || item.defaultPrice;
-                return (
-                  <div
-                    key={item.id}
-                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-amber-500/50" : "border-gray-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-white font-bold text-base">{item.name}</p>
-                        {hasDiscount ? (
-                          <p className="text-xs mt-0.5">
-                            <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                            <span className="text-amber-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
-                          </p>
-                        ) : (
-                          <p className="text-amber-400 text-sm font-bold">S/ {effectivePrice.toFixed(2)}</p>
-                        )}
-                        {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
-                      </div>
-                      <button
-                        onClick={() => toggleMenuStock(item.id, isSoldOut)}
-                        disabled={isSaving}
-                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
-                          isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"
-                        } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
-                      >
-                        {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
-                      </button>
-                    </div>
-                    {/* Precio real */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-800">
-                      <input
-                        type="number" step="0.50" min="0.50"
-                        placeholder={`Precio real (actual: S/ ${effectivePrice.toFixed(2)})`}
-                        value={priceInputs[item.id] || ''}
-                        onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-red-400 focus:outline-none"
-                      />
-                      <button
-                        onClick={() => savePrice(item.id, item.defaultPrice)}
-                        disabled={isSavingPrice}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all bg-red-700 hover:bg-red-600 text-white ${isSavingPrice ? 'opacity-50' : ''}`}
-                      >
-                        {isSavingPrice ? '...' : '💰 Precio'}
-                      </button>
-                    </div>
-                    {/* Precio oferta */}
-                    <div className="flex gap-2 mt-2">
-                      <input
-                        type="number" step="0.50" min="0" max={effectivePrice - 0.5}
-                        placeholder="Precio oferta (menor al real)"
-                        value={discountInputs[item.id] || ''}
-                        onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-amber-500 focus:outline-none"
-                      />
-                      <button
-                        onClick={() => saveDiscount(item.id, effectivePrice)}
-                        disabled={isSavingDiscount}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
-                      >
-                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Oferta'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* FIT */}
-          <div>
-            <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2">
-              🥗 Carta FIT
-            </h3>
-            {/* Stock FIT */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { id: "ensalada-clasica", name: "CLÁSICA FRESH BOWL", defaultPrice: 18.50 },
-                { id: "ensalada-proteica", name: "CÉSAR POWER BOWL", defaultPrice: 22.50 },
-                { id: "ensalada-caesar", name: "PROTEIN FIT BOWL", defaultPrice: 23.50 },
-                { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", defaultPrice: 23.50 },
-                { id: "cobb-supreme-bowl", name: "COBB SUPREME BOWL", defaultPrice: 23.50 },
-                { id: "crispy-chicken-bowl", name: "CRISPY CHICKEN BOWL", defaultPrice: 22.50 },
-                { id: "pasta-power-bowl", name: "PASTA POWER BOWL", defaultPrice: 22.50 },
-              ].map((item) => {
-                const isSoldOut = !!menuStock[item.id];
-                const isSaving = menuStockSaving === item.id;
-                const hasDiscount = !!menuDiscounts[item.id];
-                const isSavingDiscount = discountSaving === item.id;
-                const isSavingPrice = priceSaving === item.id;
-                const effectivePrice = menuPrices[item.id] || item.defaultPrice;
-                return (
-                  <div
-                    key={item.id}
-                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-cyan-500/50" : "border-gray-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-white font-bold text-base">{item.name}</p>
-                        {hasDiscount ? (
-                          <p className="text-xs mt-0.5">
-                            <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                            <span className="text-cyan-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
-                          </p>
-                        ) : (
-                          <p className="text-cyan-400 text-sm font-bold">S/ {effectivePrice.toFixed(2)}</p>
-                        )}
-                        {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
-                      </div>
-                      <button
-                        onClick={() => toggleMenuStock(item.id, isSoldOut)}
-                        disabled={isSaving}
-                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
-                          isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"
-                        } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
-                      >
-                        {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
-                      </button>
-                    </div>
-                    {/* Precio real */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-800">
-                      <input
-                        type="number" step="0.50" min="0.50"
-                        placeholder={`Precio real (actual: S/ ${effectivePrice.toFixed(2)})`}
-                        value={priceInputs[item.id] || ''}
-                        onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-cyan-400 focus:outline-none"
-                      />
-                      <button
-                        onClick={() => savePrice(item.id, item.defaultPrice)}
-                        disabled={isSavingPrice}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all bg-cyan-700 hover:bg-cyan-600 text-white ${isSavingPrice ? 'opacity-50' : ''}`}
-                      >
-                        {isSavingPrice ? '...' : '💰 Precio'}
-                      </button>
-                    </div>
-                    {/* Precio oferta */}
-                    <div className="flex gap-2 mt-2">
-                      <input
-                        type="number" step="0.50" min="0" max={effectivePrice - 0.5}
-                        placeholder="Precio oferta (menor al real)"
-                        value={discountInputs[item.id] || ''}
-                        onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-cyan-500 focus:outline-none"
-                      />
-                      <button
-                        onClick={() => saveDiscount(item.id, effectivePrice)}
-                        disabled={isSavingDiscount}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
-                      >
-                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Oferta'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* TACOS */}
-          <div className="mt-10">
-            <h3 className="text-xl font-black text-orange-400 mb-4 flex items-center gap-2">
-              🌮 Carta Tacos
-            </h3>
-
-            {/* Precio del Dúo */}
-            {(() => {
-              const duoId = "taco-duo";
-              const defaultPrice = 24.90;
-              const hasDiscount = !!menuDiscounts[duoId];
-              const isSavingDiscount = discountSaving === duoId;
-              const isSavingPrice = priceSaving === duoId;
-              const effectivePrice = menuPrices[duoId] || defaultPrice;
-              return (
-                <div className={`bg-gray-900 rounded-xl border-2 p-5 mb-6 max-w-md transition-all ${hasDiscount ? "border-orange-500/50" : "border-gray-700"}`}>
-                  <p className="text-white font-bold text-base mb-1">DÚO DE TACOS</p>
-                  {hasDiscount ? (
-                    <p className="text-sm mb-3">
-                      <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                      <span className="text-orange-400 font-black ml-1.5">S/ {menuDiscounts[duoId].toFixed(2)}</span>
-                      <span className="text-gray-500 text-xs ml-2">(precio en oferta)</span>
-                    </p>
-                  ) : (
-                    <p className="text-orange-400 text-sm font-bold mb-3">S/ {effectivePrice.toFixed(2)}</p>
-                  )}
-                  <div className="flex gap-2 pt-3 border-t border-gray-800">
-                    <input
-                      type="number" step="0.50" min="0.50"
-                      placeholder={`Nuevo precio (actual: S/ ${effectivePrice.toFixed(2)})`}
-                      value={priceInputs[duoId] || ''}
-                      onChange={e => setPriceInputs(prev => ({ ...prev, [duoId]: e.target.value }))}
-                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-orange-400 focus:outline-none"
-                    />
-                    <button
-                      onClick={() => savePrice(duoId, defaultPrice)}
-                      disabled={isSavingPrice}
-                      className={`px-3 py-1.5 rounded-lg font-bold text-xs bg-orange-700 hover:bg-orange-600 text-white transition-all ${isSavingPrice ? 'opacity-50' : ''}`}
-                    >
-                      {isSavingPrice ? '...' : '💰 Guardar precio'}
-                    </button>
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <input
-                      type="number" step="0.50" min="0" max={effectivePrice - 0.5}
-                      placeholder="Precio oferta (menor al actual)"
-                      value={discountInputs[duoId] || ''}
-                      onChange={e => setDiscountInputs(prev => ({ ...prev, [duoId]: e.target.value }))}
-                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-orange-500 focus:outline-none"
-                    />
-                    <button
-                      onClick={() => saveDiscount(duoId, effectivePrice)}
-                      disabled={isSavingDiscount}
-                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-orange-600 hover:bg-orange-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
-                    >
-                      {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar oferta' : '🏷️ Poner oferta'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Agotado por sabor */}
-            <p className="text-gray-400 text-xs mb-3 uppercase tracking-wide font-bold">Disponibilidad de sabores</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[
-                { id: "santo-crujiente", name: "CRUNCH SUPREME" },
-                { id: "tex-dilema",      name: "TEX SUPREME" },
-                { id: "santo-bacon",     name: "BACON DELUXE" },
-              ].map((item) => {
-                const isSoldOut = !!menuStock[item.id];
-                const isSaving = menuStockSaving === item.id;
-                return (
-                  <div key={item.id} className={`bg-gray-900 rounded-xl border-2 p-4 flex items-center justify-between transition-all ${isSoldOut ? "border-red-600/60 opacity-70" : "border-orange-700/40"}`}>
-                    <div>
-                      <p className="text-white font-bold text-sm">{item.name}</p>
-                      {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
-                    </div>
-                    <button
-                      onClick={() => toggleMenuStock(item.id, isSoldOut)}
-                      disabled={isSaving}
-                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"} ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* SALSAS FAT */}
-          <div className="mt-10">
-            <h3 className="text-xl font-black text-amber-400 mb-1 flex items-center gap-2">
-              🫙 Salsas FAT
-            </h3>
-            <p className="text-gray-500 text-xs mb-4">
-              Al agotar una salsa los clientes no podrán seleccionarla al pedir. El cambio se refleja al instante.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {salsas.map((salsa) => {
-                const stockId = `salsa-${salsa.id}`;
-                const isSoldOut = !!menuStock[stockId];
-                const isSaving = menuStockSaving === stockId;
-                return (
-                  <div
-                    key={stockId}
-                    className={`bg-gray-900 rounded-xl border-2 p-4 flex items-center justify-between transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : "border-amber-700/40"
-                    }`}
-                  >
-                    <div>
-                      <p className="text-white font-bold text-sm">{salsa.name}</p>
-                      {isSoldOut && (
-                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
                       )}
                     </div>
-                    <button
-                      onClick={() => toggleMenuStock(stockId, isSoldOut)}
-                      disabled={isSaving}
-                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${
-                        isSoldOut
-                          ? "bg-green-700 hover:bg-green-600 text-white"
-                          : "bg-red-700 hover:bg-red-600 text-white"
-                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
+        )}
 
-          {/* ==================== PROMOCIONES DE SALSAS FAT ==================== */}
-          {(() => {
-            const FAT_SALSAS = [
-              { id: 'barbecue', name: 'BBQ Ahumada' },
-              { id: 'buffalo-picante', name: 'Santo Picante' },
-              { id: 'ahumada', name: 'Acevichada Imperial' },
-              { id: 'parmesano-ajo', name: 'Crispy Celestial' },
-              { id: 'anticuchos', name: 'Parrillera' },
-              { id: 'honey-mustard', name: 'Honey Mustard' },
-              { id: 'teriyaki', name: 'Oriental Teriyaki' },
-              { id: 'macerichada', name: 'Sweet & Sour' },
-            ];
-            const FAT_PRODUCTS = [
-              { id: 'pequeno-dilema', name: 'Pequeño Dilema' },
-              { id: 'duo-dilema', name: 'Dúo Dilema' },
-              { id: 'santo-pecado', name: 'Santo Pecado' },
-            ];
-            return (
-              <div className="mt-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-black text-fuchsia-400 flex items-center gap-2">
-                      🌶️ Promociones de Salsas FAT
-                    </h3>
-                    <p className="text-gray-500 text-xs mt-1">
-                      Define combos de salsas con precio especial. Si el cliente selecciona las salsas indicadas, el precio baja automáticamente.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setEditingPromo(null);
-                      setPromoForm({ productId: 'pequeno-dilema', salsas: [], promoPrice: 0, active: true });
-                      setShowSalsaPromoModal(true);
-                    }}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-lg font-bold text-sm"
-                  >
-                    + Nueva promo
-                  </button>
-                </div>
-                {salsaPromos.length === 0 ? (
-                  <div className="bg-gray-900 rounded-xl border border-gray-700 p-6 text-center">
-                    <p className="text-gray-500 text-sm">Sin promociones activas. Crea una para ofrecer precios especiales por combinación de salsas.</p>
-                    <p className="text-gray-600 text-xs mt-2">Las promos hardcodeadas (Teriyaki S/18, Barbecue+Ahumada S/32, etc.) siguen activas como fallback.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {salsaPromos.map((promo: any) => {
-                      const prodName = FAT_PRODUCTS.find(p => p.id === promo.productId)?.name || promo.productId;
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* FINANZAS                                                        */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {activeTab==="finanzas" && (
+          <div className="space-y-6">
+
+            {/* Month selector */}
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-gray-400 font-semibold">Mes:</label>
+              <input
+                type="month"
+                value={finMonth}
+                onChange={e=>setFinMonth(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/50"
+              />
+              <span className="text-sm font-bold text-amber-400">{monthLabel}</span>
+            </div>
+
+            {/* KPIs del mes seleccionado */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <KpiCard label="Ventas"   value={fmtSoles(finSales)}    sub={`${finDelivered.length} pedidos entregados`} icon="💵" color="amber" />
+              <KpiCard label="Gastos"   value={fmtSoles(finExpenses)} sub="compras e insumos"                           icon="🛒" color="red"   />
+              <KpiCard label="Utilidad" value={fmtSoles(finProfit)}   sub={`Margen ${finMargin.toFixed(1)}%`}           icon="💰" color={finProfit>=0?"green":"red"} />
+              <KpiCard label="Ticket ø" value={fmtSoles(finDelivered.length>0?finSales/finDelivered.length:0)} sub="por pedido" icon="🧾" color="blue" />
+            </div>
+
+            {/* Historial mensual */}
+            <div className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/5">
+                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Historial mensual</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="text-left px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Mes</th>
+                      <th className="text-right px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Pedidos</th>
+                      <th className="text-right px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Ventas</th>
+                      <th className="text-right px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Gastos</th>
+                      <th className="text-right px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Utilidad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {monthlyRows.length===0 ? (
+                      <tr><td colSpan={5} className="px-5 py-8 text-center text-gray-600 text-xs">Sin datos</td></tr>
+                    ) : monthlyRows.map(([month,data])=>{
+                      const [y,m]=month.split("-").map(Number);
+                      const profit=data.sales-data.expenses;
                       return (
-                        <div key={promo.id} className={`bg-gray-900 rounded-xl border-2 p-4 ${promo.active ? 'border-fuchsia-500/50' : 'border-gray-700 opacity-60'}`}>
-                          <div className="flex items-start justify-between mb-2">
+                        <tr key={month} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                          <td className="px-5 py-3 font-semibold text-white">{MONTHS[m-1]} {y}</td>
+                          <td className="px-5 py-3 text-right text-gray-300">{data.orders}</td>
+                          <td className="px-5 py-3 text-right text-amber-400 font-bold">{fmtSoles(data.sales)}</td>
+                          <td className="px-5 py-3 text-right text-red-400">{fmtSoles(data.expenses)}</td>
+                          <td className={`px-5 py-3 text-right font-black ${profit>=0?"text-green-400":"text-red-400"}`}>{fmtSoles(profit)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Ventas por día del mes seleccionado */}
+            {dailyRows.length>0 && (
+              <div className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-white/5">
+                  <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Ventas por día — {monthLabel}</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/5">
+                        <th className="text-left px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Fecha</th>
+                        <th className="text-right px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Pedidos</th>
+                        <th className="text-right px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Total</th>
+                        <th className="text-right px-5 py-3 text-xs text-gray-500 font-semibold uppercase tracking-wider">Ticket ø</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dailyRows.map(([day,data])=>(
+                        <tr key={day} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                          <td className="px-5 py-3 font-semibold text-white">{day}</td>
+                          <td className="px-5 py-3 text-right text-gray-300">{data.orders}</td>
+                          <td className="px-5 py-3 text-right text-amber-400 font-bold">{fmtSoles(data.sales)}</td>
+                          <td className="px-5 py-3 text-right text-gray-400">{fmtSoles(data.orders>0?data.sales/data.orders:0)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Compras registradas del mes */}
+            {inventory.filter(p=>{ const d=new Date(p.purchaseDate||p.createdAt||""); return d>=finMonthStart&&d<=finMonthEnd; }).length>0 && (
+              <div className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-white/5">
+                  <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Compras y gastos — {monthLabel}</h3>
+                </div>
+                <div className="space-y-2 p-4">
+                  {inventory
+                    .filter(p=>{ const d=new Date(p.purchaseDate||p.createdAt||""); return d>=finMonthStart&&d<=finMonthEnd; })
+                    .sort((a,b)=>new Date(b.purchaseDate||b.createdAt).getTime()-new Date(a.purchaseDate||a.createdAt).getTime())
+                    .map((p:any,i:number)=>(
+                      <div key={i} className="flex items-center justify-between rounded-xl bg-white/[0.02] px-4 py-3">
+                        <div>
+                          <p className="text-sm font-semibold text-white">{p.supplier||"Proveedor"}</p>
+                          <p className="text-xs text-gray-500">{fmtDate(p.purchaseDate||p.createdAt)} · {p.category||"general"} · {p.paymentMethod||""}</p>
+                        </div>
+                        <span className="text-sm font-black text-red-400">{fmtSoles(p.totalAmount||0)}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* CARTA                                                           */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {activeTab==="carta" && (
+          <div className="space-y-6">
+            <p className="text-xs text-gray-500">Gestiona disponibilidad y precios del menú en tiempo real.</p>
+
+            {(["fat","fit","taco"] as const).map(cat=>{
+              const catLabels: Record<string,string> = { fat:"🍗 Alitas", fit:"🥗 Ensaladas", taco:"🌮 Tacos" };
+              const catColors: Record<string,string> = { fat:"border-red-500/20 text-red-400", fit:"border-cyan-500/20 text-cyan-400", taco:"border-green-500/20 text-green-400" };
+              const prods = MENU_PRODUCTS.filter(p=>p.category===cat);
+              return (
+                <div key={cat} className={`bg-white/[0.03] border rounded-2xl overflow-hidden ${catColors[cat]}`}>
+                  <div className={`px-5 py-3 border-b ${catColors[cat]}`}>
+                    <h3 className="text-sm font-bold uppercase tracking-wider">{catLabels[cat]}</h3>
+                  </div>
+                  <div className="divide-y divide-white/[0.04]">
+                    {prods.map(prod=>{
+                      const isSoldOut = !!menuStock[prod.id];
+                      const currentPrice = menuPrices[prod.id] || prod.price;
+                      const discountPrice = menuDiscounts[prod.id];
+                      return (
+                        <div key={prod.id} className="px-5 py-4">
+                          {/* Name + toggle */}
+                          <div className="flex items-center justify-between mb-3">
                             <div>
-                              <p className="text-white font-black text-sm">{prodName}</p>
-                              <p className="text-fuchsia-400 text-xl font-black">S/ {promo.promoPrice}</p>
+                              <p className={`text-sm font-bold ${isSoldOut?"text-gray-500 line-through":"text-white"}`}>{prod.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Precio base: <span className="text-amber-400">S/ {prod.price.toFixed(2)}</span>
+                                {currentPrice !== prod.price && <span className="text-blue-400 ml-2">→ S/ {currentPrice.toFixed(2)}</span>}
+                                {discountPrice && <span className="text-green-400 ml-2">Oferta: S/ {discountPrice.toFixed(2)}</span>}
+                              </p>
                             </div>
-                            <div className="flex gap-1">
-                              <button onClick={() => {
-                                setEditingPromo(promo);
-                                setPromoForm({ productId: promo.productId, salsas: promo.salsas, promoPrice: promo.promoPrice, active: promo.active });
-                                setShowSalsaPromoModal(true);
-                              }} className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-2 py-1 rounded">Editar</button>
-                              <button onClick={() => handleDeletePromo(promo.id)} className="text-xs text-red-400 hover:text-red-200 border border-red-900 hover:border-red-700 px-2 py-1 rounded">✕</button>
+                            <button
+                              onClick={()=>toggleStock(prod.id, isSoldOut)}
+                              disabled={savingId===prod.id}
+                              className={`relative w-12 h-6 rounded-full transition-all ${isSoldOut?"bg-red-500":"bg-green-500"} ${savingId===prod.id?"opacity-50":""}`}
+                            >
+                              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${isSoldOut?"left-0.5":"left-6"}`} />
+                            </button>
+                          </div>
+                          {isSoldOut && <p className="text-xs text-red-400 font-semibold mb-3">⚠️ Marcado como agotado</p>}
+
+                          {/* Price & discount inputs */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">Precio especial</label>
+                              <div className="flex gap-1">
+                                <input
+                                  type="number" step="0.5" min="0"
+                                  value={priceInputs[prod.id]||""}
+                                  onChange={e=>setPriceInputs(p=>({...p,[prod.id]:e.target.value}))}
+                                  placeholder={prod.price.toFixed(2)}
+                                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500/50 w-0"
+                                />
+                                <button
+                                  onClick={()=>savePrice(prod.id,prod.price)}
+                                  disabled={savingId===prod.id+"_price"}
+                                  className="text-[10px] font-bold bg-blue-600/50 hover:bg-blue-600 text-blue-200 px-2 rounded-lg transition-all disabled:opacity-50"
+                                >
+                                  {savingId===prod.id+"_price"?"…":"OK"}
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">Precio oferta</label>
+                              <div className="flex gap-1">
+                                <input
+                                  type="number" step="0.5" min="0"
+                                  value={discInputs[prod.id]||""}
+                                  onChange={e=>setDiscInputs(p=>({...p,[prod.id]:e.target.value}))}
+                                  placeholder="—"
+                                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500/50 w-0"
+                                />
+                                <button
+                                  onClick={()=>saveDiscount(prod.id,currentPrice)}
+                                  disabled={savingId===prod.id+"_disc"}
+                                  className="text-[10px] font-bold bg-amber-600/50 hover:bg-amber-600 text-amber-200 px-2 rounded-lg transition-all disabled:opacity-50"
+                                >
+                                  {savingId===prod.id+"_disc"?"…":"OK"}
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex flex-wrap gap-1">
-                            {promo.salsas.map((sId: string) => (
-                              <span key={sId} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                                {FAT_SALSAS.find(s => s.id === sId)?.name || sId}
-                              </span>
-                            ))}
-                          </div>
-                          <p className={`text-[10px] mt-2 font-bold ${promo.active ? 'text-green-400' : 'text-gray-500'}`}>
-                            {promo.active ? '● Activa' : '○ Inactiva'}
-                          </p>
                         </div>
                       );
                     })}
                   </div>
-                )}
-
-                {/* Modal crear/editar promo */}
-                {showSalsaPromoModal && (
-                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-5 max-w-md w-full">
-                      <h3 className="text-lg font-black text-fuchsia-400 mb-4">
-                        {editingPromo ? 'Editar Promo' : 'Nueva Promo de Salsas'}
-                      </h3>
-
-                      <div className="mb-4">
-                        <label className="block text-xs font-bold text-gray-400 mb-1">Producto FAT</label>
-                        <select
-                          value={promoForm.productId}
-                          onChange={e => setPromoForm({ ...promoForm, productId: e.target.value })}
-                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
-                        >
-                          {FAT_PRODUCTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                        </select>
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="block text-xs font-bold text-gray-400 mb-2">Salsas que activan la promo (todas deben estar seleccionadas)</label>
-                        <div className="flex flex-wrap gap-2">
-                          {FAT_SALSAS.map(s => {
-                            const sel = promoForm.salsas.includes(s.id);
-                            return (
-                              <button key={s.id}
-                                onClick={() => setPromoForm(f => ({
-                                  ...f,
-                                  salsas: sel ? f.salsas.filter(x => x !== s.id) : [...f.salsas, s.id]
-                                }))}
-                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${sel ? 'bg-amber-500 border-amber-400 text-black' : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-amber-500'}`}>
-                                {s.name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="block text-xs font-bold text-gray-400 mb-1">Precio con promo (S/)</label>
-                        <input
-                          type="number" min="0" step="0.5"
-                          value={promoForm.promoPrice || ''}
-                          onChange={e => setPromoForm({ ...promoForm, promoPrice: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
-                          placeholder="ej: 18"
-                        />
-                      </div>
-
-                      <div className="mb-5 flex items-center gap-3">
-                        <button
-                          onClick={() => setPromoForm(f => ({ ...f, active: !f.active }))}
-                          className={`relative w-10 h-6 rounded-full transition-all ${promoForm.active ? 'bg-green-500' : 'bg-gray-700'}`}
-                        >
-                          <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${promoForm.active ? 'left-5' : 'left-1'}`} />
-                        </button>
-                        <span className="text-xs text-gray-400">{promoForm.active ? 'Activa' : 'Inactiva'}</span>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleSavePromo}
-                          disabled={promoSaving || promoForm.salsas.length === 0 || !promoForm.promoPrice}
-                          className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-700 disabled:opacity-50 text-white py-2 rounded-lg font-bold text-sm"
-                        >
-                          {promoSaving ? 'Guardando...' : 'Guardar'}
-                        </button>
-                        <button
-                          onClick={() => { setShowSalsaPromoModal(false); setEditingPromo(null); }}
-                          className="px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-sm"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-        </section>
-      ) : null}
-
-      {/* ==================== MODAL DE INVENTARIO (GLOBAL) ==================== */}
-      {showInventoryModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
-            <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
-
-            {/* Información Compacta en Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
-                <input
-                  type="text"
-                  value={inventoryForm.supplierRuc}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                  placeholder="20123456789"
-                  maxLength={11}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Nombre del proveedor *</label>
-                <input
-                  type="text"
-                  value={inventoryForm.supplier}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value.toUpperCase() })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                  placeholder="Nombre proveedor"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
-                <input
-                  type="tel"
-                  value={inventoryForm.supplierPhone}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    setInventoryForm({ ...inventoryForm, supplierPhone: value });
-                  }}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                  maxLength={9}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Fecha de compra *</label>
-                <input
-                  type="date"
-                  value={inventoryForm.purchaseDate}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, purchaseDate: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Método de pago *</label>
-                <select
-                  value={inventoryForm.paymentMethod}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                >
-                  <option value="plin-yape">📱 Plin / Yape</option>
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="transferencia">🏦 Transferencia</option>
-                  <option value="tarjeta">💳 Tarjeta</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Categoría de gasto *</label>
-                <select
-                  value={inventoryForm.category}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, category: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                >
-                  <option value="operativos">🍖 Gastos Operativos</option>
-                  <option value="fijos">🏢 Gastos Fijos</option>
-                  <option value="personal">👥 Gastos de Personal</option>
-                  <option value="marketing">📢 Marketing y Publicidad</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Formulario dinámico según categoría */}
-            <div className="mb-3">
-              {inventoryForm.category === "operativos" && (
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-sm font-bold text-white">📋 Insumos y Productos</h4>
-                  <button
-                    onClick={addInventoryItem}
-                    className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
-                  >
-                    + Item
-                  </button>
                 </div>
-              )}
-              {inventoryForm.category === "personal" && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-white mb-3">👥 Pago de Personal</h4>
-                </div>
-              )}
-              {inventoryForm.category === "fijos" && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-white mb-3">🏢 Gastos Fijos</h4>
-                </div>
-              )}
-              {inventoryForm.category === "marketing" && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-white mb-3">📢 Marketing y Publicidad</h4>
-                </div>
-              )}
+              );
+            })}
+          </div>
+        )}
+      </main>
 
-              {/* FORMULARIO PARA GASTOS OPERATIVOS */}
-              {inventoryForm.category === "operativos" && (
-              <>
-              {/* Encabezados de columnas */}
-              <div className="bg-gray-800 rounded-lg p-2 mb-2">
-                <div className="grid grid-cols-12 gap-2">
-                  <div className="col-span-3">
-                    <p className="text-xs font-bold text-fuchsia-400">Producto</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs font-bold text-fuchsia-400">Categoría</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-fuchsia-400 text-center">Compra</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-fuchsia-400">Und.</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-cyan-400 text-center" title="Contenido por unidad de compra">x</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-green-400 text-center" title="Stock total que ingresa">= Stock</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs font-bold text-fuchsia-400">Costo S/</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-amber-400">Total S/</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2 pr-1">
-                {inventoryForm.items.map((item, idx) => (
-                  <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
-                    <div className="grid grid-cols-12 gap-2 items-center">
-                      {/* Producto */}
-                      <div className="col-span-12 md:col-span-3">
-                        <input
-                          type="text"
-                          value={item.productName || ""}
-                          onChange={(e) => updateInventoryItem(idx, 'productName', e.target.value.toUpperCase())}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        />
-                      </div>
-
-                      {/* Categoría */}
-                      <div className="col-span-12 md:col-span-2">
-                        <select
-                          value={item.category || ""}
-                          onChange={(e) => updateInventoryItem(idx, 'category', e.target.value)}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        >
-                          <option value="">-- Tipo --</option>
-                          <option value="INSUMO">🥘 INSUMO</option>
-                          <option value="EMPAQUE">📦 EMPAQUE</option>
-                          <option value="SERVICIO">⚡ SERVICIO</option>
-                          <option value="UTENCILIO">🔧 UTENCILIO</option>
-                        </select>
-                      </div>
-
-                      {/* Cantidad Comprada */}
-                      <div className="col-span-3 md:col-span-1">
-                        <input
-                          type="number"
-                          step="1"
-                          value={item.quantity === 0 ? '' : item.quantity}
-                          onChange={(e) => updateInventoryItem(idx, 'quantity', parseInt(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white text-center focus:border-fuchsia-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-
-                      {/* Unidad de Compra */}
-                      <div className="col-span-4 md:col-span-1">
-                        <select
-                          value={item.unit}
-                          onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
-                          className="w-full px-1 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        >
-                          <option value="">-</option>
-                          <option value="PAQUETE">PKT</option>
-                          <option value="CAJA">CAJA</option>
-                          <option value="BOLSA">BOLSA</option>
-                          <option value="KG">KG</option>
-                          <option value="UNIDAD">UND</option>
-                          <option value="CIENTO">CIEN</option>
-                        </select>
-                      </div>
-
-                      {/* Multiplicador (Contenido por unidad) */}
-                      <div className="col-span-2 md:col-span-1">
-                        <input
-                          type="number"
-                          step="1"
-                          value={item.volume === 0 ? '' : item.volume}
-                          onChange={(e) => updateInventoryItem(idx, 'volume', parseInt(e.target.value) || 1)}
-                          title="Contenido por unidad. Ej: Si cada paquete tiene 100 bolsas, escribe 100"
-                          className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-
-                      {/* Stock Total (Auto-calculado) */}
-                      <div className="col-span-3 md:col-span-1">
-                        <div className="w-full px-2 py-1.5 text-xs rounded bg-green-900/30 border border-green-500/50 text-green-400 text-center font-black">
-                          {(item.quantity * (item.volume || 1)).toLocaleString()}
-                        </div>
-                      </div>
-
-                      {/* Costo Unitario */}
-                      <div className="col-span-6 md:col-span-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={item.unitCost === 0 ? '' : item.unitCost}
-                          onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-
-                      {/* Total */}
-                      <div className="col-span-6 md:col-span-1">
-                        <div className="w-full px-2 py-1.5 text-xs rounded bg-amber-900/30 border border-amber-500/50 text-amber-400 font-black text-right">
-                          {item.total.toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-                    {inventoryForm.items.length > 1 && (
-                      <div className="mt-1 text-right">
-                        <button
-                          onClick={() => removeInventoryItem(idx)}
-                          className="text-red-400 hover:text-red-300 text-xs"
-                        >
-                          ❌ Eliminar
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              </>
-              )}
-
-              {/* FORMULARIO PARA GASTOS DE PERSONAL */}
-              {inventoryForm.category === "personal" && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-green-400 mb-1">Nombre del empleado *</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.items[0]?.productName || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "DÍA" };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
-                        placeholder="NOMBRE COMPLETO"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-green-400 mb-1">Días trabajados *</label>
-                      <input
-                        type="number"
-                        value={inventoryForm.items[0]?.quantity || 0}
-                        onChange={(e) => {
-                          const days = parseInt(e.target.value) || 0;
-                          const dailyRate = inventoryForm.items[0]?.unitCost || 0;
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], quantity: days, volume: 1, total: days * dailyRate };
-                          const total = days * dailyRate;
-                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: total });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-green-400 mb-1">Pago por día (S/) *</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={inventoryForm.items[0]?.unitCost || 0}
-                        onChange={(e) => {
-                          const dailyRate = parseFloat(e.target.value) || 0;
-                          const days = inventoryForm.items[0]?.quantity || 0;
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], unitCost: dailyRate, total: days * dailyRate };
-                          const total = days * dailyRate;
-                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: total });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-                  <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
-                    <p className="text-xs text-green-300 font-bold">Total a pagar: S/ {inventoryForm.totalAmount.toFixed(2)}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* FORMULARIO PARA GASTOS FIJOS */}
-              {inventoryForm.category === "fijos" && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-purple-400 mb-1">Concepto *</label>
-                      <select
-                        value={inventoryForm.items[0]?.productName || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], productName: e.target.value, unit: "SERVICIO", quantity: 1, volume: 1 };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
-                      >
-                        <option value="">-- Seleccionar --</option>
-                        <option value="ALQUILER">🏠 ALQUILER</option>
-                        <option value="LUZ">💡 LUZ</option>
-                        <option value="AGUA">💧 AGUA</option>
-                        <option value="GAS">🔥 GAS</option>
-                        <option value="INTERNET">📡 INTERNET</option>
-                        <option value="TELÉFONO">📞 TELÉFONO</option>
-                        <option value="OTRO">📋 OTRO</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-purple-400 mb-1">Monto (S/) *</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={inventoryForm.items[0]?.unitCost || 0}
-                        onChange={(e) => {
-                          const amount = parseFloat(e.target.value) || 0;
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
-                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-                  {inventoryForm.items[0]?.productName === "OTRO" && (
-                    <div>
-                      <label className="block text-xs font-bold text-purple-400 mb-1">Descripción</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.items[0]?.category || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], category: e.target.value.toUpperCase() };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
-                        placeholder="ESPECIFICAR GASTO"
-                      />
-                    </div>
-                  )}
-                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
-                    <p className="text-xs text-purple-300 font-bold">Total: S/ {inventoryForm.totalAmount.toFixed(2)}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* FORMULARIO PARA MARKETING */}
-              {inventoryForm.category === "marketing" && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-orange-400 mb-1">Descripción de la publicidad *</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.items[0]?.productName || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "CAMPAÑA" };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
-                        placeholder="EJ: HISTORIAS INSTAGRAM, FACEBOOK ADS"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-orange-400 mb-1">Tipo de pago *</label>
-                      <select
-                        value={inventoryForm.items[0]?.category || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], category: e.target.value, quantity: 1, volume: 1 };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
-                      >
-                        <option value="">-- Seleccionar --</option>
-                        <option value="PAGO">💵 PAGO EN EFECTIVO/TRANSFERENCIA</option>
-                        <option value="CANJE">🍖 CANJE POR MENÚS</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {inventoryForm.items[0]?.category === "PAGO" && (
-                    <div>
-                      <label className="block text-xs font-bold text-orange-400 mb-1">Monto pagado (S/) *</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={inventoryForm.items[0]?.unitCost || 0}
-                        onChange={(e) => {
-                          const amount = parseFloat(e.target.value) || 0;
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
-                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  )}
-
-                  {inventoryForm.items[0]?.category === "CANJE" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-orange-400 mb-1">Cantidad de menús entregados *</label>
-                        <input
-                          type="number"
-                          value={inventoryForm.items[0]?.quantity || 0}
-                          onChange={(e) => {
-                            const qty = parseInt(e.target.value) || 0;
-                            const cost = inventoryForm.items[0]?.unitCost || 0;
-                            const newItems = [...inventoryForm.items];
-                            newItems[0] = { ...newItems[0], quantity: qty, total: qty * cost };
-                            setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
-                          }}
-                          className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-orange-400 mb-1">Costo por menú (S/) *</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={inventoryForm.items[0]?.unitCost || 0}
-                          onChange={(e) => {
-                            const cost = parseFloat(e.target.value) || 0;
-                            const qty = inventoryForm.items[0]?.quantity || 0;
-                            const newItems = [...inventoryForm.items];
-                            newItems[0] = { ...newItems[0], unitCost: cost, total: qty * cost };
-                            setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
-                          }}
-                          className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
-                          placeholder="0.00"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
-                    <p className="text-xs text-orange-300 font-bold">
-                      {inventoryForm.items[0]?.category === "CANJE"
-                        ? `Costo equivalente: S/ ${inventoryForm.totalAmount.toFixed(2)} (${inventoryForm.items[0]?.quantity || 0} menús)`
-                        : `Total: S/ ${inventoryForm.totalAmount.toFixed(2)}`
-                      }
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Total */}
-            <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-lg p-3 border-2 border-fuchsia-500/50 mb-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-xs text-gray-400">Total de la Compra</p>
-                  <p className="text-xs text-gray-500">{inventoryForm.items.length} item(s)</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-black text-fuchsia-400">
-                    S/ {inventoryForm.totalAmount.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-gray-400">{inventoryForm.paymentMethod}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Botones */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setShowInventoryModal(false);
-                  setInventoryForm({
-                    supplier: "",
-                    supplierRuc: "",
-                    supplierPhone: "",
-                    paymentMethod: "plin-yape",
-                    items: [{ productName: "", quantity: 0, unit: "KG", volume: 0, unitCost: 0, total: 0 }],
-                    totalAmount: 0,
-                    purchaseDate: new Date().toISOString().split('T')[0]
-                  });
-                  setProductSearchTerms([""]);
-                  setActiveDropdownIndex(null);
-                }}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
-              >
-                ❌ Cancelar
-              </button>
-              <button
-                onClick={handleCreateInventory}
-                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-              >
-                ✅ Registrar Compra
-              </button>
-            </div>
+      {/* ── VOUCHER MODAL ── */}
+      {voucherModal && (
+        <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4" onClick={()=>setVoucherModal(null)}>
+          <div className="relative max-w-sm w-full" onClick={e=>e.stopPropagation()}>
+            <img src={voucherModal} alt="Comprobante" className="w-full rounded-2xl shadow-2xl" />
+            <button onClick={()=>setVoucherModal(null)} className="absolute top-3 right-3 w-8 h-8 bg-black/70 text-white rounded-full text-lg font-black hover:bg-black">×</button>
           </div>
         </div>
       )}
-
-      {/* Modal de Edición de Compra */}
-      {showInventoryEditModal && editingPurchase && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-amber-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto">
-            <h3 className="text-xl font-black text-amber-400 mb-3">✏️ Editar Compra</h3>
-
-            {/* Información Compacta en Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
-                <input
-                  type="text"
-                  defaultValue={editingPurchase.supplierRuc}
-                  onChange={(e) => setEditingPurchase({ ...editingPurchase, supplierRuc: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
-                  placeholder="20123456789"
-                  maxLength={11}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-amber-400 mb-1">Nombre del proveedor *</label>
-                <input
-                  type="text"
-                  defaultValue={editingPurchase.supplier}
-                  onChange={(e) => setEditingPurchase({ ...editingPurchase, supplier: e.target.value.toUpperCase() })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
-                  placeholder="Nombre proveedor"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
-                <input
-                  type="tel"
-                  defaultValue={editingPurchase.supplierPhone}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    setEditingPurchase({ ...editingPurchase, supplierPhone: value });
-                  }}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
-                  maxLength={9}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-amber-400 mb-1">Fecha de compra *</label>
-                <input
-                  type="date"
-                  defaultValue={editingPurchase.purchaseDate}
-                  onChange={(e) => setEditingPurchase({ ...editingPurchase, purchaseDate: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-amber-400 mb-1">Método de pago *</label>
-                <select
-                  defaultValue={editingPurchase.paymentMethod}
-                  onChange={(e) => setEditingPurchase({ ...editingPurchase, paymentMethod: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
-                >
-                  <option value="plin-yape">📱 Plin / Yape</option>
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="transferencia">🏦 Transferencia</option>
-                  <option value="tarjeta">💳 Tarjeta</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Lista de Artículos */}
-            <div className="mb-3">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
-              </div>
-
-              {/* Encabezados de columnas */}
-              <div className="bg-gray-800 rounded-lg p-2 mb-2">
-                <div className="grid grid-cols-12 gap-2">
-                  <div className="col-span-3">
-                    <p className="text-xs font-bold text-amber-400">Producto</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs font-bold text-amber-400">Categoría</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-amber-400 text-center">Compra</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-amber-400">Und.</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-cyan-400 text-center" title="Contenido por unidad de compra">x</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-green-400 text-center" title="Stock total que ingresa">= Stock</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs font-bold text-amber-400">Costo S/</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-amber-400">Total S/</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2 pr-1">
-                {editingPurchase.items.map((item: any, idx: number) => (
-                  <div key={idx} className="bg-black/50 rounded p-2 border border-amber-500/20">
-                    <div className="grid grid-cols-12 gap-2 items-center">
-                      {/* Producto */}
-                      <div className="col-span-12 md:col-span-3">
-                        <input
-                          type="text"
-                          defaultValue={item.productName || ""}
-                          onChange={(e) => {
-                            const newItems = [...editingPurchase.items];
-                            newItems[idx].productName = e.target.value.toUpperCase();
-                            setEditingPurchase({ ...editingPurchase, items: newItems });
-                          }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
-                        />
-                      </div>
-
-                      {/* Categoría */}
-                      <div className="col-span-12 md:col-span-2">
-                        <select
-                          defaultValue={item.category || ""}
-                          onChange={(e) => {
-                            const newItems = [...editingPurchase.items];
-                            newItems[idx].category = e.target.value;
-                            setEditingPurchase({ ...editingPurchase, items: newItems });
-                          }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
-                        >
-                          <option value="">-- Tipo --</option>
-                          <option value="INSUMO">🥘 INSUMO</option>
-                          <option value="EMPAQUE">📦 EMPAQUE</option>
-                          <option value="SERVICIO">⚡ SERVICIO</option>
-                          <option value="UTENCILIO">🔧 UTENCILIO</option>
-                        </select>
-                      </div>
-
-                      {/* Cantidad Comprada */}
-                      <div className="col-span-3 md:col-span-1">
-                        <input
-                          type="number"
-                          step="1"
-                          defaultValue={item.quantity}
-                          onChange={(e) => {
-                            const newItems = [...editingPurchase.items];
-                            const quantity = parseInt(e.target.value) || 0;
-                            newItems[idx].quantity = quantity;
-                            newItems[idx].total = quantity * newItems[idx].unitCost;
-                            setEditingPurchase({ ...editingPurchase, items: newItems, totalAmount: newItems.reduce((sum, i) => sum + i.total, 0) });
-                          }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white text-center focus:border-amber-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-
-                      {/* Unidad de Compra */}
-                      <div className="col-span-4 md:col-span-1">
-                        <select
-                          defaultValue={item.unit}
-                          onChange={(e) => {
-                            const newItems = [...editingPurchase.items];
-                            newItems[idx].unit = e.target.value;
-                            setEditingPurchase({ ...editingPurchase, items: newItems });
-                          }}
-                          className="w-full px-1 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
-                        >
-                          <option value="">-</option>
-                          <option value="PAQUETE">PKT</option>
-                          <option value="CAJA">CAJA</option>
-                          <option value="BOLSA">BOLSA</option>
-                          <option value="KG">KG</option>
-                          <option value="UNIDAD">UND</option>
-                          <option value="CIENTO">CIEN</option>
-                        </select>
-                      </div>
-
-                      {/* Multiplicador (Contenido por unidad) */}
-                      <div className="col-span-2 md:col-span-1">
-                        <input
-                          type="number"
-                          step="1"
-                          defaultValue={item.volume || 1}
-                          onChange={(e) => {
-                            const newItems = [...editingPurchase.items];
-                            newItems[idx].volume = parseInt(e.target.value) || 1;
-                            setEditingPurchase({ ...editingPurchase, items: newItems });
-                          }}
-                          title="Contenido por unidad. Ej: Si cada paquete tiene 100 bolsas, escribe 100"
-                          className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-
-                      {/* Stock Total (Auto-calculado) */}
-                      <div className="col-span-3 md:col-span-1">
-                        <div className="w-full px-2 py-1.5 text-xs rounded bg-green-900/30 border border-green-500/50 text-green-400 text-center font-black">
-                          {(item.quantity * (item.volume || 1)).toLocaleString()}
-                        </div>
-                      </div>
-
-                      {/* Costo Unitario */}
-                      <div className="col-span-6 md:col-span-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          defaultValue={item.unitCost}
-                          onChange={(e) => {
-                            const newItems = [...editingPurchase.items];
-                            const unitCost = parseFloat(e.target.value) || 0;
-                            newItems[idx].unitCost = unitCost;
-                            newItems[idx].total = newItems[idx].quantity * unitCost;
-                            setEditingPurchase({ ...editingPurchase, items: newItems, totalAmount: newItems.reduce((sum, i) => sum + i.total, 0) });
-                          }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-
-                      {/* Total */}
-                      <div className="col-span-6 md:col-span-1">
-                        <div className="w-full px-2 py-1.5 text-xs rounded bg-amber-900/30 border border-amber-500/50 text-amber-400 font-black text-right">
-                          {item.total.toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Total */}
-            <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg p-3 border-2 border-amber-500/50 mb-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-xs text-gray-400">Total de la Compra</p>
-                  <p className="text-xs text-gray-500">{editingPurchase.items.length} item(s)</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-black text-amber-400">
-                    S/ {editingPurchase.totalAmount.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-gray-400">{editingPurchase.paymentMethod}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Botones */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setShowInventoryEditModal(false);
-                  setEditingPurchase(null);
-                }}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
-              >
-                ❌ Cancelar
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/inventory', {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(editingPurchase)
-                    });
-                    if (response.ok) {
-                      const updatedInventory = await response.json();
-                      setInventory(updatedInventory);
-                      setShowInventoryEditModal(false);
-                      setEditingPurchase(null);
-                    }
-                  } catch (error) {
-                    console.error('Error al actualizar compra:', error);
-                    alert('Error al actualizar la compra');
-                  }
-                }}
-                className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all transform hover:scale-105"
-              >
-                ✅ Guardar Cambios
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal para ver comprobante de pago */}
-      {showVoucherModal && (
-        <div
-          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowVoucherModal(false)}
-        >
-          <div
-            className="bg-gray-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 bg-gray-900 border-b border-gray-700 p-4 flex items-center justify-between">
-              <h3 className="text-xl font-black text-white">Comprobante de Pago</h3>
-              <button
-                onClick={() => setShowVoucherModal(false)}
-                className="text-gray-400 hover:text-white text-2xl font-bold transition-colors"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-6">
-              {selectedVoucherPath ? (
-                <img
-                  src={selectedVoucherPath}
-                  alt="Comprobante de pago"
-                  className="w-full h-auto rounded-lg border-2 border-green-500/30"
-                />
-              ) : (
-                <p className="text-gray-400 text-center py-8">No hay comprobante disponible</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de confirmación - Venta Histórica */}
-      {showHistoricalSaleModal && (
-        <div
-          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowHistoricalSaleModal(false)}
-        >
-          <div
-            className="bg-gray-900 rounded-xl border-2 border-orange-500 max-w-lg w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-2xl font-black text-orange-400 mb-4">
-              📅 Registrar Venta Histórica
-            </h3>
-            <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-4 mb-4">
-              <p className="text-white text-sm mb-2">
-                <strong>Fecha:</strong> 13 de febrero 2026 (Día de apertura)
-              </p>
-              <p className="text-white text-sm mb-2">
-                <strong>Monto:</strong> S/ 250.00
-              </p>
-              <p className="text-gray-400 text-xs mt-3">
-                ⚠️ Esta venta se perdió por un error del sistema y se recuperará con esta acción. Solo se registrará el monto total, sin detalle de pedidos individuales.
-              </p>
-            </div>
-            <p className="text-gray-300 text-sm mb-6">
-              Esta acción registrará la venta del día de apertura en el sistema para que se contabilice correctamente en los históricos y analytics.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={registerHistoricalSale}
-                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
-              >
-                ✅ Confirmar Registro
-              </button>
-              <button
-                onClick={() => setShowHistoricalSaleModal(false)}
-                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition-all"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal CRM Edit */}
-      {showCrmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCrmModal(false)}>
-          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-black text-fuchsia-400">Perfil CRM</h2>
-              <button onClick={() => setShowCrmModal(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
-            </div>
-
-            {/* Cumpleaños */}
-            <div className="mb-4">
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Cumpleaños (DD/MM)</label>
-              <input
-                type="text"
-                value={crmForm.birthday}
-                onChange={e => {
-                  const val = e.target.value.replace(/[^\d/]/g, '').slice(0, 5);
-                  setCrmForm(f => ({ ...f, birthday: val }));
-                }}
-                placeholder="15/03"
-                maxLength={5}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-fuchsia-500"
-              />
-            </div>
-
-            {/* Etiquetas */}
-            <div className="mb-4">
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Etiquetas</label>
-              <div className="flex flex-wrap gap-2">
-                {['vip', 'influencer', 'corporativo', 'fiel', 'problematico'].map(tag => (
-                  <button key={tag}
-                    onClick={() => setCrmForm(f => ({
-                      ...f,
-                      tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag]
-                    }))}
-                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
-                      crmForm.tags.includes(tag)
-                        ? 'bg-fuchsia-600 text-white border-fuchsia-500'
-                        : 'bg-gray-800 text-gray-400 border-gray-600 hover:border-fuchsia-500'
-                    }`}>
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Notas */}
-            <div className="mb-5">
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Notas</label>
-              <textarea
-                value={crmForm.notes}
-                onChange={e => setCrmForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
-                placeholder="Preferencias, alergias, observaciones..."
-                rows={3}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:outline-none focus:border-fuchsia-500"
-              />
-              <p className="text-[10px] text-gray-600 mt-1">{crmForm.notes.length}/500</p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleCrmSave}
-                disabled={crmSaving}
-                className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
-              >
-                {crmSaving ? 'Guardando...' : 'Guardar'}
-              </button>
-              <button onClick={() => setShowCrmModal(false)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-sm transition-all">
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Campaña WhatsApp */}
-      {showCampaignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCampaignModal(false)}>
-          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-lg p-5 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-black text-fuchsia-400">Campaña WhatsApp</h2>
-              <button onClick={() => setShowCampaignModal(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
-            </div>
-
-            {/* Selector de segmento */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {[
-                { label: 'VIP', seg: 'vip' },
-                { label: 'Nuevos', seg: 'new' },
-                { label: 'Recurrentes', seg: 'recurrent' },
-                { label: 'Inac. 30d', seg: 'inactive30' },
-                { label: 'Inac. 60d', seg: 'inactive60' },
-                { label: 'Inac. 90d', seg: 'inactive90' },
-              ].map(({ label, seg }) => (
-                <button key={seg}
-                  onClick={() => setCampaignSegment(seg)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                    campaignSegment === seg ? 'bg-fuchsia-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-fuchsia-500'
-                  }`}>
-                  {label} ({(customerSegments as any)[seg]?.length ?? 0})
-                </button>
-              ))}
-            </div>
-
-            {/* Preview del mensaje */}
-            <div className="bg-black/50 rounded-lg p-3 mb-4 border border-gray-700">
-              <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Vista previa del mensaje</p>
-              <p className="text-xs text-gray-300 whitespace-pre-wrap">{getCampaignTemplate(campaignSegment, { name: 'Cliente' })}</p>
-            </div>
-
-            {/* Lista de clientes */}
-            <div className="overflow-y-auto flex-1 max-h-72 space-y-2 pr-1">
-              {((customerSegments as any)[campaignSegment] || []).length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-8">Sin clientes en este segmento</p>
-              ) : (
-                ((customerSegments as any)[campaignSegment] || []).map((c: any) => (
-                  <div key={c.phone} className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
-                    <div>
-                      <p className="text-white text-sm font-bold">{c.name}</p>
-                      <p className="text-gray-500 text-xs">{c.phone}</p>
-                    </div>
-                    <a href={buildWhatsApp(c.phone, getCampaignTemplate(campaignSegment, c))}
-                       target="_blank" rel="noopener noreferrer"
-                       className="bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap">
-                      Enviar →
-                    </a>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: confirmar canje */}
-      {canjeModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-orange-500 p-5 max-w-sm w-full">
-            <h3 className="text-lg font-black text-orange-400 mb-1">🎁 Marcar como Canje</h3>
-            <p className="text-gray-400 text-sm mb-4">
-              Esta orden <span className="text-orange-300 font-bold">no se contará en las ventas</span>. Quedará registrada en el módulo financiero para auditoría interna.
-            </p>
-            <input
-              type="text"
-              value={canjeNoteInput}
-              onChange={e => setCanjeNoteInput(e.target.value)}
-              placeholder="Motivo: Influencer @usuario, Cortesía proveedor..."
-              className="w-full px-3 py-2 mb-4 rounded-lg bg-black border border-gray-700 text-white text-sm focus:outline-none focus:border-orange-500/50"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleToggleCanje(canjeModal.orderId, true, canjeNoteInput)}
-                disabled={canjeSaving}
-                className="flex-1 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white py-2 rounded-lg font-bold text-sm"
-              >
-                {canjeSaving ? "Guardando..." : "Confirmar Canje"}
-              </button>
-              <button
-                onClick={() => setCanjeModal(null)}
-                className="px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-sm hover:border-gray-500"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
