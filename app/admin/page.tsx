@@ -6839,11 +6839,14 @@ _Valido por 30 dias._`;
             El cambio se refleja en la carta al instante.
           </p>
 
-          {/* FAT */}
-          <div className="mb-10">
-            <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2">
-              🥩 Carta FAT
-            </h3>
+          {/* FAT GROUP — Alitas, Salsas y Promociones */}
+          <div className="bg-gray-900/40 rounded-2xl border border-red-500/20 p-6 mb-6">
+            <h2 className="text-lg font-black text-red-400 mb-6 flex items-center gap-2 border-b border-red-500/20 pb-3">
+              🥩 FAT — Alitas
+            </h2>
+
+            <div className="mb-6">
+            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-3">Productos</h3>
             {/* Stock FAT */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {[
@@ -6925,6 +6928,206 @@ _Valido por 30 dias._`;
                 );
               })}
             </div>
+          </div>
+            <div className="mt-6">
+            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-1">Salsas</h3>
+            <p className="text-gray-500 text-xs mb-4">
+              Al agotar una salsa los clientes no podrán seleccionarla al pedir. El cambio se refleja al instante.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {salsas.map((salsa) => {
+                const stockId = `salsa-${salsa.id}`;
+                const isSoldOut = !!menuStock[stockId];
+                const isSaving = menuStockSaving === stockId;
+                return (
+                  <div
+                    key={stockId}
+                    className={`bg-gray-900 rounded-xl border-2 p-4 flex items-center justify-between transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : "border-amber-700/40"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-white font-bold text-sm">{salsa.name}</p>
+                      {isSoldOut && (
+                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => toggleMenuStock(stockId, isSoldOut)}
+                      disabled={isSaving}
+                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${
+                        isSoldOut
+                          ? "bg-green-700 hover:bg-green-600 text-white"
+                          : "bg-red-700 hover:bg-red-600 text-white"
+                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+            {(() => {
+            const FAT_SALSAS = [
+              { id: 'barbecue', name: 'BBQ Ahumada' },
+              { id: 'buffalo-picante', name: 'Santo Picante' },
+              { id: 'ahumada', name: 'Acevichada Imperial' },
+              { id: 'parmesano-ajo', name: 'Crispy Celestial' },
+              { id: 'anticuchos', name: 'Parrillera' },
+              { id: 'honey-mustard', name: 'Honey Mustard' },
+              { id: 'teriyaki', name: 'Oriental Teriyaki' },
+              { id: 'macerichada', name: 'Sweet & Sour' },
+            ];
+            const FAT_PRODUCTS = [
+              { id: 'pequeno-dilema', name: 'Pequeño Dilema' },
+              { id: 'duo-dilema', name: 'Dúo Dilema' },
+              { id: 'santo-pecado', name: 'Santo Pecado' },
+            ];
+            return (
+              <div className="mt-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-black text-fuchsia-400 flex items-center gap-2">
+                      🌶️ Promociones de Salsas FAT
+                    </h3>
+                    <p className="text-gray-500 text-xs mt-1">
+                      Define combos de salsas con precio especial. Si el cliente selecciona las salsas indicadas, el precio baja automáticamente.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingPromo(null);
+                      setPromoForm({ productId: 'pequeno-dilema', salsas: [], promoPrice: 0, active: true });
+                      setShowSalsaPromoModal(true);
+                    }}
+                    className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-lg font-bold text-sm"
+                  >
+                    + Nueva promo
+                  </button>
+                </div>
+                {salsaPromos.length === 0 ? (
+                  <div className="bg-gray-900 rounded-xl border border-gray-700 p-6 text-center">
+                    <p className="text-gray-500 text-sm">Sin promociones activas. Crea una para ofrecer precios especiales por combinación de salsas.</p>
+                    <p className="text-gray-600 text-xs mt-2">Las promos hardcodeadas (Teriyaki S/18, Barbecue+Ahumada S/32, etc.) siguen activas como fallback.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {salsaPromos.map((promo: any) => {
+                      const prodName = FAT_PRODUCTS.find(p => p.id === promo.productId)?.name || promo.productId;
+                      return (
+                        <div key={promo.id} className={`bg-gray-900 rounded-xl border-2 p-4 ${promo.active ? 'border-fuchsia-500/50' : 'border-gray-700 opacity-60'}`}>
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="text-white font-black text-sm">{prodName}</p>
+                              <p className="text-fuchsia-400 text-xl font-black">S/ {promo.promoPrice}</p>
+                            </div>
+                            <div className="flex gap-1">
+                              <button onClick={() => {
+                                setEditingPromo(promo);
+                                setPromoForm({ productId: promo.productId, salsas: promo.salsas, promoPrice: promo.promoPrice, active: promo.active });
+                                setShowSalsaPromoModal(true);
+                              }} className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-2 py-1 rounded">Editar</button>
+                              <button onClick={() => handleDeletePromo(promo.id)} className="text-xs text-red-400 hover:text-red-200 border border-red-900 hover:border-red-700 px-2 py-1 rounded">✕</button>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {promo.salsas.map((sId: string) => (
+                              <span key={sId} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                {FAT_SALSAS.find(s => s.id === sId)?.name || sId}
+                              </span>
+                            ))}
+                          </div>
+                          <p className={`text-[10px] mt-2 font-bold ${promo.active ? 'text-green-400' : 'text-gray-500'}`}>
+                            {promo.active ? '● Activa' : '○ Inactiva'}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Modal crear/editar promo */}
+                {showSalsaPromoModal && (
+                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
+                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-5 max-w-md w-full">
+                      <h3 className="text-lg font-black text-fuchsia-400 mb-4">
+                        {editingPromo ? 'Editar Promo' : 'Nueva Promo de Salsas'}
+                      </h3>
+
+                      <div className="mb-4">
+                        <label className="block text-xs font-bold text-gray-400 mb-1">Producto FAT</label>
+                        <select
+                          value={promoForm.productId}
+                          onChange={e => setPromoForm({ ...promoForm, productId: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
+                        >
+                          {FAT_PRODUCTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-xs font-bold text-gray-400 mb-2">Salsas que activan la promo (todas deben estar seleccionadas)</label>
+                        <div className="flex flex-wrap gap-2">
+                          {FAT_SALSAS.map(s => {
+                            const sel = promoForm.salsas.includes(s.id);
+                            return (
+                              <button key={s.id}
+                                onClick={() => setPromoForm(f => ({
+                                  ...f,
+                                  salsas: sel ? f.salsas.filter(x => x !== s.id) : [...f.salsas, s.id]
+                                }))}
+                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${sel ? 'bg-amber-500 border-amber-400 text-black' : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-amber-500'}`}>
+                                {s.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-xs font-bold text-gray-400 mb-1">Precio con promo (S/)</label>
+                        <input
+                          type="number" min="0" step="0.5"
+                          value={promoForm.promoPrice || ''}
+                          onChange={e => setPromoForm({ ...promoForm, promoPrice: parseFloat(e.target.value) || 0 })}
+                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
+                          placeholder="ej: 18"
+                        />
+                      </div>
+
+                      <div className="mb-5 flex items-center gap-3">
+                        <button
+                          onClick={() => setPromoForm(f => ({ ...f, active: !f.active }))}
+                          className={`relative w-10 h-6 rounded-full transition-all ${promoForm.active ? 'bg-green-500' : 'bg-gray-700'}`}
+                        >
+                          <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${promoForm.active ? 'left-5' : 'left-1'}`} />
+                        </button>
+                        <span className="text-xs text-gray-400">{promoForm.active ? 'Activa' : 'Inactiva'}</span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSavePromo}
+                          disabled={promoSaving || promoForm.salsas.length === 0 || !promoForm.promoPrice}
+                          className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-700 disabled:opacity-50 text-white py-2 rounded-lg font-bold text-sm"
+                        >
+                          {promoSaving ? 'Guardando...' : 'Guardar'}
+                        </button>
+                        <button
+                          onClick={() => { setShowSalsaPromoModal(false); setEditingPromo(null); }}
+                          className="px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-sm"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           </div>
 
           {/* FIT */}
@@ -7197,210 +7400,6 @@ _Valido por 30 dias._`;
               })}
             </div>
           </div>
-
-          {/* SALSAS FAT */}
-          <div className="mt-10">
-            <h3 className="text-xl font-black text-amber-400 mb-1 flex items-center gap-2">
-              🫙 Salsas FAT
-            </h3>
-            <p className="text-gray-500 text-xs mb-4">
-              Al agotar una salsa los clientes no podrán seleccionarla al pedir. El cambio se refleja al instante.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {salsas.map((salsa) => {
-                const stockId = `salsa-${salsa.id}`;
-                const isSoldOut = !!menuStock[stockId];
-                const isSaving = menuStockSaving === stockId;
-                return (
-                  <div
-                    key={stockId}
-                    className={`bg-gray-900 rounded-xl border-2 p-4 flex items-center justify-between transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : "border-amber-700/40"
-                    }`}
-                  >
-                    <div>
-                      <p className="text-white font-bold text-sm">{salsa.name}</p>
-                      {isSoldOut && (
-                        <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => toggleMenuStock(stockId, isSoldOut)}
-                      disabled={isSaving}
-                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${
-                        isSoldOut
-                          ? "bg-green-700 hover:bg-green-600 text-white"
-                          : "bg-red-700 hover:bg-red-600 text-white"
-                      } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ==================== PROMOCIONES DE SALSAS FAT ==================== */}
-          {(() => {
-            const FAT_SALSAS = [
-              { id: 'barbecue', name: 'BBQ Ahumada' },
-              { id: 'buffalo-picante', name: 'Santo Picante' },
-              { id: 'ahumada', name: 'Acevichada Imperial' },
-              { id: 'parmesano-ajo', name: 'Crispy Celestial' },
-              { id: 'anticuchos', name: 'Parrillera' },
-              { id: 'honey-mustard', name: 'Honey Mustard' },
-              { id: 'teriyaki', name: 'Oriental Teriyaki' },
-              { id: 'macerichada', name: 'Sweet & Sour' },
-            ];
-            const FAT_PRODUCTS = [
-              { id: 'pequeno-dilema', name: 'Pequeño Dilema' },
-              { id: 'duo-dilema', name: 'Dúo Dilema' },
-              { id: 'santo-pecado', name: 'Santo Pecado' },
-            ];
-            return (
-              <div className="mt-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-black text-fuchsia-400 flex items-center gap-2">
-                      🌶️ Promociones de Salsas FAT
-                    </h3>
-                    <p className="text-gray-500 text-xs mt-1">
-                      Define combos de salsas con precio especial. Si el cliente selecciona las salsas indicadas, el precio baja automáticamente.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setEditingPromo(null);
-                      setPromoForm({ productId: 'pequeno-dilema', salsas: [], promoPrice: 0, active: true });
-                      setShowSalsaPromoModal(true);
-                    }}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-lg font-bold text-sm"
-                  >
-                    + Nueva promo
-                  </button>
-                </div>
-                {salsaPromos.length === 0 ? (
-                  <div className="bg-gray-900 rounded-xl border border-gray-700 p-6 text-center">
-                    <p className="text-gray-500 text-sm">Sin promociones activas. Crea una para ofrecer precios especiales por combinación de salsas.</p>
-                    <p className="text-gray-600 text-xs mt-2">Las promos hardcodeadas (Teriyaki S/18, Barbecue+Ahumada S/32, etc.) siguen activas como fallback.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {salsaPromos.map((promo: any) => {
-                      const prodName = FAT_PRODUCTS.find(p => p.id === promo.productId)?.name || promo.productId;
-                      return (
-                        <div key={promo.id} className={`bg-gray-900 rounded-xl border-2 p-4 ${promo.active ? 'border-fuchsia-500/50' : 'border-gray-700 opacity-60'}`}>
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <p className="text-white font-black text-sm">{prodName}</p>
-                              <p className="text-fuchsia-400 text-xl font-black">S/ {promo.promoPrice}</p>
-                            </div>
-                            <div className="flex gap-1">
-                              <button onClick={() => {
-                                setEditingPromo(promo);
-                                setPromoForm({ productId: promo.productId, salsas: promo.salsas, promoPrice: promo.promoPrice, active: promo.active });
-                                setShowSalsaPromoModal(true);
-                              }} className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-2 py-1 rounded">Editar</button>
-                              <button onClick={() => handleDeletePromo(promo.id)} className="text-xs text-red-400 hover:text-red-200 border border-red-900 hover:border-red-700 px-2 py-1 rounded">✕</button>
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {promo.salsas.map((sId: string) => (
-                              <span key={sId} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                                {FAT_SALSAS.find(s => s.id === sId)?.name || sId}
-                              </span>
-                            ))}
-                          </div>
-                          <p className={`text-[10px] mt-2 font-bold ${promo.active ? 'text-green-400' : 'text-gray-500'}`}>
-                            {promo.active ? '● Activa' : '○ Inactiva'}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Modal crear/editar promo */}
-                {showSalsaPromoModal && (
-                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-5 max-w-md w-full">
-                      <h3 className="text-lg font-black text-fuchsia-400 mb-4">
-                        {editingPromo ? 'Editar Promo' : 'Nueva Promo de Salsas'}
-                      </h3>
-
-                      <div className="mb-4">
-                        <label className="block text-xs font-bold text-gray-400 mb-1">Producto FAT</label>
-                        <select
-                          value={promoForm.productId}
-                          onChange={e => setPromoForm({ ...promoForm, productId: e.target.value })}
-                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
-                        >
-                          {FAT_PRODUCTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                        </select>
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="block text-xs font-bold text-gray-400 mb-2">Salsas que activan la promo (todas deben estar seleccionadas)</label>
-                        <div className="flex flex-wrap gap-2">
-                          {FAT_SALSAS.map(s => {
-                            const sel = promoForm.salsas.includes(s.id);
-                            return (
-                              <button key={s.id}
-                                onClick={() => setPromoForm(f => ({
-                                  ...f,
-                                  salsas: sel ? f.salsas.filter(x => x !== s.id) : [...f.salsas, s.id]
-                                }))}
-                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${sel ? 'bg-amber-500 border-amber-400 text-black' : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-amber-500'}`}>
-                                {s.name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="block text-xs font-bold text-gray-400 mb-1">Precio con promo (S/)</label>
-                        <input
-                          type="number" min="0" step="0.5"
-                          value={promoForm.promoPrice || ''}
-                          onChange={e => setPromoForm({ ...promoForm, promoPrice: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
-                          placeholder="ej: 18"
-                        />
-                      </div>
-
-                      <div className="mb-5 flex items-center gap-3">
-                        <button
-                          onClick={() => setPromoForm(f => ({ ...f, active: !f.active }))}
-                          className={`relative w-10 h-6 rounded-full transition-all ${promoForm.active ? 'bg-green-500' : 'bg-gray-700'}`}
-                        >
-                          <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${promoForm.active ? 'left-5' : 'left-1'}`} />
-                        </button>
-                        <span className="text-xs text-gray-400">{promoForm.active ? 'Activa' : 'Inactiva'}</span>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleSavePromo}
-                          disabled={promoSaving || promoForm.salsas.length === 0 || !promoForm.promoPrice}
-                          className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-700 disabled:opacity-50 text-white py-2 rounded-lg font-bold text-sm"
-                        >
-                          {promoSaving ? 'Guardando...' : 'Guardar'}
-                        </button>
-                        <button
-                          onClick={() => { setShowSalsaPromoModal(false); setEditingPromo(null); }}
-                          className="px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-sm"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
         </section>
       ) : null}
 
