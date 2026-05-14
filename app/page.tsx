@@ -276,14 +276,16 @@ export default function Home() {
               }}
             />
 
-            {/* Neon border on hover */}
+            {/* Neon border — siempre visible, intensifica al hover/touch */}
             <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+              className="absolute inset-0 pointer-events-none"
               style={{
                 border: `2px solid ${sec.borderColor}`,
-                boxShadow: `inset 0 0 40px rgba(${sec.glowRgb},0.15)`,
-                opacity: hoveredCard === sec.id ? 1 : 0,
-                transition: "opacity 0.3s ease",
+                boxShadow: hoveredCard === sec.id
+                  ? `inset 0 0 40px rgba(${sec.glowRgb},0.25)`
+                  : `inset 0 0 20px rgba(${sec.glowRgb},0.08)`,
+                opacity: hoveredCard === sec.id ? 1 : 0.45,
+                transition: "opacity 0.3s ease, box-shadow 0.3s ease",
               }}
             />
 
