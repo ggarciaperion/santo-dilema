@@ -8,7 +8,6 @@ import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import { detectCombos } from "../../lib/combos";
 import WhatsAppButton from "../components/WhatsAppButton";
-import CombosButton from "../components/CombosButton";
 import BannerCarousel from "../components/BannerCarousel";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1511,7 +1510,6 @@ export default function TacosPage() {
 
       {/* ── WhatsApp button ────────────────────────────────────────────────── */}
       <WhatsAppButton lifted={isOpen || hasAnyOrder} />
-      <CombosButton lifted={isOpen || hasAnyOrder} />
     </div>
   );
 }
