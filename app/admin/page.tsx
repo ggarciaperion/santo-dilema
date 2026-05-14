@@ -2449,12 +2449,12 @@ export default function AdminPage() {
               <Image
                 src="/logoprincipal.png"
                 alt="Santo Dilema"
-                width={60}
-                height={60}
+                width={85}
+                height={85}
                 className="rounded-full neon-border-purple"
               />
               <div>
-                <h1 className="text-4xl font-black text-fuchsia-400 neon-glow-purple">
+                <h1 className="text-2xl font-black text-fuchsia-400 neon-glow-purple">
                   Panel de Administración
                 </h1>
                 <p className="text-amber-400 mt-1 gold-glow">Santo Dilema - Gestión de Pedidos</p>
