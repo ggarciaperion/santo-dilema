@@ -370,7 +370,7 @@ export default function Home() {
           alt="Santo Dilema"
           width={120}
           height={120}
-          className="w-[56px] sm:w-[72px] h-auto"
+          className="w-[80px] sm:w-[90px] h-auto"
           style={{ objectFit: "contain", filter: "drop-shadow(0 0 6px rgba(245,158,11,0.4))" }}
         />
         <p
