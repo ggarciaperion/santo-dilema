@@ -7110,6 +7110,94 @@ _Valido por 30 dias._`;
             </div>
           </div>
 
+          {/* COMBOS */}
+          <div className="mt-10">
+            <h3 className="text-xl font-black text-violet-400 mb-4 flex items-center gap-2">
+              🎁 Combos
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { id: "combo-chiguan",      name: "Combo Chiguan",      defaultPrice: 20.00, includes: "4 alitas + Crunch Supreme Taco" },
+                { id: "combo-perfecto",     name: "Combo Perfecto",     defaultPrice: 40.00, includes: "Pequeño Dilema + Ensalada FIT" },
+                { id: "combo-especial",     name: "Combo Especial",     defaultPrice: 42.00, includes: "Pequeño Dilema + Dúo de Tacos" },
+                { id: "combo-alitas",       name: "Combo Alitas",       defaultPrice: 52.00, includes: "Pequeño Dilema + Dúo Dilema" },
+                { id: "combo-santo-dilema", name: "Combo Santo Dilema", defaultPrice: 76.00, includes: "Dúo Dilema + Ensalada FIT + Dúo Tacos" },
+              ].map((item) => {
+                const isSoldOut = !!menuStock[item.id];
+                const isSaving = menuStockSaving === item.id;
+                const hasDiscount = !!menuDiscounts[item.id];
+                const isSavingDiscount = discountSaving === item.id;
+                const isSavingPrice = priceSaving === item.id;
+                const effectivePrice = menuPrices[item.id] || item.defaultPrice;
+                return (
+                  <div
+                    key={item.id}
+                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-violet-500/50" : "border-violet-700/30"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <div className="flex-1 min-w-0 pr-2">
+                        <p className="text-white font-bold text-base">{item.name}</p>
+                        <p className="text-gray-500 text-[10px] mt-0.5">{item.includes}</p>
+                        {hasDiscount ? (
+                          <p className="text-xs mt-1">
+                            <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                            <span className="text-violet-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
+                          </p>
+                        ) : (
+                          <p className="text-violet-400 text-sm font-bold mt-1">S/ {effectivePrice.toFixed(2)}</p>
+                        )}
+                        {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
+                      </div>
+                      <button
+                        onClick={() => toggleMenuStock(item.id, isSoldOut)}
+                        disabled={isSaving}
+                        className={`shrink-0 px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${
+                          isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"
+                        } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                      </button>
+                    </div>
+                    <div className="flex gap-2 pt-3 border-t border-gray-800 mt-3">
+                      <input
+                        type="number" step="0.50" min="0.50"
+                        placeholder={`Precio (actual: S/ ${effectivePrice.toFixed(2)})`}
+                        value={priceInputs[item.id] || ""}
+                        onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-violet-400 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => savePrice(item.id, item.defaultPrice)}
+                        disabled={isSavingPrice}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs bg-violet-700 hover:bg-violet-600 text-white transition-all ${isSavingPrice ? "opacity-50" : ""}`}
+                      >
+                        {isSavingPrice ? "..." : "💰 Precio"}
+                      </button>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <input
+                        type="number" step="0.50" min="0" max={effectivePrice - 0.5}
+                        placeholder="Precio oferta (menor al real)"
+                        value={discountInputs[item.id] || ""}
+                        onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-violet-500 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => saveDiscount(item.id, effectivePrice)}
+                        disabled={isSavingDiscount}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? "bg-violet-600 hover:bg-violet-500" : "bg-gray-700 hover:bg-gray-600"} text-white ${isSavingDiscount ? "opacity-50" : ""}`}
+                      >
+                        {isSavingDiscount ? "..." : hasDiscount ? "🏷️ Actualizar" : "🏷️ Oferta"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* SALSAS FAT */}
           <div className="mt-10">
             <h3 className="text-xl font-black text-amber-400 mb-1 flex items-center gap-2">
