@@ -2447,7 +2447,7 @@ export default function AdminPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Image
-                src="/logo.jpg"
+                src="/logoprincipal.png"
                 alt="Santo Dilema"
                 width={60}
                 height={60}
