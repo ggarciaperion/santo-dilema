@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import YunzaModal from "@/components/YunzaModal";
 
 const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
@@ -71,6 +71,7 @@ export default function Home() {
   const [showComunicado, setShowComunicado]       = useState(false);
   const [showDiaTrabajador, setShowDiaTrabajador] = useState(false);
   const [isMobile, setIsMobile]                   = useState(false);
+  const soundFired = useRef(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -79,9 +80,40 @@ export default function Home() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  const playBrandVoice = () => {
+    if (soundFired.current || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    soundFired.current = true;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance("Santo... Dilema");
+    u.lang    = "es-ES";
+    u.rate    = 0.58;   // lento y dramático
+    u.pitch   = 0.35;   // voz grave, autoridad
+    u.volume  = 1;
+    const speak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const esVoice = voices.find(v => v.lang === "es-ES" && v.name.toLowerCase().includes("male"))
+        || voices.find(v => v.lang === "es-ES")
+        || voices.find(v => v.lang.startsWith("es"));
+      if (esVoice) u.voice = esVoice;
+      window.speechSynthesis.speak(u);
+    };
+    if (window.speechSynthesis.getVoices().length > 0) speak();
+    else window.speechSynthesis.onvoiceschanged = speak;
+  };
+
+  // Desktop: auto-reproduce en el arranque
+  useEffect(() => {
+    const isTouch = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isTouch) return;
+    const t = setTimeout(playBrandVoice, 350);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const MOBILE_IMAGES: Record<string, string> = {
     fit: "/ensamovil.png",
     fat: "/alamovil.png",
+    taco: "/tacomovil.png",
   };
 
   // Intro timing: fade out at 2.1s, unmount at 2.6s
@@ -138,6 +170,8 @@ export default function Home() {
         <div
           className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black"
           style={{ transition: "opacity 0.5s ease", opacity: introExiting ? 0 : 1 }}
+          onTouchStart={playBrandVoice}
+          onClick={playBrandVoice}
         >
           {/* Animated grid background */}
           <div
