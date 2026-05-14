@@ -70,6 +70,19 @@ export default function Home() {
   const [showYunzaModal, setShowYunzaModal]       = useState(false);
   const [showComunicado, setShowComunicado]       = useState(false);
   const [showDiaTrabajador, setShowDiaTrabajador] = useState(false);
+  const [isMobile, setIsMobile]                   = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const MOBILE_IMAGES: Record<string, string> = {
+    fit: "/ensamovil.png",
+    fat: "/alamovil.png",
+  };
 
   // Intro timing: fade out at 2.1s, unmount at 2.6s
   useEffect(() => {
@@ -241,7 +254,7 @@ export default function Home() {
               </div>
             ) : (
               <Image
-                src={sec.images[0]}
+                src={isMobile && MOBILE_IMAGES[sec.id] ? MOBILE_IMAGES[sec.id] : sec.images[0]}
                 alt={sec.label}
                 fill
                 className="object-cover"
