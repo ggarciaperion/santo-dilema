@@ -9,8 +9,9 @@ const redis = new Redis({
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
+  const validSecret = process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD || "santo2024";
 
-  if (secret !== 'FIXREDIS2026SD') {
+  if (!secret || secret !== validSecret) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 

@@ -37,6 +37,9 @@
 html {
   background: var(--background);
   overflow-x: hidden;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -168,6 +171,41 @@ body {
 
   .moto-drive {
     animation: motoDrive 8s ease-in-out infinite;
+  }
+
+  /* Aceleración GPU para animaciones pesadas */
+  .float-slow,
+  .float-slower,
+  .float-medium,
+  .rotate-slow,
+  .sway-left,
+  .sway-right {
+    will-change: transform;
+  }
+
+  /* Reducir animaciones si el usuario lo prefiere (accesibilidad) */
+  @media (prefers-reduced-motion: reduce) {
+    .float-slow,
+    .float-slower,
+    .float-medium,
+    .rotate-slow,
+    .sway-left,
+    .sway-right,
+    .pulse-slow,
+    .bounce-subtle,
+    .moto-drive,
+    .taco-sweep,
+    .fit-sweep,
+    .fat-sweep {
+      animation: none;
+    }
+  }
+
+  /* Focus visible para navegación con teclado */
+  :focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   /* Ocultar scrollbar para navegación responsive */

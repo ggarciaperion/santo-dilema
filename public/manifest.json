@@ -1,0 +1,26 @@
+{
+  "name": "Santo Dilema",
+  "short_name": "Santo Dilema",
+  "description": "Alitas premium, ensaladas gourmet y tacos auténticos. Dark Kitchen · Chancay.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logoprincipal.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logoprincipal.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "shopping"],
+  "lang": "es-PE"
+}

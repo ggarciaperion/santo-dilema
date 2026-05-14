@@ -3,6 +3,13 @@ import { storage } from "@/lib/storage";
 
 export async function POST(request: Request) {
   try {
+    // Verificar autorización
+    const authHeader = request.headers.get("authorization");
+    const adminSecret = process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD || "santo2024";
+    if (!authHeader || authHeader !== `Bearer ${adminSecret}`) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     console.log('🔍 Obteniendo datos de la ruleta y cupones...');
 
     // Obtener datos actuales

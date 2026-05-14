@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Proteger rutas de administración
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://www.santodilema.com/sitemap.xml
