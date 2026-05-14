@@ -2457,7 +2457,6 @@ export default function AdminPage() {
                 <h1 className="text-2xl font-black text-fuchsia-400 neon-glow-purple">
                   Panel de Administración
                 </h1>
-                <p className="text-amber-400 mt-1 gold-glow">Santo Dilema - Gestión de Pedidos</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -2530,16 +2529,6 @@ export default function AdminPage() {
             }`}
           >
             💰 Finanzas
-          </button>
-          <button
-            onClick={() => setActiveTab("marketing")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "marketing"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            🎯 Promociones
           </button>
           <button
             onClick={() => setActiveTab("carta")}
@@ -3353,10 +3342,11 @@ export default function AdminPage() {
         /* Customers Tab */
         <>
           {/* Customer Stats */}
-          <section className="container mx-auto px-4 py-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-black text-fuchsia-400 neon-glow-purple mb-4">
-                Segmentación de Clientes
+          <section className="container mx-auto px-4 py-6">
+            <div className="mb-4">
+              <h2 className="text-lg font-black text-white mb-3 flex items-center gap-2">
+                <span className="text-fuchsia-400">👥</span> Clientes
+                <span className="text-xs font-normal text-gray-500 ml-1">— click en un cliente para ver detalle</span>
               </h2>
               <div className="flex gap-2 flex-wrap">
                 <button
@@ -3454,46 +3444,67 @@ export default function AdminPage() {
               const topProducts = Object.values(productCount).sort((a, b) => b.qty - a.qty).slice(0, 5);
               const daysSince = Math.floor((new Date().getTime() - new Date(selectedCustomer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
 
+              const segmentLabel = selectedCustomer.totalOrders > 3
+                ? { label: "VIP", color: "bg-amber-500/20 text-amber-300 border-amber-500/50" }
+                : selectedCustomer.totalOrders > 1
+                  ? { label: "Recurrente", color: "bg-blue-500/20 text-blue-300 border-blue-500/50" }
+                  : daysSince > 30
+                    ? { label: "Inactivo", color: "bg-red-500/20 text-red-300 border-red-500/50" }
+                    : { label: "Nuevo", color: "bg-green-500/20 text-green-300 border-green-500/50" };
+
               return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setSelectedCustomer(null)}>
-                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                    {/* Header del modal */}
-                    <div className="flex items-start justify-between p-4 border-b border-fuchsia-500/30">
-                      <div>
-                        <h2 className="text-xl font-black text-white">{selectedCustomer.name}</h2>
-                        <p className="text-gray-400 text-xs mt-0.5">{selectedCustomer.phone}</p>
-                        <p className="text-gray-500 text-xs mt-0.5">{selectedCustomer.address}</p>
-                      </div>
-                      <button onClick={() => setSelectedCustomer(null)} className="text-gray-400 hover:text-white text-xl leading-none ml-4">✕</button>
-                    </div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setSelectedCustomer(null)}>
+                  <div className="bg-gray-950 rounded-2xl border border-fuchsia-500/60 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl shadow-fuchsia-500/10" onClick={e => e.stopPropagation()}>
 
-                    {/* KPIs compactos */}
-                    <div className="grid grid-cols-3 gap-3 p-4">
-                      <div className="bg-black/50 rounded-lg p-3 border border-fuchsia-500/20 text-center">
-                        <p className="text-2xl font-black text-fuchsia-400">{selectedCustomer.totalOrders}</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Pedidos</p>
-                      </div>
-                      <div className="bg-black/50 rounded-lg p-3 border border-amber-500/30 text-center">
-                        <p className="text-2xl font-black text-amber-400">S/ {selectedCustomer.totalSpent.toFixed(0)}</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Total gastado</p>
-                      </div>
-                      <div className="bg-black/50 rounded-lg p-3 border border-cyan-500/20 text-center">
-                        <p className="text-2xl font-black text-cyan-400">{daysSince}d</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Última compra</p>
+                    {/* Header */}
+                    <div className="relative bg-gradient-to-r from-fuchsia-900/40 to-gray-900 rounded-t-2xl p-5 border-b border-fuchsia-500/20">
+                      <button onClick={() => setSelectedCustomer(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all">✕</button>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-fuchsia-500/20 border-2 border-fuchsia-500/40 flex items-center justify-center text-2xl font-black text-fuchsia-300">
+                          {selectedCustomer.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h2 className="text-lg font-black text-white">{selectedCustomer.name}</h2>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${segmentLabel.color}`}>{segmentLabel.label}</span>
+                          </div>
+                          <p className="text-fuchsia-400 text-sm font-mono mt-0.5">{selectedCustomer.phone}</p>
+                          {selectedCustomer.address && <p className="text-gray-500 text-xs mt-0.5 truncate max-w-[260px]">{selectedCustomer.address}</p>}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Productos más comprados */}
+                    {/* KPIs */}
+                    <div className="grid grid-cols-4 gap-2 p-4">
+                      <div className="bg-fuchsia-500/10 rounded-xl p-3 text-center border border-fuchsia-500/20">
+                        <p className="text-xl font-black text-fuchsia-400">{selectedCustomer.totalOrders}</p>
+                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Pedidos</p>
+                      </div>
+                      <div className="bg-amber-500/10 rounded-xl p-3 text-center border border-amber-500/20">
+                        <p className="text-xl font-black text-amber-400">S/{selectedCustomer.totalSpent.toFixed(0)}</p>
+                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Total</p>
+                      </div>
+                      <div className="bg-cyan-500/10 rounded-xl p-3 text-center border border-cyan-500/20">
+                        <p className="text-xl font-black text-cyan-400">S/{(selectedCustomer.avgTicket||0).toFixed(0)}</p>
+                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Ticket prom</p>
+                      </div>
+                      <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+                        <p className="text-xl font-black text-gray-300">{daysSince}d</p>
+                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Última compra</p>
+                      </div>
+                    </div>
+
+                    {/* Productos favoritos */}
                     {topProducts.length > 0 && (
-                      <div className="px-4 pb-3">
-                        <p className="text-xs font-black text-fuchsia-400 uppercase tracking-wider mb-2">Productos favoritos</p>
+                      <div className="px-4 pb-4">
+                        <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider mb-2">Favoritos</p>
                         <div className="space-y-1.5">
                           {topProducts.map((p, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-black/40 rounded px-3 py-1.5">
-                              <span className="text-[10px] font-black text-gray-500 w-4">{i + 1}</span>
+                            <div key={i} className="flex items-center gap-3 bg-gray-900 rounded-lg px-3 py-2 border border-gray-800">
+                              <span className="text-xs font-black text-gray-600 w-4 text-center">{i + 1}</span>
                               <span className="flex-1 text-sm text-white font-medium">{p.name}</span>
-                              <span className="text-xs font-black text-fuchsia-400 bg-fuchsia-500/10 px-2 py-0.5 rounded-full">{p.qty}x</span>
-                              <span className="text-xs text-amber-400 font-bold w-16 text-right">S/ {p.revenue.toFixed(0)}</span>
+                              <span className="text-xs font-black text-fuchsia-300 bg-fuchsia-500/10 px-2 py-0.5 rounded-full border border-fuchsia-500/20">{p.qty}×</span>
+                              <span className="text-xs text-amber-400 font-bold w-14 text-right">S/{p.revenue.toFixed(0)}</span>
                             </div>
                           ))}
                         </div>
@@ -3502,27 +3513,31 @@ export default function AdminPage() {
 
                     {/* Historial de pedidos */}
                     <div className="px-4 pb-4">
-                      <p className="text-xs font-black text-fuchsia-400 uppercase tracking-wider mb-2">Historial ({selectedCustomer.orders.length} pedidos)</p>
-                      <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider">Historial de pedidos</p>
+                        <span className="text-[10px] text-gray-600 bg-gray-800 px-2 py-0.5 rounded-full">{selectedCustomer.orders.length} pedidos</span>
+                      </div>
+                      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                         {[...selectedCustomer.orders].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((order: any) => (
-                          <div key={order.id} className="bg-black/50 rounded-lg px-3 py-2 border border-fuchsia-500/10">
-                            <div className="flex items-center justify-between">
+                          <div key={order.id} className="bg-gray-900 rounded-xl px-3 py-2.5 border border-gray-800 hover:border-fuchsia-500/30 transition-colors">
+                            <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
                                 <span className="font-mono text-xs font-black text-fuchsia-400">#{order.id}</span>
                                 <span className="text-[10px] text-gray-500">{new Date(order.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded ${statusColors[order.status as keyof typeof statusColors]}`}>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusColors[order.status as keyof typeof statusColors]}`}>
                                   {statusLabels[order.status as keyof typeof statusLabels]}
                                 </span>
+                                <span className="text-amber-400 font-black text-sm">S/ {order.totalPrice?.toFixed(2) || "0.00"}</span>
                               </div>
-                              <span className="text-amber-400 font-black text-sm">S/ {order.totalPrice?.toFixed(2) || "0.00"}</span>
                             </div>
-                            {/* Items compactos */}
                             {(() => {
                               const items = order.completedOrders || order.cart || [];
                               if (!items.length) return null;
                               return (
-                                <p className="text-[10px] text-gray-500 mt-0.5 ml-1">
-                                  {items.map((it: any) => `${it.name || it.product?.name || '?'} x${it.quantity || 0}`).join(' · ')}
+                                <p className="text-[10px] text-gray-500 leading-relaxed">
+                                  {items.map((it: any) => `${it.name || it.product?.name || '?'} ×${it.quantity || 0}`).join(' · ')}
                                 </p>
                               );
                             })()}
@@ -3531,35 +3546,33 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* CRM Profile */}
-                    <div className="px-4 pb-3 pt-3 border-t border-fuchsia-500/20">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider">Perfil CRM</p>
+                    {/* Footer — acciones y perfil CRM */}
+                    <div className="px-4 py-4 border-t border-gray-800 bg-gray-900/50 rounded-b-2xl">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          {(selectedCustomer.tags || []).length > 0
+                            ? (selectedCustomer.tags || []).map((t: string) => (
+                                <span key={t} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-500/25">{t}</span>
+                              ))
+                            : <span className="text-[10px] text-gray-600">Sin etiquetas</span>
+                          }
+                        </div>
                         <button onClick={() => {
                           setCrmEditPhone(selectedCustomer.phone);
                           setCrmForm({ birthday: selectedCustomer.birthday ? `${selectedCustomer.birthday.split('-')[1]}/${selectedCustomer.birthday.split('-')[0]}` : '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
                           setShowCrmModal(true);
-                        }} className="text-[10px] text-fuchsia-400 hover:text-fuchsia-200 underline">Editar</button>
+                        }} className="text-[10px] text-fuchsia-400 hover:text-fuchsia-200 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 px-3 py-1.5 rounded-lg border border-fuchsia-500/20 transition-all">
+                          Editar perfil
+                        </button>
                       </div>
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {(selectedCustomer.tags || []).length === 0
-                          ? <span className="text-[10px] text-gray-600">Sin etiquetas — haz clic en Editar para añadir</span>
-                          : (selectedCustomer.tags || []).map((t: string) => (
-                              <span key={t} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">{t}</span>
-                            ))
-                        }
-                      </div>
-                      <div className="flex flex-wrap gap-3 text-[10px] text-gray-500 mb-2">
-                        <span>Ticket prom: <span className="text-amber-400 font-bold">S/ {(selectedCustomer.avgTicket||0).toFixed(0)}</span></span>
-                        {selectedCustomer.birthday && (
-                          <span>Cumpleaños: <span className="text-pink-400 font-bold">{selectedCustomer.birthday.split('-')[1]}/{selectedCustomer.birthday.split('-')[0]}</span></span>
-                        )}
-                      </div>
-                      {selectedCustomer.notes && <p className="text-[10px] text-gray-500 italic mb-2">&quot;{selectedCustomer.notes}&quot;</p>}
+                      {selectedCustomer.birthday && (
+                        <p className="text-[10px] text-gray-500 mb-2">🎂 Cumpleaños: <span className="text-pink-400 font-bold">{selectedCustomer.birthday.split('-')[1]}/{selectedCustomer.birthday.split('-')[0]}</span></p>
+                      )}
+                      {selectedCustomer.notes && <p className="text-[10px] text-gray-500 italic mb-3">&quot;{selectedCustomer.notes}&quot;</p>}
                       <a href={buildWhatsApp(selectedCustomer.phone, getCampaignTemplate('inactive30', selectedCustomer))}
                          target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1 bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded text-[10px] font-bold">
-                        💬 WhatsApp
+                         className="flex items-center justify-center gap-2 w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all">
+                        💬 Enviar WhatsApp
                       </a>
                     </div>
                   </div>
@@ -3642,66 +3655,67 @@ export default function AdminPage() {
                   });
 
                   return (
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                    <div className="bg-gray-950 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
                       <table className="w-full">
-                        <thead className="bg-fuchsia-500/10 border-b-2 border-fuchsia-500/30">
+                        <thead className="bg-gray-900/80 border-b border-gray-800">
                           <tr>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("phone")}>
-                              Teléfono <SortIcon col="phone" />
-                            </th>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("name")}>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:table-cell">Estado</th>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none" onClick={() => handleSort("name")}>
                               Nombre <SortIcon col="name" />
                             </th>
-                            <th className="text-left p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden md:table-cell" onClick={() => handleSort("address")}>
-                              Dirección <SortIcon col="address" />
+                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none hidden md:table-cell" onClick={() => handleSort("phone")}>
+                              Teléfono <SortIcon col="phone" />
                             </th>
-                            <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalOrders")}>
+                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none" onClick={() => handleSort("totalOrders")}>
                               Pedidos <SortIcon col="totalOrders" />
                             </th>
-                            <th className="text-right p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none" onClick={() => handleSort("totalSpent")}>
-                              Total Gastado <SortIcon col="totalSpent" />
+                            <th className="text-right px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none" onClick={() => handleSort("totalSpent")}>
+                              Total <SortIcon col="totalSpent" />
                             </th>
-                            <th className="text-center p-3 text-fuchsia-400 font-bold cursor-pointer hover:text-fuchsia-200 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
+                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
                               Última Compra <SortIcon col="lastOrderDate" />
                             </th>
-                            <th className="text-center p-3 text-fuchsia-400 font-bold hidden lg:table-cell">Estado</th>
-                            <th className="text-center p-3 text-amber-400 font-bold">🎟️</th>
+                            <th className="text-center px-4 py-3 text-xs font-bold text-amber-400 uppercase tracking-wider">Cupón</th>
                           </tr>
                         </thead>
                         <tbody>
                           {sortedCustomers.map((customer: any, idx: number) => {
                             const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
                             const hasCoupon = generatedCoupons[customer.phone];
+                            const segBadge = customer.totalOrders > 3
+                              ? { label: "VIP", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" }
+                              : customer.totalOrders > 1
+                                ? { label: "Recurrente", cls: "bg-blue-500/20 text-blue-300 border-blue-500/40" }
+                                : daysSinceLastOrder > 30
+                                  ? { label: "Inactivo", cls: "bg-red-500/20 text-red-300 border-red-500/40" }
+                                  : { label: "Nuevo", cls: "bg-green-500/20 text-green-300 border-green-500/40" };
                             return (
                               <tr
                                 key={customer.phone}
                                 onClick={() => setSelectedCustomer(customer)}
-                                className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 cursor-pointer transition-all ${idx % 2 === 0 ? "bg-black/20" : ""}`}
+                                className={`border-b border-gray-800/60 hover:bg-fuchsia-500/5 cursor-pointer transition-colors ${idx % 2 === 0 ? "bg-black/10" : ""}`}
                               >
-                                <td className="p-3 text-fuchsia-400 font-bold text-sm">{customer.phone}</td>
-                                <td className="p-3 text-white text-sm">{customer.name}</td>
-                                <td className="p-3 text-gray-300 text-sm hidden md:table-cell">{customer.address}</td>
-                                <td className="p-3 text-center">
-                                  <span className="inline-block px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400 font-bold text-sm">
+                                <td className="px-4 py-3 hidden sm:table-cell">
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${segBadge.cls}`}>{segBadge.label}</span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <p className="text-sm font-semibold text-white">{customer.name}</p>
+                                  <p className="text-xs text-gray-500 sm:hidden">{customer.phone}</p>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-fuchsia-400 font-mono hidden md:table-cell">{customer.phone}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className="inline-block w-8 h-8 leading-8 rounded-full bg-fuchsia-500/15 text-fuchsia-400 font-black text-sm text-center">
                                     {customer.totalOrders}
                                   </span>
                                 </td>
-                                <td className="p-3 text-right text-amber-400 font-black text-sm gold-glow">
-                                  S/ {customer.totalSpent.toFixed(2)}
+                                <td className="px-4 py-3 text-right text-amber-400 font-black text-sm">
+                                  S/ {customer.totalSpent.toFixed(0)}
                                 </td>
-                                <td className="p-3 text-center text-gray-300 text-sm hidden lg:table-cell">
-                                  {new Date(customer.lastOrderDate).toLocaleDateString("es-PE")}
+                                <td className="px-4 py-3 text-center text-gray-400 text-xs hidden lg:table-cell">
+                                  {new Date(customer.lastOrderDate).toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                                  {daysSinceLastOrder <= 7 && <span className="block text-green-400 text-[10px]">hace {daysSinceLastOrder}d</span>}
                                 </td>
-                                <td className="p-3 text-center hidden lg:table-cell">
-                                  {customer.totalOrders > 1 ? (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500">⭐ Recurrente</span>
-                                  ) : daysSinceLastOrder > 30 ? (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500">⚠️ Inactivo</span>
-                                  ) : (
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500">🆕 Nuevo</span>
-                                  )}
-                                </td>
-                                <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
+                                <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
                                   {hasCoupon ? (
                                     <span className="text-xs text-green-400 font-bold">✓ Enviado</span>
                                   ) : (
