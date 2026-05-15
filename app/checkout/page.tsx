@@ -1712,11 +1712,11 @@ export default function CheckoutPage() {
               <p className="text-gray-400 text-xs mb-2">También puedes pagar al número</p>
               <div className="relative">
                 <div className="flex items-center justify-center gap-3 bg-gray-800/50 border-2 border-green-500/30 rounded-xl py-3 px-4">
-                  <span className="text-green-400 font-black text-lg tracking-wider font-mono">906237356</span>
+                  <span className="text-green-400 font-black text-lg tracking-wider font-mono">910677186</span>
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText('906237356');
+                      navigator.clipboard.writeText('910677186');
                       setShowCopiedMessage(true);
                       setTimeout(() => setShowCopiedMessage(false), 1500);
                     }}
