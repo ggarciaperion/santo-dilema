@@ -224,6 +224,8 @@ export default function CheckoutPage() {
     phone: "",
     address: "",
   });
+  const [customerLookupStatus, setCustomerLookupStatus] = useState<'idle' | 'searching' | 'found' | 'not-found'>('idle');
+  const [customerAddresses, setCustomerAddresses] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -562,9 +564,34 @@ export default function CheckoutPage() {
   }, [isLoadingOrders, completedOrders.length, orderPlaced, router]);
 
   const handlePhoneInput = (value: string) => {
-    // Solo permite números, sin espacios
     const numbersOnly = value.replace(/\D/g, '');
-    setFormData({ ...formData, phone: numbersOnly });
+    setFormData(prev => ({ ...prev, phone: numbersOnly }));
+
+    if (numbersOnly.length === 9) {
+      setCustomerLookupStatus('searching');
+      fetch(`/api/customers?phone=${numbersOnly}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.found) {
+            setCustomerLookupStatus('found');
+            setCustomerAddresses(data.addresses || []);
+            setFormData(prev => ({
+              ...prev,
+              name: prev.name || data.name,
+              address: prev.address || (data.addresses?.[0] ?? ''),
+            }));
+          } else {
+            setCustomerLookupStatus('not-found');
+            setCustomerAddresses([]);
+          }
+        })
+        .catch(() => {
+          setCustomerLookupStatus('not-found');
+          setCustomerAddresses([]);
+        });
+    } else {
+      setCustomerLookupStatus('idle');
+    }
   };
 
   const handleNameInput = (value: string) => {
@@ -1183,6 +1210,47 @@ export default function CheckoutPage() {
               }}
               className="space-y-5"
             >
+              {/* TELÉFONO — primero */}
+              <div>
+                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
+                  Teléfono <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    required
+                    autoFocus
+                    value={formData.phone}
+                    onChange={(e) => handlePhoneInput(e.target.value)}
+                    maxLength={9}
+                    placeholder="987654321"
+                    className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 font-mono pr-10"
+                  />
+                  {customerLookupStatus === 'searching' && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg className="animate-spin h-5 w-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                      </svg>
+                    </span>
+                  )}
+                  {customerLookupStatus === 'found' && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-400 text-lg">✓</span>
+                  )}
+                </div>
+                {formData.phone.length > 0 && formData.phone.length < 9 && (
+                  <p className="text-red-400 text-xs mt-1">El teléfono debe tener 9 dígitos</p>
+                )}
+                {customerLookupStatus === 'found' && formData.name && (
+                  <div className="mt-2 px-3 py-2 rounded-lg bg-green-900/30 border border-green-500/30 text-green-400 text-sm font-semibold">
+                    👋 Bienvenido nuevamente, {formData.name.split(' ')[0]}
+                  </div>
+                )}
+              </div>
+
+              {/* NOMBRE */}
               <div>
                 <label className="block text-sm font-bold text-fuchsia-400 mb-2">
                   Nombre completo <span className="text-red-400">*</span>
@@ -1197,34 +1265,33 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
-                  Teléfono <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  required
-                  value={formData.phone}
-                  onChange={(e) => handlePhoneInput(e.target.value)}
-                  maxLength={9}
-                  placeholder="987654321"
-                  className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 font-mono"
-                />
-                {formData.phone.length > 0 && formData.phone.length < 9 && (
-                  <p className="text-red-400 text-xs mt-1">El teléfono debe tener 9 dígitos</p>
-                )}
-              </div>
-
+              {/* DIRECCIÓN */}
               <div>
                 <label className="block text-sm font-bold text-fuchsia-400 mb-2">
                   Dirección de entrega <span className="text-red-400">*</span>
                 </label>
+                {customerAddresses.length > 1 && (
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {customerAddresses.map((addr, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, address: addr }))}
+                        className={`text-xs px-3 py-1.5 rounded-lg border transition-all text-left ${
+                          formData.address === addr
+                            ? 'border-fuchsia-500 bg-fuchsia-900/40 text-fuchsia-300'
+                            : 'border-gray-600 bg-gray-800/40 text-gray-400 hover:border-fuchsia-500/50'
+                        }`}
+                      >
+                        {i === 0 ? '📍 Última' : `📍 Anterior`}: {addr.length > 28 ? addr.slice(0, 28) + '…' : addr}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <textarea
                   required
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                   placeholder="Ej: Av. Principal 123, Chancay"
                   className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 resize-none"
                   rows={3}

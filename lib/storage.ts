@@ -32,6 +32,7 @@ let salsaPromosFilePath: string = '';
 let customerProfilesFilePath: string = '';
 let menuPricesFilePath: string = '';
 let cajaFilePath: string = '';
+let birthdaySettingsFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -55,6 +56,7 @@ if (!isProduction) {
   customerProfilesFilePath = path.join(dataDir, 'customer-profiles.json');
   menuPricesFilePath = path.join(dataDir, 'menu-prices.json');
   cajaFilePath = path.join(dataDir, 'caja.json');
+  birthdaySettingsFilePath = path.join(dataDir, 'birthday-settings.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -286,6 +288,35 @@ export const storage = {
     }
 
     return orders[orderIndex];
+  },
+
+  // Buscar cliente por teléfono — devuelve nombre y historial de direcciones
+  async findCustomerByPhone(phone: string): Promise<{ found: boolean; name?: string; addresses?: string[] }> {
+    const orders = await this.getOrders();
+    const customerOrders = orders
+      .filter((o: any) => o.phone === phone && o.name && o.address)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    if (customerOrders.length === 0) {
+      return { found: false };
+    }
+
+    // Deduplicar direcciones manteniendo orden cronológico inverso (más reciente primero)
+    const seen = new Set<string>();
+    const addresses: string[] = [];
+    for (const o of customerOrders) {
+      const addr = o.address.trim();
+      if (addr && !seen.has(addr)) {
+        seen.add(addr);
+        addresses.push(addr);
+      }
+    }
+
+    return {
+      found: true,
+      name: customerOrders[0].name,
+      addresses,
+    };
   },
 
   // Buscar cliente por DNI
@@ -1050,6 +1081,35 @@ export const storage = {
     } else {
       ensureDataDirectory();
       fs.writeFileSync(cajaFilePath, JSON.stringify(data, null, 2));
+    }
+  },
+
+  // ========== BIRTHDAY SETTINGS ==========
+  async getBirthdaySettings(): Promise<any> {
+    const defaults = {
+      waTemplate: '🎉 ¡Hola {{nombre}}!\n\nTodo el equipo de Santo Dilema te desea un muy feliz cumpleaños. 🥳🎂\n\nGracias por elegirnos y ser parte de nuestra comunidad.\n\nQueremos celebrarlo contigo — ¡tenemos una sorpresa especial para ti!\n\n¡Esperamos verte pronto!\n\nEquipo Santo Dilema ❤️',
+      alertDaysBefore: 1,
+      recipientEmail: '',
+      lastAlertSent: '',
+    };
+    if (isProduction) {
+      if (!redis) return defaults;
+      return (await redis.get<any>('birthdaySettings')) || defaults;
+    }
+    ensureDataDirectory();
+    try {
+      return JSON.parse(fs.readFileSync(birthdaySettingsFilePath, 'utf-8'));
+    } catch {
+      return defaults;
+    }
+  },
+  async saveBirthdaySettings(data: any): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('birthdaySettings', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(birthdaySettingsFilePath, JSON.stringify(data, null, 2));
     }
   },
 };

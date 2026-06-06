@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
-// GET - Buscar cliente por DNI
+// GET - Buscar cliente por DNI o teléfono
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const dni = searchParams.get("dni");
+    const phone = searchParams.get("phone");
+
+    if (phone) {
+      const result = await storage.findCustomerByPhone(phone);
+      return NextResponse.json(result, { status: 200 });
+    }
 
     if (!dni) {
       return NextResponse.json(
-        { error: "DNI es requerido" },
+        { error: "DNI o teléfono es requerido" },
         { status: 400 }
       );
     }
