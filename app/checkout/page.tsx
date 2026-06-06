@@ -1270,24 +1270,6 @@ export default function CheckoutPage() {
                 <label className="block text-sm font-bold text-fuchsia-400 mb-2">
                   Dirección de entrega <span className="text-red-400">*</span>
                 </label>
-                {customerAddresses.length > 1 && (
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {customerAddresses.map((addr, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, address: addr }))}
-                        className={`text-xs px-3 py-1.5 rounded-lg border transition-all text-left ${
-                          formData.address === addr
-                            ? 'border-fuchsia-500 bg-fuchsia-900/40 text-fuchsia-300'
-                            : 'border-gray-600 bg-gray-800/40 text-gray-400 hover:border-fuchsia-500/50'
-                        }`}
-                      >
-                        {i === 0 ? '📍 Última' : `📍 Anterior`}: {addr.length > 28 ? addr.slice(0, 28) + '…' : addr}
-                      </button>
-                    ))}
-                  </div>
-                )}
                 <textarea
                   required
                   value={formData.address}
