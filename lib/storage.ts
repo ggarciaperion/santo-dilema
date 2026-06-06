@@ -290,16 +290,32 @@ export const storage = {
     return orders[orderIndex];
   },
 
-  // Buscar cliente por teléfono — devuelve nombre y historial de direcciones
+  // Buscar cliente por teléfono — devuelve nombre (más frecuente) y historial de direcciones
   async findCustomerByPhone(phone: string): Promise<{ found: boolean; name?: string; addresses?: string[] }> {
     const orders = await this.getOrders();
     const customerOrders = orders
       .filter((o: any) => o.phone === phone && o.name && o.address)
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a: any, b: any) => {
+        const ta = new Date(a.createdAt || a.timestamp || 0).getTime();
+        const tb = new Date(b.createdAt || b.timestamp || 0).getTime();
+        return tb - ta;
+      });
 
     if (customerOrders.length === 0) {
       return { found: false };
     }
+
+    // Nombre más frecuente (en caso de inconsistencias en la BD)
+    const nameCounts: Record<string, number> = {};
+    for (const o of customerOrders) {
+      const n = o.name.trim().toUpperCase();
+      nameCounts[n] = (nameCounts[n] || 0) + 1;
+    }
+    const topName = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0][0];
+    // Buscar la forma original (con capitalización) del nombre más frecuente
+    const canonicalName = customerOrders.find(
+      (o: any) => o.name.trim().toUpperCase() === topName
+    )!.name;
 
     // Deduplicar direcciones manteniendo orden cronológico inverso (más reciente primero)
     const seen = new Set<string>();
@@ -314,7 +330,7 @@ export const storage = {
 
     return {
       found: true,
-      name: customerOrders[0].name,
+      name: canonicalName,
       addresses,
     };
   },
