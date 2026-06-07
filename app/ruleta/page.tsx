@@ -195,9 +195,25 @@ export default function RuletaPage() {
 
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
-  // Shuffle prizes on mount
+  // Shuffle prizes on mount + verificar reset de sesión desde admin
   useEffect(() => {
     prizesRef.current = shuffleArray(BASE_PRIZES);
+
+    // Chequear si el admin pidió reset de sesión
+    fetch("/api/ruleta")
+      .then(r => r.json())
+      .then(data => {
+        if (data.resetSession) {
+          try { localStorage.removeItem("sd_promo_codes"); } catch {}
+          // Confirmar al servidor que se procesó el reset
+          fetch("/api/ruleta", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "ack_reset" }),
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Preload images on mount

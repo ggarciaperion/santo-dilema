@@ -6835,6 +6835,35 @@ export default function AdminPage() {
                   <p className="text-gray-500 text-xs">
                     ⚡ El cambio se aplica al instante. La ruleta solo leerá el forzado en el siguiente giro y luego retomará la distribución normal de premios.
                   </p>
+
+                  {/* Reset sesión */}
+                  <div className="border-t border-gray-200 pt-5">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Resetear sesión</p>
+                    <div className="flex items-center justify-between gap-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
+                      <div>
+                        <p className="text-gray-700 font-bold text-sm">Limpiar códigos de descuento usados</p>
+                        <p className="text-gray-400 text-xs mt-0.5">Resetea los códigos SD20/SD30 generados para que puedan volver a crearse. Úsalo al inicio de cada evento.</p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          setRuletaSaving(true);
+                          try {
+                            await fetch("/api/ruleta", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ action: "reset" }),
+                            });
+                            setForcedPrizeId(null);
+                          } catch {}
+                          setRuletaSaving(false);
+                        }}
+                        disabled={ruletaSaving}
+                        className="flex-shrink-0 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold text-sm rounded-lg transition-all"
+                      >
+                        {ruletaSaving ? "..." : "🔄 Resetear"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               );
             })()}
