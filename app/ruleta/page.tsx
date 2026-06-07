@@ -52,56 +52,44 @@ function playTick(ctx: AudioContext, vol = 0.25) {
   try {
     const now = ctx.currentTime;
 
-    // ── 1. Membrana (golpe de tambor) ─────────────────────────
-    // Oscilador triangle que cae rápido: da el "tom" del parche
-    const membrane = ctx.createOscillator();
-    membrane.type = "triangle";
-    const memGain = ctx.createGain();
-    membrane.frequency.setValueAtTime(280, now);
-    membrane.frequency.exponentialRampToValueAtTime(85, now + 0.028);
-    memGain.gain.setValueAtTime(vol * 0.8, now);
-    memGain.gain.exponentialRampToValueAtTime(0.001, now + 0.032);
-    membrane.connect(memGain);
-    memGain.connect(ctx.destination);
-    membrane.start(now);
-    membrane.stop(now + 0.035);
+    // ── Tono principal (chime/timbre) ─────────────────────────
+    const freq = 900 + Math.random() * 120;
+    const osc1 = ctx.createOscillator();
+    const g1   = ctx.createGain();
+    osc1.type            = "sine";
+    osc1.frequency.value = freq;
+    g1.gain.setValueAtTime(vol, now);
+    g1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc1.connect(g1);
+    g1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.19);
 
-    // ── 2. Cables de tarola (snare wires) ────────────────────
-    // Ruido blanco → HPF 1kHz → Peaking boost 5kHz → envolvente
-    // Este es el "ssshhhh" característico de una tarola
-    const snareLen  = Math.floor(ctx.sampleRate * 0.14);
-    const snareBuf  = ctx.createBuffer(1, snareLen, ctx.sampleRate);
-    const snareData = snareBuf.getChannelData(0);
-    for (let i = 0; i < snareLen; i++) snareData[i] = Math.random() * 2 - 1;
+    // ── Armónico (2ª) — da cuerpo y brillo ───────────────────
+    const osc2 = ctx.createOscillator();
+    const g2   = ctx.createGain();
+    osc2.type            = "sine";
+    osc2.frequency.value = freq * 2.76; // intervalo disonante suave = shimmer
+    g2.gain.setValueAtTime(vol * 0.25, now);
+    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+    osc2.connect(g2);
+    g2.connect(ctx.destination);
+    osc2.start(now);
+    osc2.stop(now + 0.10);
 
-    const snare = ctx.createBufferSource();
-    snare.buffer = snareBuf;
-
-    // High-pass: elimina graves, deja el crujido
-    const hp = ctx.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 1000;
-    hp.Q.value = 0.7;
-
-    // Peak EQ: realza la frecuencia de alambre ~5kHz
-    const eq = ctx.createBiquadFilter();
-    eq.type = "peaking";
-    eq.frequency.value = 5000;
-    eq.gain.value = 10;
-    eq.Q.value = 1.2;
-
-    const snareGain = ctx.createGain();
-    // Ataque instantáneo, decay largo → el "buzz" se funde en el siguiente golpe
-    snareGain.gain.setValueAtTime(vol * 1.1, now);
-    snareGain.gain.setValueAtTime(vol * 0.6, now + 0.008);
-    snareGain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
-
-    snare.connect(hp);
-    hp.connect(eq);
-    eq.connect(snareGain);
-    snareGain.connect(ctx.destination);
-    snare.start(now);
-    snare.stop(now + 0.14);
+    // ── Click inicial (ataque percusivo) ──────────────────────
+    const clickLen  = Math.floor(ctx.sampleRate * 0.006);
+    const clickBuf  = ctx.createBuffer(1, clickLen, ctx.sampleRate);
+    const clickData = clickBuf.getChannelData(0);
+    for (let i = 0; i < clickLen; i++)
+      clickData[i] = (Math.random() * 2 - 1) * (1 - i / clickLen);
+    const click     = ctx.createBufferSource();
+    click.buffer    = clickBuf;
+    const gClick    = ctx.createGain();
+    gClick.gain.setValueAtTime(vol * 0.5, now);
+    click.connect(gClick);
+    gClick.connect(ctx.destination);
+    click.start(now);
 
   } catch {}
 }
