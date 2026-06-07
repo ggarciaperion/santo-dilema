@@ -4,18 +4,18 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 // ─── PRIZE CONFIG ─────────────────────────────────────────────────────────────
 const PRIZES = [
-  { id: 0,  label: "Alitas Gratis",         line1: "Alitas",    line2: "Gratis",      emoji: "🍗", color: "#ef4444", dark: false, weight: 3 },
-  { id: 1,  label: "20% de Descuento",       line1: "20%",       line2: "Descuento",   emoji: "🏷️", color: "#f59e0b", dark: true,  weight: 3 },
-  { id: 2,  label: "Dúo de Tacos",           line1: "Dúo de",    line2: "Tacos",       emoji: "🌮", color: "#059669", dark: false, weight: 2 },
-  { id: 3,  label: "Tomatodo Santo Dilema",  line1: "Tomatodo",  line2: "SD",          emoji: "🧴", color: "#7c3aed", dark: false, weight: 1 },
-  { id: 4,  label: "Alitas + Papas Fritas",  line1: "Alitas +",  line2: "Papas",       emoji: "🍟", color: "#f97316", dark: false, weight: 2 },
-  { id: 5,  label: "20% de Descuento",       line1: "20%",       line2: "Descuento",   emoji: "🏷️", color: "#b45309", dark: false, weight: 3 },
-  { id: 6,  label: "Llavero Santo Dilema",   line1: "Llavero",   line2: "SD",          emoji: "🗝️", color: "#0891b2", dark: false, weight: 2 },
-  { id: 7,  label: "Alitas Gratis",          line1: "Alitas",    line2: "Gratis",      emoji: "🍗", color: "#dc2626", dark: false, weight: 3 },
-  { id: 8,  label: "30% de Descuento",       line1: "30%",       line2: "Descuento",   emoji: "⭐", color: "#ec4899", dark: false, weight: 1 },
-  { id: 9,  label: "Dúo de Tacos",           line1: "Dúo de",    line2: "Tacos",       emoji: "🌮", color: "#10b981", dark: false, weight: 2 },
-  { id: 10, label: "Ensalada César",         line1: "Ensalada",  line2: "César",       emoji: "🥗", color: "#0d9488", dark: false, weight: 2 },
-  { id: 11, label: "Taza Sublimada",         line1: "Taza",      line2: "Sublimada",   emoji: "☕", color: "#d946ef", dark: false, weight: 1 },
+  { id: 0,  label: "8 Alitas\n+ Papas",      line1: "8 Alitas",  line2: "+ Papas",     emoji: "🍗", color: "#ef4444", dark: false, weight: 3 },
+  { id: 1,  label: "20%\nDescuento",          line1: "20%",       line2: "Descuento",   emoji: "🏷️", color: "#f59e0b", dark: true,  weight: 3 },
+  { id: 2,  label: "Dúo de\nTacos",           line1: "Dúo de",    line2: "Tacos",       emoji: "🌮", color: "#059669", dark: false, weight: 2 },
+  { id: 3,  label: "Ensalada\nCOBB",          line1: "Ensalada",  line2: "COBB",        emoji: "🥗", color: "#0d9488", dark: false, weight: 2 },
+  { id: 4,  label: "8 Alitas\n+ Papas",       line1: "8 Alitas",  line2: "+ Papas",     emoji: "🍗", color: "#dc2626", dark: false, weight: 3 },
+  { id: 5,  label: "20%\nDescuento",          line1: "20%",       line2: "Descuento",   emoji: "🏷️", color: "#b45309", dark: false, weight: 3 },
+  { id: 6,  label: "Dúo de\nTacos",           line1: "Dúo de",    line2: "Tacos",       emoji: "🌮", color: "#10b981", dark: false, weight: 2 },
+  { id: 7,  label: "Ensalada\nCryspi",        line1: "Ensalada",  line2: "Cryspi",      emoji: "🥙", color: "#65a30d", dark: false, weight: 2 },
+  { id: 8,  label: "Llavero\nSD",             line1: "Llavero",   line2: "SD",          emoji: "🔑", color: "#0891b2", dark: false, weight: 2 },
+  { id: 9,  label: "30%\nDescuento",          line1: "30%",       line2: "Descuento",   emoji: "⭐", color: "#ec4899", dark: false, weight: 1 },
+  { id: 10, label: "Tomatodo\nSD",            line1: "Tomatodo",  line2: "SD",          emoji: "🧃", color: "#7c3aed", dark: false, weight: 1 },
+  { id: 11, label: "Taza\nSD",               line1: "Taza",      line2: "SD",          emoji: "☕", color: "#d946ef", dark: false, weight: 1 },
 ] as const;
 
 type Prize = typeof PRIZES[number];
