@@ -233,20 +233,30 @@ export default function RuletaPage() {
       ctx.translate(cx, cy);
       ctx.rotate(am);
       const tc = p.dark ? "#000" : "#fff";
-      const fs = S * 0.038;
 
-      ctx.font = `${S * 0.052}px serif`;
+      // Emoji — near outer edge
+      ctx.font = `${S * 0.046}px serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = tc;
       ctx.fillText(p.emoji, R * 0.83, 0);
 
+      // Single-line label — centered radially
+      const labelText = `${p.line1} ${p.line2}`;
+      const fs = S * 0.028;
       ctx.font = `900 ${fs}px system-ui,-apple-system,sans-serif`;
       ctx.fillStyle = tc;
-      ctx.shadowColor = "rgba(0,0,0,0.6)";
-      ctx.shadowBlur = 4;
-      ctx.fillText(p.line1, R * 0.5, -fs * 0.72);
-      ctx.fillText(p.line2, R * 0.5,  fs * 0.72);
+      ctx.shadowColor = "rgba(0,0,0,0.75)";
+      ctx.shadowBlur = 5;
+      // Scale down if text is too wide for the segment
+      const maxW = R * 0.56;
+      const measured = ctx.measureText(labelText).width;
+      if (measured > maxW) {
+        ctx.scale(maxW / measured, 1);
+        ctx.fillText(labelText, R * 0.54 * (measured / maxW), 0);
+      } else {
+        ctx.fillText(labelText, R * 0.54, 0);
+      }
       ctx.shadowBlur = 0;
       ctx.restore();
     }
