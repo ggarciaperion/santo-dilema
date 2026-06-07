@@ -3,29 +3,51 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
 // ─── PRIZE CONFIG ─────────────────────────────────────────────────────────────
-const PRIZES = [
-  { id: 0,  label: "8 Alitas\n+ Papas",      line1: "8 Alitas",  line2: "+ Papas",     emoji: "🍗", color: "#ef4444", dark: false, weight: 3 },
-  { id: 1,  label: "20%\nDescuento",          line1: "20%",       line2: "Descuento",   emoji: "🏷️", color: "#f59e0b", dark: true,  weight: 3 },
-  { id: 2,  label: "Dúo de\nTacos",           line1: "Dúo de",    line2: "Tacos",       emoji: "🌮", color: "#059669", dark: false, weight: 2 },
-  { id: 3,  label: "Ensalada\nCOBB",          line1: "Ensalada",  line2: "COBB",        emoji: "🥗", color: "#0d9488", dark: false, weight: 2 },
-  { id: 4,  label: "8 Alitas\n+ Papas",       line1: "8 Alitas",  line2: "+ Papas",     emoji: "🍗", color: "#dc2626", dark: false, weight: 3 },
-  { id: 5,  label: "20%\nDescuento",          line1: "20%",       line2: "Descuento",   emoji: "🏷️", color: "#b45309", dark: false, weight: 3 },
-  { id: 6,  label: "Dúo de\nTacos",           line1: "Dúo de",    line2: "Tacos",       emoji: "🌮", color: "#10b981", dark: false, weight: 2 },
-  { id: 7,  label: "Ensalada\nCryspi",        line1: "Ensalada",  line2: "Cryspi",      emoji: "🥙", color: "#65a30d", dark: false, weight: 2 },
-  { id: 8,  label: "Llavero\nSD",             line1: "Llavero",   line2: "SD",          emoji: "🔑", color: "#0891b2", dark: false, weight: 2 },
-  { id: 9,  label: "30%\nDescuento",          line1: "30%",       line2: "Descuento",   emoji: "⭐", color: "#ec4899", dark: false, weight: 1 },
-  { id: 10, label: "Tomatodo\nSD",            line1: "Tomatodo",  line2: "SD",          emoji: "🧃", color: "#7c3aed", dark: false, weight: 1 },
-  { id: 11, label: "Taza\nSD",               line1: "Taza",      line2: "SD",          emoji: "☕", color: "#d946ef", dark: false, weight: 1 },
-] as const;
+const BASE_PRIZES = [
+  { id: 0,  label: "8 Alitas\n+ Papas",  line1: "8 Alitas",  line2: "+ Papas",    emoji: "🍗", image: "/premios/alita.png",  color: "#ef4444", dark: false, weight: 3, promoPrefix: null  as string | null },
+  { id: 1,  label: "20%\nDescuento",     line1: "20%",        line2: "Descuento",  emoji: "🏷️", image: null  as string | null, color: "#f59e0b", dark: true,  weight: 4, promoPrefix: "SD20" as string | null },
+  { id: 2,  label: "Dúo de\nTacos",      line1: "Dúo de",     line2: "Tacos",      emoji: "🌮", image: "/premios/taco.png",   color: "#059669", dark: false, weight: 2, promoPrefix: null  as string | null },
+  { id: 3,  label: "Ensalada\nCOBB",     line1: "Ensalada",   line2: "COBB",       emoji: "🥗", image: "/premios/cobb.png",   color: "#0d9488", dark: false, weight: 2, promoPrefix: null  as string | null },
+  { id: 4,  label: "8 Alitas\n+ Papas",  line1: "8 Alitas",   line2: "+ Papas",    emoji: "🍗", image: "/premios/alita.png",  color: "#dc2626", dark: false, weight: 3, promoPrefix: null  as string | null },
+  { id: 5,  label: "20%\nDescuento",     line1: "20%",        line2: "Descuento",  emoji: "🏷️", image: null  as string | null, color: "#b45309", dark: false, weight: 4, promoPrefix: "SD20" as string | null },
+  { id: 6,  label: "30%\nDescuento",     line1: "30%",        line2: "Descuento",  emoji: "⭐", image: null  as string | null, color: "#ec4899", dark: false, weight: 2, promoPrefix: "SD30" as string | null },
+  { id: 7,  label: "Ensalada\nCryspi",   line1: "Ensalada",   line2: "Cryspi",     emoji: "🥙", image: "/premios/cryspi.png", color: "#65a30d", dark: false, weight: 2, promoPrefix: null  as string | null },
+  { id: 8,  label: "Taza\nSD",           line1: "Taza",       line2: "SD",         emoji: "☕", image: null  as string | null, color: "#d946ef", dark: false, weight: 2, promoPrefix: null  as string | null },
+  { id: 9,  label: "20%\nDescuento",     line1: "20%",        line2: "Descuento",  emoji: "🏷️", image: null  as string | null, color: "#d97706", dark: false, weight: 4, promoPrefix: "SD20" as string | null },
+  { id: 10, label: "Ensalada\nCryspi",   line1: "Ensalada",   line2: "Cryspi",     emoji: "🥙", image: "/premios/cryspi.png", color: "#16a34a", dark: false, weight: 2, promoPrefix: null  as string | null },
+  { id: 11, label: "30%\nDescuento",     line1: "30%",        line2: "Descuento",  emoji: "⭐", image: null  as string | null, color: "#be185d", dark: false, weight: 2, promoPrefix: "SD30" as string | null },
+];
 
-type Prize = typeof PRIZES[number];
+type Prize = typeof BASE_PRIZES[number];
 type Phase = "idle" | "spinning" | "result";
 
-const N = PRIZES.length;
+const N = BASE_PRIZES.length; // 12
 const SEG = (2 * Math.PI) / N;
 const DURATION = 7000;
-// Hub radius as fraction of wheel radius — big enough for "GIRAR" + touch target
 const HUB_R = 0.19;
+
+// Fisher-Yates shuffle
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generatePromoCode(prefix: string): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code: string;
+  let used: string[] = [];
+  try { used = JSON.parse(localStorage.getItem("sd_promo_codes") || "[]"); } catch {}
+  do {
+    code = prefix + "-" + Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  } while (used.includes(code));
+  used.push(code);
+  try { localStorage.setItem("sd_promo_codes", JSON.stringify(used)); } catch {}
+  return code;
+}
 
 function easeWheel(t: number): number {
   if (t < 0.12) return (t / 0.12) * (t / 0.12) * 0.08;
@@ -33,16 +55,16 @@ function easeWheel(t: number): number {
   return 0.08 + 0.92 * (1 - Math.pow(1 - t2, 4));
 }
 
-function getWinner(rot: number): Prize {
+function getWinner(rot: number, prizes: Prize[]): Prize {
   const angle = ((-Math.PI / 2 - rot) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-  return PRIZES[Math.floor(angle / SEG) % N];
+  return prizes[Math.floor(angle / SEG) % N];
 }
 
-function pickWeightedSegment(): number {
-  const total = PRIZES.reduce((s, p) => s + p.weight, 0);
+function pickWeightedSegment(prizes: Prize[]): number {
+  const total = prizes.reduce((s, p) => s + p.weight, 0);
   let r = Math.random() * total;
-  for (let i = 0; i < PRIZES.length; i++) {
-    r -= PRIZES[i].weight;
+  for (let i = 0; i < prizes.length; i++) {
+    r -= prizes[i].weight;
     if (r <= 0) return i;
   }
   return N - 1;
@@ -51,8 +73,6 @@ function pickWeightedSegment(): number {
 function playTick(ctx: AudioContext, vol = 0.25) {
   try {
     const now = ctx.currentTime;
-
-    // ── Tono principal (chime/timbre) ─────────────────────────
     const freq = 900 + Math.random() * 120;
     const osc1 = ctx.createOscillator();
     const g1   = ctx.createGain();
@@ -60,132 +80,104 @@ function playTick(ctx: AudioContext, vol = 0.25) {
     osc1.frequency.value = freq;
     g1.gain.setValueAtTime(vol, now);
     g1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-    osc1.connect(g1);
-    g1.connect(ctx.destination);
-    osc1.start(now);
-    osc1.stop(now + 0.19);
+    osc1.connect(g1); g1.connect(ctx.destination);
+    osc1.start(now); osc1.stop(now + 0.19);
 
-    // ── Armónico (2ª) — da cuerpo y brillo ───────────────────
     const osc2 = ctx.createOscillator();
     const g2   = ctx.createGain();
     osc2.type            = "sine";
-    osc2.frequency.value = freq * 2.76; // intervalo disonante suave = shimmer
+    osc2.frequency.value = freq * 2.76;
     g2.gain.setValueAtTime(vol * 0.25, now);
     g2.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-    osc2.connect(g2);
-    g2.connect(ctx.destination);
-    osc2.start(now);
-    osc2.stop(now + 0.10);
+    osc2.connect(g2); g2.connect(ctx.destination);
+    osc2.start(now); osc2.stop(now + 0.10);
 
-    // ── Click inicial (ataque percusivo) ──────────────────────
     const clickLen  = Math.floor(ctx.sampleRate * 0.006);
     const clickBuf  = ctx.createBuffer(1, clickLen, ctx.sampleRate);
     const clickData = clickBuf.getChannelData(0);
     for (let i = 0; i < clickLen; i++)
       clickData[i] = (Math.random() * 2 - 1) * (1 - i / clickLen);
-    const click     = ctx.createBufferSource();
-    click.buffer    = clickBuf;
-    const gClick    = ctx.createGain();
+    const click  = ctx.createBufferSource();
+    click.buffer = clickBuf;
+    const gClick = ctx.createGain();
     gClick.gain.setValueAtTime(vol * 0.5, now);
-    click.connect(gClick);
-    gClick.connect(ctx.destination);
+    click.connect(gClick); gClick.connect(ctx.destination);
     click.start(now);
-
   } catch {}
 }
 
-// ─── FANFARRIA DE PREMIO (Web Audio API) ──────────────────────────────────────
-// Secuencia: golpe de tambor → arpeggio ascendente → nota larga + destellos
 function playWinFanfare(ctx: AudioContext) {
   const now = ctx.currentTime;
 
-  // Golpe de tambor / impacto inicial
   (() => {
-    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+    const buf  = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 3);
-    const src = ctx.createBufferSource();
+    const src  = ctx.createBufferSource();
     src.buffer = buf;
     const gain = ctx.createGain();
     const filt = ctx.createBiquadFilter();
-    filt.type = "lowpass";
-    filt.frequency.value = 180;
-    src.connect(filt);
-    filt.connect(gain);
-    gain.connect(ctx.destination);
+    filt.type = "lowpass"; filt.frequency.value = 180;
+    src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
     gain.gain.setValueAtTime(0.9, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
     src.start(now);
   })();
 
-  // Arpeggio ascendente — Do Mayor (C5-E5-G5-C6)
   const notes = [
     { freq: 523.25, t: 0.05,  dur: 0.35, vol: 0.32 },
     { freq: 659.25, t: 0.20,  dur: 0.35, vol: 0.32 },
     { freq: 783.99, t: 0.35,  dur: 0.35, vol: 0.32 },
-    { freq: 1046.5, t: 0.50,  dur: 0.80, vol: 0.38 }, // nota larga final
+    { freq: 1046.5, t: 0.50,  dur: 0.80, vol: 0.38 },
   ];
-
   for (const note of notes) {
-    // Sine (melodía) + square suave (brillo tipo fanfarria)
     for (const [type, vol] of [["sine", note.vol], ["square", note.vol * 0.12]] as [OscillatorType, number][]) {
-      const osc = ctx.createOscillator();
+      const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
       const filt = ctx.createBiquadFilter();
-      filt.type = "lowpass";
-      filt.frequency.value = type === "square" ? 2000 : 8000;
-      osc.connect(filt);
-      filt.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = type;
-      osc.frequency.value = note.freq;
+      filt.type = "lowpass"; filt.frequency.value = type === "square" ? 2000 : 8000;
+      osc.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+      osc.type = type; osc.frequency.value = note.freq;
       const t = now + note.t;
       gain.gain.setValueAtTime(0, t);
       gain.gain.linearRampToValueAtTime(vol, t + 0.025);
       gain.gain.setValueAtTime(vol * 0.85, t + note.dur * 0.6);
       gain.gain.exponentialRampToValueAtTime(0.001, t + note.dur);
-      osc.start(t);
-      osc.stop(t + note.dur + 0.05);
+      osc.start(t); osc.stop(t + note.dur + 0.05);
     }
   }
 
-  // Destellos brillantes — chispas agudas aleatorias
   for (let i = 0; i < 8; i++) {
-    const osc = ctx.createOscillator();
+    const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = "sine";
-    osc.frequency.value = 1800 + Math.random() * 1600;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "sine"; osc.frequency.value = 1800 + Math.random() * 1600;
     const t = now + 0.45 + Math.random() * 0.5;
     const d = 0.08 + Math.random() * 0.12;
     gain.gain.setValueAtTime(0.12 + Math.random() * 0.08, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + d);
-    osc.start(t);
-    osc.stop(t + d + 0.02);
+    osc.start(t); osc.stop(t + d + 0.02);
   }
 
-  // Reverb simulado — eco corto en la nota final
   (() => {
-    const osc = ctx.createOscillator();
+    const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = "sine";
-    osc.frequency.value = 1046.5;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "sine"; osc.frequency.value = 1046.5;
     const t = now + 0.9;
     gain.gain.setValueAtTime(0.08, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-    osc.start(t);
-    osc.stop(t + 0.65);
+    osc.start(t); osc.stop(t + 0.65);
   })();
 }
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 export default function RuletaPage() {
-  const [phase,    setPhase]    = useState<Phase>("idle");
-  const [winner,   setWinner]   = useState<Prize | null>(null);
-  const [hubPress, setHubPress] = useState(false);
+  const [phase,     setPhase]     = useState<Phase>("idle");
+  const [winner,    setWinner]    = useState<Prize | null>(null);
+  const [promoCode, setPromoCode] = useState<string | null>(null);
+  const [copied,    setCopied]    = useState(false);
+  const [hubPress,  setHubPress]  = useState(false);
 
   const wheelRef    = useRef<HTMLCanvasElement>(null);
   const confRef     = useRef<HTMLCanvasElement>(null);
@@ -198,9 +190,29 @@ export default function RuletaPage() {
   const startRotRef = useRef(0);
   const deltaRef    = useRef(0);
   const phaseRef    = useRef<Phase>("idle");
+  const prizesRef   = useRef<Prize[]>(BASE_PRIZES);
+  const imgCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
-  // Keep phaseRef in sync so draw() can read current phase
   useEffect(() => { phaseRef.current = phase; }, [phase]);
+
+  // Shuffle prizes on mount
+  useEffect(() => {
+    prizesRef.current = shuffleArray(BASE_PRIZES);
+  }, []);
+
+  // Preload images on mount
+  useEffect(() => {
+    const paths = [...new Set(BASE_PRIZES.map(p => p.image).filter(Boolean))] as string[];
+    for (const src of paths) {
+      const img = new Image();
+      img.onload = () => {
+        imgCacheRef.current.set(src, img);
+        draw(rotRef.current);
+      };
+      img.src = src;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── DRAW ────────────────────────────────────────────────────────────────────
   const draw = useCallback((rot: number) => {
@@ -211,7 +223,8 @@ export default function RuletaPage() {
     const S  = canvas.width;
     const cx = S / 2, cy = S / 2;
     const R  = S / 2 - 6;
-    const hr = R * HUB_R; // hub radius
+    const hr = R * HUB_R;
+    const prizes = prizesRef.current;
 
     ctx.clearRect(0, 0, S, S);
 
@@ -226,7 +239,7 @@ export default function RuletaPage() {
 
     // Segments
     for (let i = 0; i < N; i++) {
-      const p  = PRIZES[i];
+      const p  = prizes[i];
       const a0 = rot + i * SEG;
       const a1 = rot + (i + 1) * SEG;
       const am = rot + (i + 0.5) * SEG;
@@ -266,22 +279,43 @@ export default function RuletaPage() {
       ctx.rotate(am);
       const tc = p.dark ? "#000" : "#fff";
 
-      // Emoji — near outer edge
-      ctx.font = `${S * 0.046}px serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = tc;
-      ctx.fillText(p.emoji, R * 0.83, 0);
+      // Prize image (or emoji fallback) near outer edge
+      if (p.image) {
+        const img = imgCacheRef.current.get(p.image);
+        if (img && img.complete && img.naturalWidth > 0) {
+          const imgSize = R * 0.21;
+          ctx.save();
+          // Clip to circle for clean look
+          ctx.beginPath();
+          ctx.arc(R * 0.82, 0, imgSize / 2 + 2, 0, 2 * Math.PI);
+          ctx.clip();
+          ctx.drawImage(img, R * 0.82 - imgSize / 2, -imgSize / 2, imgSize, imgSize);
+          ctx.restore();
+        } else {
+          ctx.font = `${S * 0.046}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = tc;
+          ctx.fillText(p.emoji, R * 0.83, 0);
+        }
+      } else {
+        ctx.font = `${S * 0.046}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = tc;
+        ctx.fillText(p.emoji, R * 0.83, 0);
+      }
 
-      // Single-line label — centered radially
+      // Label text (single-line, auto-scale)
       const labelText = `${p.line1} ${p.line2}`;
       const fs = S * 0.028;
       ctx.font = `900 ${fs}px system-ui,-apple-system,sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillStyle = tc;
       ctx.shadowColor = "rgba(0,0,0,0.75)";
       ctx.shadowBlur = 5;
-      // Scale down if text is too wide for the segment
-      const maxW = R * 0.56;
+      const maxW   = R * 0.56;
       const measured = ctx.measureText(labelText).width;
       if (measured > maxW) {
         ctx.scale(maxW / measured, 1);
@@ -309,11 +343,9 @@ export default function RuletaPage() {
       ctx.fill();
     }
 
-    // ── HUB / BOTÓN GIRAR ────────────────────────────────────────────────────
-    // Shadow for depth
+    // ── HUB ─────────────────────────────────────────────────────────────────
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur  = 18;
-
     const isIdle = phaseRef.current === "idle";
     const hub = ctx.createRadialGradient(cx - hr * 0.3, cy - hr * 0.3, 0, cx, cy, hr);
     if (isIdle) {
@@ -329,20 +361,15 @@ export default function RuletaPage() {
     ctx.fillStyle = hub;
     ctx.fill();
     ctx.shadowBlur = 0;
-
-    // Hub border
     ctx.strokeStyle = isIdle ? "#fcd34d" : "#4b5563";
     ctx.lineWidth = 3.5;
     ctx.stroke();
-
     if (!isIdle) {
-      // Spinning: gold dot
       ctx.beginPath();
       ctx.arc(cx, cy, hr * 0.22, 0, 2 * Math.PI);
       ctx.fillStyle = "#f59e0b";
       ctx.fill();
     }
-    // When idle: "GIRAR" rendered via HTML overlay (proper fonts + CSS animation)
   }, []);
 
   // ── RESIZE ──────────────────────────────────────────────────────────────────
@@ -361,7 +388,6 @@ export default function RuletaPage() {
     return () => window.removeEventListener("resize", resize);
   }, [draw]);
 
-  // Redraw when phase changes (hub appearance)
   useEffect(() => { draw(rotRef.current); }, [phase, draw]);
 
   // ── CONFETTI ────────────────────────────────────────────────────────────────
@@ -372,21 +398,14 @@ export default function RuletaPage() {
     canvas.height = window.innerHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     const cols = ["#ef4444","#f59e0b","#d946ef","#06b6d4","#10b981","#ec4899","#f97316","#fff","#fcd34d"];
     const pcs  = Array.from({ length: 180 }, (_, i) => ({
-      x: Math.random() * canvas.width,
-      y: -20 - Math.random() * 250,
-      w: 5 + Math.random() * 9,
-      h: 3 + Math.random() * 5,
+      x: Math.random() * canvas.width, y: -20 - Math.random() * 250,
+      w: 5 + Math.random() * 9, h: 3 + Math.random() * 5,
       col: cols[Math.floor(Math.random() * cols.length)],
-      vx: (Math.random() - 0.5) * 8,
-      vy: 3 + Math.random() * 6,
-      vr: (Math.random() - 0.5) * 14,
-      r:  Math.random() * 360,
-      shape: i % 3, // 0=rect, 1=circle, 2=rect
+      vx: (Math.random() - 0.5) * 8, vy: 3 + Math.random() * 6,
+      vr: (Math.random() - 0.5) * 14, r: Math.random() * 360, shape: i % 3,
     }));
-
     let frame = 0;
     function loop() {
       if (frame > 260) { ctx!.clearRect(0, 0, canvas!.width, canvas!.height); return; }
@@ -399,13 +418,8 @@ export default function RuletaPage() {
         ctx!.translate(p.x, p.y);
         ctx!.rotate((p.r * Math.PI) / 180);
         ctx!.fillStyle = p.col;
-        if (p.shape === 1) {
-          ctx!.beginPath();
-          ctx!.arc(0, 0, p.w / 2, 0, 2 * Math.PI);
-          ctx!.fill();
-        } else {
-          ctx!.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        }
+        if (p.shape === 1) { ctx!.beginPath(); ctx!.arc(0, 0, p.w / 2, 0, 2 * Math.PI); ctx!.fill(); }
+        else { ctx!.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
         ctx!.restore();
       }
       frame++;
@@ -417,21 +431,20 @@ export default function RuletaPage() {
   // ── SPIN ────────────────────────────────────────────────────────────────────
   const spin = useCallback(() => {
     if (phase !== "idle") return;
-
     if (!audioRef.current) {
       try { audioRef.current = new (window.AudioContext || (window as any).webkitAudioContext)(); } catch {}
     }
-
     setPhase("spinning");
     startRotRef.current = rotRef.current;
-    const target      = pickWeightedSegment();
+    const prizes  = prizesRef.current;
+    const target  = pickWeightedSegment(prizes);
     const targetAngle = -(target + 0.5 + (Math.random() - 0.5) * 0.7) * SEG - Math.PI / 2;
     const fullSpins   = (10 + Math.floor(Math.random() * 6)) * 2 * Math.PI;
     let delta = (targetAngle - startRotRef.current + fullSpins) % (2 * Math.PI);
     if (delta <= 0) delta += 2 * Math.PI;
     delta += Math.floor(10 + Math.random() * 5) * 2 * Math.PI;
-    deltaRef.current  = delta;
-    startTRef.current = 0;
+    deltaRef.current   = delta;
+    startTRef.current  = 0;
     lastSegRef.current = -1;
 
     function frame(ts: number) {
@@ -441,39 +454,56 @@ export default function RuletaPage() {
       const rot = startRotRef.current + et * deltaRef.current;
       rotRef.current = rot;
       draw(rot);
-
       const seg = Math.floor(
         (((-Math.PI / 2 - rot) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)) / SEG
       ) % N;
       if (seg !== lastSegRef.current && audioRef.current) {
-        // Volume builds as wheel slows — maximum drama near the stop
         const tickVol = t > 0.85 ? 0.55 : t > 0.65 ? 0.42 : t > 0.4 ? 0.30 : 0.20;
         playTick(audioRef.current, tickVol);
         lastSegRef.current = seg;
       }
-
       if (t < 1) {
         animRef.current = requestAnimationFrame(frame);
       } else {
-        const won = getWinner(rotRef.current);
-        // Sonido PRIMERO, luego modal (300ms delay para que el sonido arranque primero)
+        const won  = getWinner(rotRef.current, prizesRef.current);
+        const code = won.promoPrefix ? generatePromoCode(won.promoPrefix) : null;
         if (audioRef.current) playWinFanfare(audioRef.current);
         launchConfetti();
         setTimeout(() => {
+          setPromoCode(code);
           setWinner(won);
           setPhase("result");
         }, 320);
       }
     }
-
     animRef.current = requestAnimationFrame(frame);
   }, [phase, draw, launchConfetti]);
 
   const reset = useCallback(() => {
     cancelAnimationFrame(animRef.current);
+    setPromoCode(null);
+    setCopied(false);
     setWinner(null);
     setPhase("idle");
   }, []);
+
+  const copyPromo = useCallback(() => {
+    if (!promoCode) return;
+    navigator.clipboard.writeText(promoCode).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }).catch(() => {
+      // Fallback for older browsers
+      const ta = document.createElement("textarea");
+      ta.value = promoCode;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }, [promoCode]);
 
   // ── RENDER ──────────────────────────────────────────────────────────────────
   return (
@@ -552,7 +582,7 @@ export default function RuletaPage() {
           zIndex: 10,
         }} />
 
-        {/* Outer ring glow — intensifies while spinning */}
+        {/* Outer ring glow */}
         <div style={{
           position: "absolute", inset: -8, borderRadius: "50%",
           boxShadow: phase === "spinning"
@@ -564,21 +594,20 @@ export default function RuletaPage() {
 
         <canvas ref={wheelRef} style={{ width:"100%", height:"100%", borderRadius:"50%", display:"block" }} />
 
-        {/* ── HUB OVERLAY BUTTON ─────────────────────────────────────────── */}
+        {/* Hub overlay button */}
         <button
           onClick={spin}
           onMouseDown={() => setHubPress(true)}
           onMouseUp={() => setHubPress(false)}
           onTouchStart={() => setHubPress(true)}
-          onTouchEnd={() => { setHubPress(false); }}
+          onTouchEnd={() => setHubPress(false)}
           disabled={phase !== "idle"}
           aria-label="Girar la ruleta"
           style={{
             position: "absolute",
             top: "50%", left: "50%",
             transform: `translate(-50%, -50%) scale(${hubPress && phase === "idle" ? 0.93 : 1})`,
-            width: "19%",
-            height: "19%",
+            width: "19%", height: "19%",
             borderRadius: "50%",
             background: "transparent",
             border: "none",
@@ -596,13 +625,10 @@ export default function RuletaPage() {
           {phase === "idle" && (
             <div style={{
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 0,
               animation: "sdHubPulse 1.5s ease-in-out infinite",
               pointerEvents: "none",
-              lineHeight: 1,
             }}>
               <span style={{
                 fontFamily: "'Lilita One', cursive",
@@ -632,8 +658,6 @@ export default function RuletaPage() {
           GIRANDO...
         </div>
       )}
-
-      {/* Spacer when idle so layout stays stable */}
       {phase === "idle" && <div style={{ marginTop: 22, height: "clamp(1.2rem,2.5vw,1.56rem)" }} />}
 
       {/* Winner modal */}
@@ -671,10 +695,8 @@ export default function RuletaPage() {
               borderRadius: 25,
             }} />
 
-            {/* Content */}
             <div style={{ position: "relative", zIndex: 1 }}>
 
-              {/* Stars burst */}
               <div style={{
                 fontSize: "clamp(1.8rem,6vw,3rem)",
                 lineHeight: 1,
@@ -711,41 +733,127 @@ export default function RuletaPage() {
                 background: winner.color,
                 borderRadius: 20,
                 padding: "clamp(18px,4vw,30px) clamp(14px,4vw,30px)",
-                marginBottom: 24,
+                marginBottom: promoCode ? 16 : 24,
                 boxShadow: `0 0 60px ${winner.color}bb,inset 0 1px 0 rgba(255,255,255,0.25)`,
                 position: "relative",
                 overflow: "hidden",
                 animation: "sdPrizeIn 0.55s 0.25s both cubic-bezier(0.34,1.56,0.64,1)",
               }}>
-                {/* Shimmer */}
                 <div style={{
                   position:"absolute", inset:0, pointerEvents:"none",
                   background:"linear-gradient(105deg,rgba(255,255,255,0) 30%,rgba(255,255,255,0.2) 50%,rgba(255,255,255,0) 70%)",
                   animation:"sdShimmer 2.5s 0.5s ease-in-out infinite",
                 }} />
-                <div style={{
-                  fontSize:"clamp(3rem,10vw,5rem)",
-                  lineHeight: 1.1,
-                  position: "relative",
-                  animation: "sdEmojiBounce 0.6s 0.35s both cubic-bezier(0.34,1.56,0.64,1)",
-                }}>
-                  {winner.emoji}
-                </div>
+
+                {/* Image or emoji */}
+                {winner.image ? (
+                  <div style={{
+                    width: "clamp(64px,14vw,96px)",
+                    height: "clamp(64px,14vw,96px)",
+                    margin: "0 auto 10px",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "rgba(0,0,0,0.15)",
+                    animation: "sdEmojiBounce 0.6s 0.35s both cubic-bezier(0.34,1.56,0.64,1)",
+                    position: "relative",
+                  }}>
+                    <img
+                      src={winner.image}
+                      alt={winner.line1}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{
+                    fontSize:"clamp(3rem,10vw,5rem)",
+                    lineHeight: 1.1,
+                    position: "relative",
+                    animation: "sdEmojiBounce 0.6s 0.35s both cubic-bezier(0.34,1.56,0.64,1)",
+                  }}>
+                    {winner.emoji}
+                  </div>
+                )}
+
                 <div style={{
                   color: winner.dark ? "#000" : "#fff",
                   fontFamily: "var(--font-graffiti), system-ui, sans-serif",
                   fontSize: "clamp(1.4rem,5vw,2.4rem)",
                   fontWeight: 900,
-                  marginTop: 10,
+                  marginTop: 8,
                   letterSpacing: 2,
                   textShadow: winner.dark ? "none" : "0 2px 10px rgba(0,0,0,0.4)",
+                  whiteSpace: "pre-line",
                   position: "relative",
                 }}>
                   {winner.label}
                 </div>
               </div>
 
-              {/* Next participant */}
+              {/* Promo code section (discount prizes only) */}
+              {promoCode && (
+                <div style={{
+                  marginBottom: 20,
+                  animation: "sdFadeUp 0.45s 0.35s both ease-out",
+                }}>
+                  <p style={{
+                    color: "#9ca3af",
+                    fontSize: "clamp(0.72rem,1.8vw,0.85rem)",
+                    margin: "0 0 8px",
+                    letterSpacing: 2,
+                  }}>
+                    TU CÓDIGO DE DESCUENTO
+                  </p>
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 10,
+                    background: "rgba(255,255,255,0.06)",
+                    border: `2px dashed ${winner.color}`,
+                    borderRadius: 14,
+                    padding: "12px 16px",
+                  }}>
+                    <span style={{
+                      fontFamily: "monospace",
+                      fontSize: "clamp(1.1rem,4vw,1.6rem)",
+                      fontWeight: 900,
+                      color: "#fff",
+                      letterSpacing: 4,
+                    }}>
+                      {promoCode}
+                    </span>
+                    <button
+                      onClick={copyPromo}
+                      style={{
+                        background: copied ? "#16a34a" : winner.color,
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 9,
+                        padding: "7px 14px",
+                        fontSize: "clamp(0.7rem,1.8vw,0.85rem)",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        letterSpacing: 1,
+                        transition: "background 0.25s ease",
+                        WebkitTapHighlightColor: "transparent",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {copied ? "¡COPIADO!" : "COPIAR"}
+                    </button>
+                  </div>
+                  <p style={{
+                    color: "#6b7280",
+                    fontSize: "clamp(0.65rem,1.6vw,0.78rem)",
+                    margin: "8px 0 0",
+                    letterSpacing: 1,
+                  }}>
+                    Muestra este código al hacer tu pedido
+                  </p>
+                </div>
+              )}
+
+              {/* Next participant button */}
               <button
                 onClick={reset}
                 style={{
@@ -761,7 +869,7 @@ export default function RuletaPage() {
                   letterSpacing: 2,
                   touchAction: "manipulation",
                   WebkitTapHighlightColor: "transparent",
-                  animation: "sdFadeUp 0.4s 0.45s both ease-out",
+                  animation: "sdFadeUp 0.4s 0.5s both ease-out",
                 }}
                 onTouchStart={e => (e.currentTarget.style.background = "linear-gradient(135deg,#4b5563,#374151)")}
                 onTouchEnd={e => (e.currentTarget.style.background = "linear-gradient(135deg,#374151,#1f2937)")}
