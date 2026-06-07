@@ -50,15 +50,44 @@ function pickWeightedSegment(): number {
 
 function playTick(ctx: AudioContext, vol = 0.25) {
   try {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 900;
-    gain.gain.setValueAtTime(vol, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.04);
+    const now = ctx.currentTime;
+    const dur = 0.055;
+
+    // ── Noise body (snare wires) ──────────────────────────────
+    const bufSize = Math.floor(ctx.sampleRate * dur);
+    const buf     = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data    = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++)
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 1.8);
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+
+    const hpf = ctx.createBiquadFilter();
+    hpf.type = "highpass";
+    hpf.frequency.value = 1600;
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(vol * 1.3, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    noise.connect(hpf);
+    hpf.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + dur);
+
+    // ── Crack transient (pitched) ─────────────────────────────
+    const osc     = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.frequency.setValueAtTime(200, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.018);
+    oscGain.gain.setValueAtTime(vol * 0.35, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.022);
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.025);
   } catch {}
 }
 
@@ -414,7 +443,9 @@ export default function RuletaPage() {
         (((-Math.PI / 2 - rot) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)) / SEG
       ) % N;
       if (seg !== lastSegRef.current && audioRef.current) {
-        playTick(audioRef.current, t > 0.75 ? 0.14 : t > 0.5 ? 0.22 : 0.28);
+        // Volume builds as wheel slows — maximum drama near the stop
+        const tickVol = t > 0.85 ? 0.55 : t > 0.65 ? 0.42 : t > 0.4 ? 0.30 : 0.20;
+        playTick(audioRef.current, tickVol);
         lastSegRef.current = seg;
       }
 
