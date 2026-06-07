@@ -3020,11 +3020,13 @@ export default function AdminPage() {
                       <span className="text-gray-400 text-xs">📱</span>
                       <span className="text-xs text-gray-600 font-mono">{order.phone}</span>
                     </div>
-                    {(order as any).deliveryCost > 0 ? (
+                    {((order as any).deliveryOption === 'centro' || (order as any).deliveryOption === 'alrededores') ? (
                       <div className="flex items-start gap-2">
                         <span className="text-xs">🛵</span>
                         <div>
-                          <span className="text-xs font-bold text-sky-600">Delivery · +S/{((order as any).deliveryCost || 0).toFixed(2)}</span>
+                          <span className="text-xs font-bold text-sky-600">
+                            Delivery{(order as any).deliveryCost > 0 ? ` · +S/${((order as any).deliveryCost || 0).toFixed(2)}` : ' · Gratis'}
+                          </span>
                           {order.address && order.address !== 'Recojo en tienda' && (
                             <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{order.address}</p>
                           )}
