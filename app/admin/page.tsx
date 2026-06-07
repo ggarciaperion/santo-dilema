@@ -281,6 +281,7 @@ export default function AdminPage() {
   const [editingCustomer, setEditingCustomer] = useState(false);
   const [editCustomerForm, setEditCustomerForm] = useState({ name: '', phone: '', address: '' });
   const [editCustomerSaving, setEditCustomerSaving] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [primaryAddressMap, setPrimaryAddressMap] = useState<Record<string, string>>({});
   // Sistema de alertas de cumpleaños
   const [birthdayAlerts, setBirthdayAlerts] = useState<{ today: any[]; tomorrow: any[]; thisWeek: any[]; thisMonth: any[]; settings: any } | null>(null);
@@ -2502,71 +2503,87 @@ export default function AdminPage() {
       )}
 
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 w-56 bg-white border-r border-gray-200 flex flex-col z-40">
-        <div className="flex items-center justify-center px-4 py-5 border-b border-gray-100">
-          <Image src="/logoprincipal.png" alt="Santo Dilema" width={140} height={140} className="" />
+      <aside className={`fixed inset-y-0 left-0 ${sidebarCollapsed ? 'w-14' : 'w-56'} bg-white border-r border-gray-200 flex flex-col z-40 transition-all duration-200`}>
+        <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-4 border-b border-gray-100`}>
+          {!sidebarCollapsed && <Image src="/logoprincipal.png" alt="Santo Dilema" width={120} height={120} />}
+          <button
+            onClick={() => setSidebarCollapsed(prev => !prev)}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all"
+            title={sidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarCollapsed ? "M13 5l7 7-7 7M5 5l7 7-7 7" : "M11 19l-7-7 7-7m8 14l-7-7 7-7"} />
+            </svg>
+          </button>
         </div>
         <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           <button
             onClick={() => setActiveTab("orders")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "orders" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "orders" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            title={sidebarCollapsed ? 'Pedidos' : ''}
           >
             <span>📦</span>
-            <span>Pedidos</span>
+            {!sidebarCollapsed && <><span>Pedidos</span>
             {(() => {
               const n = dateFilteredOrders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion").length;
               return n > 0 ? <span className="ml-auto bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{n}</span> : null;
-            })()}
+            })()}</>}
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "analytics" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "analytics" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            title={sidebarCollapsed ? 'Inicio' : ''}
           >
             <span>📊</span>
-            <span>Inicio</span>
+            {!sidebarCollapsed && <span>Inicio</span>}
           </button>
           <button
             onClick={() => setActiveTab("customers")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "customers" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "customers" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            title={sidebarCollapsed ? 'Clientes' : ''}
           >
             <span>👥</span>
-            <span>Clientes</span>
+            {!sidebarCollapsed && <span>Clientes</span>}
           </button>
           <button
             onClick={() => setActiveTab("financial")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "financial" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "financial" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            title={sidebarCollapsed ? 'Finanzas' : ''}
           >
             <span>💰</span>
-            <span>Finanzas</span>
+            {!sidebarCollapsed && <span>Finanzas</span>}
           </button>
           <button
             onClick={() => setActiveTab("carta")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "carta" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "carta" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            title={sidebarCollapsed ? 'Carta' : ''}
           >
             <span>🍽️</span>
-            <span>Carta</span>
+            {!sidebarCollapsed && <span>Carta</span>}
           </button>
         </nav>
         <div className="px-2 py-3 border-t border-gray-100 space-y-0.5">
           <Link
             href="/"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all"
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all`}
+            title={sidebarCollapsed ? 'Ver sitio' : ''}
           >
             <span>←</span>
-            <span>Ver sitio</span>
+            {!sidebarCollapsed && <span>Ver sitio</span>}
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all`}
+            title={sidebarCollapsed ? 'Cerrar sesión' : ''}
           >
             <span>🚪</span>
-            <span>Cerrar sesión</span>
+            {!sidebarCollapsed && <span>Cerrar sesión</span>}
           </button>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 ml-56 min-h-screen overflow-y-auto">
+      <main className={`flex-1 ${sidebarCollapsed ? 'ml-14' : 'ml-56'} min-h-screen overflow-y-auto transition-all duration-200`}>
 
       {activeTab === "orders" ? (
         <>
