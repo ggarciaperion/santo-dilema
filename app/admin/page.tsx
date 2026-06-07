@@ -1307,12 +1307,8 @@ export default function AdminPage() {
     dateFilteredOrders = effectiveOrders.filter((order) => isSameDayPeru(order.createdAt));
   }
 
-  // Para estados activos usamos todos los pedidos (igual que los carteles).
-  // Para "all" y "delivered" usamos solo los de hoy/rango seleccionado.
-  const activeStatuses = new Set(['pending', 'pendiente-verificacion', 'confirmed', 'en-camino', 'programado']);
-  const gridBase = (filter !== 'all' && filter !== 'delivered' && activeStatuses.has(filter))
-    ? effectiveOrders
-    : dateFilteredOrders;
+  // Siempre usar los pedidos del día (o rango seleccionado) como base.
+  const gridBase = dateFilteredOrders;
 
   // Filtrar pedidos por estado y búsqueda
   const filteredOrders = gridBase.filter((order) => {
@@ -2581,11 +2577,11 @@ export default function AdminPage() {
               // para que nunca queden vacíos si hay pedidos sin procesar de días anteriores
               const lanes = [
                 { key: "all" as const,       label: isOrdersDateFiltered ? "Total Filtrado" : "Total Hoy", icon: "📋", accent: "border-gray-400",    stripe: "bg-gray-400",    dotColor: "bg-gray-400",    headerText: "text-gray-500",   countText: "text-gray-900",   orders: dateFilteredOrders },
-                { key: "pending" as const,    label: "Pendientes",     icon: "⏳", accent: "border-amber-400",   stripe: "bg-amber-400",   dotColor: "bg-amber-400",   headerText: "text-amber-600",  countText: "text-amber-600",  orders: effectiveOrders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion") },
-                { key: "confirmed" as const,  label: "Confirmados",    icon: "✅", accent: "border-sky-400",     stripe: "bg-sky-400",     dotColor: "bg-sky-400",     headerText: "text-sky-600",    countText: "text-sky-600",    orders: effectiveOrders.filter((o: any) => o.status === "confirmed") },
-                { key: "en-camino" as const,  label: "En Camino",      icon: "🛵", accent: "border-blue-400",    stripe: "bg-blue-500",    dotColor: "bg-blue-500",    headerText: "text-blue-600",   countText: "text-blue-600",   orders: effectiveOrders.filter((o: any) => o.status === "en-camino") },
+                { key: "pending" as const,    label: "Pendientes",     icon: "⏳", accent: "border-amber-400",   stripe: "bg-amber-400",   dotColor: "bg-amber-400",   headerText: "text-amber-600",  countText: "text-amber-600",  orders: dateFilteredOrders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion") },
+                { key: "confirmed" as const,  label: "Confirmados",    icon: "✅", accent: "border-sky-400",     stripe: "bg-sky-400",     dotColor: "bg-sky-400",     headerText: "text-sky-600",    countText: "text-sky-600",    orders: dateFilteredOrders.filter((o: any) => o.status === "confirmed") },
+                { key: "en-camino" as const,  label: "En Camino",      icon: "🛵", accent: "border-blue-400",    stripe: "bg-blue-500",    dotColor: "bg-blue-500",    headerText: "text-blue-600",   countText: "text-blue-600",   orders: dateFilteredOrders.filter((o: any) => o.status === "en-camino") },
                 { key: "delivered" as const,  label: "Entregados Hoy", icon: "📦", accent: "border-emerald-400", stripe: "bg-emerald-400", dotColor: "bg-emerald-400", headerText: "text-emerald-600",countText: "text-emerald-600",orders: dateFilteredOrders.filter((o: any) => o.status === "delivered") },
-                { key: "programado" as const, label: "Programados",    icon: "🗓", accent: "border-indigo-400",  stripe: "bg-indigo-400",  dotColor: "bg-indigo-400",  headerText: "text-indigo-600", countText: "text-indigo-600", orders: effectiveOrders.filter((o: any) => o.status === "programado") },
+                { key: "programado" as const, label: "Programados",    icon: "🗓", accent: "border-indigo-400",  stripe: "bg-indigo-400",  dotColor: "bg-indigo-400",  headerText: "text-indigo-600", countText: "text-indigo-600", orders: dateFilteredOrders.filter((o: any) => o.status === "programado") },
               ];
               return (
                 <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
