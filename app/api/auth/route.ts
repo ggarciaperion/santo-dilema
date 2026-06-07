@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 
-// Usuario maestro (en producción, esto debería estar en variables de entorno)
+const isProduction = process.env.VERCEL === "1";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "santo2024";
+// En producción ADMIN_PASSWORD debe estar en Vercel → Environment Variables.
+// En dev local se permite el fallback. Si no está configurado en producción, el login queda bloqueado intencionalmente.
+const ADMIN_PASSWORD = isProduction
+  ? (process.env.ADMIN_PASSWORD ?? "")
+  : (process.env.ADMIN_PASSWORD || "santo2024");
 
 // POST - Login
 export async function POST(request: Request) {

@@ -9,7 +9,10 @@ const redis = new Redis({
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
-  const validSecret = process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD || "santo2024";
+  const isProduction = process.env.VERCEL === "1";
+  const validSecret = isProduction
+    ? (process.env.ADMIN_SECRET ?? process.env.ADMIN_PASSWORD ?? "")
+    : (process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD || "santo2024");
 
   if (!secret || secret !== validSecret) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });

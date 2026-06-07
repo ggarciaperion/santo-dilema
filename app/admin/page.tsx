@@ -46,6 +46,60 @@ const generateAvailableComplements = () => {
 
 const availableComplements = generateAvailableComplements();
 
+// ── PEDIDOS DE PRUEBA ────────────────────────────────────────────────────────
+const _ago = (m: number) => new Date(Date.now() - m * 60 * 1000).toISOString();
+const MOCK_ORDERS: any[] = [
+  { id: "SD-T001", name: "Carlos Mendoza", phone: "987654321", address: "Recojo en tienda",
+    status: "pending", createdAt: _ago(6), totalItems: 2, totalPrice: 38, paymentMethod: "yape",
+    paymentProofPath: "https://via.placeholder.com/400x600/9333ea/ffffff?text=Comprobante+Yape",
+    completedOrders: [
+      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["barbecue"], complementIds: ["coca-cola"] },
+      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["buffalo-picante"], complementIds: [] },
+    ] },
+  { id: "SD-T002", name: "Lucía Torres", phone: "976543210", address: "Jr. Los Pinos 456, Huaral",
+    status: "pendiente-verificacion", createdAt: _ago(14), totalItems: 3, totalPrice: 62,
+    paymentMethod: "anticipado", notes: "Sin cebolla por favor", deliveryCost: 5,
+    completedOrders: [
+      { name: "Chicken FAT", quantity: 2, price: 19, category: "fat", salsas: ["ahumada"], complementIds: ["inka-cola"] },
+      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: [] },
+    ] },
+  { id: "SD-T003", name: "Andrés Silva", phone: "945678901", address: "Recojo en tienda",
+    status: "confirmed", createdAt: _ago(22), confirmedAt: _ago(17), totalItems: 1, totalPrice: 29,
+    paymentMethod: "efectivo",
+    completedOrders: [
+      { name: "Taco Duo", quantity: 1, price: 29, category: "taco", salsas: ["santo-crujiente", "tex-dilema"], complementIds: [] },
+    ] },
+  { id: "SD-T004", name: "María García", phone: "912345678", address: "Av. Grau 234, Huaral",
+    status: "confirmed", createdAt: _ago(38), confirmedAt: _ago(30), totalItems: 4, totalPrice: 86,
+    paymentMethod: "plin", deliveryCost: 7,
+    completedOrders: [
+      { name: "Chicken FAT", quantity: 2, price: 19, category: "fat", salsas: ["honey-mustard"], complementIds: ["papas-fritas", "coca-cola"] },
+      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: ["agua-mineral"] },
+      { name: "Extra papas", quantity: 1, price: 5, category: "fit", salsas: [], complementIds: [] },
+    ] },
+  { id: "SD-T005", name: "Roberto Quispe", phone: "965432109", address: "Urb. Las Flores 567",
+    status: "en-camino", createdAt: _ago(58), confirmedAt: _ago(50), enCaminoAt: _ago(12),
+    totalItems: 2, totalPrice: 43, paymentMethod: "contraentrega-yape-plin", deliveryCost: 5,
+    completedOrders: [
+      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["anticuchos"], complementIds: ["sprite"] },
+      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: [] },
+    ] },
+  { id: "SD-T006", name: "Patricia Limas", phone: "934567890", address: "Recojo en tienda",
+    status: "delivered", createdAt: _ago(95), confirmedAt: _ago(85), deliveredAt: _ago(18),
+    totalItems: 3, totalPrice: 57, paymentMethod: "efectivo",
+    completedOrders: [
+      { name: "Chicken FAT", quantity: 3, price: 19, category: "fat", salsas: ["macerichada"], complementIds: [] },
+    ] },
+  { id: "SD-T007", name: "Jorge Ramírez", phone: "923456789", address: "Calle Real 890",
+    status: "programado", createdAt: _ago(42), totalItems: 2, totalPrice: 48,
+    paymentMethod: "contraentrega-yape-plin", deliveryCost: 5,
+    scheduledTime: "20:30", scheduledDate: new Date().toLocaleDateString('en-CA'),
+    completedOrders: [
+      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["teriyaki"], complementIds: ["fanta"] },
+      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: ["agua-mineral"] },
+    ] },
+];
+
 interface Order {
   id: string;
   name: string;
@@ -228,6 +282,7 @@ export default function AdminPage() {
   // Set permanente: una vez anunciado como entregado, NUNCA se vuelve a anunciar
   const announcedDeliveredRef = useRef<Set<string>>(new Set());
   const [filter, setFilter] = useState<string>("all");
+  const [showMockData, setShowMockData] = useState(true);
   const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
   const [chartTimeFilter, setChartTimeFilter] = useState<"days" | "weeks" | "months" | "years">("days");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
@@ -237,7 +292,6 @@ export default function AdminPage() {
   const [overtimeOrderIds, setOvertimeOrderIds] = useState<Set<string>>(new Set());
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
-  const [showPromo13, setShowPromo13] = useState(false);
   const [challengeData, setChallengeData] = useState<{ salesAmount: number; goal: number; active: boolean; deadline: string }>({ salesAmount: 0, goal: 5000, active: true, deadline: '2026-03-28' });
   const [challengeSalesInput, setChallengeSalesInput] = useState('');
   const [challengeSaving, setChallengeSaving] = useState(false);
@@ -275,10 +329,21 @@ export default function AdminPage() {
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [campaignSegment, setCampaignSegment] = useState('inactive30');
   const [customersView, setCustomersView] = useState<'list' | 'dashboard' | 'birthdays'>('list');
-  const [couponCampaignCode, setCouponCampaignCode] = useState('CUMPLE20');
-  const [couponCampaignExpiry, setCouponCampaignExpiry] = useState('2026-03-08T23:00');
-  const [generatingCouponFor, setGeneratingCouponFor] = useState<string | null>(null);
-  const [generatedCoupons, setGeneratedCoupons] = useState<Record<string, boolean>>({});
+  // CRM ficha estados
+  const [customerModalTab, setCustomerModalTab] = useState<'overview' | 'orders' | 'addresses'>('overview');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState(false);
+  const [editCustomerForm, setEditCustomerForm] = useState({ name: '', phone: '', address: '' });
+  const [editCustomerSaving, setEditCustomerSaving] = useState(false);
+  const [primaryAddressMap, setPrimaryAddressMap] = useState<Record<string, string>>({});
+  // Sistema de alertas de cumpleaños
+  const [birthdayAlerts, setBirthdayAlerts] = useState<{ today: any[]; tomorrow: any[]; thisWeek: any[]; thisMonth: any[]; settings: any } | null>(null);
+  const [birthdayAlertsLoading, setBirthdayAlertsLoading] = useState(false);
+  const [showBirthdaySettings, setShowBirthdaySettings] = useState(false);
+  const [bdSettingsForm, setBdSettingsForm] = useState({ waTemplate: '', recipientEmail: '', alertDaysBefore: 1 });
+  const [bdSettingsSaving, setBdSettingsSaving] = useState(false);
+  const [bdSendingEmail, setBdSendingEmail] = useState(false);
+  const [bdEmailResult, setBdEmailResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [salesDateFrom, setSalesDateFrom] = useState<string>("");
   const [salesDateTo, setSalesDateTo] = useState<string>("");
   const [isSalesDateFiltered, setIsSalesDateFiltered] = useState(false);
@@ -301,6 +366,7 @@ export default function AdminPage() {
   const [productForm, setProductForm] = useState({ name: "", category: "fit", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] as Array<{ productName: string; unit: string; quantity: number }> });
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [selectedVoucherPath, setSelectedVoucherPath] = useState<string>("");
+  const [selectedVoucherOrder, setSelectedVoucherOrder] = useState<any>(null);
   const [inventoryForm, setInventoryForm] = useState({
     supplier: "",
     supplierRuc: "",
@@ -312,7 +378,6 @@ export default function AdminPage() {
     purchaseDate: new Date().toISOString().split('T')[0]
   });
   const [promotions, setPromotions] = useState<any[]>([]);
-  const [coupons, setCoupons] = useState<any[]>([]);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
   const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty" | "challenge">("promotions");
@@ -370,6 +435,26 @@ export default function AdminPage() {
   useEffect(() => {
     setSelectedCustomer(null);
   }, [customerSegment]);
+
+  // Cargar alertas de cumpleaños al entrar al tab clientes
+  useEffect(() => {
+    if (activeTab !== 'customers') return;
+    setBirthdayAlertsLoading(true);
+    fetch('/api/birthday-alerts')
+      .then(r => r.json())
+      .then(data => {
+        setBirthdayAlerts(data);
+        if (data.settings) {
+          setBdSettingsForm({
+            waTemplate: data.settings.waTemplate || '',
+            recipientEmail: data.settings.recipientEmail || '',
+            alertDaysBefore: data.settings.alertDaysBefore ?? 1,
+          });
+        }
+      })
+      .catch(() => setBirthdayAlerts(null))
+      .finally(() => setBirthdayAlertsLoading(false));
+  }, [activeTab]);
 
   // Inicializar filtro de fechas en Productos de Venta (mes actual por defecto)
   useEffect(() => {
@@ -435,7 +520,6 @@ export default function AdminPage() {
     loadInventory();
     loadDeductions();
     loadPromotions();
-    loadCoupons();
     loadCatalogProducts();
     loadMenuStock();
     loadMenuDiscounts();
@@ -452,7 +536,6 @@ export default function AdminPage() {
       loadInventory();
       loadDeductions();
       loadPromotions();
-      loadCoupons();
       loadCatalogProducts();
     }, 10000);
     return () => clearInterval(interval);
@@ -867,15 +950,6 @@ export default function AdminPage() {
     }
   };
 
-  const loadCoupons = async () => {
-    try {
-      const response = await fetch("/api/coupons");
-      const data = await response.json();
-      setCoupons(data);
-    } catch (error) {
-      console.error("Error al cargar cupones:", error);
-    }
-  };
 
   const loadCustomerProfiles = async () => {
     try {
@@ -1270,24 +1344,37 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Pedidos efectivos: reales + mock si está activado
+  const effectiveOrders = showMockData ? [...MOCK_ORDERS, ...orders] : orders;
+
   // Filtrar pedidos según el filtro de fecha (pestaña "Gestión de Pedidos")
-  let dateFilteredOrders = orders;
+  let dateFilteredOrders = effectiveOrders;
 
   if (isOrdersDateFiltered && ordersDateFrom && ordersDateTo) {
     // Filtro por rango de fechas personalizado
-    dateFilteredOrders = orders.filter((order) => {
+    dateFilteredOrders = effectiveOrders.filter((order) => {
       const orderDateStr = new Date(order.createdAt).toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
       return orderDateStr >= ordersDateFrom && orderDateStr <= ordersDateTo;
     });
   } else {
-    // Por defecto, solo pedidos de hoy
-    dateFilteredOrders = orders.filter((order) => isSameDayPeru(order.createdAt));
+    // Por defecto, solo pedidos de hoy (mock siempre pasan como son de hoy)
+    dateFilteredOrders = effectiveOrders.filter((order) => isSameDayPeru(order.createdAt));
   }
 
+  // Para estados activos usamos todos los pedidos (igual que los carteles).
+  // Para "all" y "delivered" usamos solo los de hoy/rango seleccionado.
+  const activeStatuses = new Set(['pending', 'pendiente-verificacion', 'confirmed', 'en-camino', 'programado']);
+  const gridBase = (filter !== 'all' && filter !== 'delivered' && activeStatuses.has(filter))
+    ? effectiveOrders
+    : dateFilteredOrders;
+
   // Filtrar pedidos por estado y búsqueda
-  const filteredOrders = dateFilteredOrders.filter((order) => {
-    // Filtro por estado
-    const statusMatch = filter === "all" || order.status === filter;
+  const filteredOrders = gridBase.filter((order) => {
+    // Filtro por estado: "pending" engloba también pendiente-verificacion
+    const statusMatch =
+      filter === "all" ||
+      order.status === filter ||
+      (filter === "pending" && order.status === "pendiente-verificacion");
 
     // Filtro de búsqueda en tiempo real
     const searchMatch = searchTerm === "" ||
@@ -1675,6 +1762,8 @@ export default function AdminPage() {
           totalOrders: 0,
           totalSpent: 0,
           lastOrderDate: order.createdAt,
+          addressSet: new Set<string>(),
+          addressList: [] as string[],
         });
       }
 
@@ -1682,6 +1771,15 @@ export default function AdminPage() {
       customer.orders.push(order);
       customer.totalOrders += 1;
       customer.totalSpent += order.totalPrice || 0;
+
+      // Acumular historial de direcciones únicas
+      if (order.address && order.address.trim()) {
+        const normalizedAddr = order.address.trim();
+        if (!customer.addressSet.has(normalizedAddr)) {
+          customer.addressSet.add(normalizedAddr);
+          customer.addressList.push(normalizedAddr);
+        }
+      }
 
       // Actualizar última orden si es más reciente
       if (new Date(order.createdAt) > new Date(customer.lastOrderDate)) {
@@ -1697,9 +1795,12 @@ export default function AdminPage() {
       return {
         ...c,
         avgTicket: c.totalOrders > 0 ? c.totalSpent / c.totalOrders : 0,
+        addressHistory: c.addressList || [],
         birthday: profile?.birthday,
         tags: profile?.tags || [],
         notes: profile?.notes,
+        name: profile?.nameOverride || c.name,
+        address: profile?.addressOverride || c.address,
       };
     });
   };
@@ -1829,6 +1930,23 @@ export default function AdminPage() {
     };
   };
   const crmDashboard = activeTab === 'customers' ? getCrmDashboard() : null;
+
+  // Calcular badge de cumpleaños por cliente
+  const getBirthdayBadge = (birthday: string | undefined): null | 'today' | 'tomorrow' | 'week' | 'month' => {
+    if (!birthday) return null;
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Lima" }));
+    const todayMD = `${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    if (birthday === todayMD) return 'today';
+    const tom = new Date(now); tom.setDate(tom.getDate() + 1);
+    const tomMD = `${String(tom.getMonth()+1).padStart(2,'0')}-${String(tom.getDate()).padStart(2,'0')}`;
+    if (birthday === tomMD) return 'tomorrow';
+    for (let i = 2; i <= 7; i++) {
+      const d = new Date(now); d.setDate(d.getDate() + i);
+      if (birthday === `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`) return 'week';
+    }
+    if (birthday.startsWith(String(now.getMonth()+1).padStart(2,'0'))) return 'month';
+    return null;
+  };
 
   const getCampaignTemplate = (segment: string, customer: any): string => {
     const first = (customer?.name || 'amigo').split(' ')[0];
@@ -2410,10 +2528,10 @@ export default function AdminPage() {
   // Mostrar pantalla de carga mientras se verifica la autenticación
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-fuchsia-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Verificando acceso...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-400 mx-auto mb-4"></div>
+          <p className="text-gray-500">Verificando acceso...</p>
         </div>
       </div>
     );
@@ -2425,218 +2543,163 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Toast de pedido entregado */}
       {deliveryToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-green-900 border border-green-500 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-green-200 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
           <div className="flex items-start gap-3">
             <span className="text-2xl">✅</span>
             <div className="flex-1">
-              <p className="text-green-300 text-xs font-bold uppercase tracking-wider mb-0.5">Pedido entregado</p>
-              <p className="text-white font-black text-base">#{deliveryToast.orderId}</p>
-              <p className="text-green-400 text-sm font-medium">{deliveryToast.customerName}</p>
+              <p className="text-green-700 text-xs font-bold uppercase tracking-wider mb-0.5">Pedido entregado</p>
+              <p className="text-gray-900 font-black text-base">#{deliveryToast.orderId}</p>
+              <p className="text-green-600 text-sm font-medium">{deliveryToast.customerName}</p>
             </div>
-            <button onClick={() => setDeliveryToast(null)} className="text-green-500 hover:text-white text-sm leading-none mt-0.5">✕</button>
+            <button onClick={() => setDeliveryToast(null)} className="text-green-600 hover:text-green-800 text-sm leading-none mt-0.5">✕</button>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <header className="bg-gray-900 border-b-2 border-fuchsia-500 neon-border-purple">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Image
-                src="/logoprincipal.png"
-                alt="Santo Dilema"
-                width={85}
-                height={85}
-                className="rounded-full neon-border-purple"
-              />
-              <div>
-                <h1 className="text-2xl font-black text-fuchsia-400 neon-glow-purple">
-                  Panel de Administración
-                </h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {!historicalSaleRegistered && (
-                <button
-                  onClick={() => setShowHistoricalSaleModal(true)}
-                  className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-3 rounded-lg font-bold transition-all transform hover:scale-105 text-sm"
-                  title="Registrar venta histórica del 13 de febrero"
-                >
-                  📅 Venta Histórica
-                </button>
-              )}
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105"
-                title="Cerrar Sesión"
-              >
-                🚪 Salir
-              </button>
-              <Link
-                href="/"
-                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-              >
-                ← Volver al Sitio
-              </Link>
-            </div>
-          </div>
+      {/* Sidebar */}
+      <aside className="fixed inset-y-0 left-0 w-56 bg-white border-r border-gray-200 flex flex-col z-40">
+        <div className="flex items-center justify-center px-4 py-5 border-b border-gray-100">
+          <Image src="/logoprincipal.png" alt="Santo Dilema" width={140} height={140} className="" />
         </div>
-      </header>
-
-      {/* Tabs */}
-      <section className="container mx-auto px-4 pt-6">
-        <div className="flex gap-2 border-b-2 border-fuchsia-500/30 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           <button
             onClick={() => setActiveTab("orders")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "orders"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "orders" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
           >
-            📦 <span className="hidden sm:inline">Gestión de </span>Pedidos
+            <span>📦</span>
+            <span>Pedidos</span>
+            {(() => {
+              const n = orders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion").length;
+              return n > 0 ? <span className="ml-auto bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{n}</span> : null;
+            })()}
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "analytics"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "analytics" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
           >
-            📊 Inicio
+            <span>📊</span>
+            <span>Inicio</span>
           </button>
           <button
             onClick={() => setActiveTab("customers")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "customers"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "customers" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
           >
-            👥 Clientes
+            <span>👥</span>
+            <span>Clientes</span>
           </button>
           <button
             onClick={() => setActiveTab("financial")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "financial"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "financial" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
           >
-            💰 Finanzas
+            <span>💰</span>
+            <span>Finanzas</span>
           </button>
           <button
             onClick={() => setActiveTab("carta")}
-            className={`px-3 md:px-6 py-2 md:py-3 font-bold transition-all whitespace-nowrap text-xs md:text-base ${
-              activeTab === "carta"
-                ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "carta" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
           >
-            🍽️ Carta
+            <span>🍽️</span>
+            <span>Carta</span>
+          </button>
+        </nav>
+        <div className="px-2 py-3 border-t border-gray-100 space-y-0.5">
+          <Link
+            href="/"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all"
+          >
+            <span>←</span>
+            <span>Ver sitio</span>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+          >
+            <span>🚪</span>
+            <span>Cerrar sesión</span>
           </button>
         </div>
-      </section>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 ml-56 min-h-screen overflow-y-auto">
 
       {activeTab === "orders" ? (
         <>
-          {/* Stats - Solo pedidos de HOY en hora de Perú */}
-          <section className="container mx-auto px-4 py-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
-              <button
-                onClick={() => setFilter("all")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "all"
-                    ? "border-fuchsia-500 neon-border-purple shadow-xl"
-                    : "border-fuchsia-500/30 hover:border-fuchsia-500/60"
-                }`}
-              >
-                <p className="text-gray-400 text-xs font-semibold text-left leading-tight">
-                  Total {isOrdersDateFiltered ? "(Filtrado)" : "(Hoy)"}
-                </p>
-                <p className="text-3xl font-black text-white mt-1 text-left">{dateFilteredOrders.length}</p>
-              </button>
-              <button
-                onClick={() => setFilter("pending")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "pending"
-                    ? "border-yellow-500 shadow-xl shadow-yellow-500/50"
-                    : "border-yellow-500/50 hover:border-yellow-500"
-                }`}
-              >
-                <p className="text-yellow-400 text-xs font-bold text-left">Pendientes</p>
-                <p className="text-3xl font-black text-yellow-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "pending").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("confirmed")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "confirmed"
-                    ? "border-cyan-500 shadow-xl shadow-cyan-500/50"
-                    : "border-cyan-500/50 hover:border-cyan-500"
-                }`}
-              >
-                <p className="text-cyan-400 text-xs font-bold text-left">Confirmados</p>
-                <p className="text-3xl font-black text-cyan-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "confirmed").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("en-camino")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "en-camino"
-                    ? "border-blue-500 shadow-xl shadow-blue-500/50"
-                    : "border-blue-500/50 hover:border-blue-500"
-                }`}
-              >
-                <p className="text-blue-400 text-xs font-bold text-left">🚚 En Camino</p>
-                <p className="text-3xl font-black text-blue-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "en-camino").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("delivered")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "delivered"
-                    ? "border-green-500 shadow-xl shadow-green-500/50"
-                    : "border-green-500/50 hover:border-green-500"
-                }`}
-              >
-                <p className="text-green-400 text-xs font-bold text-left">Entregados</p>
-                <p className="text-3xl font-black text-green-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "delivered").length}
-                </p>
-              </button>
-              <button
-                onClick={() => setFilter("programado")}
-                className={`bg-gray-900 rounded-xl border-2 p-3 transition-all hover:scale-105 cursor-pointer ${
-                  filter === "programado"
-                    ? "border-indigo-500 shadow-xl shadow-indigo-500/50"
-                    : "border-indigo-500/50 hover:border-indigo-500"
-                }`}
-              >
-                <p className="text-indigo-400 text-xs font-bold text-left">🗓 Programados</p>
-                <p className="text-3xl font-black text-indigo-400 mt-1 text-left">
-                  {dateFilteredOrders.filter((o) => o.status === "programado").length}
-                </p>
-              </button>
-            </div>
+          {/* Carteles de estado con pedidos */}
+          <section className="px-6 py-4">
+            {(() => {
+              // Carteles activos usan TODOS los pedidos (no solo hoy)
+              // para que nunca queden vacíos si hay pedidos sin procesar de días anteriores
+              const lanes = [
+                { key: "all" as const,       label: isOrdersDateFiltered ? "Total Filtrado" : "Total Hoy", icon: "📋", accent: "border-gray-400",    stripe: "bg-gray-400",    dotColor: "bg-gray-400",    headerText: "text-gray-500",   countText: "text-gray-900",   orders: dateFilteredOrders },
+                { key: "pending" as const,    label: "Pendientes",     icon: "⏳", accent: "border-amber-400",   stripe: "bg-amber-400",   dotColor: "bg-amber-400",   headerText: "text-amber-600",  countText: "text-amber-600",  orders: effectiveOrders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion") },
+                { key: "confirmed" as const,  label: "Confirmados",    icon: "✅", accent: "border-sky-400",     stripe: "bg-sky-400",     dotColor: "bg-sky-400",     headerText: "text-sky-600",    countText: "text-sky-600",    orders: effectiveOrders.filter((o: any) => o.status === "confirmed") },
+                { key: "en-camino" as const,  label: "En Camino",      icon: "🛵", accent: "border-blue-400",    stripe: "bg-blue-500",    dotColor: "bg-blue-500",    headerText: "text-blue-600",   countText: "text-blue-600",   orders: effectiveOrders.filter((o: any) => o.status === "en-camino") },
+                { key: "delivered" as const,  label: "Entregados Hoy", icon: "📦", accent: "border-emerald-400", stripe: "bg-emerald-400", dotColor: "bg-emerald-400", headerText: "text-emerald-600",countText: "text-emerald-600",orders: dateFilteredOrders.filter((o: any) => o.status === "delivered") },
+                { key: "programado" as const, label: "Programados",    icon: "🗓", accent: "border-indigo-400",  stripe: "bg-indigo-400",  dotColor: "bg-indigo-400",  headerText: "text-indigo-600", countText: "text-indigo-600", orders: effectiveOrders.filter((o: any) => o.status === "programado") },
+              ];
+              return (
+                <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+                  {lanes.map((lane) => {
+                    const isActive = filter === lane.key;
+                    return (
+                      <button
+                        key={lane.key}
+                        onClick={() => setFilter(lane.key)}
+                        className={`bg-white rounded-2xl border-2 flex flex-col overflow-hidden text-left transition-all duration-150 cursor-pointer select-none active:scale-95 ${
+                          isActive
+                            ? `${lane.accent} shadow-lg`
+                            : "border-gray-100 hover:border-gray-200 hover:shadow-md"
+                        }`}
+                      >
+                        {/* Franja de color */}
+                        <div className={`h-1.5 w-full flex-shrink-0 ${lane.stripe}`} />
+
+                        {/* Contenido limpio */}
+                        <div className="px-4 py-3 flex flex-col gap-0.5">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-xl leading-none">{lane.icon}</span>
+                            {isActive && <span className={`w-2 h-2 rounded-full ${lane.dotColor}`} />}
+                          </div>
+                          <span className={`text-3xl font-black leading-none ${lane.countText}`}>
+                            {lane.orders.length}
+                          </span>
+                          <span className={`text-[10px] font-bold uppercase tracking-wide mt-1 ${isActive ? lane.headerText : "text-gray-400"}`}>
+                            {lane.label}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </section>
 
       {/* Barra de herramientas */}
-      <section className="container mx-auto px-4 pb-6">
+      <section className="px-6 pb-6">
         <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-center justify-end">
           <div className="flex gap-2 justify-end">
+            {/* Toggle datos de prueba */}
+            <button
+              onClick={() => setShowMockData(prev => !prev)}
+              className={`px-3 py-3 border rounded-lg text-xs font-bold transition-all ${
+                showMockData
+                  ? "bg-violet-50 border-violet-300 text-violet-600 hover:bg-violet-100"
+                  : "bg-white border-gray-200 text-gray-400 hover:border-gray-400"
+              }`}
+              title={showMockData ? "Ocultar pedidos de prueba" : "Mostrar pedidos de prueba"}
+            >
+              {showMockData ? "🧪 Prueba ON" : "🧪 Prueba OFF"}
+            </button>
+
             {/* Botón exportar CSV */}
             <button
               onClick={exportOrdersToCSV}
-              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-green-400 hover:text-green-300 hover:border-green-700 transition-all"
+              className="px-3 py-3 bg-white border border-gray-200 rounded-lg text-green-600 hover:text-green-700 hover:border-green-300 transition-all"
               title="Exportar TODOS los pedidos a CSV"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2647,7 +2710,7 @@ export default function AdminPage() {
             {/* Botón de calendario */}
             <button
               onClick={() => setShowOrdersDateModal(true)}
-              className="px-3 py-3 bg-gray-900 border-2 border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-all"
+              className="px-3 py-3 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-all"
               title="Filtrar por fechas"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2663,7 +2726,7 @@ export default function AdminPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar pedido, cliente, dirección, menú..."
-              className="w-full md:w-80 px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all text-sm"
+              className="w-full md:w-80 px-4 py-3 pl-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-all text-sm"
             />
             <svg
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
@@ -2681,7 +2744,7 @@ export default function AdminPage() {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2695,27 +2758,27 @@ export default function AdminPage() {
       {/* Modal de filtro de fechas - Gestión de Pedidos */}
       {showOrdersDateModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowOrdersDateModal(false)}>
-          <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full mx-4 border-2 border-gray-700" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-black text-white mb-4">Filtrar por Fechas</h3>
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 border border-gray-200" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-black text-gray-900 mb-4">Filtrar por Fechas</h3>
 
             <div className="space-y-4">
               <div>
-                <label className="text-gray-400 text-sm font-semibold block mb-2">Desde:</label>
+                <label className="text-gray-600 text-sm font-semibold block mb-2">Desde:</label>
                 <input
                   type="date"
                   value={ordersDateFrom}
                   onChange={(e) => setOrdersDateFrom(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400 transition-all [color-scheme:light]"
                 />
               </div>
 
               <div>
-                <label className="text-gray-400 text-sm font-semibold block mb-2">Hasta:</label>
+                <label className="text-gray-600 text-sm font-semibold block mb-2">Hasta:</label>
                 <input
                   type="date"
                   value={ordersDateTo}
                   onChange={(e) => setOrdersDateTo(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white focus:outline-none focus:border-fuchsia-500 transition-all"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400 transition-all [color-scheme:light]"
                 />
               </div>
 
@@ -2723,7 +2786,7 @@ export default function AdminPage() {
                 <button
                   onClick={applyOrdersDateFilter}
                   disabled={!ordersDateFrom || !ordersDateTo}
-                  className="flex-1 px-6 py-3 bg-fuchsia-600 text-white rounded-lg font-bold hover:bg-fuchsia-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-all"
+                  className="flex-1 px-6 py-3 bg-gray-900 text-white rounded-lg font-bold hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
                 >
                   Aplicar Filtro
                 </button>
@@ -2737,16 +2800,16 @@ export default function AdminPage() {
                 )}
                 <button
                   onClick={() => setShowOrdersDateModal(false)}
-                  className="px-6 py-3 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition-all"
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-all"
                 >
                   Cerrar
                 </button>
               </div>
 
               {isOrdersDateFiltered && ordersDateFrom && ordersDateTo && (
-                <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
-                  <p className="text-sm text-gray-400">
-                    📊 Filtrando desde <span className="text-white font-bold">{new Date(ordersDateFrom + 'T12:00:00').toLocaleDateString('es-PE')}</span> hasta <span className="text-white font-bold">{new Date(ordersDateTo + 'T12:00:00').toLocaleDateString('es-PE')}</span>
+                <div className="mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-500">
+                    📊 Filtrando desde <span className="text-gray-900 font-bold">{new Date(ordersDateFrom + 'T12:00:00').toLocaleDateString('es-PE')}</span> hasta <span className="text-gray-900 font-bold">{new Date(ordersDateTo + 'T12:00:00').toLocaleDateString('es-PE')}</span>
                   </p>
                 </div>
               )}
@@ -2756,584 +2819,505 @@ export default function AdminPage() {
       )}
 
       {/* Orders List */}
-      <section className="container mx-auto px-4 pb-12">
+      <section className="px-6 pb-12">
+        {/* Banner datos de prueba */}
+        {showMockData && (
+          <div className="mb-4 flex items-center gap-3 bg-violet-50 border border-violet-200 rounded-xl px-4 py-2.5">
+            <span className="text-violet-500 text-base">🧪</span>
+            <p className="text-xs font-semibold text-violet-700 flex-1">
+              Mostrando <strong>{MOCK_ORDERS.length} pedidos de prueba</strong> para validar el diseño.
+              Los pedidos reales aparecerán cuando lleguen.
+            </p>
+            <button
+              onClick={() => setShowMockData(false)}
+              className="text-violet-400 hover:text-violet-600 text-xs font-bold transition-colors"
+            >
+              Ocultar
+            </button>
+          </div>
+        )}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-2xl text-fuchsia-400 neon-glow-purple">Cargando pedidos...</p>
+            <p className="text-2xl text-gray-600">Cargando pedidos...</p>
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
-            <p className="text-2xl text-gray-400">No hay pedidos</p>
+          <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="text-5xl mb-3">📭</div>
+            <p className="text-xl font-bold text-gray-400">Sin pedidos</p>
+            <p className="text-sm text-gray-300 mt-1">
+              {filter !== "all" ? `No hay pedidos con estado "${filter}" en este momento` : "No hay pedidos para hoy todavía"}
+            </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredOrders.map((order) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredOrders.map((order) => {
+              const isOvertime = overtimeOrderIds.has(order.id) && order.status !== 'delivered' && order.status !== 'cancelled';
+              const cardRing = isOvertime
+                ? 'ring-2 ring-red-300 shadow-xl shadow-red-100 overtime-pulse'
+                : order.status === 'pending'                ? 'ring-1 ring-amber-200 shadow-md shadow-amber-50'
+                : order.status === 'pendiente-verificacion' ? 'ring-1 ring-purple-200 shadow-md shadow-purple-50'
+                : order.status === 'confirmed'              ? 'ring-1 ring-sky-200 shadow-md shadow-sky-50'
+                : order.status === 'en-camino'              ? 'ring-2 ring-blue-300 shadow-lg shadow-blue-100'
+                : order.status === 'delivered'              ? 'ring-1 ring-gray-200 shadow-sm opacity-60'
+                : order.status === 'programado'             ? 'ring-1 ring-indigo-200 shadow-md shadow-indigo-50'
+                : 'ring-1 ring-gray-200 shadow-sm opacity-50';
+              const stripeColor = isOvertime ? 'bg-red-500'
+                : order.status === 'pending'                ? 'bg-amber-400'
+                : order.status === 'pendiente-verificacion' ? 'bg-purple-400'
+                : order.status === 'confirmed'              ? 'bg-sky-400'
+                : order.status === 'en-camino'              ? 'bg-blue-500'
+                : order.status === 'delivered'              ? 'bg-emerald-400'
+                : order.status === 'programado'             ? 'bg-indigo-400'
+                : 'bg-gray-300';
+              const DRINK_IDS = new Set(['agua-mineral','coca-cola','inka-cola','sprite','fanta']);
+              const SIDE_IDS  = new Set(['papas-fritas','nachos','chifles']);
+              const tacoNames: Record<string,string> = {'santo-crujiente':'Crunch Supreme','tex-dilema':'Tex Supreme','santo-bacon':'Bacon Deluxe'};
+              const allItems: any[] = (order as any).completedOrders || [];
+              const CAT: Record<string,{dot:string;bg:string;text:string;label:string}> = {
+                fat:  {dot:'bg-orange-400', bg:'bg-orange-50',  text:'text-orange-700', label:'FAT'},
+                fit:  {dot:'bg-green-400',  bg:'bg-green-50',   text:'text-green-700',  label:'FIT'},
+                taco: {dot:'bg-yellow-400', bg:'bg-yellow-50',  text:'text-yellow-700', label:'TACO'},
+              };
+              return (
               <div
                 key={order.id}
-                className={`bg-gray-900 rounded-lg overflow-hidden shadow-2xl transition-all ${
-                  overtimeOrderIds.has(order.id) && order.status !== 'delivered' && order.status !== 'cancelled' ? 'ring-4 ring-red-500 overtime-pulse' :
-                  order.status === 'pending' ? 'ring-2 ring-yellow-500/50' :
-                  order.status === 'pendiente-verificacion' ? 'ring-2 ring-purple-500/50' :
-                  order.status === 'confirmed' ? 'ring-2 ring-cyan-500/50' :
-                  order.status === 'en-camino' ? 'ring-2 ring-blue-500/50' :
-                  order.status === 'delivered' ? 'ring-2 ring-green-500/30 opacity-60' :
-                  order.status === 'programado' ? 'ring-2 ring-indigo-500/70' :
-                  'ring-2 ring-red-500/30 opacity-50'
-                }`}
+                className={`bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-200 ${cardRing}`}
               >
-                {/* LAYOUT HORIZONTAL COMPACTO (altura conservada) */}
-                <div className="flex flex-col md:flex-row md:items-center gap-3 p-3">
+                {/* ── FRANJA DE COLOR ── */}
+                <div className={`h-1.5 w-full flex-shrink-0 ${stripeColor}`} />
 
-                  {/* HEADER: ESTADO Y NÚMERO */}
-                  <div className={`flex-shrink-0 px-3 py-2 rounded md:w-auto ${
-                    order.status === 'pending' ? 'bg-yellow-500/20' :
-                    order.status === 'pendiente-verificacion' ? 'bg-purple-500/20' :
-                    order.status === 'confirmed' ? 'bg-cyan-500/20' :
-                    order.status === 'en-camino' ? 'bg-blue-500/20' :
-                    order.status === 'delivered' ? 'bg-green-500/20' :
-                    order.status === 'programado' ? 'bg-indigo-500/20' :
-                    'bg-red-500/20'
-                  }`}>
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className={`px-2 py-0.5 rounded text-xs font-black uppercase ${statusColors[order.status]}`}>
-                        {statusLabels[order.status]}
-                      </span>
-                      <button
-                        onClick={async () => {
-                          if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
-                          await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
-                          setOrders(prev => prev.filter(o => o.id !== order.id));
-                        }}
-                        className="text-gray-600 hover:text-red-400 text-sm transition-colors leading-none"
-                        title="Eliminar pedido"
-                      >
-                        🗑
-                      </button>
+                {/* ── CABECERA: ID · ESTADO · HORA · TIMER · ELIMINAR ── */}
+                <div className="px-4 pt-3 pb-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-base font-black text-gray-900 tracking-tight">{order.id}</span>
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider ${statusColors[order.status]}`}>
+                          {statusLabels[order.status]}
+                        </span>
+                        {isOvertime && <span className="text-[9px] font-black text-red-500 uppercase animate-pulse">⚠ TARDE</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] text-gray-400 tabular-nums">
+                          {new Date(order.createdAt).toLocaleString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <span className="text-gray-200">·</span>
+                        <TimeCounter
+                          createdAt={order.createdAt}
+                          orderId={order.id}
+                          status={order.status}
+                          audioCtx={audioContext}
+                          onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))}
+                        />
+                      </div>
                     </div>
-                    <span className="font-mono font-black text-base text-white block">#{order.id}</span>
-                    <p className="text-[10px] text-gray-300 font-medium mt-1">
-                      {new Date(order.createdAt).toLocaleString("es-PE", {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                    {/* CONTADOR DE TIEMPO EN COLA */}
-                    <div className="mt-2">
-                      <TimeCounter
-                        createdAt={order.createdAt}
-                        orderId={order.id}
-                        status={order.status}
-                        audioCtx={audioContext}
-                        onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))}
-                      />
-                    </div>
-
-                    {/* PEDIDO PROGRAMADO */}
-                    {(order as any).scheduledTime && (
-                      <div className="mt-2 border-t border-indigo-500/30 pt-2">
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-wider">🗓 Entrega programada</p>
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`¿Eliminar pedido ${order.id}?`)) return;
+                        await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
+                        setOrders(prev => prev.filter(o => o.id !== order.id));
+                      }}
+                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all text-xs mt-0.5"
+                    >✕</button>
+                  </div>
+                  {/* Pedido programado */}
+                  {(order as any).scheduledTime && (
+                    <div className="mt-2 inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1">
+                      <span className="text-indigo-500 text-xs">🗓</span>
+                      <span className="text-xs font-bold text-indigo-700">
                         {(() => {
                           const [hh, mm] = ((order as any).scheduledTime as string).split(':');
                           const h = parseInt(hh);
                           const schedDate = (order as any).scheduledDate as string | undefined;
-                          let dayLabel = 'Hoy';
+                          let day = 'Hoy';
                           if (schedDate) {
                             const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
                             const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
                             if (schedDate !== todayStr) {
                               const d = new Date(schedDate + 'T12:00:00');
                               const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-                              dayLabel = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
+                              day = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
                             }
                           }
-                          return (
-                            <p className="text-white font-black text-sm mt-0.5">
-                              {dayLabel} – {h > 12 ? h - 12 : h}:{mm} {h >= 12 ? 'PM' : 'AM'}
-                            </p>
-                          );
+                          return `${day} ${h > 12 ? h-12 : h}:${mm} ${h >= 12 ? 'PM' : 'AM'}`;
                         })()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── PRODUCTOS ── */}
+                <div className="mx-4 mb-0">
+                  <div className="h-px bg-gray-100" />
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest pt-2.5 pb-1.5">Productos</p>
+                </div>
+                <div className="px-4 pb-3 flex-1 space-y-2.5">
+                  {allItems.length > 0 ? (() => {
+                    const seen = new Set<string>();
+                    return allItems.map((item: any, idx: number) => {
+                      // ── COMBO ──
+                      if (item.comboGroupId) {
+                        if (seen.has(item.comboGroupId)) return null;
+                        seen.add(item.comboGroupId);
+                        const grp = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
+                        const cp = item.comboPrice || 0;
+                        const sv = +((item.comboOriginalTotal || cp) - cp).toFixed(2);
+                        return (
+                          <div key={`c-${item.comboGroupId}`} className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-2.5">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs">🔥</span>
+                                <span className="text-xs font-black text-amber-800">{item.comboName || 'Combo'}</span>
+                                {sv > 0 && <span className="text-[9px] bg-amber-200 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">-S/{sv.toFixed(0)}</span>}
+                              </div>
+                              <span className="text-sm font-black text-amber-800">S/{cp.toFixed(2)}</span>
+                            </div>
+                            {grp.map((gi: any, gi_i: number) => {
+                              const salsas_ = gi.salsas || [];
+                              const comps = gi.complementIds || [];
+                              const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
+                              const sides = comps.filter((c: string) => SIDE_IDS.has(c));
+                              const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
+                              return (
+                                <div key={gi_i} className="mb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-5 h-5 rounded-full bg-amber-400 text-white text-[10px] font-black flex items-center justify-center flex-shrink-0">{gi.quantity}</span>
+                                    <span className="text-xs font-bold text-gray-800 flex-1">{gi.name}</span>
+                                  </div>
+                                  <div className="mt-1 flex flex-wrap gap-1 pl-7">
+                                    {salsas_.map((sId: string, i: number) => (
+                                      <span key={i} className="inline-flex items-center bg-red-50 border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                        🌶 {gi.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (salsas.find((s: any) => s.id === sId)?.name || sId)}
+                                      </span>
+                                    ))}
+                                    {drinks.map((c: string, i: number) => (
+                                      <span key={i} className="inline-flex items-center bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                        🥤 {availableComplements[c]?.name || c}
+                                      </span>
+                                    ))}
+                                    {sides.map((c: string, i: number) => (
+                                      <span key={i} className="inline-flex items-center bg-yellow-50 border border-yellow-200 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                        🍟 {availableComplements[c]?.name || c}
+                                      </span>
+                                    ))}
+                                    {extras.length > 0 && (() => {
+                                      const counts: Record<string, number> = {};
+                                      extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
+                                      return Object.entries(counts).map(([cId, n], i) => (
+                                        <span key={i} className="inline-flex items-center bg-gray-100 border border-gray-200 text-gray-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                          + {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}
+                                        </span>
+                                      ));
+                                    })()}
+                                    {comps.length === 0 && salsas_.length === 0 && gi.category === 'fat' && (
+                                      <span className="text-[9px] text-gray-400 italic">sin salsa · sin bebida</span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+
+                      // ── PRODUCTO NORMAL ──
+                      const qty = item.quantity || 0;
+                      const cf = 1 - ((order as any).couponDiscount || 0) / 100;
+                      const amt = (item.price || 0) * cf * qty;
+                      const cat = item.category as string;
+                      const cfg = CAT[cat] || { dot: 'bg-gray-300', bg: 'bg-gray-50', text: 'text-gray-600', label: '' };
+                      const salsas_: string[] = item.salsas || [];
+                      const comps: string[] = item.complementIds || [];
+                      const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
+                      const sides = comps.filter((c: string) => SIDE_IDS.has(c));
+                      const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
+                      return (
+                        <div key={idx} className={`rounded-xl p-2.5 ${cfg.bg} border border-gray-100`}>
+                          <div className="flex items-start gap-2.5">
+                            <div className={`w-6 h-6 rounded-full ${cfg.dot} text-white text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5`}>{qty}</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-1">
+                                <span className="text-[13px] font-bold text-gray-900 leading-tight">{item.name}</span>
+                                <span className={`text-[13px] font-black flex-shrink-0 ${cfg.text}`}>S/{amt.toFixed(2)}</span>
+                              </div>
+                              {cfg.label && <span className={`text-[9px] font-black uppercase tracking-wider ${cfg.text} opacity-60`}>{cfg.label}</span>}
+                              {/* Tags de salsas / bebidas / acompañamientos */}
+                              {(salsas_.length > 0 || drinks.length > 0 || sides.length > 0 || extras.length > 0) && (
+                                <div className="mt-1.5 flex flex-wrap gap-1">
+                                  {salsas_.map((sId: string, i: number) => (
+                                    <span key={i} className="inline-flex items-center bg-white border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                      🌶 {item.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (salsas.find((s: any) => s.id === sId)?.name || sId)}
+                                    </span>
+                                  ))}
+                                  {drinks.map((c: string, i: number) => (
+                                    <span key={i} className="inline-flex items-center bg-white border border-blue-200 text-blue-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                      🥤 {availableComplements[c]?.name || c}
+                                    </span>
+                                  ))}
+                                  {sides.map((c: string, i: number) => (
+                                    <span key={i} className="inline-flex items-center bg-white border border-yellow-200 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                      🍟 {availableComplements[c]?.name || c}
+                                    </span>
+                                  ))}
+                                  {extras.length > 0 && (() => {
+                                    const counts: Record<string, number> = {};
+                                    extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
+                                    return Object.entries(counts).map(([cId, n], i) => (
+                                      <span key={i} className="inline-flex items-center bg-white border border-gray-200 text-gray-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                                        + {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}
+                                      </span>
+                                    ));
+                                  })()}
+                                </div>
+                              )}
+                              {comps.length === 0 && salsas_.length === 0 && cat === 'fat' && (
+                                <p className="text-[9px] text-gray-400 italic mt-1">sin salsa · sin bebida</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })() : order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
+                    order.cart.map((item: any, idx: number) => (
+                      <div key={idx} className="rounded-xl bg-gray-50 border border-gray-100 p-2.5 flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-gray-400 text-white text-[10px] font-black flex items-center justify-center flex-shrink-0">{item.quantity || 1}</div>
+                        <span className="flex-1 text-[13px] font-bold text-gray-900 truncate">{item.product?.name || item.name}</span>
+                        <span className="text-[13px] font-black text-gray-700">S/{((item.product?.price || item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
+                      </div>
+                    ))
+                  ) : <p className="text-xs text-gray-400 italic">Sin productos</p>}
+                </div>
+
+                {/* ── NOTA DEL PEDIDO ── */}
+                {order.notes && (
+                  <div className="mx-4 mb-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                    <span className="text-amber-500 text-sm flex-shrink-0 mt-0.5">⚠️</span>
+                    <p className="text-xs font-semibold text-amber-800 leading-snug">{order.notes}</p>
+                  </div>
+                )}
+
+                {/* ── CLIENTE ── */}
+                <div className="mx-4 mb-3">
+                  <div className="h-px bg-gray-100 mb-2" />
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Cliente</p>
+                  <div className="space-y-1.5">
+                    <p className="text-sm font-black text-gray-900">{order.name}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400 text-xs">📱</span>
+                      <span className="text-xs text-gray-600 font-mono">{order.phone}</span>
+                    </div>
+                    {(order as any).deliveryCost > 0 ? (
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs">🛵</span>
+                        <div>
+                          <span className="text-xs font-bold text-sky-600">Delivery · +S/{((order as any).deliveryCost || 0).toFixed(2)}</span>
+                          {order.address && order.address !== 'Recojo en tienda' && (
+                            <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{order.address}</p>
+                          )}
+                          {(order as any).deliveryCustomLocation && (
+                            <p className="text-[10px] text-sky-400 italic leading-tight">{(order as any).deliveryCustomLocation}</p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs">🏪</span>
+                        <span className="text-xs font-bold text-emerald-600">Recojo en tienda</span>
                       </div>
                     )}
+                  </div>
+                </div>
 
-                    {/* RASTRO DE TIEMPOS POR ETAPA */}
+                {/* ── RASTRO DE TIEMPOS ── */}
+                {(() => {
+                  const steps = [
+                    { label: 'Ingresó',   time: order.createdAt,   color: 'text-gray-400' },
+                    { label: 'Confirmó',  time: order.confirmedAt, color: 'text-sky-500' },
+                    { label: 'Salió',     time: order.enCaminoAt,  color: 'text-blue-500' },
+                    { label: 'Entregado', time: order.deliveredAt, color: 'text-emerald-500' },
+                  ];
+                  const filled = steps.filter(s => s.time);
+                  if (filled.length < 2) return null;
+                  return (
+                    <div className="mx-4 mb-3 bg-gray-50 rounded-xl px-3 py-2 flex flex-wrap gap-x-4 gap-y-1">
+                      {filled.map((step, i) => {
+                        const prev = filled[i - 1];
+                        const elapsed = prev ? Math.round((new Date(step.time!).getTime() - new Date(prev.time!).getTime()) / 60000) : null;
+                        return (
+                          <div key={i} className="flex items-center gap-1">
+                            <span className={`text-[10px] font-mono font-bold ${step.color}`}>
+                              {new Date(step.time!).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <span className={`text-[9px] ${step.color}`}>{step.label}</span>
+                            {elapsed !== null && <span className="text-[9px] text-amber-400 font-bold">+{elapsed}m</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* ── TOTAL + PAGO ── */}
+                <div className="mx-4 mb-3">
+                  <div className="h-px bg-gray-100 mb-2" />
+                  <div className="flex items-end justify-between gap-2">
+                    <div>
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">
+                        Total{(order as any).deliveryCost > 0 ? ' · incl. delivery' : ''}
+                      </p>
+                      <p className="text-2xl font-black text-gray-900 tabular-nums leading-none">
+                        S/{(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
+                      </p>
+                      {(order as any).couponDiscount > 0 && (
+                        <p className="text-[9px] text-purple-500 font-semibold mt-0.5">cupón -{(order as any).couponDiscount}%</p>
+                      )}
+                      {(() => {
+                        const items = (order as any).completedOrders;
+                        if (!items) return null;
+                        const seen2 = new Set<string>(); let s = 0;
+                        items.forEach((it: any) => { if (it.comboGroupId && !seen2.has(it.comboGroupId)) { seen2.add(it.comboGroupId); s += (it.comboOriginalTotal || 0) - (it.comboPrice || 0); } });
+                        return s > 0 ? <p className="text-[9px] text-amber-500 font-semibold mt-0.5">🔥 ahorro S/{s.toFixed(2)}</p> : null;
+                      })()}
+                    </div>
+                    {/* ── PAGO ── */}
                     {(() => {
-                      const steps: { label: string; time: string | undefined; color: string }[] = [
-                        { label: 'Ingresó', time: order.createdAt, color: 'text-gray-400' },
-                        { label: 'Confirmado', time: order.confirmedAt, color: 'text-cyan-400' },
-                        { label: 'En camino', time: order.enCaminoAt, color: 'text-blue-400' },
-                        { label: 'Entregado', time: order.deliveredAt, color: 'text-green-400' },
-                      ];
-                      const filled = steps.filter(s => s.time);
-                      if (filled.length < 2) return null;
-                      return (
-                        <div className="mt-2 border-t border-white/10 pt-2 space-y-0.5">
-                          {filled.map((step, i) => {
-                            const prev = filled[i - 1];
-                            const elapsed = prev
-                              ? Math.round((new Date(step.time!).getTime() - new Date(prev.time!).getTime()) / 60000)
-                              : null;
-                            return (
-                              <div key={i} className="flex items-center gap-1 text-[9px]">
-                                <span className={`font-mono font-bold ${step.color}`}>
-                                  {new Date(step.time!).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                                <span className="text-gray-500">{step.label}</span>
-                                {elapsed !== null && (
-                                  <span className="text-yellow-500 font-bold">+{elapsed}m</span>
-                                )}
+                      const pm = order.paymentMethod;
+                      const isYapeAnticipado = pm === 'anticipado' || pm === 'yape' || pm === 'plin';
+                      const isYapeEntrega    = pm === 'contraentrega-yape-plin';
+                      const hasProof         = !!order.paymentProofPath;
+                      const openVoucher = () => {
+                        setSelectedVoucherPath(order.paymentProofPath || '');
+                        setSelectedVoucherOrder(order);
+                        setShowVoucherModal(true);
+                      };
+
+                      // Solo anticipado = pago adelantado → puede tener comprobante
+                      if (isYapeAnticipado) {
+                        return (
+                          <div className="flex flex-col gap-1 min-w-[88px]">
+                            <div className="rounded-xl px-3 py-2 text-center text-xs font-black bg-emerald-100 text-emerald-700 border border-emerald-200">
+                              <p className="text-[10px]">✓ PAGADO</p>
+                              <p className="text-[9px] font-medium opacity-70">Yape / Plin</p>
+                            </div>
+                            {hasProof ? (
+                              <button
+                                onClick={openVoucher}
+                                className="rounded-xl px-2 py-1.5 text-center text-[10px] font-black bg-purple-100 text-purple-700 border border-purple-300 hover:bg-purple-200 transition-all flex items-center justify-center gap-1"
+                              >
+                                🟣 Ver comprobante
+                              </button>
+                            ) : (
+                              <div className="rounded-xl px-2 py-1.5 text-center text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-300">
+                                ⚠ Sin comprobante
                               </div>
-                            );
-                          })}
+                            )}
+                          </div>
+                        );
+                      }
+
+                      // Yape/Plin al recibir
+                      if (isYapeEntrega) {
+                        return (
+                          <div className="rounded-xl px-3 py-2 text-center text-xs font-black bg-amber-100 text-amber-700 border border-amber-200 min-w-[80px]">
+                            <p>YAPE</p><p className="text-[9px] font-medium opacity-70">al recibir</p>
+                          </div>
+                        );
+                      }
+
+                      // Otros métodos de pago
+                      return (
+                        <div className={`rounded-xl px-3 py-2 text-center text-xs font-black min-w-[80px] ${
+                          pm === 'tarjeta-mp'                    ? 'bg-blue-100    text-blue-700    border border-blue-200'   :
+                          pm === 'contraentrega-efectivo-exacto' ? 'bg-orange-100  text-orange-700  border border-orange-200' :
+                          pm === 'contraentrega-efectivo-cambio' ? 'bg-orange-100  text-orange-700  border border-orange-200' :
+                          'bg-gray-100 text-gray-600 border border-gray-200'
+                        }`}>
+                          {pm === 'tarjeta-mp' ? (
+                            <><p className="text-[10px]">✓ PAGADO</p><p className="text-[9px] font-medium opacity-70">Mercado Pago</p></>
+                          ) : pm === 'contraentrega-efectivo-exacto' ? (
+                            <><p>EFECTIVO</p><p className="text-[9px] font-medium opacity-70">exacto</p></>
+                          ) : pm === 'contraentrega-efectivo-cambio' ? (
+                            <><p>EFECTIVO</p>
+                              {(order as any).cantoCancelo && (
+                                <p className="text-[9px] font-medium opacity-70">
+                                  vuelto S/{(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
+                                </p>
+                              )}
+                            </>
+                          ) : pm === 'efectivo' ? (
+                            <p>EFECTIVO</p>
+                          ) : <p className="text-[10px]">{pm}</p>}
+                          {hasProof && (
+                            <button
+                              onClick={openVoucher}
+                              className="mt-1 text-[9px] underline opacity-60 block w-full"
+                            >ver comprobante</button>
+                          )}
                         </div>
                       );
                     })()}
                   </div>
-
-                  {/* SECCIÓN 1: PRODUCTOS */}
-                  <div className="flex-1 bg-black rounded border border-white/10 px-3 py-2">
-                    <h3 className="text-xs font-black text-white uppercase mb-2">🍽️ PEDIDO</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {(order as any).completedOrders && Array.isArray((order as any).completedOrders) && (order as any).completedOrders.length > 0 ? (
-                        (() => {
-                          const allItems = (order as any).completedOrders;
-                          const seenComboGroups = new Set<string>();
-                          return allItems.map((item: any, idx: number) => {
-                            // --- COMBO GROUP ---
-                            if (item.comboGroupId) {
-                              if (seenComboGroups.has(item.comboGroupId)) return null;
-                              seenComboGroups.add(item.comboGroupId);
-                              const groupItems = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
-                              const comboName = item.comboName || 'Combo';
-                              const comboPrice = item.comboPrice || 0;
-                              const comboOriginalTotal = item.comboOriginalTotal || comboPrice;
-                              const savings = parseFloat((comboOriginalTotal - comboPrice).toFixed(2));
-                              return (
-                                <div key={`combo-${item.comboGroupId}`} className="bg-amber-900/30 border border-amber-500/40 rounded px-2 py-1.5 w-full">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[10px] font-black text-amber-400 uppercase">🔥 {comboName}</span>
-                                    <div className="flex items-center gap-1">
-                                      {savings > 0 && <span className="text-[9px] bg-amber-500/30 text-amber-300 px-1 rounded font-bold">-S/ {savings.toFixed(2)}</span>}
-                                      <span className="text-sm font-black text-amber-300">S/ {comboPrice.toFixed(2)}</span>
-                                    </div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    {groupItems.map((gi: any, giIdx: number) => (
-                                      <div key={giIdx} className="bg-amber-900/20 rounded px-1.5 py-1">
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-amber-400 font-black text-xs">{gi.quantity}x</span>
-                                          <span className="text-xs text-amber-100 font-semibold">{gi.name}</span>
-                                        </div>
-                                        {gi.productId === 'taco-duo' && gi.salsas && gi.salsas.length > 0 && (
-                                          <div className="text-[10px] text-yellow-300 mt-0.5 ml-3">
-                                            🌮 {gi.salsas.map((id: string) => (
-                                              ({ 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' } as Record<string,string>)[id] || id
-                                            )).join(' + ')}
-                                          </div>
-                                        )}
-                                        {gi.productId !== 'taco-duo' && gi.salsas && gi.salsas.length > 0 && (
-                                          <div className="text-[10px] text-yellow-300 mt-0.5 ml-3">
-                                            🌶️ {gi.salsas.map((salsaId: string) => {
-                                              const salsa = salsas.find((s: any) => s.id === salsaId);
-                                              return salsa?.name || salsaId;
-                                            }).join(', ')}
-                                          </div>
-                                        )}
-                                        {gi.complementIds && gi.complementIds.length > 0 && (
-                                          <div className="text-[10px] text-green-300 mt-0.5 ml-3">
-                                            + {gi.complementIds.map((cId: string) => availableComplements[cId]?.name || cId).join(', ')}
-                                          </div>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              );
-                            }
-
-                            // --- INDIVIDUAL ITEM ---
-                            const productName = item.name || 'Sin nombre';
-                            const catalogPrice = item.price || 0;
-                            const couponFactor = 1 - ((order as any).couponDiscount || 0) / 100;
-                            const productPrice = catalogPrice * couponFactor;
-                            const quantity = item.quantity || 0;
-                            const itemSalsas = item.salsas || [];
-                            const itemComplementIds = item.complementIds || [];
-                            const hasCouponDiscount = (order as any).couponDiscount > 0;
-
-                            return (
-                              <div key={idx} className="bg-white/5 rounded px-2 py-1.5">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
-                                    <span className="text-white font-black text-sm">{quantity}</span>
-                                  </div>
-                                  <div className="flex-1">
-                                    <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                    {hasCouponDiscount ? (
-                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                        <span className="text-gray-500 line-through text-xs">S/ {(catalogPrice * quantity).toFixed(2)}</span>
-                                        <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                        <span className="text-[9px] bg-purple-600/30 text-purple-400 px-1 rounded font-bold">-{(order as any).couponDiscount}%</span>
-                                      </div>
-                                    ) : (
-                                      <span className="text-sm font-black text-cyan-400">S/ {(productPrice * quantity).toFixed(2)}</span>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Mostrar salsas / sabores de taco si existen */}
-                                {itemSalsas.length > 0 && (
-                                  <div className="mt-1 ml-8 text-[10px] text-yellow-300">
-                                    {item.productId === 'taco-duo' ? (
-                                      <>
-                                        <span className="font-bold">🌮 Sabores: </span>
-                                        {itemSalsas.map((id: string) => (
-                                          { 'santo-crujiente': 'Crunch Supreme Taco', 'tex-dilema': 'Tex Supreme Taco', 'santo-bacon': 'Bacon Deluxe Taco' }[id] || id
-                                        )).join(' + ')}
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span className="font-bold">🌶️ Salsas: </span>
-                                        {itemSalsas.map((salsaId: string) => {
-                                          const salsa = salsas.find(s => s.id === salsaId);
-                                          return salsa?.name || salsaId;
-                                        }).join(', ')}
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Mostrar complementos si existen - agrupados por tipo */}
-                                {itemComplementIds.length > 0 && (() => {
-                                  const complementCounts: { [key: string]: number } = {};
-                                  itemComplementIds.forEach((compId: string) => {
-                                    complementCounts[compId] = (complementCounts[compId] || 0) + 1;
-                                  });
-                                  return (
-                                    <div className="mt-1 ml-8 space-y-0.5">
-                                      {Object.entries(complementCounts).map(([compId, count], compIdx) => {
-                                        const complement = availableComplements[compId];
-                                        if (!complement) return null;
-                                        const totalPrice = complement.price * count;
-                                        return (
-                                          <div key={compIdx} className="text-[10px] text-green-300 flex items-center gap-1">
-                                            <span className="font-bold">+</span>
-                                            {count > 1 && <span className="text-green-400 font-black">{count}x</span>}
-                                            <span>{complement.name}</span>
-                                            {complement.price > 0
-                                              ? <span className="text-green-400 font-bold">S/ {totalPrice.toFixed(2)}</span>
-                                              : <span className="text-emerald-400 font-bold">(incluido)</span>
-                                            }
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-                            );
-                          });
-                        })()
-                      ) : order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
-                        order.cart.map((item: any, idx: number) => {
-                          const productName = item.product?.name || item.name || 'Sin nombre';
-                          const productPrice = item.product?.price || item.price || 0;
-                          const quantity = item.quantity || 0;
-                          const subtotal = productPrice * quantity;
-
-                          return (
-                            <div key={idx} className="flex items-center gap-2 bg-white/5 rounded px-2 py-1">
-                              <div className="w-6 h-6 rounded bg-fuchsia-600 flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-black text-sm">{quantity}</span>
-                              </div>
-                              <div>
-                                <h4 className="text-xs font-bold text-white">{productName}</h4>
-                                <span className="text-sm font-black text-cyan-400">S/ {subtotal.toFixed(2)}</span>
-                              </div>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <span className="text-xs text-gray-500">Sin productos</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* SECCIÓN 2: CLIENTE */}
-                  <div className="flex-shrink-0 w-full md:w-48 bg-gray-800 rounded px-3 py-2">
-                    <h4 className="text-[10px] font-bold text-gray-400 uppercase mb-1">👤 Cliente</h4>
-                    <p className="text-xs font-bold text-white mb-1 truncate">{order.name}</p>
-                    <p className="text-xs font-bold text-white flex items-center gap-1 mb-1">
-                      <span>📱</span>
-                      <span className="font-mono">{order.phone}</span>
-                    </p>
-                    <p className="text-xs font-bold text-white flex items-start gap-1 mb-1">
-                      <span>📍</span>
-                      <span className="line-clamp-2">{order.address}</span>
-                    </p>
-                    {(order as any).deliveryOption ? (
-                      <div className={`mt-1 rounded px-1.5 py-0.5 text-[9px] font-bold flex items-center gap-1 ${(order as any).deliveryCost > 0 ? 'bg-sky-900/60 text-sky-200' : 'bg-gray-700 text-gray-300'}`}>
-                        <span>🛵</span>
-                        <span>
-                          {(order as any).deliveryOption === 'centro'
-                            ? `Chancay centro +S/ ${((order as any).deliveryCost || 0).toFixed(2)}`
-                            : 'Chancay alrededores'}
-                        </span>
-                      </div>
-                    ) : null}
-                    {order.notes && (
-                      <div className="mt-1 bg-yellow-500/20 border border-yellow-400 rounded px-1.5 py-1 text-[9px]">
-                        <span className="text-yellow-400 font-bold">⚠️ {order.notes}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* SECCIÓN 3: TOTAL */}
-                  <div className="flex-shrink-0 bg-gradient-to-br from-cyan-600 to-blue-600 rounded px-3 py-2 text-center w-full md:w-auto md:min-w-[100px]">
-                    <p className="text-[10px] text-cyan-100 font-bold uppercase mb-0.5">Total</p>
-                    <p className="text-xl font-black text-white">
-                      S/ {(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
-                    </p>
-                    <p className="text-[10px] text-cyan-100">{order.totalItems || 0} items</p>
-                    {(() => {
-                      const items = (order as any).completedOrders;
-                      if (items && Array.isArray(items)) {
-                        const seenGroups = new Set<string>();
-                        let totalSavings = 0;
-                        const comboNames: string[] = [];
-                        items.forEach((item: any) => {
-                          if (item.comboGroupId && !seenGroups.has(item.comboGroupId)) {
-                            seenGroups.add(item.comboGroupId);
-                            const savings = (item.comboOriginalTotal || 0) - (item.comboPrice || 0);
-                            if (savings > 0) {
-                              totalSavings += savings;
-                              if (item.comboName && !comboNames.includes(item.comboName)) comboNames.push(item.comboName);
-                            }
-                          }
-                        });
-                        if (totalSavings > 0) {
-                          return (
-                            <p className="text-[9px] bg-amber-900/60 text-amber-200 rounded px-1 mt-1 font-bold">
-                              🔥 {comboNames.length > 0 ? comboNames.join(' + ') : 'Combo'} -S/ {totalSavings.toFixed(2)}
-                            </p>
-                          );
-                        }
-                      }
-                      // fallback para pedidos del sistema anterior
-                      if ((order as any).comboDiscount > 0) {
-                        return (
-                          <p className="text-[9px] bg-fuchsia-900/60 text-fuchsia-200 rounded px-1 mt-1 font-bold">
-                            🔥 Combo -S/ {((order as any).comboDiscount).toFixed(2)}
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
-                    {(order as any).couponDiscount > 0 && (
-                      <p className="text-[9px] bg-purple-900/60 text-purple-200 rounded px-1 mt-1 font-bold">
-                        Cupón -{(order as any).couponDiscount}% aplicado
-                      </p>
-                    )}
-                    {(order as any).deliveryCost > 0 && (
-                      <p className="text-[9px] bg-sky-900/60 text-sky-200 rounded px-1 mt-1 font-bold">
-                        🛵 +S/ {(order as any).deliveryCost.toFixed(2)} delivery
-                      </p>
-                    )}
-                    {(order as any).deliveryOption && (
-                      <p className="text-[9px] text-sky-300 mt-0.5">
-                        {(order as any).deliveryOption === 'centro' ? 'Chancay centro' : 'Chancay alrededores'}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* SECCIÓN 4: PAGO */}
-                  <div className={`flex-shrink-0 rounded px-3 py-2 w-full md:w-auto md:min-w-[110px] ${
-                    order.paymentMethod === 'anticipado' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
-                    order.paymentMethod === 'contraentrega-yape-plin' ? 'bg-gradient-to-br from-yellow-600 to-amber-600' :
-                    order.paymentMethod === 'tarjeta-mp' ? 'bg-gradient-to-br from-blue-600 to-cyan-600' :
-                    'bg-gradient-to-br from-orange-600 to-red-600'
-                  }`}>
-                    <p className="text-[10px] text-white/80 font-bold uppercase mb-0.5">Pago</p>
-                    {order.paymentMethod === 'anticipado' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">✓ PAGADO</p>
-                        <p className="text-[10px] text-white/80">Yape/Plin</p>
-                        {order.paymentProofPath && (
-                          <button
-                            onClick={() => {
-                              setSelectedVoucherPath(order.paymentProofPath || "");
-                              setShowVoucherModal(true);
-                            }}
-                            className="mt-1 w-full bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1"
-                          >
-                            📄 Ver comprobante
-                          </button>
-                        )}
-                      </div>
-                    ) : order.paymentMethod === 'contraentrega-yape-plin' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">YAPE/PLIN</p>
-                        <p className="text-[10px] text-white/80">Al recibir</p>
-                      </div>
-                    ) : order.paymentMethod === 'contraentrega-efectivo-exacto' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">EFECTIVO</p>
-                        <p className="text-[10px] text-white/80">Exacto</p>
-                      </div>
-                    ) : order.paymentMethod === 'contraentrega-efectivo-cambio' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">EFECTIVO</p>
-                        {(order as any).cantoCancelo && (
-                          <>
-                            <p className="text-[10px] text-white/90 font-bold">
-                              Cancela con: S/ {parseFloat((order as any).cantoCancelo).toFixed(2)}
-                            </p>
-                            <p className="text-[10px] text-white/90 font-bold">
-                              Vuelto: S/ {(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    ) : order.paymentMethod === 'tarjeta-mp' ? (
-                      <div>
-                        <p className="text-sm font-black text-white">✓ PAGADO</p>
-                        <p className="text-[10px] text-white/80">Mercado Pago</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm font-black text-white">Contraentrega</p>
-                    )}
-                  </div>
-
-                  {/* NOTA SI EXISTE */}
-                  {order.notes && (
-                    <div className="flex-shrink-0 bg-yellow-500/20 border border-yellow-500 rounded px-2 py-2 w-full md:max-w-[150px]">
-                      <p className="text-[10px] text-yellow-400 font-bold uppercase mb-1">⚠️ NOTA</p>
-                      <p className="text-xs font-medium text-yellow-100 line-clamp-2">{order.notes}</p>
-                    </div>
-                  )}
-
-                  {/* BOTONES DE ACCIÓN */}
-                  <div className="flex-shrink-0 flex gap-2 w-full md:w-auto">
-                    {order.status === "programado" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Aceptar pedido
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "pendiente-verificacion" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Verificar y Confirmar
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Confirmar
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "confirmed" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "en-camino")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          🚚 En Camino
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
-                    {order.status === "en-camino" && (
-                      <>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "delivered")}
-                          className="flex-1 md:flex-initial bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2 rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✓ Entregado
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "cancelled")}
-                          className="md:flex-initial px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-black uppercase transition-all"
-                        >
-                          ✕ Cancelar
-                        </button>
-                      </>
-                    )}
-                    {order.status === "delivered" && (
-                      <div className="flex gap-2 items-center">
-                        <div className="bg-green-900/50 border border-green-500 text-green-400 px-4 py-2 rounded text-xs font-black text-center uppercase flex-1">
-                          ✓ Entregado
-                        </div>
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
-                            await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
-                            setOrders(prev => prev.filter(o => o.id !== order.id));
-                          }}
-                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs font-black uppercase transition-all"
-                          title="Eliminar pedido"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    )}
-                    {order.status === "cancelled" && (
-                      <div className="flex gap-2 items-center">
-                        <div className="bg-red-900/50 border border-red-500 text-red-400 px-4 py-2 rounded text-xs font-black text-center uppercase flex-1">
-                          ✕ Cancelado
-                        </div>
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`¿Eliminar pedido #${order.id}?`)) return;
-                            await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
-                            setOrders(prev => prev.filter(o => o.id !== order.id));
-                          }}
-                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs font-black uppercase transition-all"
-                          title="Eliminar pedido"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    )}
                 </div>
 
-                </div>
+                {/* ── BOTÓN DE ACCIÓN ── */}
+                {order.status === 'pending' && (
+                  <div className="flex mt-auto">
+                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
+                      ✓ Confirmar pedido
+                    </button>
+                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-amber-600 hover:bg-red-600 text-white/70 hover:text-white border-l border-amber-700 text-sm font-bold transition-all rounded-br-2xl">✕</button>
+                  </div>
+                )}
+                {order.status === 'pendiente-verificacion' && (
+                  <div className="flex mt-auto">
+                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
+                      ✓ Verificar y confirmar
+                    </button>
+                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-purple-700 hover:bg-red-600 text-white/70 hover:text-white border-l border-purple-800 text-sm font-bold transition-all rounded-br-2xl">✕</button>
+                  </div>
+                )}
+                {order.status === 'programado' && (
+                  <div className="flex mt-auto">
+                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
+                      ✓ Aceptar programado
+                    </button>
+                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-indigo-700 hover:bg-red-600 text-white/70 hover:text-white border-l border-indigo-800 text-sm font-bold transition-all rounded-br-2xl">✕</button>
+                  </div>
+                )}
+                {order.status === 'confirmed' && (
+                  <div className="flex mt-auto">
+                    <button onClick={() => updateOrderStatus(order.id, 'en-camino')} className="flex-1 bg-sky-500 hover:bg-sky-600 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
+                      🛵 Enviar en camino
+                    </button>
+                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-sky-600 hover:bg-red-600 text-white/70 hover:text-white border-l border-sky-700 text-sm font-bold transition-all rounded-br-2xl">✕</button>
+                  </div>
+                )}
+                {order.status === 'en-camino' && (
+                  <div className="flex mt-auto">
+                    <button onClick={() => updateOrderStatus(order.id, 'delivered')} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
+                      ✓ Marcar entregado
+                    </button>
+                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-emerald-600 hover:bg-red-600 text-white/70 hover:text-white border-l border-emerald-700 text-sm font-bold transition-all rounded-br-2xl">✕</button>
+                  </div>
+                )}
+                {order.status === 'delivered' && (
+                  <div className="flex mt-auto">
+                    <div className="flex-1 bg-emerald-50 text-emerald-600 py-2.5 text-xs font-black text-center uppercase tracking-wide rounded-bl-2xl">✓ Entregado</div>
+                    <button onClick={async () => { if (!confirm('¿Eliminar?')) return; await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' }); setOrders(prev => prev.filter(o => o.id !== order.id)); }}
+                      className="px-4 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-400 border-l border-gray-100 text-xs transition-all rounded-br-2xl">🗑</button>
+                  </div>
+                )}
+                {order.status === 'cancelled' && (
+                  <div className="flex mt-auto">
+                    <div className="flex-1 bg-red-50 text-red-400 py-2.5 text-xs font-black text-center uppercase tracking-wide rounded-bl-2xl">✕ Cancelado</div>
+                    <button onClick={async () => { if (!confirm('¿Eliminar?')) return; await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' }); setOrders(prev => prev.filter(o => o.id !== order.id)); }}
+                      className="px-4 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-400 border-l border-gray-100 text-xs transition-all rounded-br-2xl">🗑</button>
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -3341,20 +3325,212 @@ export default function AdminPage() {
       ) : activeTab === "customers" ? (
         /* Customers Tab */
         <>
+          {/* Banner alertas cumpleaños */}
+          {(() => {
+            const todayList = birthdayAlerts?.today || [];
+            const tomorrowList = birthdayAlerts?.tomorrow || [];
+            if (!birthdayAlertsLoading && todayList.length === 0 && tomorrowList.length === 0) return null;
+            return (
+              <div className="px-6 pt-5 space-y-3">
+                {birthdayAlertsLoading && (
+                  <div className="bg-pink-50 border border-pink-100 rounded-xl px-4 py-3 flex items-center gap-2">
+                    <span className="text-pink-400 animate-pulse">🎂</span>
+                    <span className="text-xs text-pink-500 font-medium">Verificando cumpleaños...</span>
+                  </div>
+                )}
+                {todayList.length > 0 && (
+                  <div className="bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-2xl px-5 py-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xl">🎂</span>
+                          <span className="text-sm font-black text-rose-700">
+                            {todayList.length === 1 ? `${todayList[0].name} cumple años HOY` : `${todayList.length} clientes cumplen años HOY`}
+                          </span>
+                          <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse">HOY</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {todayList.map((c: any) => {
+                            const waMsg = (birthdayAlerts?.settings?.waTemplate || 'Hola {{nombre}}! Feliz cumpleanos desde Santo Dilema!')
+                              .replace('{{nombre}}', c.name.split(' ')[0]);
+                            return (
+                              <div key={c.phone} className="flex items-center gap-2 bg-white border border-pink-100 rounded-xl px-3 py-1.5">
+                                <span className="text-sm font-bold text-gray-900">{c.name}</span>
+                                <span className="text-xs text-gray-400 font-mono">{c.phone}</span>
+                                <a href={buildWhatsApp(c.phone, waMsg)} target="_blank" rel="noopener noreferrer"
+                                   className="text-[10px] font-bold bg-green-100 text-green-700 hover:bg-green-200 px-2 py-0.5 rounded-full transition-all">
+                                  💬 WA
+                                </a>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <button
+                        disabled={bdSendingEmail}
+                        onClick={async () => {
+                          setBdSendingEmail(true);
+                          setBdEmailResult(null);
+                          try {
+                            const r = await fetch('/api/birthday-alerts', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ customers: todayList, subject: `🎂 ${todayList.length > 1 ? todayList.length + ' clientes cumplen' : todayList[0].name + ' cumple'} años HOY — Santo Dilema` }),
+                            });
+                            const d = await r.json();
+                            setBdEmailResult(d.success ? { ok: true, msg: `Email enviado a ${d.sentTo}` } : { ok: false, msg: d.error || 'Error' });
+                          } finally { setBdSendingEmail(false); }
+                        }}
+                        className="flex-shrink-0 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all"
+                      >
+                        {bdSendingEmail ? '...' : '📧 Enviar alerta'}
+                      </button>
+                    </div>
+                    {bdEmailResult && (
+                      <p className={`text-[11px] font-bold mt-2 ${bdEmailResult.ok ? 'text-green-600' : 'text-red-500'}`}>
+                        {bdEmailResult.ok ? '✓ ' : '✗ '}{bdEmailResult.msg}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {tomorrowList.length > 0 && (
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl px-5 py-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xl">🎁</span>
+                          <span className="text-sm font-black text-amber-700">
+                            {tomorrowList.length === 1 ? `${tomorrowList[0].name} cumple años MAÑANA` : `${tomorrowList.length} clientes cumplen años MAÑANA`}
+                          </span>
+                          <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">MAÑANA</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {tomorrowList.map((c: any) => (
+                            <div key={c.phone} className="flex items-center gap-2 bg-white border border-amber-100 rounded-xl px-3 py-1.5">
+                              <span className="text-sm font-bold text-gray-900">{c.name}</span>
+                              <span className="text-xs text-gray-400 font-mono">{c.phone}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        disabled={bdSendingEmail}
+                        onClick={async () => {
+                          setBdSendingEmail(true);
+                          setBdEmailResult(null);
+                          try {
+                            const r = await fetch('/api/birthday-alerts', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ customers: tomorrowList, subject: `🎁 ${tomorrowList.length > 1 ? tomorrowList.length + ' clientes cumplen' : tomorrowList[0].name + ' cumple'} años MAÑANA — Santo Dilema` }),
+                            });
+                            const d = await r.json();
+                            setBdEmailResult(d.success ? { ok: true, msg: `Email enviado a ${d.sentTo}` } : { ok: false, msg: d.error || 'Error' });
+                          } finally { setBdSendingEmail(false); }
+                        }}
+                        className="flex-shrink-0 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all"
+                      >
+                        {bdSendingEmail ? '...' : '📧 Alerta previa'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Customer Stats */}
-          <section className="container mx-auto px-4 py-6">
+          <section className="px-6 py-6">
             <div className="mb-4">
-              <h2 className="text-lg font-black text-white mb-3 flex items-center gap-2">
-                <span className="text-fuchsia-400">👥</span> Clientes
-                <span className="text-xs font-normal text-gray-500 ml-1">— click en un cliente para ver detalle</span>
-              </h2>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  <span className="text-gray-700">👥</span> Clientes
+                  <span className="text-xs font-normal text-gray-500 ml-1">— click para ver ficha completa</span>
+                </h2>
+                <button
+                  onClick={() => setShowBirthdaySettings(s => !s)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${showBirthdaySettings ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                >
+                  🎂 Configurar alertas
+                </button>
+              </div>
+
+              {/* Panel de configuración de alertas */}
+              {showBirthdaySettings && (
+                <div className="mb-4 bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-black text-gray-900">Configuración de alertas de cumpleaños</p>
+                    <span className="text-[10px] text-gray-400">Los cambios se guardan automáticamente</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Email destinatario de alertas</label>
+                      <input
+                        type="email"
+                        value={bdSettingsForm.recipientEmail}
+                        onChange={e => setBdSettingsForm(f => ({ ...f, recipientEmail: e.target.value }))}
+                        placeholder="tucorreo@gmail.com"
+                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-gray-400"
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1">Configurar BIRTHDAY_EMAIL_USER y BIRTHDAY_EMAIL_PASS en .env.local (Gmail)</p>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Días de anticipación</label>
+                      <select
+                        value={bdSettingsForm.alertDaysBefore}
+                        onChange={e => setBdSettingsForm(f => ({ ...f, alertDaysBefore: parseInt(e.target.value) }))}
+                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-gray-400"
+                      >
+                        <option value={0}>El mismo día</option>
+                        <option value={1}>1 día antes</option>
+                        <option value={2}>2 días antes</option>
+                        <option value={3}>3 días antes</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Mensaje de WhatsApp para cumpleaños (editable)</label>
+                    <textarea
+                      value={bdSettingsForm.waTemplate}
+                      onChange={e => setBdSettingsForm(f => ({ ...f, waTemplate: e.target.value }))}
+                      rows={6}
+                      placeholder="Hola {{nombre}}! Feliz cumpleanos..."
+                      className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-gray-400 resize-none font-mono leading-relaxed"
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1">Usa {'{{nombre}}'} para insertar el nombre del cliente automáticamente.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      disabled={bdSettingsSaving}
+                      onClick={async () => {
+                        setBdSettingsSaving(true);
+                        try {
+                          await fetch('/api/birthday-alerts', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(bdSettingsForm),
+                          });
+                          setBirthdayAlerts(prev => prev ? { ...prev, settings: { ...prev.settings, ...bdSettingsForm } } : prev);
+                        } finally { setBdSettingsSaving(false); }
+                      }}
+                      className="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm py-2.5 rounded-xl transition-all disabled:opacity-50"
+                    >
+                      {bdSettingsSaving ? 'Guardando...' : '✓ Guardar configuración'}
+                    </button>
+                    <button onClick={() => setShowBirthdaySettings(false)} className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition-all">
+                      Cerrar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setCustomerSegment("all")}
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "all"
-                      ? "bg-fuchsia-600 text-white neon-border-purple"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                      ? "bg-fuchsia-600 text-white "
+                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
                   }`}
                 >
                   Todos ({customerSegments.all.length})
@@ -3364,7 +3540,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "vip"
                       ? "bg-amber-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
                   }`}
                 >
                   👑 VIP ({customerSegments.vip.length})
@@ -3374,7 +3550,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "new"
                       ? "bg-cyan-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
                   }`}
                 >
                   ✨ Nuevos ({customerSegments.new.length})
@@ -3384,7 +3560,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "active"
                       ? "bg-green-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
                   }`}
                 >
                   🟢 Activos ({customerSegments.active.length})
@@ -3394,7 +3570,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "recurrent"
                       ? "bg-blue-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
                   }`}
                 >
                   🔁 Recurrentes ({customerSegments.recurrent.length})
@@ -3404,7 +3580,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "inactive"
                       ? "bg-red-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
                   }`}
                 >
                   💤 Inactivos ({customerSegments.inactive.length})
@@ -3414,7 +3590,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
                     customerSegment === "birthday"
                       ? "bg-pink-600 text-white"
-                      : "bg-gray-900 text-gray-400 hover:bg-gray-800 border-2 border-gray-700"
+                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
                   }`}
                 >
                   🎂 Cumpleaños ({allCustomers.filter((c: any) => !!c.birthday).length})
@@ -3424,10 +3600,10 @@ export default function AdminPage() {
           </section>
 
           {/* Customers Table */}
-          <section className="container mx-auto px-4 pb-12">
-            {/* Modal de detalle de cliente */}
+          <section className="px-6 pb-12">
+            {/* CRM Ficha completa del cliente */}
             {selectedCustomer && (() => {
-              // Calcular productos más comprados
+              // ── Métricas del cliente ──────────────────────────────────
               const productCount: Record<string, { name: string; qty: number; revenue: number }> = {};
               selectedCustomer.orders.forEach((order: any) => {
                 const items = order.completedOrders || order.cart || [];
@@ -3442,138 +3618,509 @@ export default function AdminPage() {
                 });
               });
               const topProducts = Object.values(productCount).sort((a, b) => b.qty - a.qty).slice(0, 5);
+              const topProduct = topProducts[0];
               const daysSince = Math.floor((new Date().getTime() - new Date(selectedCustomer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
+              const sortedOrders = [...selectedCustomer.orders].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-              const segmentLabel = selectedCustomer.totalOrders > 3
-                ? { label: "VIP", color: "bg-amber-500/20 text-amber-300 border-amber-500/50" }
+              // Frecuencia: días promedio entre pedidos
+              let freqLabel = '—';
+              if (sortedOrders.length >= 2) {
+                const oldest = new Date(sortedOrders[sortedOrders.length - 1].createdAt).getTime();
+                const newest = new Date(sortedOrders[0].createdAt).getTime();
+                const avgDays = Math.round((newest - oldest) / (1000 * 60 * 60 * 24) / (sortedOrders.length - 1));
+                freqLabel = avgDays <= 7 ? 'Semanal' : avgDays <= 15 ? 'Quincenal' : avgDays <= 35 ? 'Mensual' : `c/${avgDays}d`;
+              }
+
+              const segmentInfo = selectedCustomer.totalOrders > 3
+                ? { label: 'VIP', bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300', dot: 'bg-amber-500' }
                 : selectedCustomer.totalOrders > 1
-                  ? { label: "Recurrente", color: "bg-blue-500/20 text-blue-300 border-blue-500/50" }
+                  ? { label: 'Recurrente', bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', dot: 'bg-blue-500' }
                   : daysSince > 30
-                    ? { label: "Inactivo", color: "bg-red-500/20 text-red-300 border-red-500/50" }
-                    : { label: "Nuevo", color: "bg-green-500/20 text-green-300 border-green-500/50" };
+                    ? { label: 'Inactivo', bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300', dot: 'bg-red-500' }
+                    : { label: 'Nuevo', bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', dot: 'bg-emerald-500' };
+
+              const addressHistory: string[] = selectedCustomer.addressHistory || (selectedCustomer.address ? [selectedCustomer.address] : []);
+              const currentPrimary = primaryAddressMap[selectedCustomer.phone] || addressHistory[0] || selectedCustomer.address || '';
+
+              const closeModal = () => {
+                setSelectedCustomer(null);
+                setCustomerModalTab('overview');
+                setExpandedOrderId(null);
+                setEditingCustomer(false);
+              };
 
               return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setSelectedCustomer(null)}>
-                  <div className="bg-gray-950 rounded-2xl border border-fuchsia-500/60 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl shadow-fuchsia-500/10" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={closeModal}>
+                  <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
 
-                    {/* Header */}
-                    <div className="relative bg-gradient-to-r from-fuchsia-900/40 to-gray-900 rounded-t-2xl p-5 border-b border-fuchsia-500/20">
-                      <button onClick={() => setSelectedCustomer(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all">✕</button>
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-fuchsia-500/20 border-2 border-fuchsia-500/40 flex items-center justify-center text-2xl font-black text-fuchsia-300">
-                          {selectedCustomer.name.charAt(0).toUpperCase()}
-                        </div>
+                    {/* ── HEADER ──────────────────────────────────────── */}
+                    <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-t-2xl px-6 py-5">
+                      <button onClick={closeModal} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all text-sm">✕</button>
+
+                      {editingCustomer ? (
+                        /* ── MODO EDICIÓN ── */
                         <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h2 className="text-lg font-black text-white">{selectedCustomer.name}</h2>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${segmentLabel.color}`}>{segmentLabel.label}</span>
-                          </div>
-                          <p className="text-fuchsia-400 text-sm font-mono mt-0.5">{selectedCustomer.phone}</p>
-                          {selectedCustomer.address && <p className="text-gray-500 text-xs mt-0.5 truncate max-w-[260px]">{selectedCustomer.address}</p>}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* KPIs */}
-                    <div className="grid grid-cols-4 gap-2 p-4">
-                      <div className="bg-fuchsia-500/10 rounded-xl p-3 text-center border border-fuchsia-500/20">
-                        <p className="text-xl font-black text-fuchsia-400">{selectedCustomer.totalOrders}</p>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Pedidos</p>
-                      </div>
-                      <div className="bg-amber-500/10 rounded-xl p-3 text-center border border-amber-500/20">
-                        <p className="text-xl font-black text-amber-400">S/{selectedCustomer.totalSpent.toFixed(0)}</p>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Total</p>
-                      </div>
-                      <div className="bg-cyan-500/10 rounded-xl p-3 text-center border border-cyan-500/20">
-                        <p className="text-xl font-black text-cyan-400">S/{(selectedCustomer.avgTicket||0).toFixed(0)}</p>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Ticket prom</p>
-                      </div>
-                      <div className="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
-                        <p className="text-xl font-black text-gray-300">{daysSince}d</p>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Última compra</p>
-                      </div>
-                    </div>
-
-                    {/* Productos favoritos */}
-                    {topProducts.length > 0 && (
-                      <div className="px-4 pb-4">
-                        <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider mb-2">Favoritos</p>
-                        <div className="space-y-1.5">
-                          {topProducts.map((p, i) => (
-                            <div key={i} className="flex items-center gap-3 bg-gray-900 rounded-lg px-3 py-2 border border-gray-800">
-                              <span className="text-xs font-black text-gray-600 w-4 text-center">{i + 1}</span>
-                              <span className="flex-1 text-sm text-white font-medium">{p.name}</span>
-                              <span className="text-xs font-black text-fuchsia-300 bg-fuchsia-500/10 px-2 py-0.5 rounded-full border border-fuchsia-500/20">{p.qty}×</span>
-                              <span className="text-xs text-amber-400 font-bold w-14 text-right">S/{p.revenue.toFixed(0)}</span>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Editar datos del cliente</p>
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Nombre</label>
+                              <input
+                                value={editCustomerForm.name}
+                                onChange={e => setEditCustomerForm(f => ({ ...f, name: e.target.value }))}
+                                className="w-full mt-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-white/40"
+                              />
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Historial de pedidos */}
-                    <div className="px-4 pb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-black text-fuchsia-400 uppercase tracking-wider">Historial de pedidos</p>
-                        <span className="text-[10px] text-gray-600 bg-gray-800 px-2 py-0.5 rounded-full">{selectedCustomer.orders.length} pedidos</span>
-                      </div>
-                      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                        {[...selectedCustomer.orders].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((order: any) => (
-                          <div key={order.id} className="bg-gray-900 rounded-xl px-3 py-2.5 border border-gray-800 hover:border-fuchsia-500/30 transition-colors">
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-black text-fuchsia-400">#{order.id}</span>
-                                <span className="text-[10px] text-gray-500">{new Date(order.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusColors[order.status as keyof typeof statusColors]}`}>
-                                  {statusLabels[order.status as keyof typeof statusLabels]}
-                                </span>
-                                <span className="text-amber-400 font-black text-sm">S/ {order.totalPrice?.toFixed(2) || "0.00"}</span>
-                              </div>
+                            <div>
+                              <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Teléfono <span className="text-gray-600 normal-case">(no editable)</span></label>
+                              <input
+                                value={editCustomerForm.phone}
+                                readOnly
+                                className="w-full mt-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-400 font-mono cursor-not-allowed"
+                              />
                             </div>
-                            {(() => {
-                              const items = order.completedOrders || order.cart || [];
-                              if (!items.length) return null;
-                              return (
-                                <p className="text-[10px] text-gray-500 leading-relaxed">
-                                  {items.map((it: any) => `${it.name || it.product?.name || '?'} ×${it.quantity || 0}`).join(' · ')}
-                                </p>
-                              );
-                            })()}
+                            <div>
+                              <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Dirección principal</label>
+                              <input
+                                value={editCustomerForm.address}
+                                onChange={e => setEditCustomerForm(f => ({ ...f, address: e.target.value }))}
+                                className="w-full mt-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-white/40"
+                              />
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Footer — acciones y perfil CRM */}
-                    <div className="px-4 py-4 border-t border-gray-800 bg-gray-900/50 rounded-b-2xl">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex flex-wrap gap-1.5">
-                          {(selectedCustomer.tags || []).length > 0
-                            ? (selectedCustomer.tags || []).map((t: string) => (
-                                <span key={t} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-500/25">{t}</span>
-                              ))
-                            : <span className="text-[10px] text-gray-600">Sin etiquetas</span>
-                          }
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              onClick={async () => {
+                                setEditCustomerSaving(true);
+                                try {
+                                  await fetch('/api/customer-profiles', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      action: 'upsert',
+                                      phone: selectedCustomer.phone,
+                                      name: editCustomerForm.name,
+                                      address: editCustomerForm.address,
+                                      birthday: selectedCustomer.birthday || '',
+                                      tags: selectedCustomer.tags || [],
+                                      notes: selectedCustomer.notes || '',
+                                    }),
+                                  });
+                                  // Actualizar el cliente seleccionado localmente
+                                  setSelectedCustomer((prev: any) => ({
+                                    ...prev,
+                                    name: editCustomerForm.name,
+                                    phone: editCustomerForm.phone,
+                                    address: editCustomerForm.address,
+                                  }));
+                                  setEditingCustomer(false);
+                                } catch (err) {
+                                  console.error(err);
+                                } finally {
+                                  setEditCustomerSaving(false);
+                                }
+                              }}
+                              disabled={editCustomerSaving}
+                              className="flex-1 bg-white text-gray-900 font-bold text-sm py-2 rounded-lg hover:bg-gray-100 transition-all disabled:opacity-50"
+                            >
+                              {editCustomerSaving ? 'Guardando...' : '✓ Guardar cambios'}
+                            </button>
+                            <button onClick={() => setEditingCustomer(false)} className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm font-bold hover:bg-white/20 transition-all">
+                              Cancelar
+                            </button>
+                          </div>
                         </div>
-                        <button onClick={() => {
-                          setCrmEditPhone(selectedCustomer.phone);
-                          setCrmForm({ birthday: selectedCustomer.birthday ? `${selectedCustomer.birthday.split('-')[1]}/${selectedCustomer.birthday.split('-')[0]}` : '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
-                          setShowCrmModal(true);
-                        }} className="text-[10px] text-fuchsia-400 hover:text-fuchsia-200 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 px-3 py-1.5 rounded-lg border border-fuchsia-500/20 transition-all">
-                          Editar perfil
-                        </button>
-                      </div>
-                      {selectedCustomer.birthday && (
-                        <p className="text-[10px] text-gray-500 mb-2">🎂 Cumpleaños: <span className="text-pink-400 font-bold">{selectedCustomer.birthday.split('-')[1]}/{selectedCustomer.birthday.split('-')[0]}</span></p>
+                      ) : (
+                        /* ── VISTA NORMAL ── */
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl font-black text-white flex-shrink-0">
+                            {selectedCustomer.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h2 className="text-xl font-black text-white">{selectedCustomer.name}</h2>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${segmentInfo.bg} ${segmentInfo.text}`}>{segmentInfo.label}</span>
+                            </div>
+                            <p className="text-gray-300 text-sm font-mono mt-1">{selectedCustomer.phone}</p>
+                            {currentPrimary && <p className="text-gray-400 text-xs mt-0.5 truncate">📍 {currentPrimary}</p>}
+                            {selectedCustomer.birthday && <p className="text-gray-400 text-xs mt-0.5">🎂 {selectedCustomer.birthday.split('-')[1]}/{selectedCustomer.birthday.split('-')[0]}</p>}
+                          </div>
+                          <button
+                            onClick={() => {
+                              setEditCustomerForm({ name: selectedCustomer.name, phone: selectedCustomer.phone, address: currentPrimary });
+                              setEditingCustomer(true);
+                            }}
+                            className="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-white/20 transition-all"
+                          >
+                            ✏️ Editar
+                          </button>
+                        </div>
                       )}
-                      {selectedCustomer.notes && <p className="text-[10px] text-gray-500 italic mb-3">&quot;{selectedCustomer.notes}&quot;</p>}
-                      <a href={buildWhatsApp(selectedCustomer.phone, getCampaignTemplate('inactive30', selectedCustomer))}
-                         target="_blank" rel="noopener noreferrer"
-                         className="flex items-center justify-center gap-2 w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all">
-                        💬 Enviar WhatsApp
-                      </a>
+                    </div>
+
+                    {/* ── TABS ────────────────────────────────────────── */}
+                    <div className="flex border-b border-gray-100 bg-white px-4">
+                      {(['overview', 'orders', 'addresses'] as const).map(tab => (
+                        <button
+                          key={tab}
+                          onClick={() => setCustomerModalTab(tab)}
+                          className={`px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${customerModalTab === tab ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+                        >
+                          {tab === 'overview' ? '📊 Resumen' : tab === 'orders' ? `📦 Pedidos (${sortedOrders.length})` : `📍 Direcciones (${addressHistory.length})`}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* ── CONTENIDO ───────────────────────────────────── */}
+                    <div className="flex-1 overflow-y-auto">
+
+                      {/* TAB: RESUMEN ───────────────────────────────── */}
+                      {customerModalTab === 'overview' && (
+                        <div className="p-5 space-y-5">
+                          {/* KPIs principales */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                              <p className="text-2xl font-black text-gray-900">{selectedCustomer.totalOrders}</p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Pedidos</p>
+                            </div>
+                            <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
+                              <p className="text-2xl font-black text-amber-600">S/{selectedCustomer.totalSpent.toFixed(0)}</p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Total gastado</p>
+                            </div>
+                            <div className="bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
+                              <p className="text-2xl font-black text-blue-600">S/{(selectedCustomer.avgTicket||0).toFixed(0)}</p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Ticket prom.</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                              <p className="text-2xl font-black text-gray-500">{daysSince}d</p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Última compra</p>
+                            </div>
+                          </div>
+
+                          {/* Resumen comercial */}
+                          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Resumen comercial</p>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Última compra</p>
+                                <p className="font-bold text-gray-800">{new Date(selectedCustomer.lastOrderDate).toLocaleDateString("es-PE", { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Frecuencia</p>
+                                <p className="font-bold text-gray-800">{freqLabel}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Producto favorito</p>
+                                <p className="font-bold text-gray-800 truncate">{topProduct ? `${topProduct.name} (×${topProduct.qty})` : '—'}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Registrado</p>
+                                <p className="font-bold text-gray-800">{(() => {
+                                  const oldest = [...selectedCustomer.orders].sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0];
+                                  return oldest ? new Date(oldest.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—';
+                                })()}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Estado</p>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${segmentInfo.bg} ${segmentInfo.text}`}>{segmentInfo.label}</span>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Dirección activa</p>
+                                <p className="font-bold text-gray-800 text-xs truncate">{currentPrimary || '—'}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Cumpleaños</p>
+                                <p className="font-bold text-gray-800">
+                                  {selectedCustomer.birthday
+                                    ? (() => { const [mm, dd] = selectedCustomer.birthday.split('-'); return `${dd}/${mm}`; })()
+                                    : <span className="text-gray-400 font-normal text-xs">No registrado</span>}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Productos más comprados */}
+                          {topProducts.length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Productos favoritos</p>
+                              <div className="space-y-1.5">
+                                {topProducts.map((p, i) => (
+                                  <div key={i} className="flex items-center gap-3 bg-white rounded-xl px-3 py-2.5 border border-gray-100">
+                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white ${i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-gray-400' : 'bg-gray-300'}`}>{i + 1}</span>
+                                    <span className="flex-1 text-sm text-gray-800 font-medium truncate">{p.name}</span>
+                                    <span className="text-xs font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{p.qty}×</span>
+                                    <span className="text-xs text-amber-600 font-black w-16 text-right">S/{p.revenue.toFixed(0)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Sección cumpleaños — accionable */}
+                          {(() => {
+                            const bdBadge = getBirthdayBadge(selectedCustomer.birthday);
+                            const waMsg = (birthdayAlerts?.settings?.waTemplate || '🎉 ¡Hola {{nombre}}!\n\nTodo el equipo de Santo Dilema te desea un muy feliz cumpleaños. 🥳🎂\n\nGracias por elegirnos y ser parte de nuestra comunidad.\n\nQueremos celebrarlo contigo — ¡tenemos una sorpresa especial para ti!\n\n¡Esperamos verte pronto!\n\nEquipo Santo Dilema ❤️')
+                              .replace(/{{nombre}}/g, selectedCustomer.name.split(' ')[0]);
+                            return (
+                              <div className={`rounded-xl p-4 border ${bdBadge === 'today' ? 'bg-pink-50 border-pink-200' : bdBadge === 'tomorrow' ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-100'}`}>
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-lg">🎂</span>
+                                    <div>
+                                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Cumpleaños</p>
+                                      <p className="text-sm font-bold text-gray-900">
+                                        {selectedCustomer.birthday
+                                          ? (() => {
+                                              const [mm, dd] = selectedCustomer.birthday.split('-');
+                                              return `${dd}/${mm}`;
+                                            })()
+                                          : 'No registrado'}
+                                        {bdBadge === 'today' && <span className="ml-2 bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full animate-pulse">HOY</span>}
+                                        {bdBadge === 'tomorrow' && <span className="ml-2 bg-orange-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">MAÑANA</span>}
+                                        {bdBadge === 'week' && <span className="ml-2 bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full">esta semana</span>}
+                                        {bdBadge === 'month' && <span className="ml-2 bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">este mes</span>}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      setCrmEditPhone(selectedCustomer.phone);
+                                      setCrmForm({ birthday: selectedCustomer.birthday ? `${selectedCustomer.birthday.split('-')[1]}/${selectedCustomer.birthday.split('-')[0]}` : '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
+                                      setShowCrmModal(true);
+                                    }}
+                                    className="text-[10px] font-bold text-gray-500 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 px-2 py-1 rounded-lg transition-all"
+                                  >
+                                    {selectedCustomer.birthday ? 'Cambiar' : '+ Agregar'}
+                                  </button>
+                                </div>
+                                {selectedCustomer.birthday && (
+                                  <div className="space-y-2">
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Mensaje de felicitación</p>
+                                    <div className="bg-white rounded-lg p-3 border border-gray-100">
+                                      <p className="text-xs text-gray-700 whitespace-pre-line leading-relaxed">{waMsg}</p>
+                                    </div>
+                                    <a
+                                      href={buildWhatsApp(selectedCustomer.phone, waMsg)}
+                                      target="_blank" rel="noopener noreferrer"
+                                      className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                        bdBadge === 'today'
+                                          ? 'bg-pink-600 hover:bg-pink-700 text-white'
+                                          : bdBadge === 'tomorrow'
+                                            ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                                            : 'bg-green-600 hover:bg-green-700 text-white'
+                                      }`}
+                                    >
+                                      💬 {bdBadge === 'today' ? 'Felicitar AHORA por WhatsApp' : bdBadge === 'tomorrow' ? 'Preparar felicitación (cumple mañana)' : 'Enviar felicitación por WhatsApp'}
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+
+                          {/* Notas y etiquetas */}
+                          {(selectedCustomer.notes || (selectedCustomer.tags || []).length > 0) && (
+                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                              {(selectedCustomer.tags || []).length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                  {(selectedCustomer.tags || []).map((t: string) => (
+                                    <span key={t} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">{t}</span>
+                                  ))}
+                                </div>
+                              )}
+                              {selectedCustomer.notes && <p className="text-xs text-gray-500 italic">&quot;{selectedCustomer.notes}&quot;</p>}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* TAB: PEDIDOS ───────────────────────────────── */}
+                      {customerModalTab === 'orders' && (
+                        <div className="p-5 space-y-3">
+                          {sortedOrders.map((order: any) => {
+                            const isExpanded = expandedOrderId === order.id;
+                            const orderItems = order.completedOrders || order.cart || [];
+                            const subtotal = orderItems.reduce((acc: number, it: any) => acc + ((it.finalPrice ?? it.price ?? 0) * (it.quantity || 0)), 0);
+                            const couponDiscount = order.couponDiscount || 0;
+                            const comboDiscount = order.comboDiscount || 0;
+                            const deliveryCost = order.deliveryCost || 0;
+                            const payMethodLabels: Record<string, string> = {
+                              yape: 'Yape', plin: 'Plin', efectivo: 'Efectivo', transferencia: 'Transferencia',
+                              anticipado: 'Anticipado', tarjeta: 'Tarjeta', otro: 'Otro'
+                            };
+                            const orderStatus = statusLabels[order.status as keyof typeof statusLabels] || order.status;
+                            const orderStatusColor = statusColors[order.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-600 border-gray-200';
+                            const orderAddr = order.address || order.deliveryCustomLocation || '';
+
+                            return (
+                              <div key={order.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                {/* Fila principal del pedido */}
+                                <button
+                                  className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors"
+                                  onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <span className="font-mono text-sm font-black text-gray-900">{order.id}</span>
+                                      <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${orderStatusColor}`}>{orderStatus}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <span className="font-black text-amber-600 text-sm">S/ {(order.totalPrice || 0).toFixed(2)}</span>
+                                      <span className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-4 mt-1">
+                                    <span className="text-[11px] text-gray-400">
+                                      {new Date(order.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' })}{' '}
+                                      {new Date(order.createdAt).toLocaleTimeString("es-PE", { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    {order.paymentMethod && (
+                                      <span className="text-[11px] text-gray-400">{payMethodLabels[order.paymentMethod] || order.paymentMethod}</span>
+                                    )}
+                                    {orderAddr && <span className="text-[11px] text-gray-400 truncate max-w-[200px]">📍 {orderAddr}</span>}
+                                  </div>
+                                </button>
+
+                                {/* Detalle expandible */}
+                                {isExpanded && (
+                                  <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 space-y-3">
+                                    {/* Productos */}
+                                    {orderItems.length > 0 && (
+                                      <div>
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Productos</p>
+                                        <div className="space-y-1.5">
+                                          {orderItems.map((it: any, idx2: number) => {
+                                            const itemName = it.name || it.product?.name || 'Producto';
+                                            const itemQty = it.quantity || 1;
+                                            const itemPrice = it.finalPrice ?? it.price ?? it.product?.price ?? 0;
+                                            const salsas = it.salsaIds || it.salsas || [];
+                                            const complements = it.complementIds || [];
+                                            return (
+                                              <div key={idx2} className="flex items-start gap-2 bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                                <span className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">{itemQty}</span>
+                                                <div className="flex-1 min-w-0">
+                                                  <p className="text-sm font-bold text-gray-900 truncate">{itemName}</p>
+                                                  {salsas.length > 0 && <p className="text-[10px] text-red-500 mt-0.5">🌶 {salsas.join(', ')}</p>}
+                                                  {complements.length > 0 && <p className="text-[10px] text-gray-400 mt-0.5">+ {complements.join(', ')}</p>}
+                                                </div>
+                                                <span className="text-sm font-black text-gray-700 flex-shrink-0">S/{(itemPrice * itemQty).toFixed(2)}</span>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Subtotales y descuentos */}
+                                    <div className="bg-white rounded-xl border border-gray-100 px-4 py-3 space-y-1.5">
+                                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Desglose de pago</p>
+                                      <div className="flex justify-between text-sm text-gray-600">
+                                        <span>Subtotal</span>
+                                        <span className="font-bold">S/{subtotal.toFixed(2)}</span>
+                                      </div>
+                                      {couponDiscount > 0 && (
+                                        <div className="flex justify-between text-sm text-purple-600">
+                                          <span>Cupón {order.couponCode ? `(${order.couponCode})` : ''} -{couponDiscount}%</span>
+                                          <span className="font-bold">-S/{(subtotal * couponDiscount / 100).toFixed(2)}</span>
+                                        </div>
+                                      )}
+                                      {comboDiscount > 0 && (
+                                        <div className="flex justify-between text-sm text-emerald-600">
+                                          <span>Descuento combo</span>
+                                          <span className="font-bold">-S/{comboDiscount.toFixed(2)}</span>
+                                        </div>
+                                      )}
+                                      {deliveryCost > 0 && (
+                                        <div className="flex justify-between text-sm text-gray-600">
+                                          <span>Delivery</span>
+                                          <span className="font-bold">+S/{deliveryCost.toFixed(2)}</span>
+                                        </div>
+                                      )}
+                                      <div className="flex justify-between text-sm font-black text-gray-900 border-t border-gray-100 pt-1.5 mt-1">
+                                        <span>Total pagado</span>
+                                        <span className="text-amber-600">S/{(order.totalPrice || 0).toFixed(2)}</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Info logística */}
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                      {orderAddr && (
+                                        <div className="bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                          <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Dirección de entrega</p>
+                                          <p className="text-gray-700 font-medium">{orderAddr}</p>
+                                        </div>
+                                      )}
+                                      {order.paymentMethod && (
+                                        <div className="bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                          <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Método de pago</p>
+                                          <p className="text-gray-700 font-medium capitalize">{payMethodLabels[order.paymentMethod] || order.paymentMethod}</p>
+                                        </div>
+                                      )}
+                                      {order.deliveredAt && (
+                                        <div className="bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                          <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Hora de entrega</p>
+                                          <p className="text-gray-700 font-medium">{new Date(order.deliveredAt).toLocaleTimeString("es-PE", { hour: '2-digit', minute: '2-digit' })}</p>
+                                        </div>
+                                      )}
+                                      {order.notes && (
+                                        <div className="bg-amber-50 rounded-lg px-3 py-2 border border-amber-100 col-span-2">
+                                          <p className="text-[9px] text-amber-600 uppercase font-bold mb-0.5">Nota del cliente</p>
+                                          <p className="text-gray-700 font-medium">{order.notes}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* TAB: DIRECCIONES ───────────────────────────── */}
+                      {customerModalTab === 'addresses' && (
+                        <div className="p-5">
+                          {addressHistory.length === 0 ? (
+                            <div className="text-center py-10">
+                              <p className="text-4xl mb-2">📍</p>
+                              <p className="text-gray-400 text-sm">Sin direcciones registradas</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
+                                {addressHistory.length} {addressHistory.length === 1 ? 'dirección registrada' : 'direcciones registradas'}
+                              </p>
+                              {addressHistory.map((addr, i) => {
+                                const isPrimary = addr === currentPrimary;
+                                return (
+                                  <div key={i} className={`flex items-start gap-3 rounded-xl px-4 py-3 border transition-all ${isPrimary ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
+                                    <span className={`text-lg flex-shrink-0 mt-0.5 ${isPrimary ? '' : 'opacity-40'}`}>📍</span>
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-sm font-medium ${isPrimary ? 'text-white' : 'text-gray-800'}`}>{addr}</p>
+                                      {isPrimary && <p className="text-[10px] text-gray-400 mt-0.5 font-bold uppercase tracking-wider">Dirección principal</p>}
+                                    </div>
+                                    {!isPrimary && (
+                                      <button
+                                        onClick={() => setPrimaryAddressMap(prev => ({ ...prev, [selectedCustomer.phone]: addr }))}
+                                        className="flex-shrink-0 text-[10px] font-bold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-lg transition-all"
+                                      >
+                                        Marcar principal
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ── FOOTER ──────────────────────────────────────── */}
+                    <div className="border-t border-gray-100 px-5 py-3 bg-gray-50 rounded-b-2xl flex items-center justify-between">
+                      <p className="text-[10px] text-gray-400">{selectedCustomer.phone} · {selectedCustomer.totalOrders} pedido{selectedCustomer.totalOrders !== 1 ? 's' : ''}</p>
+                      <button onClick={closeModal} className="text-xs font-bold text-gray-500 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 px-4 py-1.5 rounded-lg transition-all">
+                        Cerrar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -3582,10 +4129,10 @@ export default function AdminPage() {
 
             {loading ? (
               <div className="text-center py-12">
-                <p className="text-2xl text-fuchsia-400 neon-glow-purple">Cargando clientes...</p>
+                <p className="text-2xl text-gray-700 ">Cargando clientes...</p>
               </div>
             ) : customers.length === 0 ? (
-              <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
+              <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
                 <p className="text-2xl text-gray-400">No hay clientes registrados</p>
               </div>
             ) : (
@@ -3598,7 +4145,7 @@ export default function AdminPage() {
                       value={customerSearchTerm}
                       onChange={(e) => setCustomerSearchTerm(e.target.value)}
                       placeholder="Buscar cliente por nombre, teléfono o dirección..."
-                      className="w-full px-4 py-3 pl-10 bg-gray-900 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500 transition-all"
+                      className="w-full px-4 py-3 pl-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-all"
                     />
                     <svg
                       className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
@@ -3616,7 +4163,7 @@ export default function AdminPage() {
                     {customerSearchTerm && (
                       <button
                         onClick={() => setCustomerSearchTerm("")}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -3637,7 +4184,7 @@ export default function AdminPage() {
                   };
                   const SortIcon = ({ col }: { col: string }) => {
                     if (customerSortKey !== col) return <span className="text-gray-600 ml-1">↕</span>;
-                    return <span className="text-fuchsia-300 ml-1">{customerSortDir === "asc" ? "↑" : "↓"}</span>;
+                    return <span className="text-gray-600 ml-1">{customerSortDir === "asc" ? "↑" : "↓"}</span>;
                   };
                   const sortedCustomers = [...customers].sort((a: any, b: any) => {
                     let aVal: any, bVal: any;
@@ -3655,33 +4202,34 @@ export default function AdminPage() {
                   });
 
                   return (
-                    <div className="bg-gray-950 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xl">
                       <table className="w-full">
-                        <thead className="bg-gray-900/80 border-b border-gray-800">
+                        <thead className="bg-white border-b border-gray-200">
                           <tr>
-                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:table-cell">Estado</th>
-                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none" onClick={() => handleSort("name")}>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Estado</th>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none" onClick={() => handleSort("name")}>
                               Nombre <SortIcon col="name" />
                             </th>
-                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none hidden md:table-cell" onClick={() => handleSort("phone")}>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none hidden md:table-cell" onClick={() => handleSort("phone")}>
                               Teléfono <SortIcon col="phone" />
                             </th>
-                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none" onClick={() => handleSort("totalOrders")}>
+                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none" onClick={() => handleSort("totalOrders")}>
                               Pedidos <SortIcon col="totalOrders" />
                             </th>
-                            <th className="text-right px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none" onClick={() => handleSort("totalSpent")}>
+                            <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none" onClick={() => handleSort("totalSpent")}>
                               Total <SortIcon col="totalSpent" />
                             </th>
-                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-fuchsia-300 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
+                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none hidden xl:table-cell" onClick={() => handleSort("address")}>
+                              Dirección <SortIcon col="address" />
+                            </th>
+                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
                               Última Compra <SortIcon col="lastOrderDate" />
                             </th>
-                            <th className="text-center px-4 py-3 text-xs font-bold text-amber-400 uppercase tracking-wider">Cupón</th>
                           </tr>
                         </thead>
                         <tbody>
                           {sortedCustomers.map((customer: any, idx: number) => {
                             const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
-                            const hasCoupon = generatedCoupons[customer.phone];
                             const segBadge = customer.totalOrders > 3
                               ? { label: "VIP", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" }
                               : customer.totalOrders > 1
@@ -3689,60 +4237,53 @@ export default function AdminPage() {
                                 : daysSinceLastOrder > 30
                                   ? { label: "Inactivo", cls: "bg-red-500/20 text-red-300 border-red-500/40" }
                                   : { label: "Nuevo", cls: "bg-green-500/20 text-green-300 border-green-500/40" };
+                            const bdBadge = getBirthdayBadge(customer.birthday);
+                            const rowHighlight = bdBadge === 'today'
+                              ? 'bg-pink-50 hover:bg-pink-100/70'
+                              : bdBadge === 'tomorrow'
+                                ? 'bg-orange-50 hover:bg-orange-100/70'
+                                : `hover:bg-fuchsia-500/5 ${idx % 2 === 0 ? "bg-black/10" : ""}`;
                             return (
                               <tr
                                 key={customer.phone}
                                 onClick={() => setSelectedCustomer(customer)}
-                                className={`border-b border-gray-800/60 hover:bg-fuchsia-500/5 cursor-pointer transition-colors ${idx % 2 === 0 ? "bg-black/10" : ""}`}
+                                className={`border-b border-gray-200/60 cursor-pointer transition-colors ${rowHighlight}`}
                               >
                                 <td className="px-4 py-3 hidden sm:table-cell">
                                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${segBadge.cls}`}>{segBadge.label}</span>
                                 </td>
                                 <td className="px-4 py-3">
-                                  <p className="text-sm font-semibold text-white">{customer.name}</p>
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="text-sm font-semibold text-gray-800">{customer.name}</p>
+                                    {bdBadge === 'today' && <span className="bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full animate-pulse">🎂 HOY</span>}
+                                    {bdBadge === 'tomorrow' && <span className="bg-orange-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">🎁 MAÑANA</span>}
+                                    {bdBadge === 'week' && <span className="bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full">🎂 esta semana</span>}
+                                    {bdBadge === 'month' && <span className="bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">🗓 este mes</span>}
+                                  </div>
                                   <p className="text-xs text-gray-500 sm:hidden">{customer.phone}</p>
                                 </td>
-                                <td className="px-4 py-3 text-sm text-fuchsia-400 font-mono hidden md:table-cell">{customer.phone}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700 font-mono hidden md:table-cell">{customer.phone}</td>
                                 <td className="px-4 py-3 text-center">
-                                  <span className="inline-block w-8 h-8 leading-8 rounded-full bg-fuchsia-500/15 text-fuchsia-400 font-black text-sm text-center">
+                                  <span className="inline-block w-8 h-8 leading-8 rounded-full bg-fuchsia-500/15 text-gray-700 font-black text-sm text-center">
                                     {customer.totalOrders}
                                   </span>
                                 </td>
                                 <td className="px-4 py-3 text-right text-amber-400 font-black text-sm">
                                   S/ {customer.totalSpent.toFixed(0)}
                                 </td>
+                                <td className="px-4 py-3 hidden xl:table-cell">
+                                  {customer.address ? (
+                                    <p className="text-xs text-gray-600 max-w-[180px] truncate" title={customer.address}>{customer.address}</p>
+                                  ) : (
+                                    <span className="text-xs text-gray-300">—</span>
+                                  )}
+                                  {(customer.addressHistory?.length || 0) > 1 && (
+                                    <span className="text-[10px] text-indigo-400">{customer.addressHistory.length} direcciones</span>
+                                  )}
+                                </td>
                                 <td className="px-4 py-3 text-center text-gray-400 text-xs hidden lg:table-cell">
                                   {new Date(customer.lastOrderDate).toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "2-digit" })}
                                   {daysSinceLastOrder <= 7 && <span className="block text-green-400 text-[10px]">hace {daysSinceLastOrder}d</span>}
-                                </td>
-                                <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
-                                  {hasCoupon ? (
-                                    <span className="text-xs text-green-400 font-bold">✓ Enviado</span>
-                                  ) : (
-                                    <button
-                                      disabled={generatingCouponFor === customer.phone}
-                                      onClick={async () => {
-                                        if (!couponCampaignCode || !couponCampaignExpiry) return;
-                                        setGeneratingCouponFor(customer.phone);
-                                        try {
-                                          const expiresAt = new Date(couponCampaignExpiry + ':00-05:00').toISOString();
-                                          const res = await fetch('/api/coupons', {
-                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ action: 'create-campaign-single', code: couponCampaignCode, discount: 20, expiresAt, phone: customer.phone, customerName: customer.name }),
-                                          });
-                                          const data = await res.json();
-                                          if (data.success || data.alreadyHas) {
-                                            setGeneratedCoupons(prev => ({ ...prev, [customer.phone]: true }));
-                                          } else {
-                                            alert(data.error || 'Error');
-                                          }
-                                        } finally { setGeneratingCouponFor(null); }
-                                      }}
-                                      className="bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-bold transition-all"
-                                    >
-                                      {generatingCouponFor === customer.phone ? '...' : 'Dar cupón'}
-                                    </button>
-                                  )}
                                 </td>
                               </tr>
                             );
@@ -3757,29 +4298,29 @@ export default function AdminPage() {
           </section>
           {/* Dashboard CRM - integrado en tab Inicio */}
           {false && crmDashboard && (
-            <section className="container mx-auto px-4 py-6 space-y-6">
+            <section className="px-6 py-6 space-y-6">
               {/* 4 KPIs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-fuchsia-400">{crmDashboard.total}</p>
+                <div className="bg-white rounded-xl border-2 border-fuchsia-500/40 p-4 text-center">
+                  <p className="text-3xl font-black text-gray-700">{crmDashboard.total}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Clientes totales</p>
                 </div>
-                <div className="bg-gray-900 rounded-xl border-2 border-green-500/40 p-4 text-center">
+                <div className="bg-white rounded-xl border-2 border-green-500/40 p-4 text-center">
                   <p className="text-3xl font-black text-green-400">{crmDashboard.repurchaseRate}%</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Tasa recompra</p>
                 </div>
-                <div className="bg-gray-900 rounded-xl border-2 border-amber-500/40 p-4 text-center">
+                <div className="bg-white rounded-xl border-2 border-amber-500/40 p-4 text-center">
                   <p className="text-3xl font-black text-amber-400">S/ {crmDashboard.avgTicket.toFixed(0)}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Ticket promedio</p>
                 </div>
-                <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/40 p-4 text-center">
+                <div className="bg-white rounded-xl border-2 border-cyan-500/40 p-4 text-center">
                   <p className="text-3xl font-black text-cyan-400">{crmDashboard.avgFrequency}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Pedidos/cliente</p>
                 </div>
               </div>
 
               {/* Clientes en riesgo */}
-              <div className="bg-gray-900 rounded-xl border-2 border-red-500/30 p-5">
+              <div className="bg-white rounded-xl border-2 border-red-500/30 p-5">
                 <h3 className="text-sm font-black text-red-400 uppercase tracking-wider mb-4">Clientes en riesgo — Lanzar reactivación</h3>
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -3789,18 +4330,18 @@ export default function AdminPage() {
                   ].map(({ label, seg }) => (
                     <button key={seg}
                       onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
-                      className="bg-gray-800 border border-gray-700 hover:border-fuchsia-500 rounded-lg p-3 text-center transition-all">
-                      <p className="text-2xl font-black text-white">{(customerSegments as any)[seg]?.length ?? 0}</p>
+                      className="bg-gray-100 border border-gray-200 hover:border-fuchsia-500 rounded-lg p-3 text-center transition-all">
+                      <p className="text-2xl font-black text-gray-900">{(customerSegments as any)[seg]?.length ?? 0}</p>
                       <p className="text-xs text-gray-400 mt-1">Inactivos {label}</p>
-                      <p className="text-xs text-fuchsia-400 mt-1">Enviar WhatsApp →</p>
+                      <p className="text-xs text-gray-700 mt-1">Enviar WhatsApp →</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Lanzar campaña por segmento */}
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-5">
-                <h3 className="text-sm font-black text-fuchsia-400 uppercase tracking-wider mb-4">Lanzar campaña WhatsApp</h3>
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-5">
+                <h3 className="text-sm font-black text-gray-700 uppercase tracking-wider mb-4">Lanzar campaña WhatsApp</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[
                     { label: '👑 VIP', seg: 'vip' },
@@ -3812,54 +4353,27 @@ export default function AdminPage() {
                   ].map(({ label, seg }) => (
                     <button key={seg}
                       onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
-                      className="bg-gray-800 border border-gray-700 hover:border-fuchsia-500 rounded-lg p-3 text-left transition-all">
-                      <p className="text-white font-bold text-sm">{label}</p>
+                      className="bg-gray-100 border border-gray-200 hover:border-fuchsia-500 rounded-lg p-3 text-left transition-all">
+                      <p className="text-gray-800 font-bold text-sm">{label}</p>
                       <p className="text-gray-500 text-xs">{(customerSegments as any)[seg]?.length ?? 0} clientes</p>
-                      <p className="text-fuchsia-400 text-xs mt-1">Generar mensajes →</p>
+                      <p className="text-gray-700 text-xs mt-1">Generar mensajes →</p>
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Configuración cupón campaña */}
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 p-5">
-                <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider mb-1">🎟️ Configuración cupón campaña</h3>
-                <p className="text-xs text-gray-500 mb-4">El cupón se genera individualmente por cliente desde la tabla "Clientes" → columna 🎟️.</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-400 uppercase mb-1">Código</label>
-                    <input
-                      type="text"
-                      value={couponCampaignCode}
-                      onChange={e => setCouponCampaignCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-400 uppercase mb-1">Vence el</label>
-                    <input
-                      type="datetime-local"
-                      value={couponCampaignExpiry}
-                      onChange={e => setCouponCampaignExpiry(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-600 mt-3">El código activo es <span className="font-mono text-amber-400 font-bold">{couponCampaignCode}</span> · 20% desc · vence {couponCampaignExpiry.replace('T', ' ')}</p>
               </div>
             </section>
           )}
 
           {/* Cumpleaños - integrado como segmento en lista de clientes */}
           {false && crmDashboard && (
-            <section className="container mx-auto px-4 py-6 space-y-4">
+            <section className="px-6 py-6 space-y-4">
               {crmDashboard.birthdaysToday.length > 0 && (
                 <div className="bg-pink-900/20 border-2 border-pink-500 rounded-xl p-4">
                   <h3 className="text-pink-400 font-black text-sm uppercase mb-3">🎂 Cumpleaños hoy ({crmDashboard.birthdaysToday.length})</h3>
                   {crmDashboard.birthdaysToday.map((c: any) => (
                     <div key={c.phone} className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 mb-2">
                       <div>
-                        <p className="text-white font-bold text-sm">{c.name}</p>
+                        <p className="text-gray-800 font-bold text-sm">{c.name}</p>
                         <p className="text-gray-400 text-xs">{c.phone}</p>
                       </div>
                       <a href={buildWhatsApp(c.phone, getCampaignTemplate('birthday', c))}
@@ -3871,8 +4385,8 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
-              <div className="bg-gray-900 rounded-xl border border-gray-700 p-4">
-                <h3 className="text-fuchsia-400 font-black text-sm uppercase mb-3">
+              <div className="bg-white rounded-xl border border-gray-200 p-4">
+                <h3 className="text-gray-700 font-black text-sm uppercase mb-3">
                   Todos los cumpleaños registrados ({allCustomers.filter((c: any) => c.birthday).length})
                 </h3>
                 {allCustomers.filter((c: any) => c.birthday).length === 0 ? (
@@ -3886,10 +4400,10 @@ export default function AdminPage() {
                       const [mm, dd] = c.birthday.split('-');
                       const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
                       return (
-                        <div key={c.phone} className="flex items-center gap-3 py-2 border-b border-gray-800 last:border-0">
-                          <span className="text-xl font-black text-fuchsia-400 w-8 text-center">{dd}</span>
+                        <div key={c.phone} className="flex items-center gap-3 py-2 border-b border-gray-200 last:border-0">
+                          <span className="text-xl font-black text-gray-700 w-8 text-center">{dd}</span>
                           <span className="text-gray-500 text-xs w-8">{meses[parseInt(mm)-1]}</span>
-                          <span className="flex-1 text-white text-sm">{c.name}</span>
+                          <span className="flex-1 text-gray-800 text-sm">{c.name}</span>
                           <span className="text-gray-500 text-xs">{c.phone}</span>
                         </div>
                       );
@@ -3903,11 +4417,11 @@ export default function AdminPage() {
         /* Analytics Tab */
         <>
           {/* Date Filter - Only for Analytics */}
-          <section className="container mx-auto px-4 pt-4">
-            <div className="bg-gray-900 rounded-lg border-2 border-fuchsia-500/30 p-4">
+          <section className="px-6 pt-4">
+            <div className="bg-white rounded-lg border-2 border-gray-200 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 {/* Quick period buttons */}
-                <span className="text-xs font-bold text-fuchsia-400 uppercase tracking-wide">Período:</span>
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Período:</span>
                 {(() => {
                   const todayStr = new Date().toISOString().split("T")[0];
                   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
@@ -3928,7 +4442,7 @@ export default function AdminPage() {
                         className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
                           isActive
                             ? "bg-fuchsia-600 text-white"
-                            : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
                         }`}
                       >
                         {label}
@@ -3938,7 +4452,7 @@ export default function AdminPage() {
                 })()}
 
                 {/* Divider */}
-                <div className="w-px h-5 bg-gray-700 mx-1" />
+                <div className="w-px h-5 bg-gray-200 mx-1" />
 
                 {/* Custom date pickers */}
                 <div className="flex items-center gap-2">
@@ -3947,7 +4461,7 @@ export default function AdminPage() {
                     type="date"
                     value={analyticsDateFrom}
                     onChange={(e) => setAnalyticsDateFrom(e.target.value)}
-                    className="px-2 py-1.5 text-sm rounded-lg bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
+                    className="px-2 py-1.5 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none cursor-pointer [color-scheme:light]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
                   <label className="text-xs text-gray-400">Hasta:</label>
@@ -3955,13 +4469,13 @@ export default function AdminPage() {
                     type="date"
                     value={analyticsDateTo}
                     onChange={(e) => setAnalyticsDateTo(e.target.value)}
-                    className="px-2 py-1.5 text-sm rounded-lg bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none cursor-pointer [color-scheme:dark]"
+                    className="px-2 py-1.5 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none cursor-pointer [color-scheme:light]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
                   <button
                     onClick={applyAnalyticsDateFilter}
                     disabled={!analyticsDateFrom || !analyticsDateTo}
-                    className="px-4 py-1.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Aplicar
                   </button>
@@ -3970,7 +4484,7 @@ export default function AdminPage() {
                 {isAnalyticsDateFiltered && (
                   <button
                     onClick={clearAnalyticsDateFilter}
-                    className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm transition-all"
+                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm transition-all"
                   >
                     ✕ Limpiar
                   </button>
@@ -3985,11 +4499,11 @@ export default function AdminPage() {
             </div>
           </section>
 
-          <section className="container mx-auto px-4 py-8">
+          <section className="px-6 py-8">
             {/* CARTELES PRINCIPALES */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               {/* 1. VENTAS DEL DÍA */}
-              <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
+              <div className="bg-white rounded-xl border-2 border-cyan-500/50 p-6">
                 <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
                 <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
@@ -3998,7 +4512,7 @@ export default function AdminPage() {
               </div>
 
               {/* 2. PEDIDOS ENTREGADOS DEL DÍA */}
-              <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
+              <div className="bg-white rounded-xl border-2 border-green-500/50 p-6">
                 <p className="text-green-400 text-sm font-bold mb-2">📦 Pedidos Entregados</p>
                 <p className="text-4xl font-black text-green-400">{analytics.todayDeliveredOrdersCount}</p>
                 <p className="text-gray-400 text-xs mt-2">
@@ -4007,7 +4521,7 @@ export default function AdminPage() {
               </div>
 
               {/* 3. ACUMULADO DEL MES */}
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500/50 p-6">
+              <div className="bg-white rounded-xl border-2 border-purple-500/50 p-6">
                 <p className="text-purple-400 text-sm font-bold mb-2">📊 Acumulado del Mes</p>
                 <p className="text-4xl font-black text-purple-400">S/ {analytics.monthlySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
@@ -4016,7 +4530,7 @@ export default function AdminPage() {
               </div>
 
               {/* 4. TICKET PROMEDIO DEL DÍA */}
-              <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
+              <div className="bg-white rounded-xl border-2 border-amber-500/50 p-6">
                 <p className="text-amber-400 text-sm font-bold mb-2">🎫 Ticket Promedio</p>
                 <p className="text-4xl font-black text-amber-400">S/ {analytics.todayAverageTicket.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
@@ -4026,8 +4540,8 @@ export default function AdminPage() {
             </div>
 
             {/* SECCIÓN: PRODUCTOS ENTREGADOS DEL PERÍODO */}
-            <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6 mb-8">
-              <h3 className="text-2xl font-black text-fuchsia-400 mb-2">📦 Productos Entregados {isAnalyticsDateFiltered ? "del Período" : "del Mes"}</h3>
+            <div className="bg-white rounded-xl border-2 border-gray-200 p-6 mb-8">
+              <h3 className="text-2xl font-black text-gray-700 mb-2">📦 Productos Entregados {isAnalyticsDateFiltered ? "del Período" : "del Mes"}</h3>
               <p className="text-gray-400 text-sm mb-4">
                 Ranking de productos por cantidad vendida • Identifica los más y menos vendidos
               </p>
@@ -4047,10 +4561,10 @@ export default function AdminPage() {
                       return (
                         <div
                           key={idx}
-                          className={`bg-black/50 rounded-lg p-4 border-2 ${
+                          className={`bg-gray-100 rounded-lg p-4 border-2 ${
                             isMostSold ? 'border-green-500/50 bg-green-500/5' :
                             isLeastSold ? 'border-red-500/50 bg-red-500/5' :
-                            'border-gray-700/50'
+                            'border-gray-200/50'
                           }`}
                         >
                           <div className="flex items-start justify-between mb-2">
@@ -4064,7 +4578,7 @@ export default function AdminPage() {
                             {isMostSold && <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">🔥 MÁS VENDIDO</span>}
                             {isLeastSold && <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">❄️ MENOS VENDIDO</span>}
                           </div>
-                          <p className="text-white font-bold text-base mb-1">{product.name}</p>
+                          <p className="text-gray-900 font-bold text-base mb-1">{product.name}</p>
                           <p className="text-gray-400 text-xs mb-3">{product.category}</p>
                           <div className="flex justify-between items-center mb-2">
                             <div>
@@ -4076,12 +4590,12 @@ export default function AdminPage() {
                               <p className="text-xl font-black text-amber-400">S/ {product.revenue.toFixed(2)}</p>
                             </div>
                           </div>
-                          <div className="mt-2 pt-2 border-t border-gray-700">
+                          <div className="mt-2 pt-2 border-t border-gray-200">
                             <div className="flex items-center justify-between">
                               <p className="text-xs text-gray-500">% del total</p>
-                              <p className="text-sm font-black text-fuchsia-400">{revenuePercentage.toFixed(1)}%</p>
+                              <p className="text-sm font-black text-gray-700">{revenuePercentage.toFixed(1)}%</p>
                             </div>
-                            <div className="bg-black/50 rounded-full h-1.5 overflow-hidden mt-1">
+                            <div className="bg-gray-100 rounded-full h-1.5 overflow-hidden mt-1">
                               <div
                                 className="h-full bg-gradient-to-r from-fuchsia-600 to-pink-600"
                                 style={{ width: `${revenuePercentage}%` }}
@@ -4101,9 +4615,9 @@ export default function AdminPage() {
               <h3 className="text-2xl font-black text-cyan-400 mb-4">📊 Insights del Negocio</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* 1. MÉTODO DE PAGO MÁS USADO */}
-                <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
+                <div className="bg-white rounded-xl border-2 border-green-500/50 p-6">
                   <p className="text-green-400 text-sm font-bold mb-2">💳 Método de Pago Preferido</p>
-                  <p className="text-2xl font-black text-white mb-1">
+                  <p className="text-2xl font-black text-gray-900 mb-1">
                     {analytics.mostUsedPaymentMethod.method === 'anticipado' ? '💰 Anticipado' :
                      analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
                      analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
@@ -4113,41 +4627,41 @@ export default function AdminPage() {
                 </div>
 
                 {/* 2. HORARIO PICO */}
-                <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
+                <div className="bg-white rounded-xl border-2 border-amber-500/50 p-6">
                   <p className="text-amber-400 text-sm font-bold mb-2">⏰ Horario Pico</p>
-                  <p className="text-2xl font-black text-white mb-1">{analytics.peakHour}</p>
+                  <p className="text-2xl font-black text-gray-900 mb-1">{analytics.peakHour}</p>
                   <p className="text-gray-400 text-xs mt-2">{analytics.peakHourCount} pedidos en esa hora</p>
                 </div>
 
                 {/* 3. TASA DE CONVERSIÓN */}
-                <div className="bg-gray-900 rounded-xl border-2 border-cyan-500/50 p-6">
+                <div className="bg-white rounded-xl border-2 border-cyan-500/50 p-6">
                   <p className="text-cyan-400 text-sm font-bold mb-2">📈 Tasa de Conversión</p>
-                  <p className="text-3xl font-black text-white mb-1">{analytics.conversionRate.toFixed(1)}%</p>
+                  <p className="text-3xl font-black text-gray-900 mb-1">{analytics.conversionRate.toFixed(1)}%</p>
                   <p className="text-gray-400 text-xs mt-2">Pedidos confirmados vs totales</p>
                 </div>
               </div>
             </div>
 
             {/* SECCIÓN: DISTRIBUCIÓN DE MÉTODOS DE PAGO - formato filas */}
-            <div className="bg-gray-900 rounded-xl border-2 border-blue-500/30 p-6 mb-8">
+            <div className="bg-white rounded-xl border-2 border-blue-500/30 p-6 mb-8">
               <h3 className="text-xl font-black text-blue-400 mb-4">💳 Distribución de Métodos de Pago</h3>
               <div className="space-y-3">
                 {analytics.paymentMethodsArray.map((pm: any, idx: number) => (
                   <div key={idx} className="flex items-center gap-4">
                     <div className="w-44 flex-shrink-0">
-                      <p className="text-white font-bold text-sm">
+                      <p className="text-gray-800 font-bold text-sm">
                         {pm.method === 'anticipado' ? '💰 Anticipado' :
                          pm.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
                          pm.method === 'contraentrega-efectivo-cambio' ? '💵 Con Cambio' :
                          pm.method}
                       </p>
                     </div>
-                    <div className="flex-1 bg-black/50 rounded-full h-6 overflow-hidden border border-blue-500/20">
+                    <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden border border-blue-500/20">
                       <div
                         className="h-full bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-end pr-2 transition-all duration-300"
                         style={{ width: `${(pm.count / analytics.currentMonthOrdersCount) * 100}%` }}
                       >
-                        <span className="text-white font-black text-xs">{pm.count}</span>
+                        <span className="text-gray-700 font-black text-xs">{pm.count}</span>
                       </div>
                     </div>
                     <div className="w-14 text-right flex-shrink-0">
@@ -4165,17 +4679,17 @@ export default function AdminPage() {
       ) : activeTab === "financial" ? (
         /* Financial Tab */
         <>
-          <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">💰 Módulo Financiero</h2>
+          <section className="px-6 py-8">
+            <h2 className="text-3xl font-black text-gray-700  mb-6">💰 Módulo Financiero</h2>
 
             {/* Sub-tabs del Módulo Financiero */}
-            <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
+            <div className="flex gap-2 mb-8 border-b-2 border-gray-100">
               <button
                 onClick={() => setFinancialSection("dashboard")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   financialSection === "dashboard"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
+                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-700"
                 }`}
               >
                 📊 Dashboard
@@ -4184,8 +4698,8 @@ export default function AdminPage() {
                 onClick={() => setFinancialSection("purchases")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   financialSection === "purchases"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
+                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-700"
                 }`}
               >
                 🛒 Compras y Gastos
@@ -4317,11 +4831,17 @@ export default function AdminPage() {
                 <div>
                   {/* Header con filtros */}
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                    <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-                      📊 Dashboard Financiero Profesional
-                    </h3>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">Dashboard Financiero</h3>
+                      {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo ? (
+                        <p className="text-sm text-gray-500 mt-0.5">
+                          {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} — {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-400 mt-0.5">Histórico completo</p>
+                      )}
+                    </div>
 
-                    {/* Filtros rápidos y manuales */}
                     <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                       <div className="flex gap-2">
                         <button
@@ -4331,7 +4851,7 @@ export default function AdminPage() {
                             setDashboardDateTo(today);
                             setIsDashboardDateFiltered(true);
                           }}
-                          className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isDashboardDateFiltered && dashboardDateFrom === new Date().toISOString().split('T')[0] && dashboardDateTo === new Date().toISOString().split('T')[0] ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
                         >
                           Hoy
                         </button>
@@ -4343,9 +4863,9 @@ export default function AdminPage() {
                             setDashboardDateTo(today.toISOString().split('T')[0]);
                             setIsDashboardDateFiltered(true);
                           }}
-                          className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-white text-gray-600 border-gray-200 hover:border-gray-400"
                         >
-                          Mes actual
+                          Este mes
                         </button>
                         <button
                           onClick={() => {
@@ -4353,13 +4873,12 @@ export default function AdminPage() {
                             setDashboardDateTo("");
                             setIsDashboardDateFiltered(false);
                           }}
-                          className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${!isDashboardDateFiltered ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
                         >
-                          Ver histórico
+                          Histórico
                         </button>
                       </div>
 
-                      {/* Selectores de fecha */}
                       <div className="flex gap-2 items-center text-xs">
                         <input
                           type="date"
@@ -4368,9 +4887,9 @@ export default function AdminPage() {
                             setDashboardDateFrom(e.target.value);
                             if (e.target.value && dashboardDateTo) setIsDashboardDateFiltered(true);
                           }}
-                          className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-xs"
+                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-800 text-xs focus:outline-none focus:border-gray-400"
                         />
-                        <span className="text-gray-400">→</span>
+                        <span className="text-gray-300">—</span>
                         <input
                           type="date"
                           value={dashboardDateTo}
@@ -4378,236 +4897,195 @@ export default function AdminPage() {
                             setDashboardDateTo(e.target.value);
                             if (dashboardDateFrom && e.target.value) setIsDashboardDateFiltered(true);
                           }}
-                          className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-xs"
+                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-800 text-xs focus:outline-none focus:border-gray-400"
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* Indicador del periodo */}
-                  {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
-                    <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 mb-6 text-xs text-cyan-300">
-                      📅 Mostrando datos del {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {/* ===== NIVEL 1: KPIs PRINCIPALES ===== */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {/* Ventas */}
+                    <div className="bg-white border border-gray-100 rounded-xl p-5">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ventas</p>
+                      <p className="text-3xl font-black text-gray-900">S/ {totalVentas.toFixed(0)}</p>
+                      <p className="text-xs text-gray-400 mt-2">{deliveredOrders.length} pedidos entregados</p>
                     </div>
-                  )}
 
-                  {/* ===== CAJA CORRIENTE ===== */}
-                  <div className="bg-gradient-to-br from-emerald-900/40 to-teal-900/20 rounded-2xl border-2 border-emerald-400/60 p-6 mb-6">
-                    <div className="flex items-start justify-between gap-4 flex-wrap">
-                      <div className="flex-1">
-                        <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">💵 CAJA ACTUAL</p>
-                        <p className={`text-6xl font-black ${cajaActual >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                          S/ {cajaActual.toFixed(2)}
-                        </p>
-                        {cajaData && (
-                          <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-400">
-                            <span>Base {new Date(cajaData.snapshotDate + "T12:00:00").toLocaleDateString("es-PE")}: <span className="text-white font-bold">S/ {cajaSnapshot.toFixed(2)}</span></span>
-                            <span>+ Ventas desde entonces: <span className="text-emerald-400 font-bold">S/ {ventasDesdeSnapshot.toFixed(2)}</span></span>
-                            <span>− Pagos realizados: <span className="text-red-400 font-bold">S/ {pagosDesdeSnapshot.toFixed(2)}</span></span>
-                          </div>
-                        )}
-                        {!cajaData && (
-                          <p className="text-gray-500 text-sm mt-2">Configura el saldo inicial para empezar a llevar la caja.</p>
-                        )}
+                    {/* Gastos */}
+                    <div className="bg-white border border-gray-100 rounded-xl p-5">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Gastos</p>
+                      <p className="text-3xl font-black text-gray-900">S/ {totalCompras.toFixed(0)}</p>
+                      <p className="text-xs text-gray-400 mt-2">{filteredPurchases.length} compras registradas</p>
+                    </div>
+
+                    {/* Utilidad */}
+                    <div className={`bg-white border rounded-xl p-5 ${cajaUtilidad >= 0 ? 'border-emerald-100' : 'border-red-100'}`}>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Utilidad</p>
+                      <p className={`text-3xl font-black ${cajaUtilidad >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                        S/ {cajaUtilidad.toFixed(0)}
+                      </p>
+                      <p className={`text-xs mt-2 font-medium ${cajaUtilidad >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                        {margenCaja.toFixed(1)}% margen sobre ventas
+                      </p>
+                    </div>
+
+                    {/* Ticket promedio */}
+                    <div className="bg-white border border-gray-100 rounded-xl p-5">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket promedio</p>
+                      <p className="text-3xl font-black text-gray-900">
+                        S/ {deliveredOrders.length > 0 ? (totalVentas / deliveredOrders.length).toFixed(2) : '0.00'}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">por pedido</p>
+                    </div>
+                  </div>
+
+                  {/* ===== NIVEL 2: CAJA + DESGLOSE EGRESOS ===== */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+
+                    {/* CAJA CORRIENTE */}
+                    <div className="bg-white border border-gray-100 rounded-xl p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Caja actual</p>
+                          <p className={`text-4xl font-black ${cajaActual >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                            S/ {cajaActual.toFixed(2)}
+                          </p>
+                          {cajaData ? (
+                            <div className="mt-3 space-y-1">
+                              <div className="flex justify-between text-xs text-gray-500">
+                                <span>Base ({new Date(cajaData.snapshotDate + "T12:00:00").toLocaleDateString("es-PE")})</span>
+                                <span className="font-semibold text-gray-700">S/ {cajaSnapshot.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-xs text-gray-500">
+                                <span>+ Ventas posteriores</span>
+                                <span className="font-semibold text-emerald-600">S/ {ventasDesdeSnapshot.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-xs text-gray-500">
+                                <span>− Pagos realizados</span>
+                                <span className="font-semibold text-red-500">S/ {pagosDesdeSnapshot.toFixed(2)}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-gray-400 mt-3">Configura el saldo inicial para llevar la caja.</p>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          {!cajaEditMode ? (
+                            <button
+                              onClick={() => {
+                                setCajaEditBalance(cajaData ? String(cajaData.snapshotBalance) : "");
+                                setCajaEditDate(cajaData?.snapshotDate || new Date().toLocaleDateString("en-CA"));
+                                setCajaEditMode(true);
+                              }}
+                              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-all"
+                            >
+                              {cajaData ? "Ajustar" : "Configurar"}
+                            </button>
+                          ) : (
+                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 min-w-[220px]">
+                              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Establecer base</p>
+                              <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Saldo en caja (S/)</label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={cajaEditBalance}
+                                  onChange={(e) => setCajaEditBalance(e.target.value)}
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white border border-gray-300 text-gray-900 focus:border-gray-500 focus:outline-none"
+                                  placeholder="521.80"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Fecha de corte</label>
+                                <input
+                                  type="date"
+                                  value={cajaEditDate}
+                                  onChange={(e) => setCajaEditDate(e.target.value)}
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white border border-gray-300 text-gray-900 focus:border-gray-500 focus:outline-none [color-scheme:light]"
+                                />
+                              </div>
+                              <div className="flex gap-2 pt-1">
+                                <button
+                                  onClick={saveCajaSnapshot}
+                                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-1.5 rounded-lg text-sm font-bold"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={() => setCajaEditMode(false)}
+                                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <p className="text-xs text-gray-400">Las ventas y pagos posteriores se suman/restan automáticamente.</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-shrink-0">
-                        {!cajaEditMode ? (
-                          <button
-                            onClick={() => {
-                              setCajaEditBalance(cajaData ? String(cajaData.snapshotBalance) : "");
-                              setCajaEditDate(cajaData?.snapshotDate || new Date().toLocaleDateString("en-CA"));
-                              setCajaEditMode(true);
-                            }}
-                            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold transition-all"
-                          >
-                            ✏️ {cajaData ? "Ajustar base" : "Configurar caja"}
-                          </button>
-                        ) : (
-                          <div className="bg-gray-900 border border-emerald-500/40 rounded-xl p-4 space-y-3 min-w-[240px]">
-                            <p className="text-emerald-400 text-xs font-bold uppercase tracking-wide">Establecer base</p>
-                            <div>
-                              <label className="text-xs text-gray-400 mb-1 block">Saldo en caja (S/)</label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={cajaEditBalance}
-                                onChange={(e) => setCajaEditBalance(e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm rounded-lg bg-black border border-emerald-500/40 text-white focus:border-emerald-400 focus:outline-none"
-                                placeholder="521.80"
+                    </div>
+
+                    {/* DESGLOSE EGRESOS */}
+                    <div className="bg-white border border-gray-100 rounded-xl p-5">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Desglose de gastos</p>
+                      <div className="space-y-2">
+                        {[
+                          { label: "Insumos operativos", value: comprasInsumos },
+                          { label: "Gastos fijos", value: gastosFijos },
+                          { label: "Personal", value: gastosPersonal },
+                          { label: "Marketing", value: gastosMarketing },
+                        ].map(({ label, value }) => (
+                          <div key={label} className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500 flex-1">{label}</span>
+                            <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="h-full bg-gray-400 rounded-full"
+                                style={{ width: totalCompras > 0 ? `${(value / totalCompras) * 100}%` : '0%' }}
                               />
                             </div>
-                            <div>
-                              <label className="text-xs text-gray-400 mb-1 block">Fecha de corte</label>
-                              <input
-                                type="date"
-                                value={cajaEditDate}
-                                onChange={(e) => setCajaEditDate(e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm rounded-lg bg-black border border-emerald-500/40 text-white focus:border-emerald-400 focus:outline-none [color-scheme:dark]"
-                              />
-                            </div>
-                            <div className="flex gap-2 pt-1">
-                              <button
-                                onClick={saveCajaSnapshot}
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 rounded-lg text-sm font-bold"
-                              >
-                                Guardar
-                              </button>
-                              <button
-                                onClick={() => setCajaEditMode(false)}
-                                className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                            <p className="text-xs text-gray-500">Las ventas y pagos posteriores a esta fecha se suman/restan automáticamente.</p>
+                            <span className="text-xs font-semibold text-gray-700 w-20 text-right">S/ {value.toFixed(0)}</span>
                           </div>
-                        )}
+                        ))}
+                        <div className="pt-2 mt-1 border-t border-gray-100 flex justify-between items-center">
+                          <span className="text-xs font-bold text-gray-700">Total gastos</span>
+                          <span className="text-sm font-black text-gray-900">S/ {totalCompras.toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    {/* SECCIÓN 1: INGRESOS - Dinero que entra */}
-                    <div className="bg-gradient-to-br from-green-900/30 to-green-800/10 rounded-2xl border-2 border-green-500/40 p-6">
-                      <h4 className="text-lg font-black text-green-400 mb-4 flex items-center gap-2">
-                        <span className="text-2xl">💰</span> INGRESOS (Dinero que entra)
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                        <div className="bg-gradient-to-br from-green-600/20 to-green-500/10 rounded-xl border-2 border-green-400/60 p-6">
-                          <p className="text-green-300 text-xs font-bold mb-2 uppercase tracking-wide">💵 Ventas Totales</p>
-                          <p className="text-5xl font-black text-green-400">S/ {totalVentas.toFixed(2)}</p>
-                          <p className="text-sm text-green-300/80 mt-2 font-semibold">{deliveredOrders.length} pedidos entregados</p>
-                        </div>
-                      </div>
+                  {/* ===== NIVEL 3: RECUPERACIÓN ===== */}
+                  <div className="bg-white border border-gray-100 rounded-xl p-5 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Recuperación de inversión</p>
+                      <span className={`text-sm font-black ${recuperacionCapital >= 100 ? 'text-emerald-600' : 'text-gray-700'}`}>
+                        {recuperacionCapital.toFixed(0)}%
+                      </span>
                     </div>
-
-                    {/* SECCIÓN 2: EGRESOS - Dinero que sale */}
-                    <div className="bg-gradient-to-br from-red-900/30 to-orange-800/10 rounded-2xl border-2 border-red-500/40 p-6">
-                      <h4 className="text-lg font-black text-red-400 mb-4 flex items-center gap-2">
-                        <span className="text-2xl">💸</span> EGRESOS (Dinero que sale - Compras registradas)
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Compras de Insumos */}
-                        <div className="bg-gradient-to-br from-orange-600/20 to-orange-500/10 rounded-xl border-2 border-orange-400/60 p-5">
-                          <p className="text-orange-300 text-xs font-bold mb-2 uppercase tracking-wide">🛒 Compras de Insumos</p>
-                          <p className="text-3xl font-black text-orange-400">S/ {comprasInsumos.toFixed(2)}</p>
-                          <p className="text-xs text-orange-300/70 mt-2">Ingredientes, materiales</p>
-                        </div>
-
-                        {/* Gastos Fijos */}
-                        <div className="bg-gradient-to-br from-rose-600/20 to-rose-500/10 rounded-xl border-2 border-rose-400/60 p-5">
-                          <p className="text-rose-300 text-xs font-bold mb-2 uppercase tracking-wide">🏢 Gastos Fijos</p>
-                          <p className="text-3xl font-black text-rose-400">S/ {gastosFijos.toFixed(2)}</p>
-                          <p className="text-xs text-rose-300/70 mt-2">Alquiler, luz, agua, etc.</p>
-                        </div>
-
-                        {/* Gastos de Personal */}
-                        <div className="bg-gradient-to-br from-purple-600/20 to-purple-500/10 rounded-xl border-2 border-purple-400/60 p-5">
-                          <p className="text-purple-300 text-xs font-bold mb-2 uppercase tracking-wide">👥 Gastos de Personal</p>
-                          <p className="text-3xl font-black text-purple-400">S/ {gastosPersonal.toFixed(2)}</p>
-                          <p className="text-xs text-purple-300/70 mt-2">Salarios y beneficios</p>
-                        </div>
-
-                        {/* Gastos de Marketing */}
-                        <div className="bg-gradient-to-br from-pink-600/20 to-pink-500/10 rounded-xl border-2 border-pink-400/60 p-5">
-                          <p className="text-pink-300 text-xs font-bold mb-2 uppercase tracking-wide">📢 Gastos de Marketing</p>
-                          <p className="text-3xl font-black text-pink-400">S/ {gastosMarketing.toFixed(2)}</p>
-                          <p className="text-xs text-pink-300/70 mt-2">Publicidad y promociones</p>
-                        </div>
-
-                        {/* Total de Compras */}
-                        <div className="bg-gradient-to-br from-red-700/30 to-red-600/20 rounded-xl border-2 border-red-500/80 p-5">
-                          <p className="text-red-200 text-xs font-bold mb-2 uppercase tracking-wide">💸 Total Gastado</p>
-                          <p className="text-3xl font-black text-red-300">S/ {totalCompras.toFixed(2)}</p>
-                          <p className="text-xs text-red-200/70 mt-2">{filteredPurchases.length} compras registradas</p>
-                        </div>
-                      </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${recuperacionCapital >= 100 ? 'bg-emerald-500' : 'bg-gray-400'}`}
+                        style={{ width: `${Math.min(recuperacionCapital, 100)}%` }}
+                      />
                     </div>
-
-                    {/* SECCIÓN 3: TU CAJA - Simple y claro */}
-                    <div className="bg-gradient-to-br from-cyan-900/30 to-emerald-800/10 rounded-2xl border-2 border-cyan-500/40 p-6">
-                      <h4 className="text-lg font-black text-cyan-400 mb-4 flex items-center gap-2">
-                        <span className="text-2xl">💰</span> TU CAJA
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* CAJA DISPONIBLE */}
-                        <div className={`bg-gradient-to-br ${cajaUtilidad >= 0 ? 'from-emerald-600/30 to-emerald-500/20 border-emerald-400/80' : 'from-red-600/30 to-red-500/20 border-red-400/80'} rounded-xl border-2 p-6`}>
-                          <p className={`${cajaUtilidad >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-bold mb-2 uppercase tracking-wide`}>
-                            💵 Dinero Disponible
-                          </p>
-                          <p className={`text-5xl font-black ${cajaUtilidad >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            S/ {cajaUtilidad.toFixed(2)}
-                          </p>
-                          <p className={`text-sm ${cajaUtilidad >= 0 ? 'text-emerald-300/70' : 'text-red-300/70'} mt-3 font-semibold`}>
-                            Lo que tienes en caja
-                          </p>
-                          <div className="mt-3 pt-3 border-t border-emerald-500/30">
-                            <p className="text-xs text-gray-400">Ventas: S/ {totalVentas.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400">Gastos: S/ {totalCompras.toFixed(2)}</p>
-                          </div>
-                        </div>
-
-                        {/* RECUPERACIÓN DE INVERSIÓN */}
-                        <div className="bg-gradient-to-br from-blue-600/30 to-blue-500/20 rounded-xl border-2 border-blue-400/80 p-6">
-                          <p className="text-blue-300 text-sm font-bold mb-2 uppercase tracking-wide">🔄 Recuperación de Inversión</p>
-                          <p className="text-5xl font-black text-blue-400">{recuperacionCapital.toFixed(0)}%</p>
-                          <p className="text-sm text-blue-300/70 mt-3 font-semibold">
-                            {recuperacionCapital >= 100 ? '✅ Inversión recuperada' : 'Avance de recuperación'}
-                          </p>
-                          <div className="mt-3 pt-3 border-t border-blue-500/30">
-                            {recuperacionCapital < 100 ? (
-                              <>
-                                <p className="text-xs text-gray-400">Te falta: {(100 - recuperacionCapital).toFixed(0)}%</p>
-                                <p className="text-xs text-gray-400">Equivale a: S/ {(totalCompras - totalVentas).toFixed(2)}</p>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-xs text-emerald-400">¡Ya superaste tu inversión!</p>
-                                <p className="text-xs text-gray-400">Excedente: S/ {(totalVentas - totalCompras).toFixed(2)}</p>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* PROMEDIO DIARIO */}
-                        <div className="bg-gradient-to-br from-purple-600/30 to-purple-500/20 rounded-xl border-2 border-purple-400/80 p-6">
-                          <p className="text-purple-300 text-sm font-bold mb-2 uppercase tracking-wide">📊 Ventas Promedio</p>
-                          <p className="text-5xl font-black text-purple-400">
-                            S/ {deliveredOrders.length > 0 ? (totalVentas / deliveredOrders.length).toFixed(2) : '0.00'}
-                          </p>
-                          <p className="text-sm text-purple-300/70 mt-3 font-semibold">
-                            Ticket promedio por pedido
-                          </p>
-                          <div className="mt-3 pt-3 border-t border-purple-500/30">
-                            <p className="text-xs text-gray-400">Total pedidos: {deliveredOrders.length}</p>
-                            <p className="text-xs text-gray-400">
-                              {deliveredOrders.length > 0
-                                ? `Aprox. ${(totalVentas / deliveredOrders.length * 30).toFixed(0)} al mes si vendes 30 pedidos`
-                                : 'Sin pedidos aún'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex justify-between mt-2 text-xs text-gray-400">
+                      <span>
+                        {recuperacionCapital >= 100
+                          ? `Excedente: S/ ${(totalVentas - totalCompras).toFixed(2)}`
+                          : `Falta recuperar: S/ ${(totalCompras - totalVentas).toFixed(2)}`}
+                      </span>
+                      <span>ROI: {roi.toFixed(1)}%</span>
                     </div>
+                  </div>
 
-                    {/* Info adicional - Simplificada */}
-                    <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-500/30 rounded-xl p-5">
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚠️</span>
-                        <div>
-                          <p className="text-yellow-300 text-sm font-bold mb-2">IMPORTANTE: Registra TODAS tus compras</p>
-                          <p className="text-xs text-gray-300">
-                            Este dashboard solo muestra el dinero de las <span className="text-yellow-400 font-bold">compras que registres</span> en "Historial de Compras".
-                          </p>
-                          <p className="text-xs text-gray-300 mt-2">
-                            Si no has registrado tus compras de ingredientes (pollo, lechuga, pan, salsas, gas, etc.), tu "Dinero Disponible" estará <span className="text-red-400 font-bold">inflado</span> y NO es real.
-                          </p>
-                          <p className="text-xs text-emerald-400 mt-3 font-semibold">
-                            ✅ Registra cada compra → Verás tu caja real → Sabrás cuánto puedes sacar
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Aviso */}
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                    <p className="text-xs font-bold text-amber-700 mb-1">Registra todas tus compras para ver datos reales</p>
+                    <p className="text-xs text-amber-600">
+                      Si no has registrado compras de ingredientes (pollo, lechuga, pan, salsas, gas, etc.), tu utilidad estará inflada.
+                      Ve a <strong>Compras y Gastos</strong> y registra cada gasto.
+                    </p>
                   </div>
                 </div>
               );
@@ -4664,131 +5142,86 @@ export default function AdminPage() {
                     <>
                 <div className="mb-6">
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
-                    <h3 className="text-2xl font-bold text-white">💰 Compras y Gastos</h3>
+                    <h3 className="text-2xl font-bold text-gray-900">💰 Compras y Gastos</h3>
 
                     {/* Indicador de filtro sincronizado */}
                     {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
-                      <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg px-4 py-2 text-xs text-cyan-300">
-                        🔗 Sincronizado con Dashboard: {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} al {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-2 text-xs text-gray-500">
+                        Filtrado: {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} — {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </div>
                     )}
                   </div>
 
-                  {/* Sub-tabs */}
-                  <div className="flex gap-2 mb-4 border-b-2 border-fuchsia-500/20">
-                    <button
-                      onClick={() => setPurchasesSubTab("history")}
-                      className={`px-6 py-3 font-bold transition-all text-sm ${
-                        purchasesSubTab === "history"
-                          ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                          : "text-gray-400 hover:text-gray-300"
-                      }`}
-                    >
-                      📋 Historial de Compras
-                    </button>
-                    <button
-                      onClick={() => setPurchasesSubTab("stock")}
-                      className={`px-6 py-3 font-bold transition-all text-sm ${
-                        purchasesSubTab === "stock"
-                          ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                          : "text-gray-400 hover:text-gray-300"
-                      }`}
-                    >
-                      📦 Control de Stock
-                    </button>
-                  </div>
-
                   {/* Header con botón Nueva Compra */}
                   <div className="flex justify-end items-center mb-4">
-                    {purchasesSubTab === "history" && (
-                      <button
-                        onClick={() => {
-                          console.log('🔥 Click en Nueva Compra');
-                          setShowInventoryModal(true);
-                          setProductSearchTerms([""]);
-                        }}
-                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all"
-                      >
-                        + Nueva Compra
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        setShowInventoryModal(true);
+                        setProductSearchTerms([""]);
+                      }}
+                      className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                    >
+                      + Nueva Compra
+                    </button>
                   </div>
                 </div>
 
                 {/* ========== HISTORIAL DE COMPRAS ========== */}
-                {purchasesSubTab === "history" && (
                   <>
-                    {/* Carteles con totales por categoría */}
+                    {/* Resumen por categoría + estado de liquidación */}
                     {(() => {
                       const operativos = filteredInventory.filter(p => (p.category || "operativos") === "operativos").reduce((sum, p) => sum + p.totalAmount, 0);
                       const fijos = filteredInventory.filter(p => (p.category || "operativos") === "fijos").reduce((sum, p) => sum + p.totalAmount, 0);
                       const personal = filteredInventory.filter(p => (p.category || "operativos") === "personal").reduce((sum, p) => sum + p.totalAmount, 0);
                       const marketing = filteredInventory.filter(p => (p.category || "operativos") === "marketing").reduce((sum, p) => sum + p.totalAmount, 0);
                       const total = filteredInventory.reduce((sum, p) => sum + p.totalAmount, 0);
-
-                      return (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-                          {/* Gastos Operativos */}
-                          <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 rounded-lg border-2 border-blue-500/50 p-4">
-                            <p className="text-blue-400 text-xs font-bold mb-1 uppercase">🍖 Operativos</p>
-                            <p className="text-2xl font-black text-blue-400">S/ {operativos.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Insumos y materias primas</p>
-                          </div>
-
-                          {/* Gastos Fijos */}
-                          <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 rounded-lg border-2 border-purple-500/50 p-4">
-                            <p className="text-purple-400 text-xs font-bold mb-1 uppercase">🏢 Fijos</p>
-                            <p className="text-2xl font-black text-purple-400">S/ {fijos.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Alquiler, servicios, etc.</p>
-                          </div>
-
-                          {/* Gastos de Personal */}
-                          <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-lg border-2 border-green-500/50 p-4">
-                            <p className="text-green-400 text-xs font-bold mb-1 uppercase">👥 Personal</p>
-                            <p className="text-2xl font-black text-green-400">S/ {personal.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Salarios y beneficios</p>
-                          </div>
-
-                          {/* Marketing y Publicidad */}
-                          <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 rounded-lg border-2 border-orange-500/50 p-4">
-                            <p className="text-orange-400 text-xs font-bold mb-1 uppercase">📢 Marketing</p>
-                            <p className="text-2xl font-black text-orange-400">S/ {marketing.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Publicidad y promoción</p>
-                          </div>
-
-                          {/* Total del Período */}
-                          <div className="bg-gradient-to-br from-fuchsia-900/40 to-fuchsia-800/20 rounded-lg border-2 border-fuchsia-500/50 p-4">
-                            <p className="text-fuchsia-400 text-xs font-bold mb-1 uppercase">💰 Total</p>
-                            <p className="text-2xl font-black text-fuchsia-400">S/ {total.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-1">Suma de todos los gastos</p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Cards reembolso: pendiente vs liquidado */}
-                    {(() => {
                       const pendiente = filteredInventory.filter((p: any) => !p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
                       const liquidadoTotal = filteredInventory.filter((p: any) => !!p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
                       const nPendiente = filteredInventory.filter((p: any) => !p.liquidado).length;
                       const nLiquidado = filteredInventory.filter((p: any) => !!p.liquidado).length;
+
                       return (
-                        <div className="grid grid-cols-2 gap-3 mb-4">
-                          <div className="bg-amber-900/20 rounded-lg border-2 border-amber-500/50 p-3 flex items-center gap-3">
-                            <span className="text-2xl">⏳</span>
-                            <div>
-                              <p className="text-amber-400 text-xs font-bold uppercase">Pendiente reembolso</p>
-                              <p className="text-xl font-black text-amber-400">S/ {pendiente.toFixed(2)}</p>
-                              <p className="text-xs text-gray-400">{nPendiente} gasto{nPendiente !== 1 ? 's' : ''} sin liquidar</p>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                          {/* Categorías */}
+                          <div className="bg-white border border-gray-100 rounded-xl p-4 col-span-2 lg:col-span-2">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Gastos por categoría</p>
+                            <div className="space-y-2">
+                              {[
+                                { label: "Operativos", value: operativos },
+                                { label: "Fijos", value: fijos },
+                                { label: "Personal", value: personal },
+                                { label: "Marketing", value: marketing },
+                              ].map(({ label, value }) => (
+                                <div key={label} className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500 w-24">{label}</span>
+                                  <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                    <div
+                                      className="h-full bg-gray-400 rounded-full"
+                                      style={{ width: total > 0 ? `${(value / total) * 100}%` : '0%' }}
+                                    />
+                                  </div>
+                                  <span className="text-xs font-semibold text-gray-700 w-20 text-right">S/ {value.toFixed(0)}</span>
+                                </div>
+                              ))}
+                              <div className="pt-2 border-t border-gray-100 flex justify-between">
+                                <span className="text-xs font-bold text-gray-700">Total</span>
+                                <span className="text-sm font-black text-gray-900">S/ {total.toFixed(2)}</span>
+                              </div>
                             </div>
                           </div>
-                          <div className="bg-emerald-900/20 rounded-lg border-2 border-emerald-500/50 p-3 flex items-center gap-3">
-                            <span className="text-2xl">✅</span>
-                            <div>
-                              <p className="text-emerald-400 text-xs font-bold uppercase">Reembolsado</p>
-                              <p className="text-xl font-black text-emerald-400">S/ {liquidadoTotal.toFixed(2)}</p>
-                              <p className="text-xs text-gray-400">{nLiquidado} gasto{nLiquidado !== 1 ? 's' : ''} liquidado{nLiquidado !== 1 ? 's' : ''}</p>
-                            </div>
+
+                          {/* Pendiente reembolso */}
+                          <div className="bg-white border border-amber-100 rounded-xl p-4">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Pendiente</p>
+                            <p className="text-2xl font-black text-amber-600">S/ {pendiente.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 mt-2">{nPendiente} gasto{nPendiente !== 1 ? 's' : ''} sin liquidar</p>
+                          </div>
+
+                          {/* Liquidado */}
+                          <div className="bg-white border border-emerald-100 rounded-xl p-4">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Liquidado</p>
+                            <p className="text-2xl font-black text-emerald-600">S/ {liquidadoTotal.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 mt-2">{nLiquidado} gasto{nLiquidado !== 1 ? 's' : ''} reembolsado{nLiquidado !== 1 ? 's' : ''}</p>
                           </div>
                         </div>
                       );
@@ -4801,7 +5234,7 @@ export default function AdminPage() {
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           inventoryCategoryFilter === "all"
                             ? "bg-fuchsia-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         Todos
@@ -4811,7 +5244,7 @@ export default function AdminPage() {
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           inventoryCategoryFilter === "operativos"
                             ? "bg-blue-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         🍖 Operativos
@@ -4821,7 +5254,7 @@ export default function AdminPage() {
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           inventoryCategoryFilter === "fijos"
                             ? "bg-purple-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         🏢 Fijos
@@ -4831,7 +5264,7 @@ export default function AdminPage() {
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           inventoryCategoryFilter === "personal"
                             ? "bg-green-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         👥 Personal
@@ -4841,19 +5274,19 @@ export default function AdminPage() {
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           inventoryCategoryFilter === "marketing"
                             ? "bg-orange-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         📢 Marketing
                       </button>
                       {/* Separador visual */}
-                      <span className="w-px bg-gray-700 self-stretch mx-1" />
+                      <span className="w-px bg-gray-200 self-stretch mx-1" />
                       <button
                         onClick={() => setLiquidadoFilter('all')}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           liquidadoFilter === 'all'
                             ? "bg-gray-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         Todos los estados
@@ -4863,7 +5296,7 @@ export default function AdminPage() {
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           liquidadoFilter === 'pendiente'
                             ? "bg-amber-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         ⏳ Pendientes
@@ -4873,7 +5306,7 @@ export default function AdminPage() {
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                           liquidadoFilter === 'liquidado'
                             ? "bg-emerald-600 text-white"
-                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                         }`}
                       >
                         ✅ Liquidados
@@ -4888,26 +5321,26 @@ export default function AdminPage() {
                       placeholder="🔍 Buscar por producto, proveedor, teléfono o método de pago..."
                       value={inventorySearchTerm}
                       onChange={(e) => setInventorySearchTerm(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-900 border-2 border-fuchsia-500/30 rounded-lg text-white placeholder-gray-500 focus:border-fuchsia-400 focus:outline-none text-sm"
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none text-sm"
                     />
                     {inventorySearchTerm && (
                       <button
                         onClick={() => setInventorySearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-lg font-bold"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-lg font-bold"
                       >
                         ✕
                       </button>
                     )}
                   </div>
                   {inventorySearchTerm && (
-                    <p className="text-xs text-fuchsia-400 mt-2">
+                    <p className="text-xs text-gray-700 mt-2">
                       📊 Mostrando {filteredInventory.length} resultado{filteredInventory.length !== 1 ? 's' : ''}
                     </p>
                   )}
                 </div>
 
                 {/* Inventory List - Formato Tabla Excel */}
-                <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
                   {filteredInventory.length === 0 ? (
                     <div className="text-center py-12">
                       <p className="text-xl text-gray-400">
@@ -4918,32 +5351,32 @@ export default function AdminPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse">
                         <thead>
-                          <tr className="bg-black/50">
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CATEGORÍA</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ESTADO</th>
-                            <th className="border border-gray-700 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
+                          <tr className="bg-gray-100">
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">CATEGORÍA</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">ESTADO</th>
+                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredInventory.map((purchase) =>
                             purchase.items.map((item: any, itemIdx: number) => (
-                              <tr key={`${purchase.id}-${itemIdx}`} className="hover:bg-fuchsia-500/5 transition-all">
-                                <td className="border border-gray-700 px-3 py-2 text-xs text-gray-300">
+                              <tr key={`${purchase.id}-${itemIdx}`} className="hover:bg-gray-50 transition-all">
+                                <td className="border border-gray-200 px-3 py-2 text-xs text-gray-500">
                                   {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2">
-                                  <p className="text-xs font-bold text-white">{purchase.supplier}</p>
+                                <td className="border border-gray-200 px-3 py-2">
+                                  <p className="text-xs font-bold text-gray-600">{purchase.supplier}</p>
                                   {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center">
+                                <td className="border border-gray-200 px-3 py-2 text-center">
                                   {(() => {
                                     const category = purchase.category || "operativos";
                                     const categoryConfig: Record<string, {icon: string, color: string, label: string}> = {
@@ -4960,16 +5393,16 @@ export default function AdminPage() {
                                     );
                                   })()}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-xs text-white font-bold">
+                                <td className="border border-gray-200 px-3 py-2 text-xs text-gray-800 font-bold">
                                   {item.productName || '-'}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-white">
+                                <td className="border border-gray-200 px-3 py-2 text-center text-xs text-gray-700">
                                   {item.originalQuantity || item.quantity}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-gray-300">
+                                <td className="border border-gray-200 px-3 py-2 text-center text-xs text-gray-500">
                                   {item.unit}
                                 </td>
-                                <td className="border border-gray-700 px-3 py-2 text-center text-xs text-cyan-400">
+                                <td className="border border-gray-200 px-3 py-2 text-center text-xs text-gray-500 font-medium">
                                   {purchase.paymentMethod === 'plin-yape' && 'PLIN-YAPE'}
                                   {purchase.paymentMethod === 'efectivo' && 'EFECTIVO'}
                                   {purchase.paymentMethod === 'transferencia' && 'TRANSFERENCIA'}
@@ -4983,18 +5416,18 @@ export default function AdminPage() {
                                   const displayUnit  = isOperativos ? item.total    : item.unitCost;
                                   return (
                                     <>
-                                      <td className="border border-gray-700 px-3 py-2 text-right">
-                                        <p className="text-xs font-bold text-fuchsia-400">S/ {displayTotal.toFixed(2)}</p>
+                                      <td className="border border-gray-200 px-3 py-2 text-right">
+                                        <p className="text-xs font-bold text-gray-700">S/ {displayTotal.toFixed(2)}</p>
                                       </td>
-                                      <td className="border border-gray-700 px-3 py-2 text-right">
-                                        <p className="text-xs font-bold text-amber-400">S/ {displayUnit.toFixed(2)}</p>
+                                      <td className="border border-gray-200 px-3 py-2 text-right">
+                                        <p className="text-xs font-semibold text-gray-500">S/ {displayUnit.toFixed(2)}</p>
                                       </td>
                                     </>
                                   );
                                 })()}
                                 {itemIdx === 0 ? (
                                   <td
-                                    className="border border-gray-700 px-2 py-2 text-center"
+                                    className="border border-gray-200 px-2 py-2 text-center"
                                     rowSpan={purchase.items.length}
                                   >
                                     <button
@@ -5002,22 +5435,22 @@ export default function AdminPage() {
                                       title={(purchase as any).liquidado ? 'Marcar como pendiente' : 'Marcar como liquidado'}
                                       className={`flex flex-col items-center gap-0.5 mx-auto px-2 py-1.5 rounded-lg border transition-all active:scale-95 min-w-[80px] ${
                                         (purchase as any).liquidado
-                                          ? 'border-emerald-500/50 bg-emerald-900/20 hover:bg-emerald-900/40'
-                                          : 'border-amber-500/40 bg-amber-900/10 hover:bg-amber-900/30'
+                                          ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                                          : 'border-amber-200 bg-amber-50 hover:bg-amber-100'
                                       }`}
                                     >
                                       <span className="text-base leading-none">
                                         {(purchase as any).liquidado ? '✅' : '⏳'}
                                       </span>
                                       <span className={`text-[10px] font-black uppercase leading-none mt-0.5 ${
-                                        (purchase as any).liquidado ? 'text-emerald-400' : 'text-amber-400'
+                                        (purchase as any).liquidado ? 'text-emerald-600' : 'text-amber-600'
                                       }`}>
                                         {(purchase as any).liquidado ? 'Liquidado' : 'Pendiente'}
                                       </span>
                                     </button>
                                   </td>
                                 ) : null}
-                                <td className="border border-gray-700 px-3 py-2 text-center">
+                                <td className="border border-gray-200 px-3 py-2 text-center">
                                   {itemIdx === 0 && (
                                     <div className="flex items-center justify-center gap-2">
                                       <button
@@ -5052,40 +5485,40 @@ export default function AdminPage() {
                 {/* Modal de Detalles */}
                 {showInventoryDetailModal && selectedPurchaseDetail && (
                   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
                       <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-2xl font-black text-fuchsia-400">Detalle de Compra</h3>
+                        <h3 className="text-2xl font-black text-gray-700">Detalle de Compra</h3>
                         <button
                           onClick={() => setShowInventoryDetailModal(false)}
-                          className="text-gray-400 hover:text-white text-2xl"
+                          className="text-gray-400 hover:text-gray-600 text-2xl"
                         >
                           ✕
                         </button>
                       </div>
 
                       {/* Información del Proveedor */}
-                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-fuchsia-500/30">
-                        <h4 className="text-sm font-bold text-fuchsia-400 mb-3">📋 Información del Proveedor</h4>
+                      <div className="bg-gray-100 rounded-lg p-4 mb-4 border border-gray-200">
+                        <h4 className="text-sm font-bold text-gray-700 mb-3">📋 Información del Proveedor</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-gray-400">Proveedor:</p>
-                            <p className="text-white font-bold">{selectedPurchaseDetail.supplier}</p>
+                            <p className="text-gray-800 font-bold">{selectedPurchaseDetail.supplier}</p>
                           </div>
                           {selectedPurchaseDetail.supplierRuc && (
                             <div>
                               <p className="text-gray-400">RUC:</p>
-                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierRuc}</p>
+                              <p className="text-gray-800 font-bold">{selectedPurchaseDetail.supplierRuc}</p>
                             </div>
                           )}
                           {selectedPurchaseDetail.supplierPhone && (
                             <div>
                               <p className="text-gray-400">Teléfono:</p>
-                              <p className="text-white font-bold">{selectedPurchaseDetail.supplierPhone}</p>
+                              <p className="text-gray-800 font-bold">{selectedPurchaseDetail.supplierPhone}</p>
                             </div>
                           )}
                           <div>
                             <p className="text-gray-400">Fecha de Compra:</p>
-                            <p className="text-white font-bold">
+                            <p className="text-gray-800 font-bold">
                               {new Date(selectedPurchaseDetail.purchaseDate).toLocaleDateString('es-PE', {
                                 day: '2-digit',
                                 month: 'long',
@@ -5101,7 +5534,7 @@ export default function AdminPage() {
                       </div>
 
                       {/* Productos Comprados */}
-                      <div className="bg-black/50 rounded-lg p-4 mb-4 border border-cyan-500/30">
+                      <div className="bg-gray-100 rounded-lg p-4 mb-4 border border-cyan-500/30">
                         <h4 className="text-sm font-bold text-cyan-400 mb-3">🛒 Productos Comprados</h4>
                         <div className="space-y-2">
                           {selectedPurchaseDetail.items.map((item: any, idx: number) => {
@@ -5109,14 +5542,14 @@ export default function AdminPage() {
                             const displayTotal = isOperativos ? item.unitCost : item.total;
                             const displayUnit  = isOperativos ? item.total    : item.unitCost;
                             return (
-                              <div key={idx} className="flex justify-between items-center bg-gray-900 rounded px-3 py-2">
+                              <div key={idx} className="flex justify-between items-center bg-white rounded px-3 py-2">
                                 <div className="flex-1">
-                                  <p className="text-white font-bold text-sm">{item.productName}</p>
+                                  <p className="text-gray-800 font-bold text-sm">{item.productName}</p>
                                   <p className="text-xs text-gray-400">
                                     {item.originalQuantity || item.quantity} {item.unit} x S/ {displayUnit.toFixed(2)}
                                   </p>
                                 </div>
-                                <p className="text-fuchsia-400 font-bold">S/ {displayTotal.toFixed(2)}</p>
+                                <p className="text-gray-700 font-bold">S/ {displayTotal.toFixed(2)}</p>
                               </div>
                             );
                           })}
@@ -5124,15 +5557,15 @@ export default function AdminPage() {
                       </div>
 
                       {/* Total y Notas */}
-                      <div className="bg-black/50 rounded-lg p-4 border border-amber-500/30">
+                      <div className="bg-gray-100 rounded-lg p-4 border border-amber-500/30">
                         <div className="flex justify-between items-center mb-3">
                           <p className="text-gray-400">Total de la Compra:</p>
                           <p className="text-2xl font-black text-amber-400">S/ {selectedPurchaseDetail.totalAmount.toFixed(2)}</p>
                         </div>
                         {selectedPurchaseDetail.notes && (
-                          <div className="border-t border-gray-700 pt-3 mt-3">
+                          <div className="border-t border-gray-200 pt-3 mt-3">
                             <p className="text-gray-400 text-xs mb-1">Notas:</p>
-                            <p className="text-white text-sm">{selectedPurchaseDetail.notes}</p>
+                            <p className="text-gray-700 text-sm">{selectedPurchaseDetail.notes}</p>
                           </div>
                         )}
                       </div>
@@ -5140,193 +5573,7 @@ export default function AdminPage() {
                   </div>
                 )}
                   </>
-                )}
-
-                {/* ========== CONTROL DE STOCK (NUEVA SECCIÓN) ========== */}
-                {purchasesSubTab === "stock" && (
-                  <div className="space-y-4">
-                    {/* Encabezado */}
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-black text-cyan-400">📦 Control de Stock</h3>
-                      <input
-                        type="text"
-                        placeholder="Buscar producto..."
-                        value={stockSearchTerm}
-                        onChange={(e) => setStockSearchTerm(e.target.value)}
-                        className="px-4 py-2 rounded bg-gray-900 border border-cyan-500/30 text-white focus:border-cyan-400 focus:outline-none text-sm"
-                      />
-                    </div>
-
-                    {/* Tabla de Stock */}
-                    <div className="bg-black/50 rounded-lg border border-cyan-500/20 overflow-hidden">
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="bg-cyan-900/20 border-b border-cyan-500/30">
-                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Producto</th>
-                              <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400">Categoría</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-green-400">Stock Actual</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-cyan-400">Unidad</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-red-400">Consumo Hoy</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-amber-400">Nuevo Stock</th>
-                              <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400">Acción</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(() => {
-                              // Agrupar items por producto
-                              const stockMap = new Map<string, { productName: string; category: string; unit: string; totalStock: number }>();
-
-                              inventory.forEach((purchase: any) => {
-                                purchase.items.forEach((item: any) => {
-                                  // Excluir categoría SERVICIO
-                                  if (item.category === "SERVICIO") return;
-
-                                  const key = `${item.productName}-${item.unit}`;
-                                  const existing = stockMap.get(key);
-                                  const itemStock = item.stockUnits !== undefined
-                                    ? item.stockUnits
-                                    : (item.quantity || 0) * (item.volume || 1);
-
-                                  if (existing) {
-                                    existing.totalStock += itemStock;
-                                  } else {
-                                    stockMap.set(key, {
-                                      productName: item.productName,
-                                      category: item.category || "SIN CATEGORÍA",
-                                      unit: item.unit,
-                                      totalStock: itemStock
-                                    });
-                                  }
-                                });
-                              });
-
-                              // Filtrar por búsqueda
-                              const filteredStock = Array.from(stockMap.values()).filter(item =>
-                                item.productName.toLowerCase().includes(stockSearchTerm.toLowerCase()) ||
-                                item.category.toLowerCase().includes(stockSearchTerm.toLowerCase())
-                              );
-
-                              if (filteredStock.length === 0) {
-                                return (
-                                  <tr>
-                                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
-                                      {inventory.length === 0
-                                        ? "No hay compras registradas. Registra tu primera compra para comenzar el control de stock."
-                                        : "No se encontraron productos."}
-                                    </td>
-                                  </tr>
-                                );
-                              }
-
-                              return filteredStock.map((item, idx) => {
-                                const key = `${item.productName}-${item.unit}`;
-                                const consumption = stockConsumptions.get(key) || 0;
-                                const newStock = item.totalStock - consumption;
-
-                                return (
-                                  <tr key={idx} className="border-b border-gray-800 hover:bg-gray-900/50">
-                                    <td className="px-4 py-3 text-sm text-white font-medium">{item.productName}</td>
-                                    <td className="px-4 py-3 text-xs text-gray-300">
-                                      <span className="px-2 py-1 rounded bg-gray-800 border border-gray-700">
-                                        {item.category === "INSUMO" && "🥘 INSUMO"}
-                                        {item.category === "EMPAQUE" && "📦 EMPAQUE"}
-                                        {item.category === "SERVICIO" && "⚡ SERVICIO"}
-                                        {item.category === "UTENCILIO" && "🔧 UTENCILIO"}
-                                        {!["INSUMO", "EMPAQUE", "SERVICIO", "UTENCILIO"].includes(item.category) && item.category}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <span className="text-green-400 font-black text-base">{item.totalStock.toLocaleString()}</span>
-                                    </td>
-                                    <td className="px-4 py-3 text-center text-xs text-gray-400 font-medium">{item.unit}</td>
-                                    <td className="px-4 py-3 text-center">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max={item.totalStock}
-                                        value={consumption === 0 ? '' : consumption}
-                                        onChange={(e) => {
-                                          const value = parseInt(e.target.value) || 0;
-                                          const newConsumptions = new Map(stockConsumptions);
-                                          newConsumptions.set(key, Math.min(value, item.totalStock));
-                                          setStockConsumptions(newConsumptions);
-                                        }}
-                                        className="w-20 px-2 py-1 text-sm rounded bg-red-900/30 border border-red-500/50 text-red-300 text-center focus:border-red-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                      />
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <span className={`font-black text-base ${newStock < 0 ? 'text-red-400' : 'text-amber-400'}`}>
-                                        {newStock.toLocaleString()}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <button
-                                        onClick={async () => {
-                                          if (consumption > 0 && confirm(`¿Confirmar consumo de ${consumption} ${item.unit} de ${item.productName}?`)) {
-                                            try {
-                                              // Registrar deducción
-                                              const response = await fetch("/api/deductions", {
-                                                method: "POST",
-                                                headers: { "Content-Type": "application/json" },
-                                                body: JSON.stringify({
-                                                  orderId: "MANUAL",
-                                                  orderName: "Consumo Manual",
-                                                  items: [{
-                                                    productName: item.productName,
-                                                    quantity: consumption,
-                                                    unit: item.unit
-                                                  }],
-                                                  deductionDate: new Date().toISOString().split('T')[0]
-                                                })
-                                              });
-
-                                              if (!response.ok) {
-                                                throw new Error("Error al guardar el consumo");
-                                              }
-
-                                              // Recargar inventario para actualizar stock
-                                              const inventoryResponse = await fetch("/api/inventory");
-                                              const updatedInventory = await inventoryResponse.json();
-                                              setInventory(updatedInventory);
-
-                                              // Limpiar consumo después de guardar
-                                              const newConsumptions = new Map(stockConsumptions);
-                                              newConsumptions.delete(key);
-                                              setStockConsumptions(newConsumptions);
-
-                                              // Mostrar confirmación
-                                              alert(`✅ Consumo registrado: ${consumption} ${item.unit} de ${item.productName}`);
-                                            } catch (error) {
-                                              console.error("Error al guardar consumo:", error);
-                                              alert("❌ Error al guardar el consumo. Intenta nuevamente.");
-                                            }
-                                          }
-                                        }}
-                                        disabled={consumption === 0}
-                                        className="px-3 py-1 text-xs rounded font-bold bg-fuchsia-600 hover:bg-fuchsia-500 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                      >
-                                        Guardar
-                                      </button>
-                                    </td>
-                                  </tr>
-                                );
-                              });
-                            })()}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Información adicional */}
-                    <div className="bg-cyan-900/10 border border-cyan-500/30 rounded-lg p-4">
-                      <p className="text-cyan-300 text-xs">
-                        <span className="font-bold">💡 Instrucciones:</span> Ingresa la cantidad consumida en la columna "Consumo Hoy" y presiona "Guardar" para actualizar el stock.
-                      </p>
-                    </div>
-                  </div>
-                )}
-                    </>
+                </>
                   );
                 })()}
               </>
@@ -5475,22 +5722,22 @@ export default function AdminPage() {
                           setProductForm({ name: "", category: "fat", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
                           setShowProductModal(true);
                         }}
-                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
+                        className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
                       >
                         + Nuevo Producto
                       </button>
                     </div>
 
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 overflow-hidden">
+                    <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
                       <table className="w-full">
-                        <thead className="bg-black/60 border-b-2 border-fuchsia-500/30">
+                        <thead className="bg-black/60 border-b-2 border-gray-200">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase">Producto</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-fuchsia-400 uppercase hidden md:table-cell">Categoría</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Producto</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase hidden md:table-cell">Categoría</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Precio Venta</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
-                            <th className="px-4 py-3 text-center text-xs font-bold text-fuchsia-400 uppercase">Acciones</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -5505,8 +5752,8 @@ export default function AdminPage() {
                               const margin = (product.cost || 0) > 0
                                 ? ((product.price - (product.cost || 0)) / (product.cost || 0)) * 100 : 0;
                               return (
-                                <tr key={product.id} className={`border-b border-fuchsia-500/10 hover:bg-fuchsia-500/5 transition-all ${idx % 2 === 0 ? 'bg-black/20' : ''}`}>
-                                  <td className="px-4 py-3 text-white font-bold text-sm">{product.name}</td>
+                                <tr key={product.id} className={`border-b border-gray-100 hover:bg-fuchsia-500/5 transition-all ${idx % 2 === 0 ? 'bg-gray-50' : ''}`}>
+                                  <td className="px-4 py-3 text-gray-800 font-bold text-sm">{product.name}</td>
                                   <td className="px-4 py-3 hidden md:table-cell">
                                     <span className="text-xs text-gray-400">{catLabel[product.category] || product.category}</span>
                                   </td>
@@ -5539,7 +5786,7 @@ export default function AdminPage() {
                     </div>
 
                     {/* Filtro de fechas */}
-                    <div className="bg-gray-900 rounded-lg border-2 border-amber-500/30 p-4 mb-5">
+                    <div className="bg-white rounded-lg border-2 border-amber-500/30 p-4 mb-5">
                       <div className="flex flex-col gap-3">
                         {/* Indicador período activo */}
                         <div className="flex items-center gap-2">
@@ -5549,7 +5796,7 @@ export default function AdminPage() {
                               📅 {new Date(salesDateFrom + "T12:00:00").toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })} - {new Date(salesDateTo + "T12:00:00").toLocaleDateString("es-PE", { day: '2-digit', month: 'short' })}
                             </span>
                           ) : (
-                            <span className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-full text-gray-300 text-xs font-bold">
+                            <span className="px-3 py-1 bg-gray-200 border border-gray-300 rounded-full text-gray-500 text-xs font-bold">
                               📊 Histórico completo
                             </span>
                           )}
@@ -5587,12 +5834,12 @@ export default function AdminPage() {
                               setSalesDateFrom("");
                               setSalesDateTo("");
                             }}
-                            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-xs"
+                            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs"
                           >
                             Ver histórico
                           </button>
 
-                          <div className="w-px h-6 bg-gray-700 mx-1"></div>
+                          <div className="w-px h-6 bg-gray-200 mx-1"></div>
 
                           {/* Date pickers */}
                           <div className="flex items-center gap-2">
@@ -5601,7 +5848,7 @@ export default function AdminPage() {
                               type="date"
                               value={salesDateFrom}
                               onChange={(e) => setSalesDateFrom(e.target.value)}
-                              className="px-2 py-1 text-xs rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                              className="px-2 py-1 text-xs rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none [color-scheme:light]"
                             />
                           </div>
                           <div className="flex items-center gap-2">
@@ -5610,7 +5857,7 @@ export default function AdminPage() {
                               type="date"
                               value={salesDateTo}
                               onChange={(e) => setSalesDateTo(e.target.value)}
-                              className="px-2 py-1 text-xs rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                              className="px-2 py-1 text-xs rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none [color-scheme:light]"
                             />
                           </div>
                           <button
@@ -5628,26 +5875,26 @@ export default function AdminPage() {
 
                     {/* KPIs */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                      <div className="bg-gray-900 rounded-xl border border-green-500/40 p-4 text-center">
+                      <div className="bg-white rounded-xl border border-green-500/40 p-4 text-center">
                         <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Ingresos Totales</p>
                         <p className="text-xl font-black text-green-400">S/ {totalRevenue.toFixed(2)}</p>
                       </div>
-                      <div className="bg-gray-900 rounded-xl border border-red-500/40 p-4 text-center">
+                      <div className="bg-white rounded-xl border border-red-500/40 p-4 text-center">
                         <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Costo Total</p>
                         <p className="text-xl font-black text-red-400">S/ {totalCostAll.toFixed(2)}</p>
                       </div>
-                      <div className="bg-gray-900 rounded-xl border border-amber-500/40 p-4 text-center">
+                      <div className="bg-white rounded-xl border border-amber-500/40 p-4 text-center">
                         <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Utilidad Operativa</p>
                         <p className={`text-xl font-black ${totalProfit >= 0 ? 'text-amber-400' : 'text-red-400'}`}>S/ {totalProfit.toFixed(2)}</p>
                       </div>
-                      <div className="bg-gray-900 rounded-xl border border-purple-500/40 p-4 text-center">
+                      <div className="bg-white rounded-xl border border-purple-500/40 p-4 text-center">
                         <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Margen Promedio</p>
                         <p className={`text-xl font-black ${avgMargin >= 50 ? 'text-green-400' : avgMargin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>{avgMargin.toFixed(1)}%</p>
                       </div>
                     </div>
 
                     {/* Tabla de rendimiento */}
-                    <div className="bg-gray-900 rounded-xl border-2 border-amber-500/30 overflow-hidden">
+                    <div className="bg-white rounded-xl border-2 border-amber-500/30 overflow-hidden">
                       <table className="w-full">
                         <thead className="bg-black/60 border-b-2 border-amber-500/30">
                           <tr>
@@ -5668,10 +5915,10 @@ export default function AdminPage() {
                             </tr>
                           ) : (
                             perfRows.map((row: any, idx: number) => (
-                              <tr key={row.id} className={`border-b border-amber-500/10 hover:bg-amber-500/5 transition-all ${idx % 2 === 0 ? 'bg-black/20' : ''}`}>
-                                <td className="px-4 py-3 text-white font-bold text-sm">{row.name}</td>
+                              <tr key={row.id} className={`border-b border-amber-500/10 hover:bg-amber-500/5 transition-all ${idx % 2 === 0 ? 'bg-gray-50' : ''}`}>
+                                <td className="px-4 py-3 text-gray-800 font-bold text-sm">{row.name}</td>
                                 <td className="px-4 py-3 text-center">
-                                  <span className="text-fuchsia-400 font-black text-sm">{row.sold}</span>
+                                  <span className="text-gray-700 font-black text-sm">{row.sold}</span>
                                 </td>
                                 <td className="px-4 py-3 text-right text-green-400 font-bold text-sm">S/ {row.revenue.toFixed(2)}</td>
                                 <td className="px-4 py-3 text-right text-red-400 text-sm">S/ {row.totalCost.toFixed(2)}</td>
@@ -5692,8 +5939,8 @@ export default function AdminPage() {
                         {perfRows.length > 0 && (
                           <tfoot className="border-t-2 border-amber-500/30 bg-black/40">
                             <tr>
-                              <td className="px-4 py-3 text-white font-black text-sm">TOTAL</td>
-                              <td className="px-4 py-3 text-center text-fuchsia-400 font-black text-sm">
+                              <td className="px-4 py-3 text-gray-800 font-black text-sm">TOTAL</td>
+                              <td className="px-4 py-3 text-center text-gray-700 font-black text-sm">
                                 {perfRows.reduce((s: number, r: any) => s + r.sold, 0)}
                               </td>
                               <td className="px-4 py-3 text-right text-green-400 font-black text-sm">S/ {totalRevenue.toFixed(2)}</td>
@@ -5716,7 +5963,7 @@ export default function AdminPage() {
           {/* Recipe Configuration Modal */}
           {showRecipeModal && editingRecipeProduct && (
             <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-purple-500 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
+              <div className="bg-white rounded-xl border-2 border-purple-500 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h3 className="text-2xl font-black text-purple-400">🧾 Configurar Receta</h3>
@@ -5731,7 +5978,7 @@ export default function AdminPage() {
                       setEditingRecipeProduct(null);
                       setRecipeComponents([]);
                     }}
-                    className="text-gray-400 hover:text-white text-2xl font-bold"
+                    className="text-gray-400 hover:text-gray-700 text-2xl font-bold"
                   >
                     ✕
                   </button>
@@ -5750,14 +5997,14 @@ export default function AdminPage() {
                   </div>
 
                   {recipeComponents.length === 0 ? (
-                    <div className="bg-gray-800 rounded-lg border-2 border-purple-500/30 p-8 text-center">
+                    <div className="bg-gray-100 rounded-lg border-2 border-purple-500/30 p-8 text-center">
                       <p className="text-gray-400 text-lg">No hay componentes configurados</p>
                       <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Componente" para empezar</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {/* Header */}
-                      <div className="grid grid-cols-12 gap-3 px-3 py-2 bg-black/50 rounded-lg border border-purple-500/30">
+                      <div className="grid grid-cols-12 gap-3 px-3 py-2 bg-gray-100 rounded-lg border border-purple-500/30">
                         <div className="col-span-4 text-xs font-bold text-purple-400">INGREDIENTE/EMPAQUE</div>
                         <div className="col-span-2 text-xs font-bold text-purple-400">CANTIDAD</div>
                         <div className="col-span-2 text-xs font-bold text-purple-400">UNIDAD</div>
@@ -5767,14 +6014,14 @@ export default function AdminPage() {
 
                       {/* Components - MANUAL INPUT */}
                       {recipeComponents.map((component, idx) => (
-                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-800 rounded-lg p-3 border border-purple-500/20">
+                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-100 rounded-lg p-3 border border-purple-500/20">
                           {/* Nombre del ingrediente/empaque - INPUT MANUAL */}
                           <div className="col-span-4">
                             <input
                               type="text"
                               value={component.productName || ""}
                               onChange={(e) => updateRecipeComponent(idx, 'productName', e.target.value.toUpperCase())}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm focus:border-purple-400 focus:outline-none"
                               placeholder="Ej: PECHUGA, CAJA, LECHUGA"
                             />
                           </div>
@@ -5787,7 +6034,7 @@ export default function AdminPage() {
                               min="0"
                               value={component.quantity}
                               onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm text-center focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm text-center focus:border-purple-400 focus:outline-none"
                               placeholder="0"
                             />
                           </div>
@@ -5797,7 +6044,7 @@ export default function AdminPage() {
                             <select
                               value={component.unit || ""}
                               onChange={(e) => updateRecipeComponent(idx, 'unit', e.target.value)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm focus:border-purple-400 focus:outline-none"
                             >
                               <option value="">Seleccionar</option>
                               <option value="UNIDAD">UNIDAD</option>
@@ -5818,7 +6065,7 @@ export default function AdminPage() {
                               min="0"
                               value={component.cost || 0}
                               onChange={(e) => updateRecipeComponent(idx, 'cost', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-black border border-purple-500/30 text-white text-sm focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm focus:border-purple-400 focus:outline-none"
                               placeholder="0.00"
                             />
                           </div>
@@ -5863,13 +6110,13 @@ export default function AdminPage() {
                       setEditingRecipeProduct(null);
                       setRecipeComponents([]);
                     }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all"
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-bold transition-all"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={saveRecipe}
-                    className="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple"
+                    className="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all "
                   >
                     ✓ Guardar Receta
                   </button>
@@ -5885,32 +6132,32 @@ export default function AdminPage() {
             const margin = cost > 0 ? ((price - cost) / cost) * 100 : 0;
             return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => { setShowProductModal(false); setEditingProduct(null); }}>
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+              <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-xl font-black text-fuchsia-400">
+                  <h3 className="text-xl font-black text-gray-700">
                     {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}
                   </h3>
-                  <button onClick={() => { setShowProductModal(false); setEditingProduct(null); }} className="text-gray-400 hover:text-white text-xl">✕</button>
+                  <button onClick={() => { setShowProductModal(false); setEditingProduct(null); }} className="text-gray-400 hover:text-gray-700 text-xl">✕</button>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">Nombre *</label>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Nombre *</label>
                     <input
                       type="text"
                       value={productForm.name}
                       onChange={(e) => setProductForm({ ...productForm, name: e.target.value.toUpperCase() })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none text-sm"
                       placeholder="Ej: PEQUEÑO DILEMA, COCA-COLA, EXTRA PAPAS"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-fuchsia-400 uppercase mb-1">Categoría *</label>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Categoría *</label>
                     <select
                       value={productForm.category}
                       onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none text-sm"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none text-sm"
                     >
                       <option value="fat">🍗 FAT (Alitas)</option>
                       <option value="fit">🥗 FIT (Ensaladas)</option>
@@ -5929,7 +6176,7 @@ export default function AdminPage() {
                         type="number" step="0.01" min="0"
                         value={productForm.price}
                         onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-green-500/30 text-green-400 focus:border-green-400 focus:outline-none text-sm font-bold"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-green-500/30 text-green-400 focus:border-green-400 focus:outline-none text-sm font-bold"
                         placeholder="0.00"
                       />
                     </div>
@@ -5939,7 +6186,7 @@ export default function AdminPage() {
                         type="number" step="0.01" min="0"
                         value={productForm.cost}
                         onChange={(e) => setProductForm({ ...productForm, cost: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-red-500/30 text-red-400 focus:border-red-400 focus:outline-none text-sm font-bold"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-red-500/30 text-red-400 focus:border-red-400 focus:outline-none text-sm font-bold"
                         placeholder="0.00"
                       />
                     </div>
@@ -5958,13 +6205,13 @@ export default function AdminPage() {
                 <div className="flex gap-3 mt-5">
                   <button
                     onClick={() => { setShowProductModal(false); setEditingProduct(null); setProductForm({ name: "", category: "fat", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] }); }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm"
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-bold text-sm"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
-                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold text-sm"
+                    className="flex-1 bg-white hover:bg-gray-800 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm"
                   >
                     {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
                   </button>
@@ -6013,7 +6260,7 @@ export default function AdminPage() {
                       <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider mb-3">Órdenes marcadas como canje ({canjeOrders.length})</h4>
                       <div className="space-y-2">
                         {canjeOrders.map((order: any) => (
-                          <div key={order.id} className="bg-gray-900 rounded-xl border border-orange-500/40 p-4 flex items-center justify-between gap-4">
+                          <div key={order.id} className="bg-white rounded-xl border border-orange-500/40 p-4 flex items-center justify-between gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <span className="text-orange-400 font-black text-xs">🎁 CANJE</span>
@@ -6022,13 +6269,13 @@ export default function AdminPage() {
                                   {new Date(order.createdAt).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}
                                 </span>
                               </div>
-                              <p className="text-white font-bold text-sm truncate">{order.name}</p>
+                              <p className="text-gray-800 font-bold text-sm truncate">{order.name}</p>
                               {order.canjeNote && (
                                 <p className="text-orange-300 text-xs mt-0.5 italic">"{order.canjeNote}"</p>
                               )}
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {(order.cart || []).slice(0, 3).map((item: any, idx: number) => (
-                                  <span key={idx} className="text-xs text-gray-400 bg-gray-800 px-1.5 py-0.5 rounded">
+                                  <span key={idx} className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
                                     {item.name || item.product?.name} x{item.quantity}
                                   </span>
                                 ))}
@@ -6038,7 +6285,7 @@ export default function AdminPage() {
                               <p className="text-orange-400 font-black text-lg">S/ {(order.totalPrice || 0).toFixed(2)}</p>
                               <button
                                 onClick={() => handleToggleCanje(order.id, false, "")}
-                                className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-3 py-1 rounded-lg mt-1 font-bold"
+                                className="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-400 px-3 py-1 rounded-lg mt-1 font-bold"
                               >
                                 ↩ Desmarcar
                               </button>
@@ -6055,7 +6302,7 @@ export default function AdminPage() {
                     <p className="text-gray-600 text-xs mb-4">Selecciona la orden y confirma para excluirla de las ventas.</p>
                     <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
                       {nonCanjeOrders.slice(0, 50).map((order: any) => (
-                        <div key={order.id} className="bg-gray-900 rounded-xl border border-gray-700 p-4 flex items-center justify-between gap-4">
+                        <div key={order.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-gray-400 text-xs font-mono">{order.id}</span>
@@ -6068,17 +6315,17 @@ export default function AdminPage() {
                                 'bg-yellow-500/20 text-yellow-400'
                               }`}>{order.status}</span>
                             </div>
-                            <p className="text-white font-bold text-sm truncate">{order.name}</p>
+                            <p className="text-gray-800 font-bold text-sm truncate">{order.name}</p>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {(order.cart || []).slice(0, 3).map((item: any, idx: number) => (
-                                <span key={idx} className="text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">
+                                <span key={idx} className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
                                   {item.name || item.product?.name} x{item.quantity}
                                 </span>
                               ))}
                             </div>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-gray-300 font-black text-sm">S/ {(order.totalPrice || 0).toFixed(2)}</p>
+                            <p className="text-gray-700 font-black text-sm">S/ {(order.totalPrice || 0).toFixed(2)}</p>
                             <button
                               onClick={() => { setCanjeModal({ orderId: order.id }); setCanjeNoteInput(""); }}
                               className="text-xs text-orange-400 border border-orange-500/40 hover:border-orange-400 px-3 py-1 rounded-lg mt-1 font-bold"
@@ -6098,17 +6345,17 @@ export default function AdminPage() {
       ) : activeTab === "marketing" ? (
         /* Marketing Tab */
         <>
-          <section className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-6">Promociones</h2>
+          <section className="px-6 py-8">
+            <h2 className="text-3xl font-black text-gray-700  mb-6">Promociones</h2>
 
             {/* Sub-tabs */}
-            <div className="flex gap-2 mb-8 border-b-2 border-fuchsia-500/20">
+            <div className="flex gap-2 mb-8 border-b-2 border-gray-100">
               <button
                 onClick={() => setMarketingSection("promotions")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   marketingSection === "promotions"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
+                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-700"
                 }`}
               >
                 🎟️ Promociones y Cupones
@@ -6117,8 +6364,8 @@ export default function AdminPage() {
                 onClick={() => setMarketingSection("campaigns")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   marketingSection === "campaigns"
-                    ? "text-fuchsia-400 border-b-4 border-fuchsia-500"
-                    : "text-gray-400 hover:text-gray-300"
+                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-700"
                 }`}
               >
                 📢 Campañas de Marketing
@@ -6128,7 +6375,7 @@ export default function AdminPage() {
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   marketingSection === "challenge"
                     ? "text-red-400 border-b-4 border-red-500"
-                    : "text-gray-400 hover:text-gray-300"
+                    : "text-gray-400 hover:text-gray-700"
                 }`}
               >
                 🔥 Desafío del Cliente
@@ -6138,169 +6385,10 @@ export default function AdminPage() {
             {marketingSection === "promotions" && (
               <>
 
-                {/* Promoción 13% - Sección Especial (colapsable, expirada) */}
-                <div className="mb-8">
-                  <button
-                    onClick={() => setShowPromo13(prev => !prev)}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-400 transition-colors mb-2"
-                  >
-                    <span>{showPromo13 ? '▼' : '▶'}</span>
-                    <span className="line-through">🎁 Promoción 13% - Primeros 13 Clientes</span>
-                    <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">Expirada · 28 Feb 2026</span>
-                  </button>
-                </div>
-
-                {showPromo13 && (
-                <div className="mb-8 bg-gradient-to-r from-fuchsia-900/30 to-purple-900/30 border-2 border-fuchsia-500/40 rounded-2xl p-6 opacity-60">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 flex items-center gap-2">
-                        🎁 Promoción 13% - Primeros 13 Clientes
-                      </h3>
-                      <p className="text-gray-400 text-sm mt-1">Cupones de descuento para pedidos con salsas promocionales</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-400">Válido hasta</p>
-                      <p className="text-lg font-bold text-red-400 line-through">28 Feb 2026</p>
-                    </div>
-                  </div>
-
-                  {/* Coupon Stats */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-black/50 rounded-lg p-4 border border-fuchsia-500/30">
-                      <p className="text-gray-400 text-xs mb-1">Total Generados</p>
-                      <p className="text-3xl font-black text-white">{coupons.length} / 13</p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-green-500/50">
-                      <p className="text-green-400 text-xs mb-1">Pendientes</p>
-                      <p className="text-3xl font-black text-green-400">
-                        {coupons.filter(c => c.status === 'pending').length}
-                      </p>
-                    </div>
-                    <div className="bg-black/50 rounded-lg p-4 border border-amber-500/50">
-                      <p className="text-amber-400 text-xs mb-1">Usados</p>
-                      <p className="text-3xl font-black text-amber-400">
-                        {coupons.filter(c => c.status === 'used').length}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Coupon Table */}
-                  {coupons.length === 0 ? (
-                    <div className="text-center py-8 bg-black/30 rounded-lg">
-                      <p className="text-gray-400">No hay cupones generados aún</p>
-                      <p className="text-gray-500 text-sm mt-2">Los cupones se generan automáticamente cuando un cliente hace un pedido con las salsas promocionales</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-fuchsia-500/30">
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Teléfono</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Cliente</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Código</th>
-                            <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Estado</th>
-                            <th className="text-center py-3 px-4 text-fuchsia-400 font-bold text-sm">Descuento</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Creado</th>
-                            <th className="text-left py-3 px-4 text-fuchsia-400 font-bold text-sm">Usado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {coupons.map((coupon, index) => {
-                            const whatsappMessage = `*Hola! Somos Santo Dilema*
-
-Gracias por participar en nuestra *Yunza del Sabor!*
-
-*>> FELICIDADES! <<*
-*Ganaste: ${coupon.prize || `${coupon.discount}% de descuento`}*
-
-*Tu cupon promocional es:*
-*${coupon.code}*
-
-*Para canjear tu premio:*
-1. Ingresa a www.santodilema.com
-2. Elige tus productos favoritos
-3. En el checkout, ingresa tu cupon
-4. Disfruta de tu premio!
-
-_Valido por 30 dias._`;
-
-                            return (
-                            <tr key={coupon.id} className="border-b border-gray-800 hover:bg-black/30 transition-colors">
-                              <td className="py-3 px-4">
-                                <span className="text-gray-300 text-sm font-mono flex items-center gap-2">
-                                  <span>📱</span>
-                                  {coupon.phone}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-white text-sm">{coupon.customerName || 'Cliente'}</span>
-                                  <button
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(whatsappMessage);
-                                      alert('Mensaje copiado al portapapeles');
-                                    }}
-                                    className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors p-1 rounded hover:bg-fuchsia-500/10"
-                                    title="Copiar mensaje de WhatsApp"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                  </button>
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <code className="text-fuchsia-400 text-xs font-bold bg-black/50 px-2 py-1 rounded">
-                                  {coupon.code}
-                                </code>
-                              </td>
-                              <td className="py-3 px-4 text-center">
-                                {coupon.status === 'pending' ? (
-                                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold">
-                                    Pendiente
-                                  </span>
-                                ) : (
-                                  <span className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-xs font-bold">
-                                    Usado
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4 text-center text-green-400 font-bold">
-                                {coupon.discount}%
-                              </td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">
-                                {new Date(coupon.createdAt).toLocaleDateString('es-PE', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </td>
-                              <td className="py-3 px-4 text-gray-400 text-xs">
-                                {coupon.usedAt ? new Date(coupon.usedAt).toLocaleDateString('es-PE', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                }) : '-'}
-                              </td>
-                            </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-                )}
 
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-white">Promociones Activas</h3>
+                    <h3 className="text-2xl font-bold text-gray-900">Promociones Activas</h3>
                     <p className="text-gray-400 text-sm">Gestiona descuentos, cupones y ofertas especiales</p>
                   </div>
                   <button
@@ -6309,7 +6397,7 @@ _Valido por 30 dias._`;
                       resetPromotionForm();
                       setShowPromotionModal(true);
                     }}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-6 py-3 rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
+                    className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-bold transition-all  transform hover:scale-105"
                   >
                     + Nueva Promoción
                   </button>
@@ -6317,23 +6405,23 @@ _Valido por 30 dias._`;
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-6">
+                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
                     <p className="text-gray-400 text-sm font-semibold">Total Promociones</p>
-                    <p className="text-5xl font-black text-white mt-2">{promotions.length}</p>
+                    <p className="text-5xl font-black text-gray-900 mt-2">{promotions.length}</p>
                   </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-green-500/50 p-6">
+                  <div className="bg-white rounded-xl border-2 border-green-500/50 p-6">
                     <p className="text-green-400 text-sm font-bold">Activas</p>
                     <p className="text-5xl font-black text-green-400 mt-2">
                       {promotions.filter((p) => p.active).length}
                     </p>
                   </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-amber-500/50 p-6">
+                  <div className="bg-white rounded-xl border-2 border-amber-500/50 p-6">
                     <p className="text-amber-400 text-sm font-bold">Uso Total</p>
                     <p className="text-5xl font-black text-amber-400 mt-2">
                       {promotions.reduce((sum, p) => sum + (p.usageCount || 0), 0)}
                     </p>
                   </div>
-                  <div className="bg-gray-900 rounded-xl border-2 border-red-500/50 p-6">
+                  <div className="bg-white rounded-xl border-2 border-red-500/50 p-6">
                     <p className="text-red-400 text-sm font-bold">Por Vencer (7 días)</p>
                     <p className="text-5xl font-black text-red-400 mt-2">
                       {promotions.filter((p) => {
@@ -6347,7 +6435,7 @@ _Valido por 30 dias._`;
                 {/* Promotions List */}
                 <div className="space-y-4">
                   {promotions.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-fuchsia-500/30">
+                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
                       <p className="text-2xl text-gray-400">No hay promociones creadas</p>
                     </div>
                   ) : (
@@ -6355,11 +6443,11 @@ _Valido por 30 dias._`;
                       const isExpired = new Date(promo.endDate) < new Date();
                       const daysLeft = Math.ceil((new Date(promo.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={promo.id} className={`bg-gray-900 rounded-xl border-2 p-6 transition-all ${promo.active ? 'border-fuchsia-500/30 hover:border-fuchsia-500' : 'border-gray-700 opacity-60'}`}>
+                        <div key={promo.id} className={`bg-white rounded-xl border-2 p-6 transition-all ${promo.active ? 'border-gray-200 hover:border-fuchsia-500' : 'border-gray-200 opacity-60'}`}>
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-xl font-black text-white">{promo.name}</h3>
+                                <h3 className="text-xl font-black text-gray-900">{promo.name}</h3>
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                                   promo.active ? 'bg-green-500/20 text-green-400 border border-green-500' : 'bg-gray-500/20 text-gray-400 border border-gray-500'
                                 }`}>
@@ -6375,7 +6463,7 @@ _Valido por 30 dias._`;
                               <div className="flex gap-6 text-sm">
                                 <div>
                                   <span className="text-gray-500">Tipo:</span>
-                                  <span className="text-white font-bold ml-2">
+                                  <span className="text-gray-800 font-bold ml-2">
                                     {promo.type === 'percentage' ? `${promo.value}% DESC` :
                                      promo.type === 'fixed' ? `S/ ${promo.value} DESC` :
                                      promo.type === 'shipping' ? 'Envío Gratis' : 'Combo'}
@@ -6384,12 +6472,12 @@ _Valido por 30 dias._`;
                                 {promo.minAmount > 0 && (
                                   <div>
                                     <span className="text-gray-500">Compra mín:</span>
-                                    <span className="text-white font-bold ml-2">S/ {promo.minAmount}</span>
+                                    <span className="text-gray-800 font-bold ml-2">S/ {promo.minAmount}</span>
                                   </div>
                                 )}
                                 <div>
                                   <span className="text-gray-500">Segmento:</span>
-                                  <span className="text-white font-bold ml-2 capitalize">{promo.targetSegment}</span>
+                                  <span className="text-gray-800 font-bold ml-2 capitalize">{promo.targetSegment}</span>
                                 </div>
                                 <div>
                                   <span className="text-gray-500">Usado:</span>
@@ -6433,28 +6521,28 @@ _Valido por 30 dias._`;
             )}
 
             {marketingSection === "campaigns" && (
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-8">
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-8">
                 <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Campañas Segmentadas</h3>
+                  <h3 className="text-2xl font-bold text-gray-700 mb-4">Campañas Segmentadas</h3>
                   <p className="text-gray-400 mb-6">
                     Crea campañas de marketing dirigidas a segmentos específicos de clientes
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
+                    <div className="bg-gray-100 rounded-lg p-6 border border-gray-100">
                       <div className="text-4xl mb-3">👑</div>
-                      <h4 className="text-lg font-bold text-white mb-2">Clientes VIP</h4>
+                      <h4 className="text-lg font-bold text-gray-800 mb-2">Clientes VIP</h4>
                       <p className="text-sm text-gray-400 mb-4">Promociones exclusivas para tus mejores clientes</p>
-                      <p className="text-2xl font-black text-fuchsia-400">{customerSegments.vip.length} clientes</p>
+                      <p className="text-2xl font-black text-gray-700">{customerSegments.vip.length} clientes</p>
                     </div>
-                    <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
+                    <div className="bg-gray-100 rounded-lg p-6 border border-gray-100">
                       <div className="text-4xl mb-3">💤</div>
-                      <h4 className="text-lg font-bold text-white mb-2">Clientes Inactivos</h4>
+                      <h4 className="text-lg font-bold text-gray-800 mb-2">Clientes Inactivos</h4>
                       <p className="text-sm text-gray-400 mb-4">Recupera clientes que dejaron de comprar</p>
                       <p className="text-2xl font-black text-red-400">{customerSegments.inactive.length} clientes</p>
                     </div>
-                    <div className="bg-black/50 rounded-lg p-6 border border-fuchsia-500/20">
+                    <div className="bg-gray-100 rounded-lg p-6 border border-gray-100">
                       <div className="text-4xl mb-3">✨</div>
-                      <h4 className="text-lg font-bold text-white mb-2">Nuevos Clientes</h4>
+                      <h4 className="text-lg font-bold text-gray-800 mb-2">Nuevos Clientes</h4>
                       <p className="text-sm text-gray-400 mb-4">Bienvenida y primera compra especial</p>
                       <p className="text-2xl font-black text-cyan-400">{customerSegments.new.length} clientes</p>
                     </div>
@@ -6467,19 +6555,19 @@ _Valido por 30 dias._`;
             )}
 
             {marketingSection === "loyalty" && (
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500/30 p-8">
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-8">
                 <div className="text-center py-12">
-                  <h3 className="text-2xl font-bold text-fuchsia-400 mb-4">Programa de Fidelización</h3>
+                  <h3 className="text-2xl font-bold text-gray-700 mb-4">Programa de Fidelización</h3>
                   <p className="text-gray-400 mb-8">
                     Sistema de puntos y recompensas para incentivar compras recurrentes
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    <div className="bg-black/50 rounded-lg p-6 border border-amber-500/30 text-left">
+                    <div className="bg-gray-100 rounded-lg p-6 border border-amber-500/30 text-left">
                       <div className="flex items-center gap-3 mb-4">
                         <span className="text-4xl">⭐</span>
                         <h4 className="text-xl font-bold text-amber-400">Sistema de Puntos</h4>
                       </div>
-                      <ul className="space-y-3 text-sm text-gray-300">
+                      <ul className="space-y-3 text-sm text-gray-500">
                         <li className="flex items-center gap-2">
                           <span className="text-amber-400">•</span>
                           <span>1 punto por cada S/ 10 gastado</span>
@@ -6494,12 +6582,12 @@ _Valido por 30 dias._`;
                         </li>
                       </ul>
                     </div>
-                    <div className="bg-black/50 rounded-lg p-6 border border-purple-500/30 text-left">
+                    <div className="bg-gray-100 rounded-lg p-6 border border-purple-500/30 text-left">
                       <div className="flex items-center gap-3 mb-4">
                         <span className="text-4xl">🎁</span>
                         <h4 className="text-xl font-bold text-purple-400">Beneficios VIP</h4>
                       </div>
-                      <ul className="space-y-3 text-sm text-gray-300">
+                      <ul className="space-y-3 text-sm text-gray-500">
                         <li className="flex items-center gap-2">
                           <span className="text-purple-400">•</span>
                           <span>Acceso anticipado a nuevos productos</span>
@@ -6515,8 +6603,8 @@ _Valido por 30 dias._`;
                       </ul>
                     </div>
                   </div>
-                  <div className="mt-8 p-6 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/30 max-w-2xl mx-auto">
-                    <p className="text-fuchsia-300 text-sm">
+                  <div className="mt-8 p-6 bg-fuchsia-500/10 rounded-lg border border-gray-200 max-w-2xl mx-auto">
+                    <p className="text-gray-600 text-sm">
                       💡 <strong>Próximamente:</strong> Integración automática de puntos y niveles de fidelización con cada compra
                     </p>
                   </div>
@@ -6535,15 +6623,15 @@ _Valido por 30 dias._`;
                         Termómetro de ventas visible en las páginas FAT, FIT y Home. Sorteo: sábado 28 de marzo.
                       </p>
                     </div>
-                    <div className={`px-3 py-1.5 rounded-full text-xs font-black ${challengeData.active ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}>
+                    <div className={`px-3 py-1.5 rounded-full text-xs font-black ${challengeData.active ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-200/50 text-gray-400 border border-gray-300'}`}>
                       {challengeData.active ? '● ACTIVO' : '○ INACTIVO'}
                     </div>
                   </div>
                 </div>
 
                 {/* Progreso actual */}
-                <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                  <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">📊 Progreso Actual</h4>
+                <div className="bg-white border border-gray-200 rounded-xl p-6">
+                  <h4 className="text-gray-800 font-bold text-sm uppercase tracking-wider mb-4">📊 Progreso Actual</h4>
                   <div className="space-y-3">
                     {/* Barra */}
                     <div className="relative h-10 rounded-full overflow-hidden"
@@ -6559,7 +6647,7 @@ _Valido por 30 dias._`;
                         }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center z-10">
-                        <span className="text-white font-black text-sm drop-shadow-lg">
+                        <span className="text-gray-900 font-black text-sm drop-shadow-lg">
                           S/ {challengeData.salesAmount.toLocaleString()} / S/ {challengeData.goal.toLocaleString()}
                         </span>
                       </div>
@@ -6569,15 +6657,15 @@ _Valido por 30 dias._`;
                       <span className="text-yellow-400/70">🏆 Meta: S/ {challengeData.goal.toLocaleString()}</span>
                     </div>
                     <div className="grid grid-cols-3 gap-4 mt-4">
-                      <div className="bg-gray-800 rounded-lg p-3 text-center">
+                      <div className="bg-gray-100 rounded-lg p-3 text-center">
                         <p className="text-gray-400 text-[10px] uppercase font-bold">Ventas actuales</p>
-                        <p className="text-2xl font-black text-white mt-1">S/ {challengeData.salesAmount.toLocaleString()}</p>
+                        <p className="text-2xl font-black text-gray-900 mt-1">S/ {challengeData.salesAmount.toLocaleString()}</p>
                       </div>
-                      <div className="bg-gray-800 rounded-lg p-3 text-center">
+                      <div className="bg-gray-100 rounded-lg p-3 text-center">
                         <p className="text-gray-400 text-[10px] uppercase font-bold">Progreso</p>
                         <p className="text-2xl font-black text-red-400 mt-1">{Math.round((challengeData.salesAmount / challengeData.goal) * 100)}%</p>
                       </div>
-                      <div className="bg-gray-800 rounded-lg p-3 text-center">
+                      <div className="bg-gray-100 rounded-lg p-3 text-center">
                         <p className="text-gray-400 text-[10px] uppercase font-bold">Faltan</p>
                         <p className="text-2xl font-black text-amber-400 mt-1">S/ {Math.max(0, challengeData.goal - challengeData.salesAmount).toLocaleString()}</p>
                       </div>
@@ -6586,8 +6674,8 @@ _Valido por 30 dias._`;
                 </div>
 
                 {/* Actualizar ventas */}
-                <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                  <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">✏️ Actualizar Ventas de Marzo</h4>
+                <div className="bg-white border border-gray-200 rounded-xl p-6">
+                  <h4 className="text-gray-800 font-bold text-sm uppercase tracking-wider mb-4">✏️ Actualizar Ventas de Marzo</h4>
                   <p className="text-gray-500 text-xs mb-4">
                     Ingresa el monto total de ventas acumuladas en marzo. El termómetro se actualiza en tiempo real para todos los clientes.
                   </p>
@@ -6602,7 +6690,7 @@ _Valido por 30 dias._`;
                         placeholder="Ej: 2350.50"
                         value={challengeSalesInput}
                         onChange={e => setChallengeSalesInput(e.target.value)}
-                        className="w-full bg-gray-800 border-2 border-gray-600 rounded-xl pl-9 pr-4 py-3 text-white text-lg font-bold focus:border-red-500 focus:outline-none transition-colors"
+                        className="w-full bg-gray-100 border-2 border-gray-300 rounded-xl pl-9 pr-4 py-3 text-gray-900 text-lg font-bold focus:border-red-500 focus:outline-none transition-colors"
                       />
                     </div>
                     <button
@@ -6622,8 +6710,8 @@ _Valido por 30 dias._`;
 
                 {/* Activar / Desactivar + Meta */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
-                    <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-3">⚡ Estado del Desafío</h4>
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h4 className="text-gray-800 font-bold text-sm uppercase tracking-wider mb-3">⚡ Estado del Desafío</h4>
                     <div className="flex gap-2">
                       <button
                         onClick={() => saveChallengeData({ active: true })}
@@ -6641,8 +6729,8 @@ _Valido por 30 dias._`;
                       </button>
                     </div>
                   </div>
-                  <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
-                    <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-3">🎯 Meta de ventas</h4>
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h4 className="text-gray-800 font-bold text-sm uppercase tracking-wider mb-3">🎯 Meta de ventas</h4>
                     <div className="flex gap-2">
                       <div className="flex-1 relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">S/</span>
@@ -6655,7 +6743,7 @@ _Valido por 30 dias._`;
                             const val = parseFloat(e.target.value);
                             if (!isNaN(val) && val > 0) saveChallengeData({ goal: val });
                           }}
-                          className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-8 pr-3 py-2.5 text-white text-sm font-bold focus:border-red-500 focus:outline-none"
+                          className="w-full bg-gray-100 border border-gray-300 rounded-lg pl-8 pr-3 py-2.5 text-gray-900 text-sm font-bold focus:border-red-500 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -6665,7 +6753,7 @@ _Valido por 30 dias._`;
                 {/* Premio */}
                 <div className="bg-gradient-to-r from-yellow-900/20 to-amber-900/10 border border-yellow-500/20 rounded-xl p-5">
                   <h4 className="text-yellow-300 font-bold text-sm uppercase tracking-wider mb-2">🏡 Premio del Sorteo</h4>
-                  <p className="text-white font-black text-lg">Full Day en Casa de Campo</p>
+                  <p className="text-gray-900 font-black text-lg">Full Day en Casa de Campo</p>
                   <p className="text-gray-400 text-xs mt-1">Sorteo en vivo — Sábado 28 de Marzo 2026. Entre todos los clientes que compraron en marzo.</p>
                 </div>
               </div>
@@ -6675,50 +6763,50 @@ _Valido por 30 dias._`;
           {/* Promotion Modal */}
           {showPromotionModal && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-6 max-w-2xl w-full my-8">
-                <h3 className="text-2xl font-black text-fuchsia-400 mb-4">
+              <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-6 max-w-2xl w-full my-8">
+                <h3 className="text-2xl font-black text-gray-700 mb-4">
                   {editingPromotion ? 'Editar Promoción' : 'Nueva Promoción'}
                 </h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Nombre</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Nombre</label>
                       <input
                         type="text"
                         value={promotionForm.name}
                         onChange={(e) => setPromotionForm({ ...promotionForm, name: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                         placeholder="Black Friday 2024"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Código de Cupón (opcional)</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Código de Cupón (opcional)</label>
                       <input
                         type="text"
                         value={promotionForm.code}
                         onChange={(e) => setPromotionForm({ ...promotionForm, code: e.target.value.toUpperCase() })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none uppercase"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none uppercase"
                         placeholder="VERANO2024"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Descripción</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
                     <textarea
                       value={promotionForm.description}
                       onChange={(e) => setPromotionForm({ ...promotionForm, description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                       rows={2}
                       placeholder="Descripción de la promoción"
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Tipo</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Tipo</label>
                       <select
                         value={promotionForm.type}
                         onChange={(e) => setPromotionForm({ ...promotionForm, type: e.target.value as any })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                       >
                         <option value="percentage">Porcentaje</option>
                         <option value="fixed">Monto Fijo</option>
@@ -6727,7 +6815,7 @@ _Valido por 30 dias._`;
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">
+                      <label className="block text-sm font-bold text-gray-700 mb-1">
                         {promotionForm.type === 'percentage' ? 'Porcentaje (%)' : 'Monto (S/)'}
                       </label>
                       <input
@@ -6736,58 +6824,58 @@ _Valido por 30 dias._`;
                         value={promotionForm.value}
                         onChange={(e) => setPromotionForm({ ...promotionForm, value: parseFloat(e.target.value) || 0 })}
                         disabled={promotionForm.type === 'shipping'}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none disabled:opacity-50"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none disabled:opacity-50"
                         placeholder="10"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Compra Mínima</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Compra Mínima</label>
                       <input
                         type="number"
                         step="0.01"
                         value={promotionForm.minAmount}
                         onChange={(e) => setPromotionForm({ ...promotionForm, minAmount: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                         placeholder="0"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Fecha Inicio</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Fecha Inicio</label>
                       <input
                         type="date"
                         value={promotionForm.startDate}
                         onChange={(e) => setPromotionForm({ ...promotionForm, startDate: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [color-scheme:light]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Fecha Fin</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Fecha Fin</label>
                       <input
                         type="date"
                         value={promotionForm.endDate}
                         onChange={(e) => setPromotionForm({ ...promotionForm, endDate: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [color-scheme:light]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-fuchsia-400 mb-1">Límite de Uso</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Límite de Uso</label>
                       <input
                         type="number"
                         value={promotionForm.usageLimit}
                         onChange={(e) => setPromotionForm({ ...promotionForm, usageLimit: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                         placeholder="0 = ilimitado"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-fuchsia-400 mb-1">Segmento de Clientes</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Segmento de Clientes</label>
                     <select
                       value={promotionForm.targetSegment}
                       onChange={(e) => setPromotionForm({ ...promotionForm, targetSegment: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-black border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                     >
                       <option value="all">Todos los clientes</option>
                       <option value="vip">Clientes VIP</option>
@@ -6804,7 +6892,7 @@ _Valido por 30 dias._`;
                       onChange={(e) => setPromotionForm({ ...promotionForm, active: e.target.checked })}
                       className="w-4 h-4"
                     />
-                    <label className="text-sm text-white">Promoción activa</label>
+                    <label className="text-sm text-gray-600">Promoción activa</label>
                   </div>
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -6814,14 +6902,14 @@ _Valido por 30 dias._`;
                       setEditingPromotion(null);
                       resetPromotionForm();
                     }}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-bold transition-all"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={editingPromotion ? handleUpdatePromotion : handleCreatePromotion}
                     disabled={!promotionForm.name || !promotionForm.startDate || !promotionForm.endDate}
-                    className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded-lg font-bold transition-all neon-border-purple disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-white hover:bg-gray-800 text-gray-900 px-4 py-2 rounded-lg font-bold transition-all  disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {editingPromotion ? 'Guardar' : 'Crear Promoción'}
                   </button>
@@ -6832,15 +6920,15 @@ _Valido por 30 dias._`;
         </>
       ) : activeTab === "carta" ? (
         /* Carta Tab — control de stock de menús */
-        <section className="container mx-auto px-4 py-8">
-          <h2 className="text-3xl font-black text-fuchsia-400 neon-glow-purple mb-2">Stock de Carta</h2>
+        <section className="px-6 py-8">
+          <h2 className="text-3xl font-black text-gray-700  mb-2">Stock de Carta</h2>
           <p className="text-gray-400 text-sm mb-8">
             Activa el sello <span className="text-red-400 font-bold">AGOTADO</span> para que los clientes no puedan pedir ese plato.
             El cambio se refleja en la carta al instante.
           </p>
 
           {/* FAT GROUP — Alitas, Salsas y Promociones */}
-          <div className="bg-gray-900/40 rounded-2xl border border-red-500/20 p-6 mb-6">
+          <div className="bg-gray-50 rounded-2xl border border-red-500/20 p-6 mb-6">
             <h2 className="text-lg font-black text-red-400 mb-6 flex items-center gap-2 border-b border-red-500/20 pb-3">
               🥩 FAT — Alitas
             </h2>
@@ -6863,13 +6951,13 @@ _Valido por 30 dias._`;
                 return (
                   <div
                     key={item.id}
-                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-amber-500/50" : "border-gray-700"
+                    className={`bg-white rounded-xl border-2 p-5 transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-amber-500/50" : "border-gray-200"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="text-white font-bold text-base">{item.name}</p>
+                        <p className="text-gray-800 font-bold text-base">{item.name}</p>
                         {hasDiscount ? (
                           <p className="text-xs mt-0.5">
                             <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
@@ -6891,13 +6979,13 @@ _Valido por 30 dias._`;
                       </button>
                     </div>
                     {/* Precio real */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-800">
+                    <div className="flex gap-2 pt-3 border-t border-gray-200">
                       <input
                         type="number" step="0.50" min="0.50"
                         placeholder={`Precio real (actual: S/ ${effectivePrice.toFixed(2)})`}
                         value={priceInputs[item.id] || ''}
                         onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-red-400 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-red-400 focus:outline-none"
                       />
                       <button
                         onClick={() => savePrice(item.id, item.defaultPrice)}
@@ -6914,12 +7002,12 @@ _Valido por 30 dias._`;
                         placeholder="Precio oferta (menor al real)"
                         value={discountInputs[item.id] || ''}
                         onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-amber-500 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-amber-500 focus:outline-none"
                       />
                       <button
                         onClick={() => saveDiscount(item.id, effectivePrice)}
                         disabled={isSavingDiscount}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-amber-600 hover:bg-amber-500' : 'bg-gray-200 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
                       >
                         {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Oferta'}
                       </button>
@@ -6942,12 +7030,12 @@ _Valido por 30 dias._`;
                 return (
                   <div
                     key={stockId}
-                    className={`bg-gray-900 rounded-xl border-2 p-4 flex items-center justify-between transition-all ${
+                    className={`bg-white rounded-xl border-2 p-4 flex items-center justify-between transition-all ${
                       isSoldOut ? "border-red-600/60 opacity-70" : "border-amber-700/40"
                     }`}
                   >
                     <div>
-                      <p className="text-white font-bold text-sm">{salsa.name}</p>
+                      <p className="text-gray-800 font-bold text-sm">{salsa.name}</p>
                       {isSoldOut && (
                         <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>
                       )}
@@ -6989,7 +7077,7 @@ _Valido por 30 dias._`;
               <div className="mt-10">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-black text-fuchsia-400 flex items-center gap-2">
+                    <h3 className="text-xl font-black text-gray-700 flex items-center gap-2">
                       🌶️ Promociones de Salsas FAT
                     </h3>
                     <p className="text-gray-500 text-xs mt-1">
@@ -7008,7 +7096,7 @@ _Valido por 30 dias._`;
                   </button>
                 </div>
                 {salsaPromos.length === 0 ? (
-                  <div className="bg-gray-900 rounded-xl border border-gray-700 p-6 text-center">
+                  <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
                     <p className="text-gray-500 text-sm">Sin promociones activas. Crea una para ofrecer precios especiales por combinación de salsas.</p>
                     <p className="text-gray-600 text-xs mt-2">Las promos hardcodeadas (Teriyaki S/18, Barbecue+Ahumada S/32, etc.) siguen activas como fallback.</p>
                   </div>
@@ -7017,18 +7105,18 @@ _Valido por 30 dias._`;
                     {salsaPromos.map((promo: any) => {
                       const prodName = FAT_PRODUCTS.find(p => p.id === promo.productId)?.name || promo.productId;
                       return (
-                        <div key={promo.id} className={`bg-gray-900 rounded-xl border-2 p-4 ${promo.active ? 'border-fuchsia-500/50' : 'border-gray-700 opacity-60'}`}>
+                        <div key={promo.id} className={`bg-white rounded-xl border-2 p-4 ${promo.active ? 'border-fuchsia-500/50' : 'border-gray-200 opacity-60'}`}>
                           <div className="flex items-start justify-between mb-2">
                             <div>
-                              <p className="text-white font-black text-sm">{prodName}</p>
-                              <p className="text-fuchsia-400 text-xl font-black">S/ {promo.promoPrice}</p>
+                              <p className="text-gray-900 font-black text-sm">{prodName}</p>
+                              <p className="text-gray-700 text-xl font-black">S/ {promo.promoPrice}</p>
                             </div>
                             <div className="flex gap-1">
                               <button onClick={() => {
                                 setEditingPromo(promo);
                                 setPromoForm({ productId: promo.productId, salsas: promo.salsas, promoPrice: promo.promoPrice, active: promo.active });
                                 setShowSalsaPromoModal(true);
-                              }} className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-2 py-1 rounded">Editar</button>
+                              }} className="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-400 px-2 py-1 rounded">Editar</button>
                               <button onClick={() => handleDeletePromo(promo.id)} className="text-xs text-red-400 hover:text-red-200 border border-red-900 hover:border-red-700 px-2 py-1 rounded">✕</button>
                             </div>
                           </div>
@@ -7051,8 +7139,8 @@ _Valido por 30 dias._`;
                 {/* Modal crear/editar promo */}
                 {showSalsaPromoModal && (
                   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
-                    <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-5 max-w-md w-full">
-                      <h3 className="text-lg font-black text-fuchsia-400 mb-4">
+                    <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-5 max-w-md w-full">
+                      <h3 className="text-lg font-black text-gray-700 mb-4">
                         {editingPromo ? 'Editar Promo' : 'Nueva Promo de Salsas'}
                       </h3>
 
@@ -7061,7 +7149,7 @@ _Valido por 30 dias._`;
                         <select
                           value={promoForm.productId}
                           onChange={e => setPromoForm({ ...promoForm, productId: e.target.value })}
-                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
+                          className="w-full px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-900 text-sm"
                         >
                           {FAT_PRODUCTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
@@ -7078,7 +7166,7 @@ _Valido por 30 dias._`;
                                   ...f,
                                   salsas: sel ? f.salsas.filter(x => x !== s.id) : [...f.salsas, s.id]
                                 }))}
-                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${sel ? 'bg-amber-500 border-amber-400 text-black' : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-amber-500'}`}>
+                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${sel ? 'bg-amber-500 border-amber-400 text-black' : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-amber-500'}`}>
                                 {s.name}
                               </button>
                             );
@@ -7092,7 +7180,7 @@ _Valido por 30 dias._`;
                           type="number" min="0" step="0.5"
                           value={promoForm.promoPrice || ''}
                           onChange={e => setPromoForm({ ...promoForm, promoPrice: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 rounded-lg bg-black border border-gray-700 text-white text-sm"
+                          className="w-full px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-900 text-sm"
                           placeholder="ej: 18"
                         />
                       </div>
@@ -7100,7 +7188,7 @@ _Valido por 30 dias._`;
                       <div className="mb-5 flex items-center gap-3">
                         <button
                           onClick={() => setPromoForm(f => ({ ...f, active: !f.active }))}
-                          className={`relative w-10 h-6 rounded-full transition-all ${promoForm.active ? 'bg-green-500' : 'bg-gray-700'}`}
+                          className={`relative w-10 h-6 rounded-full transition-all ${promoForm.active ? 'bg-green-500' : 'bg-gray-200'}`}
                         >
                           <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${promoForm.active ? 'left-5' : 'left-1'}`} />
                         </button>
@@ -7117,7 +7205,7 @@ _Valido por 30 dias._`;
                         </button>
                         <button
                           onClick={() => { setShowSalsaPromoModal(false); setEditingPromo(null); }}
-                          className="px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-sm"
+                          className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 rounded-lg text-sm"
                         >
                           Cancelar
                         </button>
@@ -7155,13 +7243,13 @@ _Valido por 30 dias._`;
                 return (
                   <div
                     key={item.id}
-                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-cyan-500/50" : "border-gray-700"
+                    className={`bg-white rounded-xl border-2 p-5 transition-all ${
+                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-cyan-500/50" : "border-gray-200"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="text-white font-bold text-base">{item.name}</p>
+                        <p className="text-gray-800 font-bold text-base">{item.name}</p>
                         {hasDiscount ? (
                           <p className="text-xs mt-0.5">
                             <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
@@ -7183,13 +7271,13 @@ _Valido por 30 dias._`;
                       </button>
                     </div>
                     {/* Precio real */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-800">
+                    <div className="flex gap-2 pt-3 border-t border-gray-200">
                       <input
                         type="number" step="0.50" min="0.50"
                         placeholder={`Precio real (actual: S/ ${effectivePrice.toFixed(2)})`}
                         value={priceInputs[item.id] || ''}
                         onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-cyan-400 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-cyan-400 focus:outline-none"
                       />
                       <button
                         onClick={() => savePrice(item.id, item.defaultPrice)}
@@ -7206,12 +7294,12 @@ _Valido por 30 dias._`;
                         placeholder="Precio oferta (menor al real)"
                         value={discountInputs[item.id] || ''}
                         onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-cyan-500 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-cyan-500 focus:outline-none"
                       />
                       <button
                         onClick={() => saveDiscount(item.id, effectivePrice)}
                         disabled={isSavingDiscount}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-200 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
                       >
                         {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Oferta'}
                       </button>
@@ -7237,8 +7325,8 @@ _Valido por 30 dias._`;
               const isSavingPrice = priceSaving === duoId;
               const effectivePrice = menuPrices[duoId] || defaultPrice;
               return (
-                <div className={`bg-gray-900 rounded-xl border-2 p-5 mb-6 max-w-md transition-all ${hasDiscount ? "border-orange-500/50" : "border-gray-700"}`}>
-                  <p className="text-white font-bold text-base mb-1">DÚO DE TACOS</p>
+                <div className={`bg-white rounded-xl border-2 p-5 mb-6 max-w-md transition-all ${hasDiscount ? "border-orange-500/50" : "border-gray-200"}`}>
+                  <p className="text-gray-900 font-bold text-base mb-1">DÚO DE TACOS</p>
                   {hasDiscount ? (
                     <p className="text-sm mb-3">
                       <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
@@ -7248,13 +7336,13 @@ _Valido por 30 dias._`;
                   ) : (
                     <p className="text-orange-400 text-sm font-bold mb-3">S/ {effectivePrice.toFixed(2)}</p>
                   )}
-                  <div className="flex gap-2 pt-3 border-t border-gray-800">
+                  <div className="flex gap-2 pt-3 border-t border-gray-200">
                     <input
                       type="number" step="0.50" min="0.50"
                       placeholder={`Nuevo precio (actual: S/ ${effectivePrice.toFixed(2)})`}
                       value={priceInputs[duoId] || ''}
                       onChange={e => setPriceInputs(prev => ({ ...prev, [duoId]: e.target.value }))}
-                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-orange-400 focus:outline-none"
+                      className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-orange-400 focus:outline-none"
                     />
                     <button
                       onClick={() => savePrice(duoId, defaultPrice)}
@@ -7270,12 +7358,12 @@ _Valido por 30 dias._`;
                       placeholder="Precio oferta (menor al actual)"
                       value={discountInputs[duoId] || ''}
                       onChange={e => setDiscountInputs(prev => ({ ...prev, [duoId]: e.target.value }))}
-                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-orange-500 focus:outline-none"
+                      className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-orange-500 focus:outline-none"
                     />
                     <button
                       onClick={() => saveDiscount(duoId, effectivePrice)}
                       disabled={isSavingDiscount}
-                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-orange-600 hover:bg-orange-500' : 'bg-gray-700 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
+                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-orange-600 hover:bg-orange-500' : 'bg-gray-200 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
                     >
                       {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar oferta' : '🏷️ Poner oferta'}
                     </button>
@@ -7295,9 +7383,9 @@ _Valido por 30 dias._`;
                 const isSoldOut = !!menuStock[item.id];
                 const isSaving = menuStockSaving === item.id;
                 return (
-                  <div key={item.id} className={`bg-gray-900 rounded-xl border-2 p-4 flex items-center justify-between transition-all ${isSoldOut ? "border-red-600/60 opacity-70" : "border-orange-700/40"}`}>
+                  <div key={item.id} className={`bg-white rounded-xl border-2 p-4 flex items-center justify-between transition-all ${isSoldOut ? "border-red-600/60 opacity-70" : "border-orange-700/40"}`}>
                     <div>
-                      <p className="text-white font-bold text-sm">{item.name}</p>
+                      <p className="text-gray-800 font-bold text-sm">{item.name}</p>
                       {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
                     </div>
                     <button
@@ -7335,13 +7423,13 @@ _Valido por 30 dias._`;
                 return (
                   <div
                     key={item.id}
-                    className={`bg-gray-900 rounded-xl border-2 p-5 transition-all ${
+                    className={`bg-white rounded-xl border-2 p-5 transition-all ${
                       isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-violet-500/50" : "border-violet-700/30"
                     }`}
                   >
                     <div className="flex items-start justify-between mb-1">
                       <div className="flex-1 min-w-0 pr-2">
-                        <p className="text-white font-bold text-base">{item.name}</p>
+                        <p className="text-gray-800 font-bold text-base">{item.name}</p>
                         <p className="text-gray-500 text-[10px] mt-0.5">{item.includes}</p>
                         {hasDiscount ? (
                           <p className="text-xs mt-1">
@@ -7363,13 +7451,13 @@ _Valido por 30 dias._`;
                         {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
                       </button>
                     </div>
-                    <div className="flex gap-2 pt-3 border-t border-gray-800 mt-3">
+                    <div className="flex gap-2 pt-3 border-t border-gray-200 mt-3">
                       <input
                         type="number" step="0.50" min="0.50"
                         placeholder={`Precio (actual: S/ ${effectivePrice.toFixed(2)})`}
                         value={priceInputs[item.id] || ""}
                         onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-violet-400 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-violet-400 focus:outline-none"
                       />
                       <button
                         onClick={() => savePrice(item.id, item.defaultPrice)}
@@ -7385,12 +7473,12 @@ _Valido por 30 dias._`;
                         placeholder="Precio oferta (menor al real)"
                         value={discountInputs[item.id] || ""}
                         onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-violet-500 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-violet-500 focus:outline-none"
                       />
                       <button
                         onClick={() => saveDiscount(item.id, effectivePrice)}
                         disabled={isSavingDiscount}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? "bg-violet-600 hover:bg-violet-500" : "bg-gray-700 hover:bg-gray-600"} text-white ${isSavingDiscount ? "opacity-50" : ""}`}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? "bg-violet-600 hover:bg-violet-500" : "bg-gray-200 hover:bg-gray-600"} text-white ${isSavingDiscount ? "opacity-50" : ""}`}
                       >
                         {isSavingDiscount ? "..." : hasDiscount ? "🏷️ Actualizar" : "🏷️ Oferta"}
                       </button>
@@ -7405,444 +7493,349 @@ _Valido por 30 dias._`;
 
       {/* ==================== MODAL DE INVENTARIO (GLOBAL) ==================== */}
       {showInventoryModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto" style={{ position: 'relative' }}>
-            <h3 className="text-xl font-black text-fuchsia-400 mb-3">📦 Registrar Nueva Compra</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[96vh] overflow-y-auto shadow-2xl">
 
-            {/* Información Compacta en Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
               <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">RUC</label>
-                <input
-                  type="text"
-                  value={inventoryForm.supplierRuc}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, supplierRuc: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                  placeholder="20123456789"
-                  maxLength={11}
-                />
+                <h3 className="text-base font-bold text-gray-900">Registrar gasto</h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {({
+                    operativos: "Insumos y materiales de operación",
+                    fijos: "Alquiler, servicios y gastos recurrentes",
+                    personal: "Salarios y pagos a empleados",
+                    marketing: "Publicidad, promociones y canjes",
+                  } as Record<string,string>)[inventoryForm.category] || "Selecciona el tipo de gasto"}
+                </p>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Nombre del proveedor *</label>
-                <input
-                  type="text"
-                  value={inventoryForm.supplier}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value.toUpperCase() })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                  placeholder="Nombre proveedor"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
-                <input
-                  type="tel"
-                  value={inventoryForm.supplierPhone}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    setInventoryForm({ ...inventoryForm, supplierPhone: value });
-                  }}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-fuchsia-400 focus:outline-none"
-                  maxLength={9}
-                />
-              </div>
+              <button
+                onClick={() => {
+                  setShowInventoryModal(false);
+                  setInventoryForm({ supplier: "", supplierRuc: "", supplierPhone: "", paymentMethod: "plin-yape", category: "operativos", items: [{ productName: "", quantity: 0, unit: "KG", volume: 1, unitCost: 0, total: 0 }], totalAmount: 0, purchaseDate: new Date().toISOString().split("T")[0] });
+                  setProductSearchTerms([""]);
+                  setActiveDropdownIndex(null);
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 text-sm font-bold transition-all"
+              >
+                ✕
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Fecha de compra *</label>
-                <input
-                  type="date"
-                  value={inventoryForm.purchaseDate}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, purchaseDate: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [color-scheme:dark]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Método de pago *</label>
-                <select
-                  value={inventoryForm.paymentMethod}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                >
-                  <option value="plin-yape">📱 Plin / Yape</option>
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="transferencia">🏦 Transferencia</option>
-                  <option value="tarjeta">💳 Tarjeta</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-fuchsia-400 mb-1">Categoría de gasto *</label>
-                <select
-                  value={inventoryForm.category}
-                  onChange={(e) => setInventoryForm({ ...inventoryForm, category: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                >
-                  <option value="operativos">🍖 Gastos Operativos</option>
-                  <option value="fijos">🏢 Gastos Fijos</option>
-                  <option value="personal">👥 Gastos de Personal</option>
-                  <option value="marketing">📢 Marketing y Publicidad</option>
-                </select>
-              </div>
-            </div>
+            <div className="px-6 py-5 space-y-5">
 
-            {/* Formulario dinámico según categoría */}
-            <div className="mb-3">
-              {inventoryForm.category === "operativos" && (
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-sm font-bold text-white">📋 Insumos y Productos</h4>
-                  <button
-                    onClick={addInventoryItem}
-                    className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
+              {/* TIPO DE GASTO */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Tipo de gasto</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {([
+                    { value: "operativos", label: "Operativos", desc: "Insumos", icon: "🛒" },
+                    { value: "fijos", label: "Fijos", desc: "Alquiler, luz", icon: "🏢" },
+                    { value: "personal", label: "Personal", desc: "Salarios", icon: "👥" },
+                    { value: "marketing", label: "Marketing", desc: "Publicidad", icon: "📢" },
+                  ] as const).map(cat => (
+                    <button
+                      key={cat.value}
+                      onClick={() => setInventoryForm({ ...inventoryForm, category: cat.value, items: [{ productName: "", quantity: 0, unit: "KG", volume: 1, unitCost: 0, total: 0 }], totalAmount: 0 })}
+                      className={`p-3 rounded-xl border-2 text-left transition-all ${
+                        inventoryForm.category === cat.value
+                          ? "border-gray-900 bg-gray-50"
+                          : "border-gray-100 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <div className="text-xl mb-1">{cat.icon}</div>
+                      <p className="text-xs font-bold text-gray-900">{cat.label}</p>
+                      <p className="text-xs text-gray-400">{cat.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* INFO BASE */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-3 sm:col-span-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">
+                    {inventoryForm.category === "personal" ? "Nombre del empleado" : "Proveedor / A quién le pagaste"}
+                  </label>
+                  <input
+                    type="text"
+                    value={inventoryForm.supplier}
+                    onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value.toUpperCase() })}
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                    placeholder={inventoryForm.category === "personal" ? "NOMBRE COMPLETO" : "MERCADO, WONG..."}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Fecha</label>
+                  <input
+                    type="date"
+                    value={inventoryForm.purchaseDate}
+                    onChange={(e) => setInventoryForm({ ...inventoryForm, purchaseDate: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [color-scheme:light]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Pago</label>
+                  <select
+                    value={inventoryForm.paymentMethod}
+                    onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                   >
-                    + Item
-                  </button>
-                </div>
-              )}
-              {inventoryForm.category === "personal" && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-white mb-3">👥 Pago de Personal</h4>
-                </div>
-              )}
-              {inventoryForm.category === "fijos" && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-white mb-3">🏢 Gastos Fijos</h4>
-                </div>
-              )}
-              {inventoryForm.category === "marketing" && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-white mb-3">📢 Marketing y Publicidad</h4>
-                </div>
-              )}
-
-              {/* FORMULARIO PARA GASTOS OPERATIVOS */}
-              {inventoryForm.category === "operativos" && (
-              <>
-              {/* Encabezados de columnas */}
-              <div className="bg-gray-800 rounded-lg p-2 mb-2">
-                <div className="grid grid-cols-12 gap-2">
-                  <div className="col-span-3">
-                    <p className="text-xs font-bold text-fuchsia-400">Producto</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs font-bold text-fuchsia-400">Categoría</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-fuchsia-400 text-center">Compra</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-fuchsia-400">Und.</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-cyan-400 text-center" title="Contenido por unidad de compra">x</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-green-400 text-center" title="Stock total que ingresa">= Stock</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs font-bold text-fuchsia-400">Costo S/</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-xs font-bold text-amber-400">Total S/</p>
-                  </div>
+                    <option value="plin-yape">Plin / Yape</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="tarjeta">Tarjeta</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="space-y-2 pr-1">
-                {inventoryForm.items.map((item, idx) => (
-                  <div key={idx} className="bg-black/50 rounded p-2 border border-fuchsia-500/20">
-                    <div className="grid grid-cols-12 gap-2 items-center">
-                      {/* Producto */}
-                      <div className="col-span-12 md:col-span-3">
+              {/* ===== OPERATIVOS ===== */}
+              {inventoryForm.category === "operativos" && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Productos comprados</p>
+                    <button
+                      onClick={addInventoryItem}
+                      className="text-xs font-bold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-all"
+                    >
+                      + Añadir fila
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-[1fr_64px_80px_88px_28px] gap-2 px-1 mb-1">
+                    <p className="text-xs font-semibold text-gray-400">Producto</p>
+                    <p className="text-xs font-semibold text-gray-400 text-center">Cant.</p>
+                    <p className="text-xs font-semibold text-gray-400 text-center">Unidad</p>
+                    <p className="text-xs font-semibold text-gray-400 text-right">Total S/</p>
+                    <span />
+                  </div>
+                  <div className="space-y-2">
+                    {inventoryForm.items.map((item, idx) => (
+                      <div key={idx} className="grid grid-cols-[1fr_64px_80px_88px_28px] gap-2 items-center">
                         <input
                           type="text"
                           value={item.productName || ""}
-                          onChange={(e) => updateInventoryItem(idx, 'productName', e.target.value.toUpperCase())}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                          onChange={(e) => updateInventoryItem(idx, "productName", e.target.value.toUpperCase())}
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                          placeholder="Pollo, pan, gas..."
                         />
-                      </div>
-
-                      {/* Categoría */}
-                      <div className="col-span-12 md:col-span-2">
-                        <select
-                          value={item.category || ""}
-                          onChange={(e) => updateInventoryItem(idx, 'category', e.target.value)}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
-                        >
-                          <option value="">-- Tipo --</option>
-                          <option value="INSUMO">🥘 INSUMO</option>
-                          <option value="EMPAQUE">📦 EMPAQUE</option>
-                          <option value="SERVICIO">⚡ SERVICIO</option>
-                          <option value="UTENCILIO">🔧 UTENCILIO</option>
-                        </select>
-                      </div>
-
-                      {/* Cantidad Comprada */}
-                      <div className="col-span-3 md:col-span-1">
                         <input
                           type="number"
                           step="1"
-                          value={item.quantity === 0 ? '' : item.quantity}
-                          onChange={(e) => updateInventoryItem(idx, 'quantity', parseInt(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white text-center focus:border-fuchsia-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          min="0"
+                          value={item.quantity === 0 ? "" : item.quantity}
+                          onChange={(e) => updateInventoryItem(idx, "quantity", parseInt(e.target.value) || 0)}
+                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-center focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          placeholder="1"
                         />
-                      </div>
-
-                      {/* Unidad de Compra */}
-                      <div className="col-span-4 md:col-span-1">
                         <select
                           value={item.unit}
-                          onChange={(e) => updateInventoryItem(idx, 'unit', e.target.value)}
-                          className="w-full px-1 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none"
+                          onChange={(e) => updateInventoryItem(idx, "unit", e.target.value)}
+                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
                         >
-                          <option value="">-</option>
+                          <option value="KG">KG</option>
+                          <option value="UNIDAD">UND</option>
                           <option value="PAQUETE">PKT</option>
                           <option value="CAJA">CAJA</option>
                           <option value="BOLSA">BOLSA</option>
-                          <option value="KG">KG</option>
-                          <option value="UNIDAD">UND</option>
+                          <option value="LITRO">LTR</option>
                           <option value="CIENTO">CIEN</option>
                         </select>
-                      </div>
-
-                      {/* Multiplicador (Contenido por unidad) */}
-                      <div className="col-span-2 md:col-span-1">
-                        <input
-                          type="number"
-                          step="1"
-                          value={item.volume === 0 ? '' : item.volume}
-                          onChange={(e) => updateInventoryItem(idx, 'volume', parseInt(e.target.value) || 1)}
-                          title="Contenido por unidad. Ej: Si cada paquete tiene 100 bolsas, escribe 100"
-                          className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-
-                      {/* Stock Total (Auto-calculado) */}
-                      <div className="col-span-3 md:col-span-1">
-                        <div className="w-full px-2 py-1.5 text-xs rounded bg-green-900/30 border border-green-500/50 text-green-400 text-center font-black">
-                          {(item.quantity * (item.volume || 1)).toLocaleString()}
-                        </div>
-                      </div>
-
-                      {/* Costo Unitario */}
-                      <div className="col-span-6 md:col-span-2">
                         <input
                           type="number"
                           step="0.01"
-                          value={item.unitCost === 0 ? '' : item.unitCost}
-                          onChange={(e) => updateInventoryItem(idx, 'unitCost', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          min="0"
+                          value={item.unitCost === 0 ? "" : item.unitCost}
+                          onChange={(e) => updateInventoryItem(idx, "unitCost", parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-right focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          placeholder="0.00"
                         />
+                        {inventoryForm.items.length > 1 ? (
+                          <button
+                            onClick={() => removeInventoryItem(idx)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 text-xs font-bold transition-all"
+                          >
+                            ✕
+                          </button>
+                        ) : <span />}
                       </div>
-
-                      {/* Total */}
-                      <div className="col-span-6 md:col-span-1">
-                        <div className="w-full px-2 py-1.5 text-xs rounded bg-amber-900/30 border border-amber-500/50 text-amber-400 font-black text-right">
-                          {item.total.toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-                    {inventoryForm.items.length > 1 && (
-                      <div className="mt-1 text-right">
-                        <button
-                          onClick={() => removeInventoryItem(idx)}
-                          className="text-red-400 hover:text-red-300 text-xs"
-                        >
-                          ❌ Eliminar
-                        </button>
-                      </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-              </>
+                </div>
               )}
 
-              {/* FORMULARIO PARA GASTOS DE PERSONAL */}
-              {inventoryForm.category === "personal" && (
+              {/* ===== FIJOS ===== */}
+              {inventoryForm.category === "fijos" && (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-green-400 mb-1">Nombre del empleado *</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.items[0]?.productName || ""}
-                        onChange={(e) => {
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Concepto</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["ALQUILER", "LUZ", "AGUA", "GAS", "INTERNET", "TELÉFONO", "OTRO"].map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => {
                           const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "DÍA" };
+                          newItems[0] = { ...newItems[0], productName: opt, unit: "SERVICIO", quantity: 1, volume: 1 };
                           setInventoryForm({ ...inventoryForm, items: newItems });
                         }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
-                        placeholder="NOMBRE COMPLETO"
-                      />
-                    </div>
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                          inventoryForm.items[0]?.productName === opt
+                            ? "bg-gray-900 text-white border-gray-900"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                  {inventoryForm.items[0]?.productName === "OTRO" && (
+                    <input
+                      type="text"
+                      value={(inventoryForm.items[0] as any)?.category || ""}
+                      onChange={(e) => {
+                        const newItems = [...inventoryForm.items];
+                        (newItems[0] as any).category = e.target.value.toUpperCase();
+                        setInventoryForm({ ...inventoryForm, items: newItems });
+                      }}
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                      placeholder="Describe el gasto..."
+                    />
+                  )}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Monto (S/)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={inventoryForm.items[0]?.unitCost === 0 ? "" : inventoryForm.items[0]?.unitCost}
+                      onChange={(e) => {
+                        const amount = parseFloat(e.target.value) || 0;
+                        const newItems = [...inventoryForm.items];
+                        newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
+                        setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
+                      }}
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ===== PERSONAL ===== */}
+              {inventoryForm.category === "personal" && (
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Detalle del pago</p>
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-green-400 mb-1">Días trabajados *</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">Días trabajados</label>
                       <input
                         type="number"
-                        value={inventoryForm.items[0]?.quantity || 0}
+                        min="0"
+                        value={inventoryForm.items[0]?.quantity === 0 ? "" : inventoryForm.items[0]?.quantity}
                         onChange={(e) => {
                           const days = parseInt(e.target.value) || 0;
                           const dailyRate = inventoryForm.items[0]?.unitCost || 0;
                           const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], quantity: days, volume: 1, total: days * dailyRate };
-                          const total = days * dailyRate;
-                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: total });
+                          newItems[0] = { ...newItems[0], quantity: days, unit: "DÍA", volume: 1, total: days * dailyRate };
+                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: days * dailyRate });
                         }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
+                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-green-400 mb-1">Pago por día (S/) *</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">Pago por día (S/)</label>
                       <input
                         type="number"
                         step="0.01"
-                        value={inventoryForm.items[0]?.unitCost || 0}
+                        min="0"
+                        value={inventoryForm.items[0]?.unitCost === 0 ? "" : inventoryForm.items[0]?.unitCost}
                         onChange={(e) => {
                           const dailyRate = parseFloat(e.target.value) || 0;
                           const days = inventoryForm.items[0]?.quantity || 0;
                           const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], unitCost: dailyRate, total: days * dailyRate };
-                          const total = days * dailyRate;
-                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: total });
+                          newItems[0] = { ...newItems[0], unitCost: dailyRate, unit: "DÍA", volume: 1, total: days * dailyRate };
+                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: days * dailyRate });
                         }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-green-500/30 text-white focus:border-green-400 focus:outline-none"
+                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0.00"
                       />
                     </div>
                   </div>
-                  <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
-                    <p className="text-xs text-green-300 font-bold">Total a pagar: S/ {inventoryForm.totalAmount.toFixed(2)}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* FORMULARIO PARA GASTOS FIJOS */}
-              {inventoryForm.category === "fijos" && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-purple-400 mb-1">Concepto *</label>
-                      <select
-                        value={inventoryForm.items[0]?.productName || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], productName: e.target.value, unit: "SERVICIO", quantity: 1, volume: 1 };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
-                      >
-                        <option value="">-- Seleccionar --</option>
-                        <option value="ALQUILER">🏠 ALQUILER</option>
-                        <option value="LUZ">💡 LUZ</option>
-                        <option value="AGUA">💧 AGUA</option>
-                        <option value="GAS">🔥 GAS</option>
-                        <option value="INTERNET">📡 INTERNET</option>
-                        <option value="TELÉFONO">📞 TELÉFONO</option>
-                        <option value="OTRO">📋 OTRO</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-purple-400 mb-1">Monto (S/) *</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={inventoryForm.items[0]?.unitCost || 0}
-                        onChange={(e) => {
-                          const amount = parseFloat(e.target.value) || 0;
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
-                          setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-                  {inventoryForm.items[0]?.productName === "OTRO" && (
-                    <div>
-                      <label className="block text-xs font-bold text-purple-400 mb-1">Descripción</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.items[0]?.category || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], category: e.target.value.toUpperCase() };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
-                        placeholder="ESPECIFICAR GASTO"
-                      />
+                  {(inventoryForm.items[0]?.quantity || 0) > 0 && (inventoryForm.items[0]?.unitCost || 0) > 0 && (
+                    <div className="bg-gray-50 rounded-xl px-4 py-3 flex justify-between items-center">
+                      <span className="text-xs text-gray-500">{inventoryForm.items[0]?.quantity} días × S/ {(inventoryForm.items[0]?.unitCost || 0).toFixed(2)}</span>
+                      <span className="text-base font-black text-gray-900">S/ {inventoryForm.totalAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
-                    <p className="text-xs text-purple-300 font-bold">Total: S/ {inventoryForm.totalAmount.toFixed(2)}</p>
-                  </div>
                 </div>
               )}
 
-              {/* FORMULARIO PARA MARKETING */}
+              {/* ===== MARKETING ===== */}
               {inventoryForm.category === "marketing" && (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-orange-400 mb-1">Descripción de la publicidad *</label>
-                      <input
-                        type="text"
-                        value={inventoryForm.items[0]?.productName || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "CAMPAÑA" };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
-                        placeholder="EJ: HISTORIAS INSTAGRAM, FACEBOOK ADS"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-orange-400 mb-1">Tipo de pago *</label>
-                      <select
-                        value={inventoryForm.items[0]?.category || ""}
-                        onChange={(e) => {
-                          const newItems = [...inventoryForm.items];
-                          newItems[0] = { ...newItems[0], category: e.target.value, quantity: 1, volume: 1 };
-                          setInventoryForm({ ...inventoryForm, items: newItems });
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
-                      >
-                        <option value="">-- Seleccionar --</option>
-                        <option value="PAGO">💵 PAGO EN EFECTIVO/TRANSFERENCIA</option>
-                        <option value="CANJE">🍖 CANJE POR MENÚS</option>
-                      </select>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Detalle</p>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Descripción</label>
+                    <input
+                      type="text"
+                      value={inventoryForm.items[0]?.productName || ""}
+                      onChange={(e) => {
+                        const newItems = [...inventoryForm.items];
+                        newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "CAMPAÑA", quantity: 1, volume: 1 };
+                        setInventoryForm({ ...inventoryForm, items: newItems });
+                      }}
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                      placeholder="Instagram Ads, canje influencer, flyers..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Tipo</label>
+                    <div className="flex gap-2">
+                      {(["PAGO", "CANJE"] as const).map(tipo => (
+                        <button
+                          key={tipo}
+                          onClick={() => {
+                            const newItems = [...inventoryForm.items];
+                            (newItems[0] as any).category = tipo;
+                            setInventoryForm({ ...inventoryForm, items: newItems });
+                          }}
+                          className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${
+                            (inventoryForm.items[0] as any)?.category === tipo
+                              ? "bg-gray-900 text-white border-gray-900"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                          }`}
+                        >
+                          {tipo === "PAGO" ? "Pago en efectivo / transferencia" : "Canje por menús"}
+                        </button>
+                      ))}
                     </div>
                   </div>
-
-                  {inventoryForm.items[0]?.category === "PAGO" && (
+                  {(inventoryForm.items[0] as any)?.category === "PAGO" && (
                     <div>
-                      <label className="block text-xs font-bold text-orange-400 mb-1">Monto pagado (S/) *</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">Monto pagado (S/)</label>
                       <input
                         type="number"
                         step="0.01"
-                        value={inventoryForm.items[0]?.unitCost || 0}
+                        min="0"
+                        value={inventoryForm.items[0]?.unitCost === 0 ? "" : inventoryForm.items[0]?.unitCost}
                         onChange={(e) => {
                           const amount = parseFloat(e.target.value) || 0;
                           const newItems = [...inventoryForm.items];
                           newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
                           setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
                         }}
-                        className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0.00"
                       />
                     </div>
                   )}
-
-                  {inventoryForm.items[0]?.category === "CANJE" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {(inventoryForm.items[0] as any)?.category === "CANJE" && (
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-orange-400 mb-1">Cantidad de menús entregados *</label>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1.5">Cant. menús entregados</label>
                         <input
                           type="number"
-                          value={inventoryForm.items[0]?.quantity || 0}
+                          min="0"
+                          value={inventoryForm.items[0]?.quantity === 0 ? "" : inventoryForm.items[0]?.quantity}
                           onChange={(e) => {
                             const qty = parseInt(e.target.value) || 0;
                             const cost = inventoryForm.items[0]?.unitCost || 0;
@@ -7850,16 +7843,17 @@ _Valido por 30 dias._`;
                             newItems[0] = { ...newItems[0], quantity: qty, total: qty * cost };
                             setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
                           }}
-                          className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="0"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-orange-400 mb-1">Costo por menú (S/) *</label>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1.5">Costo por menú (S/)</label>
                         <input
                           type="number"
                           step="0.01"
-                          value={inventoryForm.items[0]?.unitCost || 0}
+                          min="0"
+                          value={inventoryForm.items[0]?.unitCost === 0 ? "" : inventoryForm.items[0]?.unitCost}
                           onChange={(e) => {
                             const cost = parseFloat(e.target.value) || 0;
                             const qty = inventoryForm.items[0]?.quantity || 0;
@@ -7867,77 +7861,57 @@ _Valido por 30 dias._`;
                             newItems[0] = { ...newItems[0], unitCost: cost, total: qty * cost };
                             setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
                           }}
-                          className="w-full px-3 py-2 text-sm rounded bg-black border border-orange-500/30 text-white focus:border-orange-400 focus:outline-none"
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="0.00"
                         />
                       </div>
                     </div>
                   )}
-
-                  <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
-                    <p className="text-xs text-orange-300 font-bold">
-                      {inventoryForm.items[0]?.category === "CANJE"
-                        ? `Costo equivalente: S/ ${inventoryForm.totalAmount.toFixed(2)} (${inventoryForm.items[0]?.quantity || 0} menús)`
-                        : `Total: S/ ${inventoryForm.totalAmount.toFixed(2)}`
-                      }
-                    </p>
-                  </div>
                 </div>
               )}
-            </div>
 
-            {/* Total */}
-            <div className="bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 rounded-lg p-3 border-2 border-fuchsia-500/50 mb-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-xs text-gray-400">Total de la Compra</p>
-                  <p className="text-xs text-gray-500">{inventoryForm.items.length} item(s)</p>
+              {/* TOTAL + GUARDAR */}
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-xs text-gray-400">Total a registrar</p>
+                    {inventoryForm.category === "operativos" && (
+                      <p className="text-xs text-gray-400">{inventoryForm.items.length} producto{inventoryForm.items.length !== 1 ? "s" : ""}</p>
+                    )}
+                  </div>
+                  <p className="text-3xl font-black text-gray-900">S/ {inventoryForm.totalAmount.toFixed(2)}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-black text-fuchsia-400">
-                    S/ {inventoryForm.totalAmount.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-gray-400">{inventoryForm.paymentMethod}</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowInventoryModal(false);
+                      setInventoryForm({ supplier: "", supplierRuc: "", supplierPhone: "", paymentMethod: "plin-yape", category: "operativos", items: [{ productName: "", quantity: 0, unit: "KG", volume: 1, unitCost: 0, total: 0 }], totalAmount: 0, purchaseDate: new Date().toISOString().split("T")[0] });
+                      setProductSearchTerms([""]);
+                      setActiveDropdownIndex(null);
+                    }}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 text-sm rounded-xl font-bold transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleCreateInventory}
+                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-sm rounded-xl font-bold transition-all"
+                  >
+                    Guardar gasto
+                  </button>
                 </div>
               </div>
-            </div>
 
-            {/* Botones */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setShowInventoryModal(false);
-                  setInventoryForm({
-                    supplier: "",
-                    supplierRuc: "",
-                    supplierPhone: "",
-                    paymentMethod: "plin-yape",
-                    items: [{ productName: "", quantity: 0, unit: "KG", volume: 0, unitCost: 0, total: 0 }],
-                    totalAmount: 0,
-                    purchaseDate: new Date().toISOString().split('T')[0]
-                  });
-                  setProductSearchTerms([""]);
-                  setActiveDropdownIndex(null);
-                }}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
-              >
-                ❌ Cancelar
-              </button>
-              <button
-                onClick={handleCreateInventory}
-                className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all neon-border-purple transform hover:scale-105"
-              >
-                ✅ Registrar Compra
-              </button>
             </div>
           </div>
         </div>
       )}
 
+
       {/* Modal de Edición de Compra */}
       {showInventoryEditModal && editingPurchase && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-amber-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border-2 border-amber-500 p-4 max-w-5xl w-full max-h-[95vh] overflow-y-auto">
             <h3 className="text-xl font-black text-amber-400 mb-3">✏️ Editar Compra</h3>
 
             {/* Información Compacta en Grid */}
@@ -7948,7 +7922,7 @@ _Valido por 30 dias._`;
                   type="text"
                   defaultValue={editingPurchase.supplierRuc}
                   onChange={(e) => setEditingPurchase({ ...editingPurchase, supplierRuc: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full px-2 py-1.5 text-sm rounded bg-white border border-gray-200 text-gray-900 focus:border-amber-400 focus:outline-none"
                   placeholder="20123456789"
                   maxLength={11}
                 />
@@ -7959,7 +7933,7 @@ _Valido por 30 dias._`;
                   type="text"
                   defaultValue={editingPurchase.supplier}
                   onChange={(e) => setEditingPurchase({ ...editingPurchase, supplier: e.target.value.toUpperCase() })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full px-2 py-1.5 text-sm rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none"
                   placeholder="Nombre proveedor"
                 />
               </div>
@@ -7972,7 +7946,7 @@ _Valido por 30 dias._`;
                     const value = e.target.value.replace(/\D/g, '');
                     setEditingPurchase({ ...editingPurchase, supplierPhone: value });
                   }}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-gray-700 text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full px-2 py-1.5 text-sm rounded bg-white border border-gray-200 text-gray-900 focus:border-amber-400 focus:outline-none"
                   maxLength={9}
                 />
               </div>
@@ -7982,7 +7956,7 @@ _Valido por 30 dias._`;
                   type="date"
                   defaultValue={editingPurchase.purchaseDate}
                   onChange={(e) => setEditingPurchase({ ...editingPurchase, purchaseDate: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+                  className="w-full px-2 py-1.5 text-sm rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none [color-scheme:light]"
                 />
               </div>
               <div>
@@ -7990,7 +7964,7 @@ _Valido por 30 dias._`;
                 <select
                   defaultValue={editingPurchase.paymentMethod}
                   onChange={(e) => setEditingPurchase({ ...editingPurchase, paymentMethod: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm rounded bg-black border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full px-2 py-1.5 text-sm rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none"
                 >
                   <option value="plin-yape">📱 Plin / Yape</option>
                   <option value="efectivo">💵 Efectivo</option>
@@ -8003,11 +7977,11 @@ _Valido por 30 dias._`;
             {/* Lista de Artículos */}
             <div className="mb-3">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-bold text-white">📋 Artículos</h4>
+                <h4 className="text-sm font-bold text-gray-800">📋 Artículos</h4>
               </div>
 
               {/* Encabezados de columnas */}
-              <div className="bg-gray-800 rounded-lg p-2 mb-2">
+              <div className="bg-gray-100 rounded-lg p-2 mb-2">
                 <div className="grid grid-cols-12 gap-2">
                   <div className="col-span-3">
                     <p className="text-xs font-bold text-amber-400">Producto</p>
@@ -8038,7 +8012,7 @@ _Valido por 30 dias._`;
 
               <div className="space-y-2 pr-1">
                 {editingPurchase.items.map((item: any, idx: number) => (
-                  <div key={idx} className="bg-black/50 rounded p-2 border border-amber-500/20">
+                  <div key={idx} className="bg-gray-100 rounded p-2 border border-amber-500/20">
                     <div className="grid grid-cols-12 gap-2 items-center">
                       {/* Producto */}
                       <div className="col-span-12 md:col-span-3">
@@ -8050,7 +8024,7 @@ _Valido por 30 dias._`;
                             newItems[idx].productName = e.target.value.toUpperCase();
                             setEditingPurchase({ ...editingPurchase, items: newItems });
                           }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none"
                         />
                       </div>
 
@@ -8063,7 +8037,7 @@ _Valido por 30 dias._`;
                             newItems[idx].category = e.target.value;
                             setEditingPurchase({ ...editingPurchase, items: newItems });
                           }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none"
                         >
                           <option value="">-- Tipo --</option>
                           <option value="INSUMO">🥘 INSUMO</option>
@@ -8086,7 +8060,7 @@ _Valido por 30 dias._`;
                             newItems[idx].total = quantity * newItems[idx].unitCost;
                             setEditingPurchase({ ...editingPurchase, items: newItems, totalAmount: newItems.reduce((sum, i) => sum + i.total, 0) });
                           }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white text-center focus:border-amber-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-white border border-amber-200 text-gray-900 text-center focus:border-amber-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
@@ -8099,7 +8073,7 @@ _Valido por 30 dias._`;
                             newItems[idx].unit = e.target.value;
                             setEditingPurchase({ ...editingPurchase, items: newItems });
                           }}
-                          className="w-full px-1 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none"
+                          className="w-full px-1 py-1.5 text-xs rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none"
                         >
                           <option value="">-</option>
                           <option value="PAQUETE">PKT</option>
@@ -8147,7 +8121,7 @@ _Valido por 30 dias._`;
                             newItems[idx].total = newItems[idx].quantity * unitCost;
                             setEditingPurchase({ ...editingPurchase, items: newItems, totalAmount: newItems.reduce((sum, i) => sum + i.total, 0) });
                           }}
-                          className="w-full px-2 py-1.5 text-xs rounded bg-gray-900 border border-amber-500/30 text-white focus:border-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-white border border-amber-200 text-gray-900 focus:border-amber-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
@@ -8186,7 +8160,7 @@ _Valido por 30 dias._`;
                   setShowInventoryEditModal(false);
                   setEditingPurchase(null);
                 }}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm rounded-lg font-bold transition-all"
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 text-sm rounded-lg font-bold transition-all"
               >
                 ❌ Cancelar
               </button>
@@ -8218,35 +8192,98 @@ _Valido por 30 dias._`;
         </div>
       )}
 
-      {/* Modal para ver comprobante de pago */}
+      {/* Modal para ver comprobante de pago — mejorado */}
       {showVoucherModal && (
         <div
-          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={() => setShowVoucherModal(false)}
         >
           <div
-            className="bg-gray-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+            className="bg-white rounded-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-gray-900 border-b border-gray-700 p-4 flex items-center justify-between">
-              <h3 className="text-xl font-black text-white">Comprobante de Pago</h3>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-5 py-4 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🟣</span>
+                <div>
+                  <p className="text-white font-black text-sm leading-tight">Comprobante Yape</p>
+                  {selectedVoucherOrder && (
+                    <p className="text-purple-200 text-[10px] font-medium leading-tight">
+                      {selectedVoucherOrder.id} · {selectedVoucherOrder.name}
+                    </p>
+                  )}
+                </div>
+              </div>
               <button
                 onClick={() => setShowVoucherModal(false)}
-                className="text-gray-400 hover:text-white text-2xl font-bold transition-colors"
-              >
-                ×
-              </button>
+                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold transition-all flex items-center justify-center text-sm"
+              >×</button>
             </div>
-            <div className="p-6">
+
+            {/* Datos del pedido */}
+            {selectedVoucherOrder && (
+              <div className="px-5 py-3 bg-purple-50 border-b border-purple-100 flex items-center justify-between flex-shrink-0">
+                <div className="flex gap-4 text-xs text-gray-500">
+                  <div>
+                    <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Pedido</p>
+                    <p className="font-black text-gray-800">{selectedVoucherOrder.id}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Cliente</p>
+                    <p className="font-black text-gray-800">{selectedVoucherOrder.name}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Total</p>
+                    <p className="font-black text-purple-700">S/ {(selectedVoucherOrder.totalPrice || 0).toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Hora</p>
+                    <p className="font-black text-gray-800">
+                      {new Date(selectedVoucherOrder.createdAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Imagen comprobante */}
+            <div className="flex-1 overflow-auto p-4 bg-gray-50 flex items-center justify-center min-h-[200px]">
               {selectedVoucherPath ? (
                 <img
                   src={selectedVoucherPath}
                   alt="Comprobante de pago"
-                  className="w-full h-auto rounded-lg border-2 border-green-500/30"
+                  className="max-w-full h-auto rounded-xl border border-gray-200 shadow-md object-contain"
+                  style={{ maxHeight: '55vh' }}
                 />
               ) : (
-                <p className="text-gray-400 text-center py-8">No hay comprobante disponible</p>
+                <div className="text-center py-10">
+                  <div className="text-5xl mb-3">📭</div>
+                  <p className="text-gray-400 font-semibold text-sm">No hay comprobante disponible</p>
+                  <p className="text-gray-300 text-xs mt-1">El cliente no adjuntó una captura de pago</p>
+                </div>
               )}
+            </div>
+
+            {/* Acciones */}
+            <div className="px-5 py-3 border-t border-gray-100 flex gap-2 flex-shrink-0 bg-white">
+              {selectedVoucherPath && (
+                <a
+                  href={selectedVoucherPath}
+                  download={`comprobante-${selectedVoucherOrder?.id || 'pedido'}.jpg`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-2.5 text-xs font-black text-center transition-all"
+                >
+                  ⬇ Descargar
+                </a>
+              )}
+              <button
+                onClick={() => setShowVoucherModal(false)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl py-2.5 text-xs font-black transition-all"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
@@ -8259,24 +8296,24 @@ _Valido por 30 dias._`;
           onClick={() => setShowHistoricalSaleModal(false)}
         >
           <div
-            className="bg-gray-900 rounded-xl border-2 border-orange-500 max-w-lg w-full p-6"
+            className="bg-white rounded-xl border-2 border-orange-500 max-w-lg w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl font-black text-orange-400 mb-4">
               📅 Registrar Venta Histórica
             </h3>
             <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-4 mb-4">
-              <p className="text-white text-sm mb-2">
+              <p className="text-gray-600 text-sm mb-2">
                 <strong>Fecha:</strong> 13 de febrero 2026 (Día de apertura)
               </p>
-              <p className="text-white text-sm mb-2">
+              <p className="text-gray-600 text-sm mb-2">
                 <strong>Monto:</strong> S/ 250.00
               </p>
               <p className="text-gray-400 text-xs mt-3">
                 ⚠️ Esta venta se perdió por un error del sistema y se recuperará con esta acción. Solo se registrará el monto total, sin detalle de pedidos individuales.
               </p>
             </div>
-            <p className="text-gray-300 text-sm mb-6">
+            <p className="text-gray-500 text-sm mb-6">
               Esta acción registrará la venta del día de apertura en el sistema para que se contabilice correctamente en los históricos y analytics.
             </p>
             <div className="flex gap-3">
@@ -8288,7 +8325,7 @@ _Valido por 30 dias._`;
               </button>
               <button
                 onClick={() => setShowHistoricalSaleModal(false)}
-                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition-all"
+                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold transition-all"
               >
                 Cancelar
               </button>
@@ -8300,10 +8337,10 @@ _Valido por 30 dias._`;
       {/* Modal CRM Edit */}
       {showCrmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCrmModal(false)}>
-          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl border-2 border-fuchsia-500 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-black text-fuchsia-400">Perfil CRM</h2>
-              <button onClick={() => setShowCrmModal(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
+              <h2 className="text-lg font-black text-gray-700">Perfil CRM</h2>
+              <button onClick={() => setShowCrmModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">✕</button>
             </div>
 
             {/* Cumpleaños */}
@@ -8318,7 +8355,7 @@ _Valido por 30 dias._`;
                 }}
                 placeholder="15/03"
                 maxLength={5}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-fuchsia-500"
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-gray-400"
               />
             </div>
 
@@ -8335,7 +8372,7 @@ _Valido por 30 dias._`;
                     className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
                       crmForm.tags.includes(tag)
                         ? 'bg-fuchsia-600 text-white border-fuchsia-500'
-                        : 'bg-gray-800 text-gray-400 border-gray-600 hover:border-fuchsia-500'
+                        : 'bg-gray-100 text-gray-400 border-gray-300 hover:border-fuchsia-500'
                     }`}>
                     {tag}
                   </button>
@@ -8351,7 +8388,7 @@ _Valido por 30 dias._`;
                 onChange={e => setCrmForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
                 placeholder="Preferencias, alergias, observaciones..."
                 rows={3}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm resize-none focus:outline-none focus:border-fuchsia-500"
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-sm resize-none focus:outline-none focus:border-gray-400"
               />
               <p className="text-[10px] text-gray-600 mt-1">{crmForm.notes.length}/500</p>
             </div>
@@ -8360,12 +8397,12 @@ _Valido por 30 dias._`;
               <button
                 onClick={handleCrmSave}
                 disabled={crmSaving}
-                className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
+                className="flex-1 bg-white hover:bg-gray-800 disabled:opacity-50 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm transition-all"
               >
                 {crmSaving ? 'Guardando...' : 'Guardar'}
               </button>
               <button onClick={() => setShowCrmModal(false)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-sm transition-all">
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold text-sm transition-all">
                 Cancelar
               </button>
             </div>
@@ -8376,10 +8413,10 @@ _Valido por 30 dias._`;
       {/* Modal Campaña WhatsApp */}
       {showCampaignModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCampaignModal(false)}>
-          <div className="bg-gray-900 rounded-xl border-2 border-fuchsia-500 w-full max-w-lg p-5 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl border-2 border-fuchsia-500 w-full max-w-lg p-5 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-black text-fuchsia-400">Campaña WhatsApp</h2>
-              <button onClick={() => setShowCampaignModal(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
+              <h2 className="text-lg font-black text-gray-700">Campaña WhatsApp</h2>
+              <button onClick={() => setShowCampaignModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">✕</button>
             </div>
 
             {/* Selector de segmento */}
@@ -8395,7 +8432,7 @@ _Valido por 30 dias._`;
                 <button key={seg}
                   onClick={() => setCampaignSegment(seg)}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                    campaignSegment === seg ? 'bg-fuchsia-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-fuchsia-500'
+                    campaignSegment === seg ? 'bg-fuchsia-600 text-white' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:border-fuchsia-500'
                   }`}>
                   {label} ({(customerSegments as any)[seg]?.length ?? 0})
                 </button>
@@ -8403,9 +8440,9 @@ _Valido por 30 dias._`;
             </div>
 
             {/* Preview del mensaje */}
-            <div className="bg-black/50 rounded-lg p-3 mb-4 border border-gray-700">
+            <div className="bg-gray-100 rounded-lg p-3 mb-4 border border-gray-200">
               <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Vista previa del mensaje</p>
-              <p className="text-xs text-gray-300 whitespace-pre-wrap">{getCampaignTemplate(campaignSegment, { name: 'Cliente' })}</p>
+              <p className="text-xs text-gray-500 whitespace-pre-wrap">{getCampaignTemplate(campaignSegment, { name: 'Cliente' })}</p>
             </div>
 
             {/* Lista de clientes */}
@@ -8414,9 +8451,9 @@ _Valido por 30 dias._`;
                 <p className="text-gray-500 text-sm text-center py-8">Sin clientes en este segmento</p>
               ) : (
                 ((customerSegments as any)[campaignSegment] || []).map((c: any) => (
-                  <div key={c.phone} className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
+                  <div key={c.phone} className="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2">
                     <div>
-                      <p className="text-white text-sm font-bold">{c.name}</p>
+                      <p className="text-gray-800 text-sm font-bold">{c.name}</p>
                       <p className="text-gray-500 text-xs">{c.phone}</p>
                     </div>
                     <a href={buildWhatsApp(c.phone, getCampaignTemplate(campaignSegment, c))}
@@ -8435,7 +8472,7 @@ _Valido por 30 dias._`;
       {/* Modal: confirmar canje */}
       {canjeModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
-          <div className="bg-gray-900 rounded-xl border-2 border-orange-500 p-5 max-w-sm w-full">
+          <div className="bg-white rounded-xl border-2 border-orange-500 p-5 max-w-sm w-full">
             <h3 className="text-lg font-black text-orange-400 mb-1">🎁 Marcar como Canje</h3>
             <p className="text-gray-400 text-sm mb-4">
               Esta orden <span className="text-orange-300 font-bold">no se contará en las ventas</span>. Quedará registrada en el módulo financiero para auditoría interna.
@@ -8445,7 +8482,7 @@ _Valido por 30 dias._`;
               value={canjeNoteInput}
               onChange={e => setCanjeNoteInput(e.target.value)}
               placeholder="Motivo: Influencer @usuario, Cortesía proveedor..."
-              className="w-full px-3 py-2 mb-4 rounded-lg bg-black border border-gray-700 text-white text-sm focus:outline-none focus:border-orange-500/50"
+              className="w-full px-3 py-2 mb-4 rounded-lg bg-white border border-gray-200 text-gray-900 text-sm focus:outline-none focus:border-orange-500/50"
             />
             <div className="flex gap-2">
               <button
@@ -8457,7 +8494,7 @@ _Valido por 30 dias._`;
               </button>
               <button
                 onClick={() => setCanjeModal(null)}
-                className="px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-sm hover:border-gray-500"
+                className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 rounded-lg text-sm hover:border-gray-400"
               >
                 Cancelar
               </button>
@@ -8466,6 +8503,7 @@ _Valido por 30 dias._`;
         </div>
       )}
 
+      </main>
     </div>
   );
 }

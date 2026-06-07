@@ -210,13 +210,11 @@ export async function POST(request: Request) {
     });
 
     // Calcular el siguiente número correlativo del día
-    const nextCorrelative = (todayOrders.length + 1).toString().padStart(4, '0');
+    const correlative = (todayOrders.length + 1).toString().padStart(2, '0');
 
-    // Sufijo de 3 dígitos de ms para evitar colisión en pedidos simultáneos
-    const msSuffix = (Date.now() % 1000).toString().padStart(3, '0');
-
-    // Formato: SD + correlativo (4 dígitos) + día (2 dígitos) + mes (2 dígitos) + ms (3 dígitos)
-    const orderId = `SD${nextCorrelative}${day}${month}${msSuffix}`;
+    // Formato corto: #DD-NN  (día/mes abreviado + correlativo del día)
+    // Ej: #0406-01 → pedido 1 del 4 de junio
+    const orderId = `#${day}${month}-${correlative}`;
 
     // Expandir completedOrders con datos completos de productos
     const expandedOrders = completedOrders.map((order: any) => {

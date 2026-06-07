@@ -245,16 +245,6 @@ export default function CheckoutPage() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Estados para cupón
-  const [couponCode, setCouponCode] = useState("");
-  const [couponDiscount, setCouponDiscount] = useState(0);
-  const [couponFixedAmount, setCouponFixedAmount] = useState(0);
-  const [couponMinOrder, setCouponMinOrder] = useState(0);
-  const [couponTieredAmount, setCouponTieredAmount] = useState(0);
-  const [couponValidating, setCouponValidating] = useState(false);
-  const [couponMessage, setCouponMessage] = useState("");
-  const [couponValid, setCouponValid] = useState(false);
-  const [couponHasDeliveryFree, setCouponHasDeliveryFree] = useState(false);
   const [deliveryZone, setDeliveryZone] = useState<'centro' | 'alrededores' | ''>('');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
@@ -330,20 +320,6 @@ export default function CheckoutPage() {
   const hasAnyActivePromotion = hasComboDiscount || hasIndividualDiscount;
   // ─────────────────────────────────────────────────────────────────
 
-  // Calcular subtotal BASE (precios lista sin ninguna promo) — usado solo para cupones
-  const subtotalBase = completedOrders.reduce((total, order) => {
-    const fatProduct = fatProducts.find((p) => p.id === order.productId);
-    const fitProduct = fitProducts.find((p) => p.id === order.productId);
-    const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
-    const product = fatProduct || fitProduct || tacoProduct;
-    if (!product) return total;
-    const originalPrice = order.originalPrice ?? product.price;
-    const complementsTotal = order.complementIds.reduce((sum, compId) => {
-      return sum + (availableComplements[compId]?.price || 0);
-    }, 0);
-    return total + originalPrice * order.quantity + complementsTotal;
-  }, 0);
-
   // Calcular subtotal CON PROMOS individuales (finalPrice) — base correcta para combos
   // Los combos son descuentos ADICIONALES sobre los precios ya promociados
   const subtotalWithPromos = completedOrders.reduce((total, order) => {
@@ -367,21 +343,8 @@ export default function CheckoutPage() {
   // Delivery siempre incluido — sin cobro de zona
   const deliveryCost = 0;
 
-  // Aplicar descuento de cupón si es válido (monto fijo, escalonado o porcentaje)
-  const couponDiscountAmount = couponValid
-    ? couponTieredAmount > 0
-      // Cupón escalonado: S/fixedAmount si total == minOrderAmount, S/tieredAmount si total > minOrderAmount
-      ? subtotalBase >= couponMinOrder
-        ? subtotalBase > couponMinOrder ? couponTieredAmount : couponFixedAmount
-        : 0
-      : couponFixedAmount > 0 ? couponFixedAmount : (subtotalBase * couponDiscount) / 100
-    : 0;
-
-  // Si hay cupón válido, usar subtotalBase (elimina promociones)
-  // Si NO hay cupón, usar subtotal (mantiene promociones)
-  const baseForTotal = couponValid ? subtotalBase : subtotal;
   const deliveryZoneCost = deliveryZone === 'alrededores' ? 4.00 : 0;
-  const realTotal = baseForTotal - comboDiscountAmount - couponDiscountAmount + deliveryZoneCost;
+  const realTotal = subtotal - comboDiscountAmount + deliveryZoneCost;
 
   // Validar si el formulario está completo
   // ── PROGRAMAR COMPRA ─────────────────────────────────────────────
@@ -470,92 +433,6 @@ export default function CheckoutPage() {
       scheduleValid
     );
   };
-
-  // Validar cupón
-  const validateCoupon = async () => {
-    if (hasAnyActivePromotion) {
-      setCouponMessage("Los descuentos no son acumulables");
-      return;
-    }
-
-    if (!couponCode.trim()) {
-      setCouponMessage("Ingresa un código de cupón");
-      return;
-    }
-
-    if (!formData.phone || formData.phone.length !== 9) {
-      setCouponMessage("Completa tu teléfono primero");
-      return;
-    }
-
-    setCouponValidating(true);
-    setCouponMessage("");
-
-    try {
-      const response = await fetch("/api/coupons", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "validate",
-          code: couponCode.trim().toUpperCase(),
-          phone: formData.phone,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.valid) {
-        // Validar monto mínimo si el cupón lo requiere
-        if (data.minOrderAmount > 0 && subtotalBase < data.minOrderAmount) {
-          setCouponValid(false);
-          setCouponDiscount(0);
-          setCouponFixedAmount(0);
-          setCouponMinOrder(0);
-          setCouponTieredAmount(0);
-          setCouponHasDeliveryFree(false);
-          setCouponMessage(`Mínimo S/ ${data.minOrderAmount.toFixed(2)} para usar este cupón`);
-          return;
-        }
-
-        setCouponValid(true);
-        setCouponDiscount(data.discount || 0);
-        setCouponFixedAmount(data.fixedAmount || 0);
-        setCouponMinOrder(data.minOrderAmount || 0);
-        setCouponTieredAmount(data.tieredAmount || 0);
-        setCouponHasDeliveryFree(data.deliveryFree || false);
-
-        if (data.deliveryFree) {
-          setCouponMessage(`✓ Cupón aplicado: Delivery Gratis`);
-        } else if (data.tieredAmount > 0) {
-          const discount = subtotalBase > data.minOrderAmount ? data.tieredAmount : data.fixedAmount;
-          setCouponMessage(`✓ Cupón aplicado: -S/ ${discount.toFixed(2)} de descuento`);
-        } else if (data.fixedAmount > 0) {
-          setCouponMessage(`✓ Cupón aplicado: -S/ ${data.fixedAmount.toFixed(2)} de descuento`);
-        } else {
-          setCouponMessage(`✓ Cupón aplicado: ${data.discount}% de descuento`);
-        }
-      } else {
-        setCouponValid(false);
-        setCouponDiscount(0);
-        setCouponFixedAmount(0);
-        setCouponMinOrder(0);
-        setCouponTieredAmount(0);
-        setCouponHasDeliveryFree(false);
-        setCouponMessage(data.error || "Cupón no válido");
-      }
-    } catch (error) {
-      setCouponValid(false);
-      setCouponDiscount(0);
-      setCouponFixedAmount(0);
-      setCouponMinOrder(0);
-      setCouponTieredAmount(0);
-      setCouponHasDeliveryFree(false);
-      setCouponMessage("Error al validar cupón");
-    } finally {
-      setCouponValidating(false);
-    }
-  };
-
   // Redirect if no completed orders (solo después de cargar)
   useEffect(() => {
     if (!isLoadingOrders && completedOrders.length === 0 && !orderPlaced) {
@@ -635,8 +512,8 @@ export default function CheckoutPage() {
       formDataToSend.append('totalPrice', realTotal.toString());
       formDataToSend.append('comboDiscount', comboDiscountAmount.toFixed(2));
       formDataToSend.append('comboNames', comboResult.appliedCombos.map(c => c.rule.name).join(', '));
-      formDataToSend.append('couponDiscount', couponValid ? couponDiscount.toString() : '0');
-      formDataToSend.append('couponCode', couponValid ? couponCode.trim().toUpperCase() : '');
+      formDataToSend.append('couponDiscount', '0');
+      formDataToSend.append('couponCode', '');
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
       if (cantoCancelo) {
         formDataToSend.append('cantoCancelo', cantoCancelo);
@@ -667,23 +544,6 @@ export default function CheckoutPage() {
         const data = await response.json();
         console.log("Pedido creado exitosamente:", data);
 
-        // Si se usó un cupón válido, marcarlo como usado
-        if (couponValid && couponCode) {
-          try {
-            await fetch("/api/coupons", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                action: "mark-used",
-                code: couponCode,
-                phone: formData.phone,
-              }),
-            });
-            console.log("✓ Cupón marcado como usado");
-          } catch (error) {
-            console.error("Error al marcar cupón como usado:", error);
-          }
-        }
 
         // Limpiar estados y almacenamiento
         clearCart();
@@ -988,48 +848,9 @@ export default function CheckoutPage() {
                 })()}
               </div>
 
-              {/* Sección de cupón */}
-              <div className="border-t border-fuchsia-500/20 pt-4 mb-4">
-                <p className="text-white font-bold text-sm mb-2">¿Tienes un cupón?</p>
-                {hasAnyActivePromotion ? (
-                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-                    <p className="text-amber-300 text-xs text-center">
-                      ⚠️ No acumulable con otras promociones
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        placeholder="SANTO13-XXXXXX"
-                        disabled={couponValid}
-                        className="flex-1 bg-gray-800/50 border border-fuchsia-500/30 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-500/20 transition-all disabled:opacity-50 font-mono"
-                      />
-                      <button
-                        type="button"
-                        onClick={validateCoupon}
-                        disabled={couponValidating || couponValid}
-                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all disabled:opacity-50 active:scale-95 min-w-[80px]"
-                      >
-                        {couponValidating ? "..." : couponValid ? "✓ OK" : "Aplicar"}
-                      </button>
-                    </div>
-                    {couponMessage && (
-                      <p className={`text-xs ${couponValid ? 'text-green-400' : 'text-red-400'}`}>
-                        {couponMessage}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-
               {/* Totales */}
               <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
-                {(hasComboDiscount || hasIndividualDiscount || (couponValid && (couponDiscount > 0 || couponFixedAmount > 0))) && (
+                {(hasComboDiscount || hasIndividualDiscount) && (
                   <>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-400">Subtotal:</span>
@@ -1043,14 +864,6 @@ export default function CheckoutPage() {
                             : `${comboResult.appliedCombos.length} Combos`}:
                         </span>
                         <span className="text-emerald-400 font-bold font-mono">-S/ {comboDiscountAmount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    {couponValid && (couponDiscount > 0 || couponFixedAmount > 0) && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-green-400 font-bold">
-                          {couponTieredAmount > 0 ? `Cupón -S/ ${couponDiscountAmount.toFixed(2)}:` : couponFixedAmount > 0 ? `Cupón -S/ ${couponFixedAmount.toFixed(2)}:` : `Cupón -${couponDiscount}%:`}
-                        </span>
-                        <span className="text-green-400 font-bold font-mono">-S/ {couponDiscountAmount.toFixed(2)}</span>
                       </div>
                     )}
                   </>

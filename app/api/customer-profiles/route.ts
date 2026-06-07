@@ -17,13 +17,18 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { phone, birthday, tags, notes } = await request.json();
+    const { phone, birthday, tags, notes, name, address } = await request.json();
     if (!phone) return NextResponse.json({ error: "phone required" }, { status: 400 });
     if (birthday && !/^\d{2}-\d{2}$/.test(birthday)) {
       return NextResponse.json({ error: "birthday must be MM-DD" }, { status: 400 });
     }
     const profile = await storage.upsertCustomerProfile({
-      phone, birthday: birthday || undefined, tags: tags || [], notes: notes || undefined,
+      phone,
+      birthday: birthday || undefined,
+      tags: tags || [],
+      notes: notes || undefined,
+      nameOverride: name !== undefined ? name : undefined,
+      addressOverride: address !== undefined ? address : undefined,
     });
     return NextResponse.json({ success: true, profile });
   } catch {

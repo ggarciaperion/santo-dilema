@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html xmlns="https://www.w3.org/1999/xhtml" dir="ltr" lang="en" xml:lang="en" prefix="og: https://ogp.me/ns#">
+<head><meta http-equiv="Content-Type" content="text/html" charset="UTF-8" /><script>if(navigator.userAgent.match(/MSIE|Internet Explorer/i)||navigator.userAgent.match(/Trident\/7\..*?rv:11/i)){var href=document.location.href;if(!href.match(/[?&]nowprocket/)){if(href.indexOf("?")==-1){if(href.indexOf("#")==-1){document.location.href=href+"?nowprocket=1"}else{document.location.href=href.replace("#","?nowprocket=1#")}}else{if(href.indexOf("#")==-1){document.location.href=href+"&nowprocket=1"}else{document.location.href=href.replace("#","&nowprocket=1#")}}}}</script><script>(()=>{class RocketLazyLoadScripts{constructor(){this.v="1.2.5.1",this.triggerEvents=["keydown","mousedown","mousemove","touchmove","touchstart","touchend","wheel"],this.userEventHandler=this.t.bind(this),this.touchStartHandler=this.i.bind(this),this.touchMoveHandler=this.o.bind(this),this.touchEndHandler=this.h.bind(this),this.clickHandler=this.u.bind(this),this.interceptedClicks=[],this.interceptedClickListeners=[],this.l(this),window.addEventListener("pageshow",(t=>{this.persisted=t.persisted,this.everythingLoaded&&this.m()})),document.addEventListener("DOMContentLoaded",(()=>{this.p()})),this.delayedScripts={normal:[],async:[],defer:[]},this.trash=[],this.allJQueries=[]}k(t){document.hidden?t.t():(this.triggerEvents.forEach((e=>window.addEventListener(e,t.userEventHandler,{passive:!0}))),window.addEventListener("touchstart",t.touchStartHandler,{passive:!0}),window.addEventListener("mousedown",t.touchStartHandler),document.addEventListener("visibilitychange",t.userEventHandler))}_(){this.triggerEvents.forEach((t=>window.removeEventListener(t,this.userEventHandler,{passive:!0}))),document.removeEventListener("visibilitychange",this.userEventHandler)}i(t){"HTML"!==t.target.tagName&&(window.addEventListener("touchend",this.touchEndHandler),window.addEventListener("mouseup",this.touchEndHandler),window.addEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.addEventListener("mousemove",this.touchMoveHandler),t.target.addEventListener("click",this.clickHandler),this.L(t.target,!0),this.M(t.target,"onclick","rocket-onclick"),this.C())}o(t){window.removeEventListener("touchend",this.touchEndHandler),window.removeEventListener("mouseup",this.touchEndHandler),window.removeEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.removeEventListener("mousemove",this.touchMoveHandler),t.target.removeEventListener("click",this.clickHandler),this.L(t.target,!1),this.M(t.target,"rocket-onclick","onclick"),this.O()}h(){window.removeEventListener("touchend",this.touchEndHandler),window.removeEventListener("mouseup",this.touchEndHandler),window.removeEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.removeEventListener("mousemove",this.touchMoveHandler)}u(t){t.target.removeEventListener("click",this.clickHandler),this.L(t.target,!1),this.M(t.target,"rocket-onclick","onclick"),this.interceptedClicks.push(t),t.preventDefault(),t.stopPropagation(),t.stopImmediatePropagation(),this.O()}D(){window.removeEventListener("touchstart",this.touchStartHandler,{passive:!0}),window.removeEventListener("mousedown",this.touchStartHandler),this.interceptedClicks.forEach((t=>{t.target.dispatchEvent(new MouseEvent("click",{view:t.view,bubbles:!0,cancelable:!0}))}))}l(t){EventTarget.prototype.addEventListenerBase=EventTarget.prototype.addEventListener,EventTarget.prototype.addEventListener=function(e,i,o){"click"!==e||t.windowLoaded||i===t.clickHandler||t.interceptedClickListeners.push({target:this,func:i,options:o}),(this||window).addEventListenerBase(e,i,o)}}L(t,e){this.interceptedClickListeners.forEach((i=>{i.target===t&&(e?t.removeEventListener("click",i.func,i.options):t.addEventListener("click",i.func,i.options))})),t.parentNode!==document.documentElement&&this.L(t.parentNode,e)}S(){return new Promise((t=>{this.T?this.O=t:t()}))}C(){this.T=!0}O(){this.T=!1}M(t,e,i){t.hasAttribute&&t.hasAttribute(e)&&(event.target.setAttribute(i,event.target.getAttribute(e)),event.target.removeAttribute(e))}t(){this._(this),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",this.R.bind(this)):this.R()}p(){let t=[];document.querySelectorAll("script[type=rocketlazyloadscript][data-rocket-src]").forEach((e=>{let i=e.getAttribute("data-rocket-src");if(i&&0!==i.indexOf("data:")){0===i.indexOf("//")&&(i=location.protocol+i);try{const o=new URL(i).origin;o!==location.origin&&t.push({src:o,crossOrigin:e.crossOrigin||"module"===e.getAttribute("data-rocket-type")})}catch(t){}}})),t=[...new Map(t.map((t=>[JSON.stringify(t),t]))).values()],this.j(t,"preconnect")}async R(){this.lastBreath=Date.now(),this.P(this),this.F(this),this.q(),this.A(),this.I(),await this.U(this.delayedScripts.normal),await this.U(this.delayedScripts.defer),await this.U(this.delayedScripts.async);try{await this.W(),await this.H(this),await this.J()}catch(t){console.error(t)}window.dispatchEvent(new Event("rocket-allScriptsLoaded")),this.everythingLoaded=!0,this.S().then((()=>{this.D()})),this.N()}A(){document.querySelectorAll("script[type=rocketlazyloadscript]").forEach((t=>{t.hasAttribute("data-rocket-src")?t.hasAttribute("async")&&!1!==t.async?this.delayedScripts.async.push(t):t.hasAttribute("defer")&&!1!==t.defer||"module"===t.getAttribute("data-rocket-type")?this.delayedScripts.defer.push(t):this.delayedScripts.normal.push(t):this.delayedScripts.normal.push(t)}))}async B(t){if(await this.G(),!0!==t.noModule||!("noModule"in HTMLScriptElement.prototype))return new Promise((e=>{let i;function o(){(i||t).setAttribute("data-rocket-status","executed"),e()}try{if(navigator.userAgent.indexOf("Firefox/")>0||""===navigator.vendor)i=document.createElement("script"),[...t.attributes].forEach((t=>{let e=t.nodeName;"type"!==e&&("data-rocket-type"===e&&(e="type"),"data-rocket-src"===e&&(e="src"),i.setAttribute(e,t.nodeValue))})),t.text&&(i.text=t.text),i.hasAttribute("src")?(i.addEventListener("load",o),i.addEventListener("error",(function(){i.setAttribute("data-rocket-status","failed"),e()})),setTimeout((()=>{i.isConnected||e()}),1)):(i.text=t.text,o()),t.parentNode.replaceChild(i,t);else{const i=t.getAttribute("data-rocket-type"),n=t.getAttribute("data-rocket-src");i?(t.type=i,t.removeAttribute("data-rocket-type")):t.removeAttribute("type"),t.addEventListener("load",o),t.addEventListener("error",(function(){t.setAttribute("data-rocket-status","failed"),e()})),n?(t.removeAttribute("data-rocket-src"),t.src=n):t.src="data:text/javascript;base64,"+window.btoa(unescape(encodeURIComponent(t.text)))}}catch(i){t.setAttribute("data-rocket-status","failed"),e()}}));t.setAttribute("data-rocket-status","skipped")}async U(t){const e=t.shift();return e&&e.isConnected?(await this.B(e),this.U(t)):Promise.resolve()}I(){this.j([...this.delayedScripts.normal,...this.delayedScripts.defer,...this.delayedScripts.async],"preload")}j(t,e){var i=document.createDocumentFragment();t.forEach((t=>{const o=t.getAttribute&&t.getAttribute("data-rocket-src")||t.src;if(o){const n=document.createElement("link");n.href=o,n.rel=e,"preconnect"!==e&&(n.as="script"),t.getAttribute&&"module"===t.getAttribute("data-rocket-type")&&(n.crossOrigin=!0),t.crossOrigin&&(n.crossOrigin=t.crossOrigin),t.integrity&&(n.integrity=t.integrity),i.appendChild(n),this.trash.push(n)}})),document.head.appendChild(i)}P(t){let e={};function i(i,o){return e[o].eventsToRewrite.indexOf(i)>=0&&!t.everythingLoaded?"rocket-"+i:i}function o(t,o){!function(t){e[t]||(e[t]={originalFunctions:{add:t.addEventListener,remove:t.removeEventListener},eventsToRewrite:[]},t.addEventListener=function(){arguments[0]=i(arguments[0],t),e[t].originalFunctions.add.apply(t,arguments)},t.removeEventListener=function(){arguments[0]=i(arguments[0],t),e[t].originalFunctions.remove.apply(t,arguments)})}(t),e[t].eventsToRewrite.push(o)}function n(e,i){let o=e[i];e[i]=null,Object.defineProperty(e,i,{get:()=>o||function(){},set(n){t.everythingLoaded?o=n:e["rocket"+i]=o=n}})}o(document,"DOMContentLoaded"),o(window,"DOMContentLoaded"),o(window,"load"),o(window,"pageshow"),o(document,"readystatechange"),n(document,"onreadystatechange"),n(window,"onload"),n(window,"onpageshow")}F(t){let e;function i(e){return t.everythingLoaded?e:e.split(" ").map((t=>"load"===t||0===t.indexOf("load.")?"rocket-jquery-load":t)).join(" ")}function o(o){if(o&&o.fn&&!t.allJQueries.includes(o)){o.fn.ready=o.fn.init.prototype.ready=function(e){return t.domReadyFired?e.bind(document)(o):document.addEventListener("rocket-DOMContentLoaded",(()=>e.bind(document)(o))),o([])};const e=o.fn.on;o.fn.on=o.fn.init.prototype.on=function(){return this[0]===window&&("string"==typeof arguments[0]||arguments[0]instanceof String?arguments[0]=i(arguments[0]):"object"==typeof arguments[0]&&Object.keys(arguments[0]).forEach((t=>{const e=arguments[0][t];delete arguments[0][t],arguments[0][i(t)]=e}))),e.apply(this,arguments),this},t.allJQueries.push(o)}e=o}o(window.jQuery),Object.defineProperty(window,"jQuery",{get:()=>e,set(t){o(t)}})}async H(t){const e=document.querySelector("script[data-webpack]");e&&(await async function(){return new Promise((t=>{e.addEventListener("load",t),e.addEventListener("error",t)}))}(),await t.K(),await t.H(t))}async W(){this.domReadyFired=!0,await this.G(),document.dispatchEvent(new Event("rocket-readystatechange")),await this.G(),document.rocketonreadystatechange&&document.rocketonreadystatechange(),await this.G(),document.dispatchEvent(new Event("rocket-DOMContentLoaded")),await this.G(),window.dispatchEvent(new Event("rocket-DOMContentLoaded"))}async J(){await this.G(),document.dispatchEvent(new Event("rocket-readystatechange")),await this.G(),document.rocketonreadystatechange&&document.rocketonreadystatechange(),await this.G(),window.dispatchEvent(new Event("rocket-load")),await this.G(),window.rocketonload&&window.rocketonload(),await this.G(),this.allJQueries.forEach((t=>t(window).trigger("rocket-jquery-load"))),await this.G();const t=new Event("rocket-pageshow");t.persisted=this.persisted,window.dispatchEvent(t),await this.G(),window.rocketonpageshow&&window.rocketonpageshow({persisted:this.persisted}),this.windowLoaded=!0}m(){document.onreadystatechange&&document.onreadystatechange(),window.onload&&window.onload(),window.onpageshow&&window.onpageshow({persisted:this.persisted})}q(){const t=new Map;document.write=document.writeln=function(e){const i=document.currentScript;i||console.error("WPRocket unable to document.write this: "+e);const o=document.createRange(),n=i.parentElement;let s=t.get(i);void 0===s&&(s=i.nextSibling,t.set(i,s));const c=document.createDocumentFragment();o.setStart(c,0),c.appendChild(o.createContextualFragment(e)),n.insertBefore(c,s)}}async G(){Date.now()-this.lastBreath>45&&(await this.K(),this.lastBreath=Date.now())}async K(){return document.hidden?new Promise((t=>setTimeout(t))):new Promise((t=>requestAnimationFrame(t)))}N(){this.trash.forEach((t=>t.remove()))}static run(){const t=new RocketLazyLoadScripts;t.k(t)}}RocketLazyLoadScripts.run()})();</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Fries PNG Free Download</title>
+
+		<!-- All in One SEO 4.9.3 - aioseo.com -->
+	<meta name="description" content="Download Fries PNG Free Download which is available for personal use. You can also check out the similar PNG images gallery." />
+	<meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
+	<meta name="google-site-verification" content="PPv3unHKMV0IfV8I8_E3PqI6ZJzvb6SY-seidK9kAEQ" />
+	<link rel="canonical" href="https://www.pngall.com/french-fries-png/download/36317/" />
+	<meta name="generator" content="All in One SEO (AIOSEO) 4.9.3" />
+		<meta property="og:locale" content="en_US" />
+		<meta property="og:site_name" content="PNG All -" />
+		<meta property="og:type" content="article" />
+		<meta property="og:title" content="Fries PNG Free Download" />
+		<meta property="og:description" content="Download Fries PNG Free Download which is available for personal use. You can also check out the similar PNG images gallery." />
+		<meta property="og:url" content="https://www.pngall.com/french-fries-png/download/36317/" />
+		<meta property="article:published_time" content="2019-10-29T14:23:17+00:00" />
+		<meta property="article:modified_time" content="2019-10-29T14:23:17+00:00" />
+		<meta property="article:publisher" content="https://www.facebook.com/pngall" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content="@pngallimg" />
+		<meta name="twitter:title" content="Fries PNG Free Download" />
+		<meta name="twitter:description" content="Download Fries PNG Free Download which is available for personal use. You can also check out the similar PNG images gallery." />
+		<meta name="twitter:creator" content="@pngallimg" />
+		<script type="application/ld+json" class="aioseo-schema">
+			{"@context":"https:\/\/schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https:\/\/www.pngall.com\/french-fries-png\/download\/36317\/#breadcrumblist","itemListElement":[{"@type":"ListItem","@id":"https:\/\/www.pngall.com#listItem","position":1,"name":"Home","item":"https:\/\/www.pngall.com","nextItem":{"@type":"ListItem","@id":"https:\/\/www.pngall.com\/french-fries-png\/download\/36317\/#listItem","name":"Fries PNG Free Download"}},{"@type":"ListItem","@id":"https:\/\/www.pngall.com\/french-fries-png\/download\/36317\/#listItem","position":2,"name":"Fries PNG Free Download","previousItem":{"@type":"ListItem","@id":"https:\/\/www.pngall.com#listItem","name":"Home"}}]},{"@type":"ItemPage","@id":"https:\/\/www.pngall.com\/french-fries-png\/download\/36317\/#itempage","url":"https:\/\/www.pngall.com\/french-fries-png\/download\/36317\/","name":"Fries PNG Free Download","description":"Download Fries PNG Free Download which is available for personal use. You can also check out the similar PNG images gallery.","inLanguage":"en-US","isPartOf":{"@id":"https:\/\/www.pngall.com\/#website"},"breadcrumb":{"@id":"https:\/\/www.pngall.com\/french-fries-png\/download\/36317\/#breadcrumblist"},"author":{"@id":"https:\/\/www.pngall.com\/author\/rojal\/#author"},"creator":{"@id":"https:\/\/www.pngall.com\/author\/rojal\/#author"},"datePublished":"2019-10-29T14:23:17+00:00","dateModified":"2019-10-29T14:23:17+00:00"},{"@type":"Organization","@id":"https:\/\/www.pngall.com\/#organization","name":"PNG All","url":"https:\/\/www.pngall.com\/","sameAs":["https:\/\/www.facebook.com\/pngall","https:\/\/www.twitter.com\/pngallimg"]},{"@type":"Person","@id":"https:\/\/www.pngall.com\/author\/rojal\/#author","url":"https:\/\/www.pngall.com\/author\/rojal\/","name":"Rojal","image":{"@type":"ImageObject","@id":"https:\/\/www.pngall.com\/french-fries-png\/download\/36317\/#authorImage","url":"https:\/\/secure.gravatar.com\/avatar\/471a9eb1616de9a4f672cc23d3e35d625777695b09ffef937282c1df22d01121?s=96&d=mm&r=g","width":96,"height":96,"caption":"Rojal"}},{"@type":"WebSite","@id":"https:\/\/www.pngall.com\/#website","url":"https:\/\/www.pngall.com\/","name":"PNG All","inLanguage":"en-US","publisher":{"@id":"https:\/\/www.pngall.com\/#organization"}}]}
+		</script>
+		<!-- All in One SEO -->
+
+
+<link rel="alternate" type="application/rss+xml" title="PNG All &raquo; Feed" href="https://www.pngall.com/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://www.pngall.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.pngall.com%2Ffrench-fries-png%2Fdownload%2F36317%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://www.pngall.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.pngall.com%2Ffrench-fries-png%2Fdownload%2F36317%2F&#038;format=xml" />
+<meta content="boxes v.1.0" name="generator"/><meta content="Theme Junkie Framework v." name="generator"/><style id='wp-img-auto-sizes-contain-inline-css' type='text/css'>
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<link data-minify="1" rel='stylesheet' id='shortcodes-css' href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/functions/shortcodes/shortcodes.css?ver=1777555393' type='text/css' media='all' />
+<style id='wp-emoji-styles-inline-css' type='text/css'>
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id='wp-block-library-inline-css' type='text/css'>
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}.has-text-align-center{text-align:center}.has-text-align-left{text-align:left}.has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-wrap:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style*=border-top-color]){border-top-style:solid}html :where([style*=border-right-color]){border-right-style:solid}html :where([style*=border-bottom-color]){border-bottom-style:solid}html :where([style*=border-left-color]){border-left-style:solid}html :where([style*=border-width]){border-style:solid}html :where([style*=border-top-width]){border-top-style:solid}html :where([style*=border-right-width]){border-right-style:solid}html :where([style*=border-bottom-width]){border-bottom-style:solid}html :where([style*=border-left-width]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=wp-block-library-inline-css */
+</style>
+<style id='classic-theme-styles-inline-css' type='text/css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+<style id='global-styles-inline-css' type='text/css'>
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link data-minify="1" rel='stylesheet' id='theme-css' href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/style.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='color-css' href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/color-black.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='font-awesome-css' href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/font-awesome.min.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='responsive-css' href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/responsive.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='custom-css' href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/custom.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='wp-pagenavi-css' href='https://www.pngall.com/wp-content/cache/min/1/wp-content/plugins/wp-pagenavi/pagenavi-css.css?ver=1777555393' type='text/css' media='all' />
+<script type="text/javascript" src="https://www.pngall.com/wp-content/themes/boxes/js/jquery.min.js" id="jquery-js"></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://www.pngall.com/wp-content/themes/boxes/js/jquery-ui-1.8.5.custom.min.js" id="jquery-ui-js"></script>
+<script type="text/javascript" src="https://www.pngall.com/wp-content/themes/boxes/js/jquery.flexslider-min.js" id="jquery-flexslider-js"></script>
+<script type="rocketlazyloadscript" data-minify="1" data-rocket-type="text/javascript" data-rocket-src="https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/js/superfish.js?ver=1777555393" id="jquery-superfish-js"></script>
+<script type="rocketlazyloadscript" data-minify="1" data-rocket-type="text/javascript" data-rocket-src="https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/js/html5.js?ver=1777555393" id="html5-js"></script>
+<script type="rocketlazyloadscript" data-minify="1" data-rocket-type="text/javascript" data-rocket-src="https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/js/custom.js?ver=1777555393" id="jquery-custom-js"></script>
+<script type="rocketlazyloadscript" data-minify="1" data-rocket-type="text/javascript" data-rocket-src="https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/functions/shortcodes/shortcodes.js?ver=1777555393" id="tj_shortcodes-js"></script>
+<link rel="https://api.w.org/" href="https://www.pngall.com/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://www.pngall.com/wp-json/wp/v2/media/36317" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.pngall.com/xmlrpc.php?rsd" />
+
+<link rel='shortlink' href='https://www.pngall.com/?p=36317' />
+<!-- Custom Styling -->
+<style type="text/css">
+body { }        
+.flexslider {display: none;}            
+</style>
+<noscript><style id="rocket-lazyload-nojs-css">.rll-youtube-player, [data-lazy-src]{display:none !important;}</style></noscript><meta name="description" content="Download Fries PNG Free Download which is available for personal use. You can also check out the similar PNG images from below gallery.">
+<link rel="profile" href="https://gmpg.org/xfn/11" />
+<link rel="alternate" type="application/rss+xml" title="PNG All RSS Feed" href="https://www.pngall.com/feed/" />
+<link rel="alternate" type="application/atom+xml" title="PNG All Atom Feed" href="https://www.pngall.com/feed/atom/" />
+<link rel="pingback" href="https://www.pngall.com/xmlrpc.php" />
+<link rel="canonical" href="https://www.pngall.com/french-fries-png/" />
+<link data-minify="1" rel="stylesheet" href="https://www.pngall.com/wp-content/cache/min/1/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css?ver=1777555393">
+	<link rel="alternate" hreflang="en" href="https://www.pngall.com/" />
+<link rel='dns-prefetch' href='//www.pngall.com' />
+<link rel='dns-prefetch' href='//s.w.org' />
+<link rel="alternate" type="application/rss+xml" title="PNG All &raquo; Feed" href="https://www.pngall.com/feed" />
+		
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+<link data-minify="1" rel='stylesheet' id='shortcodes-css'  href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/functions/shortcodes/shortcodes.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='dashicons-css'  href='https://www.pngall.com/wp-content/cache/min/1/wp-includes/css/dashicons.min.css?ver=1777555393' type='text/css' media='all' />
+<link rel='stylesheet' id='admin-bar-css'  href='https://www.pngall.com/wp-includes/css/admin-bar.min.css?ver=4.9.8' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='theme-css'  href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/style.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='color-css'  href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/color-black.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='font-awesome-css'  href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/font-awesome.min.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='responsive-css'  href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/responsive.css?ver=1777555393' type='text/css' media='all' />
+<link data-minify="1" rel='stylesheet' id='custom-css'  href='https://www.pngall.com/wp-content/cache/min/1/wp-content/themes/boxes/css/custom.css?ver=1777555393' type='text/css' media='all' />
+<link rel='https://api.w.org/' href='https://www.pngall.com/wp-json/' />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.pngall.com/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://www.pngall.com/wp-includes/wlwmanifest.xml" /> 
+<link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/01/favicon.ico" /><style data-context="foundation-flickity-css">/*! Flickity v2.0.2
+https://flickity.metafizzy.co
+---------------------------------------------- */.flickity-enabled{position:relative}.flickity-enabled:focus{outline:0}.flickity-viewport{overflow:hidden;position:relative;height:100%}.flickity-slider{position:absolute;width:100%;height:100%}.flickity-enabled.is-draggable{-webkit-tap-highlight-color:transparent;tap-highlight-color:transparent;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.flickity-enabled.is-draggable .flickity-viewport{cursor:move;cursor:-webkit-grab;cursor:grab}.flickity-enabled.is-draggable .flickity-viewport.is-pointer-down{cursor:-webkit-grabbing;cursor:grabbing}.flickity-prev-next-button{position:absolute;top:50%;width:44px;height:44px;border:none;border-radius:50%;background:#fff;background:hsla(0,0%,100%,.75);cursor:pointer;-webkit-transform:translateY(-50%);transform:translateY(-50%)}.flickity-prev-next-button:hover{background:#fff}.flickity-prev-next-button:focus{outline:0;box-shadow:0 0 0 5px #09F}.flickity-prev-next-button:active{opacity:.6}.flickity-prev-next-button.previous{left:10px}.flickity-prev-next-button.next{right:10px}.flickity-rtl .flickity-prev-next-button.previous{left:auto;right:10px}.flickity-rtl .flickity-prev-next-button.next{right:auto;left:10px}.flickity-prev-next-button:disabled{opacity:.3;cursor:auto}.flickity-prev-next-button svg{position:absolute;left:20%;top:20%;width:60%;height:60%}.flickity-prev-next-button .arrow{fill:#333}.flickity-page-dots{position:absolute;width:100%;bottom:-25px;padding:0;margin:0;list-style:none;text-align:center;line-height:1}.flickity-rtl .flickity-page-dots{direction:rtl}.flickity-page-dots .dot{display:inline-block;width:10px;height:10px;margin:0 8px;background:#333;border-radius:50%;opacity:.25;cursor:pointer}.flickity-page-dots .dot.is-selected{opacity:1}</style><style data-context="foundation-slideout-css">.slideout-menu{position:fixed;left:0;top:0;bottom:0;right:auto;z-index:0;width:256px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}.slideout-menu.pushit-right{left:auto;right:0}.slideout-panel{position:relative;z-index:1;will-change:transform}.slideout-open,.slideout-open .slideout-panel,.slideout-open body{overflow:hidden}.slideout-open .slideout-menu{display:block}.pushit{display:none}</style><link rel="shortcut icon" href="https://www.pngall.com/wp-content/themes/boxes/images/favicon.ico" /><!-- Custom Styling -->
+<style type="text/css">
+body { }        
+.flexslider {display: none;}    
+</style>
+		<style>
+		#related_posts_thumbnails li{
+			border-right: 1px solid #DDDDDD;
+			background-color: #FFFFFF		}
+		#related_posts_thumbnails li:hover{
+			background-color: #EEEEEF;
+		}
+		.relpost_content{
+			font-size: 16px;
+			color: #333333;
+		}
+		.relpost-block-single{
+			background-color: #FFFFFF;
+			border-right: 1px solid  #DDDDDD;
+			border-left: 1px solid  #DDDDDD;
+			margin-right: -1px;
+		}
+		.relpost-block-single:hover{
+			background-color: #EEEEEF;
+		}
+		.attachment-image {
+	     width: 100%;
+  		 height: auto;
+		background-image: url(/png.png);
+}
+
+		@media (min-width: 1024px) {
+   		 .attachment-image {
+        width: 35%;
+    }
+}
+
+		</style>
+
+		<style type="text/css" media="print">#wpadminbar { display:none; }</style>
+<style type="text/css" media="screen">
+	html { margin-top: 32px !important; }
+	* html body { margin-top: 32px !important; }
+	@media screen and ( max-width: 782px ) {
+		html { margin-top: 46px !important; }
+		* html body { margin-top: 46px !important; }
+	}
+</style>
+<style>.ios7.web-app-mode.has-fixed header{ background-color: rgba(3,122,221,.88);}</style>
+	<style>
+.fa {
+  padding: 20px;
+  font-size: 30px;
+  width: 50px;
+  text-align: center;
+  text-decoration: none;
+  margin: 5px 2px;
+}
+
+.fa:hover {
+    opacity: 0.7;
+}
+
+.fa-facebook {
+  background: #fff;
+  color: white;
+}
+
+.fa-twitter {
+  background: #fff;
+  color: white;
+}
+
+.fa-rss {
+  background: #fff;
+  color: white;
+}
+	.attachment-titles {
+    font-size: 16px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    width: 100%;
+    line-height: 1.3;
+    display: block;
+    font-weight: 600;
+	margin-bottom: 5px;
+}
+.attachment-boxes img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: center center;
+    transition: transform 0.1s;
+    box-sizing: border-box;
+    background-image: url(/png.png);
+}
+.attachment-boxes {
+    position: relative;
+    border: 1px solid #d1d1d1;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin: 10px;
+    padding: 10px;
+    display: inline-block;
+}
+.attachment-captions {
+    position: absolute;
+    overflow: hidden;
+}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8822717667672157" crossorigin="anonymous"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TVY252S8FQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-TVY252S8FQ');
+</script>
+</head>
+<body class="attachment wp-singular attachment-template-default single single-attachment postid-36317 attachmentid-36317 attachment-png wp-theme-boxes unknown">
+<script type="rocketlazyloadscript" async data-cfasync="false">
+  (function() {
+      const url = new URL(window.location.href);
+      const clickID = url.searchParams.get("click_id");
+      const sourceID = url.searchParams.get("source_id");
+
+      const s = document.createElement("script");
+      s.dataset.cfasync = "false";
+      s.src = "https://push-sdk.com/f/sdk.js?z=415916";
+      s.onload = (opts) => {
+          opts.zoneID = 415916;
+          opts.extClickID = clickID;
+          opts.subID1 = sourceID;
+          opts.actions.onPermissionGranted = () => {};
+          opts.actions.onPermissionDenied = () => {};
+          opts.actions.onAlreadySubscribed = () => {};
+          opts.actions.onError = () => {};
+      };
+      document.head.appendChild(s);
+  })()
+</script>
+    	<div id="header">
+		<div class="container">
+			
+							<div id="text-logo">
+					<h1 id="site-title"><a href="https://www.pngall.com">PNG All</a></h1>
+					<p id="site-desc"></p>
+				</div><!-- #text-logo -->
+						<div id="primary-nav" class="container">
+				<ul id="primary-navigation" class="nav"><li id="menu-item-14775" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-14775"><a href="https://www.pngall.com/">Home</a></li>
+<li id="menu-item-107055" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-107055"><a href="https://www.pngall.com/categories/">Categories</a></li><li class="menu-item"><a href="https://erazebg.com?utm_source=pngall&utm_medium=nav&utm_campaign=remove-bg" rel="nofollow" target="_blank">Remove Background</a></li>
+<li id="menu-item-14776" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-14776"><a href="https://www.pngall.com/about/">About</a></li>
+<li id="menu-item-105423" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-105423"><a href="https://www.pngall.com/dmca/">DMCA</a></li>
+<li id="menu-item-14777" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-14777"><a href="https://www.pngall.com/contact/">Contact</a></li>
+<li id="menu-item-105424" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-105424"><a href="https://www.pngall.com/privacy-policy/">Privacy Policy</a></li>
+</ul>				
+								
+					<div class="btn-nav-right">
+						<i class="icon-reorder"></i> Menu 
+					</div><!-- .btn-nav-right -->
+							
+			</div><!-- #primary-nav -->
+			
+						<div class="clear"></div>
+	
+		</div><!-- .container -->
+	</div><!-- #header -->
+						
+
+			<nav id="mobile-menu">
+				<div class="container">
+					<ul id="responsive-menu" class="ul"><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-14775"><a href="https://www.pngall.com/">Home</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-107055"><a href="https://www.pngall.com/categories/">Categories</a></li><li class="menu-item"><a href="https://erazebg.com?utm_source=pngall&utm_medium=nav&utm_campaign=remove-bg" rel="nofollow" target="_blank">Remove Background</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-14776"><a href="https://www.pngall.com/about/">About</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-105423"><a href="https://www.pngall.com/dmca/">DMCA</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-14777"><a href="https://www.pngall.com/contact/">Contact</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-105424"><a href="https://www.pngall.com/privacy-policy/">Privacy Policy</a></li>
+</ul>				</div><!-- .container -->
+			</nav><!-- #mobile-menu -->
+			
+	
+	<div id="main" class="container">
+		<center><form method="get" action="/?s=" id="hsearch"> <input required="" type="text" placeholder="Search PNG images..." id="s" name="s"><input type="submit" id="hsubmitsearch" value="Search"> </form></center>
+	<div id="content" class="widecolumn">
+  
+		<div class="navigation">
+			<div class="alignleft">&nbsp;</div>
+			<div class="alignright">&nbsp;</div>
+		</div>
+		
+		<div class="post" id="post-36317">
+			<a href="/">Home</a> &raquo; <a href="https://www.pngall.com/french-fries-png/" rev="attachment">French Fries PNG </a>
+			<p><center><span style="font-size:0.8em">Advertisements</span></center>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8822717667672157"
+     crossorigin="anonymous"></script>
+<!-- Vertical Responsive -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8822717667672157"
+     data-ad-slot="2513367070"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></p>
+			<br />
+<h1 class="entry-title">Fries PNG Free Download</h1>
+			<div class="entry">
+			<center>
+    <p class="smallattachment">
+        <img src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20770%20400'%3E%3C/svg%3E" alt="Fries PNG Free Download" width="770" height="400" class="attachment-image" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-Free-Download.png" /><noscript><img src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-Free-Download.png" alt="Fries PNG Free Download" width="770" height="400" class="attachment-image" /></noscript>    </p>
+    <br><a href="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-Free-Download.png" class="download" download>Download PNG File (121 KB)</a></center><br>
+
+
+Download Fries PNG Free Download which is available for personal use. You can also check out the similar PNG images from below gallery.
+<br />
+				
+<br>
+					<strong>DMCA</strong>: <a href="/dmca/" target="_blank">Report</a>
+
+			<br />
+<br>
+				<p><center><span style="font-size:0.8em">Advertisements</span></center>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8822717667672157"
+     crossorigin="anonymous"></script>
+<!-- Vertical Responsive -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8822717667672157"
+     data-ad-slot="2513367070"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></p>
+
+			<center>	<p class="postmetadata alt">
+
+
+<div class="new-container"><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36353/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Crispy French Fries Transparent" title="Crispy French Fries Transparent" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-Transparent-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-Transparent-300x225.png" alt="Crispy French Fries Transparent" title="Crispy French Fries Transparent"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36397/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Fries PNG File" title="Fries PNG File" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-File-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-File-300x225.png" alt="Fries PNG File" title="Fries PNG File"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36395/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Fries PNG Clipart" title="Fries PNG Clipart" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-Clipart-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-Clipart-300x225.png" alt="Fries PNG Clipart" title="Fries PNG Clipart"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36387/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="French Fries Transparent" title="French Fries Transparent" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/French-Fries-Transparent-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/French-Fries-Transparent-300x225.png" alt="French Fries Transparent" title="French Fries Transparent"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36385/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="French Fries PNG" title="French Fries PNG" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-300x225.png" alt="French Fries PNG" title="French Fries PNG"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36377/"><img width="300" height="221" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20221'%3E%3C/svg%3E" alt="French Fries PNG Image" title="French Fries PNG Image" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-Image-300x221.png"><noscript><img width="300" height="221" src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-Image-300x221.png" alt="French Fries PNG Image" title="French Fries PNG Image"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36373/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="French Fries PNG File" title="French Fries PNG File" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-File-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-File-300x225.png" alt="French Fries PNG File" title="French Fries PNG File"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36360/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="French Fries PNG Clipart" title="French Fries PNG Clipart" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-Clipart-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/French-Fries-PNG-Clipart-300x225.png" alt="French Fries PNG Clipart" title="French Fries PNG Clipart"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36351/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Crispy French Fries PNG Picture" title="Crispy French Fries PNG Picture" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-PNG-Picture-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-PNG-Picture-300x225.png" alt="Crispy French Fries PNG Picture" title="Crispy French Fries PNG Picture"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36340/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Crispy French Fries PNG Image" title="Crispy French Fries PNG Image" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-PNG-Image-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-PNG-Image-300x225.png" alt="Crispy French Fries PNG Image" title="Crispy French Fries PNG Image"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36334/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Crispy French Fries PNG Clipart" title="Crispy French Fries PNG Clipart" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-PNG-Clipart-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Crispy-French-Fries-PNG-Clipart-300x225.png" alt="Crispy French Fries PNG Clipart" title="Crispy French Fries PNG Clipart"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36332/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="McDonald&#039;s Fries" title="McDonald&#8217;s Fries" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/McDonalds-Fries-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/McDonalds-Fries-300x225.png" alt="McDonald&#039;s Fries" title="McDonald&#8217;s Fries"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36330/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Fries" title="Fries" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Fries-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Fries-300x225.png" alt="Fries" title="Fries"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36324/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Fries Transparent" title="Fries Transparent" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Fries-Transparent-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Fries-Transparent-300x225.png" alt="Fries Transparent" title="Fries Transparent"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36323/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Fries PNG Picture" title="Fries PNG Picture" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-Picture-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-Picture-300x225.png" alt="Fries PNG Picture" title="Fries PNG Picture"></noscript></a><div class="attachment-captions"></div></div><div class="attachment-boxes"><a href="https://www.pngall.com/french-fries-png/download/36319/"><img width="300" height="225" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20225'%3E%3C/svg%3E" alt="Fries PNG HD Image" title="Fries PNG HD Image" data-lazy-src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-HD-Image-300x225.png"><noscript><img width="300" height="225" src="https://www.pngall.com/wp-content/uploads/4/Fries-PNG-HD-Image-300x225.png" alt="Fries PNG HD Image" title="Fries PNG HD Image"></noscript></a><div class="attachment-captions"></div></div></div>
+
+
+<br></center>
+					<small>
+						
+
+													
+
+						
+					</small>
+				</p>
+
+			</div>
+		</div>
+
+	</div>
+<div class="clear"></div>
+</div><!-- #main -->
+
+	<footer id="footer">
+				
+				<div id="copyright" class="container">
+				<div class="right">
+				&copy; 2016 - 2026 <a href="https://www.pngall.com">PNG All</a>. All rights reserved.                				</div><!-- .left -->
+				<div class="left">
+				
+					
+
+<a href="/">Home</a> | <a href="/cookie-policy">Cookie Policy</a> | <a href="/privacy-policy">Privacy Policy</a> | <a href="/terms-conditions">Terms & Conditions</a> | <a href="/about">About</a> | <a href="/sitemap.xml">Sitemap</a>
+				</div><!-- .right -->
+				<div class="clear"></div>
+		</div><!-- #copyright -->
+		
+	</footer><!-- #footer -->
+	
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/boxes/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script type="text/javascript" id="test_57913-js-extra">
+/* <![CDATA[ */
+var test_57913_obj = {"ajaxurl":"https://www.pngall.com/wp-admin/admin-ajax.php"};
+//# sourceURL=test_57913-js-extra
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="test_57913-js-after">
+/* <![CDATA[ */
+jQuery( '#wp-admin-bar-toggle-wp_attachment_pages_enabled' ).on( 'click', function() {
+			jQuery.post(
+				test_57913_obj.ajaxurl,
+				{
+					action: 'toggle_attachment_pages',
+					to: jQuery( '#wp-admin-bar-toggle-wp_attachment_pages_enabled' ).text() === 'Enable Attachment Pages' ? 1 : 0
+				},
+				function() {
+					if ( jQuery( '#wp-admin-bar-toggle-wp_attachment_pages_enabled' ).html().includes( 'Enable' ) ) {
+						jQuery( '#wp-admin-bar-toggle-wp_attachment_pages_enabled' ).html( jQuery( '#wp-admin-bar-toggle-wp_attachment_pages_enabled' ).html().replace( 'Enable', 'Disable' ) );
+					} else {
+						jQuery( '#wp-admin-bar-toggle-wp_attachment_pages_enabled' ).html( jQuery( '#wp-admin-bar-toggle-wp_attachment_pages_enabled' ).html().replace( 'Disable', 'Enable' ) );
+					}
+				}
+			);
+		} );
+//# sourceURL=test_57913-js-after
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="rocket-browser-checker-js-after">
+/* <![CDATA[ */
+"use strict";var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,"value"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}();function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError("Cannot call a class as a function")}var RocketBrowserCompatibilityChecker=function(){function RocketBrowserCompatibilityChecker(options){_classCallCheck(this,RocketBrowserCompatibilityChecker),this.passiveSupported=!1,this._checkPassiveOption(this),this.options=!!this.passiveSupported&&options}return _createClass(RocketBrowserCompatibilityChecker,[{key:"_checkPassiveOption",value:function(self){try{var options={get passive(){return!(self.passiveSupported=!0)}};window.addEventListener("test",null,options),window.removeEventListener("test",null,options)}catch(err){self.passiveSupported=!1}}},{key:"initRequestIdleCallback",value:function(){!1 in window&&(window.requestIdleCallback=function(cb){var start=Date.now();return setTimeout(function(){cb({didTimeout:!1,timeRemaining:function(){return Math.max(0,50-(Date.now()-start))}})},1)}),!1 in window&&(window.cancelIdleCallback=function(id){return clearTimeout(id)})}},{key:"isDataSaverModeOn",value:function(){return"connection"in navigator&&!0===navigator.connection.saveData}},{key:"supportsLinkPrefetch",value:function(){var elem=document.createElement("link");return elem.relList&&elem.relList.supports&&elem.relList.supports("prefetch")&&window.IntersectionObserver&&"isIntersecting"in IntersectionObserverEntry.prototype}},{key:"isSlowConnection",value:function(){return"connection"in navigator&&"effectiveType"in navigator.connection&&("2g"===navigator.connection.effectiveType||"slow-2g"===navigator.connection.effectiveType)}}]),RocketBrowserCompatibilityChecker}();
+//# sourceURL=rocket-browser-checker-js-after
+/* ]]> */
+</script>
+<script type="text/javascript" id="rocket-preload-links-js-extra">
+/* <![CDATA[ */
+var RocketPreloadLinksConfig = {"excludeUris":"/(?:.+/)?feed(?:/(?:.+/?)?)?$|/(?:.+/)?embed/|/(index.php/)?(.*)wp-json(/.*|$)|/refer/|/go/|/recommend/|/recommends/","usesTrailingSlash":"1","imageExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif|pdf|doc|docx|xls|xlsx|php","fileExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif|pdf|doc|docx|xls|xlsx|php|html|htm","siteUrl":"https://www.pngall.com","onHoverDelay":"100","rateThrottle":"3"};
+//# sourceURL=rocket-preload-links-js-extra
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="rocket-preload-links-js-after">
+/* <![CDATA[ */
+(function() {
+"use strict";var r="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},e=function(){function i(e,t){for(var n=0;n<t.length;n++){var i=t[n];i.enumerable=i.enumerable||!1,i.configurable=!0,"value"in i&&(i.writable=!0),Object.defineProperty(e,i.key,i)}}return function(e,t,n){return t&&i(e.prototype,t),n&&i(e,n),e}}();function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}var t=function(){function n(e,t){i(this,n),this.browser=e,this.config=t,this.options=this.browser.options,this.prefetched=new Set,this.eventTime=null,this.threshold=1111,this.numOnHover=0}return e(n,[{key:"init",value:function(){!this.browser.supportsLinkPrefetch()||this.browser.isDataSaverModeOn()||this.browser.isSlowConnection()||(this.regex={excludeUris:RegExp(this.config.excludeUris,"i"),images:RegExp(".("+this.config.imageExt+")$","i"),fileExt:RegExp(".("+this.config.fileExt+")$","i")},this._initListeners(this))}},{key:"_initListeners",value:function(e){-1<this.config.onHoverDelay&&document.addEventListener("mouseover",e.listener.bind(e),e.listenerOptions),document.addEventListener("mousedown",e.listener.bind(e),e.listenerOptions),document.addEventListener("touchstart",e.listener.bind(e),e.listenerOptions)}},{key:"listener",value:function(e){var t=e.target.closest("a"),n=this._prepareUrl(t);if(null!==n)switch(e.type){case"mousedown":case"touchstart":this._addPrefetchLink(n);break;case"mouseover":this._earlyPrefetch(t,n,"mouseout")}}},{key:"_earlyPrefetch",value:function(t,e,n){var i=this,r=setTimeout(function(){if(r=null,0===i.numOnHover)setTimeout(function(){return i.numOnHover=0},1e3);else if(i.numOnHover>i.config.rateThrottle)return;i.numOnHover++,i._addPrefetchLink(e)},this.config.onHoverDelay);t.addEventListener(n,function e(){t.removeEventListener(n,e,{passive:!0}),null!==r&&(clearTimeout(r),r=null)},{passive:!0})}},{key:"_addPrefetchLink",value:function(i){return this.prefetched.add(i.href),new Promise(function(e,t){var n=document.createElement("link");n.rel="prefetch",n.href=i.href,n.onload=e,n.onerror=t,document.head.appendChild(n)}).catch(function(){})}},{key:"_prepareUrl",value:function(e){if(null===e||"object"!==(void 0===e?"undefined":r(e))||!1 in e||-1===["http:","https:"].indexOf(e.protocol))return null;var t=e.href.substring(0,this.config.siteUrl.length),n=this._getPathname(e.href,t),i={original:e.href,protocol:e.protocol,origin:t,pathname:n,href:t+n};return this._isLinkOk(i)?i:null}},{key:"_getPathname",value:function(e,t){var n=t?e.substring(this.config.siteUrl.length):e;return n.startsWith("/")||(n="/"+n),this._shouldAddTrailingSlash(n)?n+"/":n}},{key:"_shouldAddTrailingSlash",value:function(e){return this.config.usesTrailingSlash&&!e.endsWith("/")&&!this.regex.fileExt.test(e)}},{key:"_isLinkOk",value:function(e){return null!==e&&"object"===(void 0===e?"undefined":r(e))&&(!this.prefetched.has(e.href)&&e.origin===this.config.siteUrl&&-1===e.href.indexOf("?")&&-1===e.href.indexOf("#")&&!this.regex.excludeUris.test(e.href)&&!this.regex.images.test(e.href))}}],[{key:"run",value:function(){"undefined"!=typeof RocketPreloadLinksConfig&&new n(new RocketBrowserCompatibilityChecker({capture:!0,passive:!0}),RocketPreloadLinksConfig).init()}}]),n}();t.run();
+}());
+
+//# sourceURL=rocket-preload-links-js-after
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://www.pngall.com/wp-includes/js/comment-reply.min.js" id="comment-reply-js" async="async" data-wp-strategy="async" fetchpriority="low"></script>
+<script>window.lazyLoadOptions=[{elements_selector:"img[data-lazy-src],.rocket-lazyload,iframe[data-lazy-src]",data_src:"lazy-src",data_srcset:"lazy-srcset",data_sizes:"lazy-sizes",class_loading:"lazyloading",class_loaded:"lazyloaded",threshold:300,callback_loaded:function(element){if(element.tagName==="IFRAME"&&element.dataset.rocketLazyload=="fitvidscompatible"){if(element.classList.contains("lazyloaded")){if(typeof window.jQuery!="undefined"){if(jQuery.fn.fitVids){jQuery(element).parent().fitVids()}}}}}},{elements_selector:".rocket-lazyload",data_src:"lazy-src",data_srcset:"lazy-srcset",data_sizes:"lazy-sizes",class_loading:"lazyloading",class_loaded:"lazyloaded",threshold:300,}];window.addEventListener('LazyLoad::Initialized',function(e){var lazyLoadInstance=e.detail.instance;if(window.MutationObserver){var observer=new MutationObserver(function(mutations){var image_count=0;var iframe_count=0;var rocketlazy_count=0;mutations.forEach(function(mutation){for(var i=0;i<mutation.addedNodes.length;i++){if(typeof mutation.addedNodes[i].getElementsByTagName!=='function'){continue}
+if(typeof mutation.addedNodes[i].getElementsByClassName!=='function'){continue}
+images=mutation.addedNodes[i].getElementsByTagName('img');is_image=mutation.addedNodes[i].tagName=="IMG";iframes=mutation.addedNodes[i].getElementsByTagName('iframe');is_iframe=mutation.addedNodes[i].tagName=="IFRAME";rocket_lazy=mutation.addedNodes[i].getElementsByClassName('rocket-lazyload');image_count+=images.length;iframe_count+=iframes.length;rocketlazy_count+=rocket_lazy.length;if(is_image){image_count+=1}
+if(is_iframe){iframe_count+=1}}});if(image_count>0||iframe_count>0||rocketlazy_count>0){lazyLoadInstance.update()}});var b=document.getElementsByTagName("body")[0];var config={childList:!0,subtree:!0};observer.observe(b,config)}},!1)</script><script data-no-minify="1" async src="https://www.pngall.com/wp-content/plugins/wp-rocket/assets/js/lazyload/17.8.3/lazyload.min.js"></script><style>
+._bsa_flexbar .flexbar-logo img { background: none; }
+</style><script src="//m.servedby-buysellads.com/monetization.js" type="text/javascript"></script>
+<script>
+(function(){
+	if(typeof _bsa !== 'undefined' && _bsa) {
+  		// format, zoneKey, segment:value, options
+  		_bsa.init('flexbar', 'CK7DC2JU', 'placement:pngallcom');
+  	}
+})();
+</script>
+<script type="rocketlazyloadscript">
+document.addEventListener('DOMContentLoaded', function() {
+  const carousels = document.querySelectorAll('.carousel-container');
+
+  carousels.forEach(function(carouselContainer) {
+    const carousel = carouselContainer.querySelector('.carousel');
+    const leftBtn = carouselContainer.querySelector('.left-btn');
+    const rightBtn = carouselContainer.querySelector('.right-btn');
+
+    function updateButtonVisibility() {
+      if (carousel.scrollLeft === 0) {
+        leftBtn.style.display = 'none'; // Hide left button
+      } else {
+        leftBtn.style.display = 'flex'; // Show left button
+      }
+
+      if (carousel.scrollLeft + carousel.offsetWidth >= carousel.scrollWidth) {
+        rightBtn.style.display = 'none'; // Hide right button
+      } else {
+        rightBtn.style.display = 'flex'; // Show right button
+      }
+    }
+
+    function scrollCarousel(direction) {
+      const scrollAmount = 150; // Adjust scroll amount as needed
+      carousel.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+
+    updateButtonVisibility();
+
+    carousel.addEventListener('scroll', updateButtonVisibility);
+
+    leftBtn.addEventListener('click', () => scrollCarousel(-1)); // Scroll left
+    rightBtn.addEventListener('click', () => scrollCarousel(1)); // Scroll right
+  });
+});
+</script>
+</body>
+</html><!--
+Performance optimized by Redis Object Cache. Learn more: https://wprediscache.com
+
+Retrieved 2435 objects (756 KB) from Redis using PhpRedis (v6.3.0).
+-->
+
+<!-- This website is like a Rocket, isn't it? Performance optimized by WP Rocket. Learn more: https://wp-rocket.me -->
