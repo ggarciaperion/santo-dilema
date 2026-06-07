@@ -429,15 +429,38 @@ export default function RuletaPage() {
   }, []);
 
   // ── SPIN ────────────────────────────────────────────────────────────────────
-  const spin = useCallback(() => {
+  const spin = useCallback(async () => {
     if (phase !== "idle") return;
     if (!audioRef.current) {
       try { audioRef.current = new (window.AudioContext || (window as any).webkitAudioContext)(); } catch {}
     }
+
+    // Verificar si hay un premio forzado desde el admin
+    let forcedId: number | null = null;
+    try {
+      const res  = await fetch("/api/ruleta");
+      const data = await res.json();
+      forcedId   = data.forcedPrizeId ?? null;
+    } catch {}
+
     setPhase("spinning");
     startRotRef.current = rotRef.current;
     const prizes  = prizesRef.current;
-    const target  = pickWeightedSegment(prizes);
+
+    // Premio forzado: buscar por id en el array shuffleado; si no existe, fallback a aleatorio
+    let target: number;
+    if (forcedId !== null) {
+      const idx = prizes.findIndex(p => p.id === forcedId);
+      target = idx >= 0 ? idx : pickWeightedSegment(prizes);
+      // Limpiar el forzado inmediatamente (fire-and-forget)
+      fetch("/api/ruleta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ forcedPrizeId: null }),
+      }).catch(() => {});
+    } else {
+      target = pickWeightedSegment(prizes);
+    }
     const targetAngle = -(target + 0.5 + (Math.random() - 0.5) * 0.7) * SEG - Math.PI / 2;
     const fullSpins   = (10 + Math.floor(Math.random() * 6)) * 2 * Math.PI;
     let delta = (targetAngle - startRotRef.current + fullSpins) % (2 * Math.PI);

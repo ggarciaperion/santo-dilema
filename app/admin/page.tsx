@@ -327,7 +327,10 @@ export default function AdminPage() {
   const [promotions, setPromotions] = useState<any[]>([]);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
-  const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty" | "challenge">("promotions");
+  const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty" | "challenge" | "ruleta">("promotions");
+  const [forcedPrizeId,    setForcedPrizeId]    = useState<number | null>(null);
+  const [ruletaLoading,    setRuletaLoading]    = useState(false);
+  const [ruletaSaving,     setRuletaSaving]     = useState(false);
   const [inventorySection, setInventorySection] = useState<"purchases" | "stock">("purchases");
   const [purchasesSubTab, setPurchasesSubTab] = useState<"history" | "stock">("history"); // Sub-tabs dentro de Compras y Gastos
   const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
@@ -432,6 +435,18 @@ export default function AdminPage() {
       setDashboardDateInitialized(true);
     }
   }, [activeTab, financialSection, dashboardDateInitialized]);
+
+  // Cargar premio forzado de ruleta al entrar al sub-tab
+  useEffect(() => {
+    if (activeTab === "marketing" && marketingSection === "ruleta") {
+      setRuletaLoading(true);
+      fetch("/api/ruleta")
+        .then(r => r.json())
+        .then(d => setForcedPrizeId(d.forcedPrizeId ?? null))
+        .catch(() => {})
+        .finally(() => setRuletaLoading(false));
+    }
+  }, [activeTab, marketingSection]);
 
   // Inicializar AudioContext con interacción del usuario (requerido por navegadores)
   useEffect(() => {
@@ -6312,6 +6327,16 @@ export default function AdminPage() {
               >
                 🔥 Desafío del Cliente
               </button>
+              <button
+                onClick={() => setMarketingSection("ruleta")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  marketingSection === "ruleta"
+                    ? "text-yellow-400 border-b-4 border-yellow-400"
+                    : "text-gray-400 hover:text-gray-700"
+                }`}
+              >
+                🎰 Ruleta
+              </button>
             </div>
 
             {marketingSection === "promotions" && (
@@ -6690,6 +6715,121 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {marketingSection === "ruleta" && (() => {
+              const RULETA_PRIZES = [
+                { id: 0,  label: "8 Alitas + Papas",   color: "#ef4444" },
+                { id: 1,  label: "20% Descuento",       color: "#f59e0b" },
+                { id: 2,  label: "Dúo de Tacos",        color: "#059669" },
+                { id: 3,  label: "Ensalada COBB",       color: "#0d9488" },
+                { id: 4,  label: "8 Alitas + Papas",   color: "#dc2626" },
+                { id: 5,  label: "20% Descuento",       color: "#b45309" },
+                { id: 6,  label: "30% Descuento",       color: "#ec4899" },
+                { id: 7,  label: "Ensalada Cryspi",     color: "#65a30d" },
+                { id: 8,  label: "Taza SD",             color: "#d946ef" },
+                { id: 9,  label: "20% Descuento",       color: "#d97706" },
+                { id: 10, label: "Ensalada Cryspi",     color: "#16a34a" },
+                { id: 11, label: "30% Descuento",       color: "#be185d" },
+              ];
+
+              const setForced = async (id: number | null) => {
+                setRuletaSaving(true);
+                try {
+                  await fetch("/api/ruleta", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ forcedPrizeId: id }),
+                  });
+                  setForcedPrizeId(id);
+                } catch {}
+                setRuletaSaving(false);
+              };
+
+              const currentLabel = forcedPrizeId !== null
+                ? RULETA_PRIZES.find(p => p.id === forcedPrizeId)?.label ?? "—"
+                : null;
+
+              return (
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-yellow-900/20 to-amber-900/10 border-2 border-yellow-500/30 rounded-2xl p-5">
+                    <h3 className="text-xl font-black text-yellow-400 mb-1">🎰 Premio Forzado</h3>
+                    <p className="text-gray-400 text-sm">
+                      Elige el premio que saldrá en el <strong className="text-white">próximo giro</strong>. La ruleta vuelve a ser aleatoria automáticamente después.
+                    </p>
+                  </div>
+
+                  {/* Estado actual */}
+                  <div className={`rounded-xl border-2 p-5 flex items-center justify-between gap-4 ${
+                    forcedPrizeId !== null
+                      ? "bg-white border-yellow-400"
+                      : "bg-gray-50 border-gray-200"
+                  }`}>
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Próximo giro</p>
+                      {ruletaLoading ? (
+                        <p className="text-gray-400 text-sm">Cargando...</p>
+                      ) : forcedPrizeId !== null ? (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ background: RULETA_PRIZES.find(p => p.id === forcedPrizeId)?.color }}
+                          />
+                          <p className="text-gray-900 font-black text-lg">{currentLabel}</p>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 font-bold text-lg">Aleatorio</p>
+                      )}
+                    </div>
+                    {forcedPrizeId !== null && (
+                      <button
+                        onClick={() => setForced(null)}
+                        disabled={ruletaSaving}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-sm transition-all disabled:opacity-50"
+                      >
+                        {ruletaSaving ? "..." : "✕ Limpiar"}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Grid de premios */}
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Selecciona el premio a forzar</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {RULETA_PRIZES.map(p => {
+                        const isSelected = forcedPrizeId === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => setForced(isSelected ? null : p.id)}
+                            disabled={ruletaSaving}
+                            style={{
+                              borderColor: isSelected ? p.color : "transparent",
+                              background: isSelected ? `${p.color}22` : "#f9fafb",
+                              boxShadow: isSelected ? `0 0 0 2px ${p.color}` : "none",
+                            }}
+                            className="relative flex items-center gap-2.5 px-3 py-3 rounded-xl border-2 text-left transition-all active:scale-95 disabled:opacity-50 hover:border-gray-300"
+                          >
+                            <span
+                              className="w-3 h-3 rounded-full flex-shrink-0"
+                              style={{ background: p.color }}
+                            />
+                            <span className="text-gray-800 text-sm font-bold leading-tight">{p.label}</span>
+                            {isSelected && (
+                              <span className="absolute top-1.5 right-2 text-xs font-black" style={{ color: p.color }}>✓</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <p className="text-gray-500 text-xs">
+                    ⚡ El cambio se aplica al instante. La ruleta solo leerá el forzado en el siguiente giro y luego retomará la distribución normal de premios.
+                  </p>
+                </div>
+              );
+            })()}
           </section>
 
           {/* Promotion Modal */}
