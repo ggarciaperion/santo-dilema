@@ -2576,6 +2576,14 @@ export default function AdminPage() {
             <span>🍽️</span>
             {!sidebarCollapsed && <span>Carta</span>}
           </button>
+          <button
+            onClick={() => setActiveTab("marketing")}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "marketing" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            title={sidebarCollapsed ? 'Marketing' : ''}
+          >
+            <span>📢</span>
+            {!sidebarCollapsed && <span>Marketing</span>}
+          </button>
         </nav>
         <div className="px-2 py-3 border-t border-gray-100 space-y-0.5">
           <Link
