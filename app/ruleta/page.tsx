@@ -560,7 +560,6 @@ export default function RuletaPage() {
               pointerEvents: "none",
               lineHeight: 1,
             }}>
-              <span style={{ fontSize: "clamp(9px, 1.4vw, 16px)", lineHeight: 1 }}>👆</span>
               <span style={{
                 fontFamily: "'Lilita One', cursive",
                 fontSize: "clamp(11px, 1.7vw, 20px)",
