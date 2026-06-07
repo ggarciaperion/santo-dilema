@@ -46,59 +46,6 @@ const generateAvailableComplements = () => {
 
 const availableComplements = generateAvailableComplements();
 
-// ── PEDIDOS DE PRUEBA ────────────────────────────────────────────────────────
-const _ago = (m: number) => new Date(Date.now() - m * 60 * 1000).toISOString();
-const MOCK_ORDERS: any[] = [
-  { id: "SD-T001", name: "Carlos Mendoza", phone: "987654321", address: "Recojo en tienda",
-    status: "pending", createdAt: _ago(6), totalItems: 2, totalPrice: 38, paymentMethod: "yape",
-    paymentProofPath: "https://via.placeholder.com/400x600/9333ea/ffffff?text=Comprobante+Yape",
-    completedOrders: [
-      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["barbecue"], complementIds: ["coca-cola"] },
-      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["buffalo-picante"], complementIds: [] },
-    ] },
-  { id: "SD-T002", name: "Lucía Torres", phone: "976543210", address: "Jr. Los Pinos 456, Huaral",
-    status: "pendiente-verificacion", createdAt: _ago(14), totalItems: 3, totalPrice: 62,
-    paymentMethod: "anticipado", notes: "Sin cebolla por favor", deliveryCost: 5,
-    completedOrders: [
-      { name: "Chicken FAT", quantity: 2, price: 19, category: "fat", salsas: ["ahumada"], complementIds: ["inka-cola"] },
-      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: [] },
-    ] },
-  { id: "SD-T003", name: "Andrés Silva", phone: "945678901", address: "Recojo en tienda",
-    status: "confirmed", createdAt: _ago(22), confirmedAt: _ago(17), totalItems: 1, totalPrice: 29,
-    paymentMethod: "efectivo",
-    completedOrders: [
-      { name: "Taco Duo", quantity: 1, price: 29, category: "taco", salsas: ["santo-crujiente", "tex-dilema"], complementIds: [] },
-    ] },
-  { id: "SD-T004", name: "María García", phone: "912345678", address: "Av. Grau 234, Huaral",
-    status: "confirmed", createdAt: _ago(38), confirmedAt: _ago(30), totalItems: 4, totalPrice: 86,
-    paymentMethod: "plin", deliveryCost: 7,
-    completedOrders: [
-      { name: "Chicken FAT", quantity: 2, price: 19, category: "fat", salsas: ["honey-mustard"], complementIds: ["papas-fritas", "coca-cola"] },
-      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: ["agua-mineral"] },
-      { name: "Extra papas", quantity: 1, price: 5, category: "fit", salsas: [], complementIds: [] },
-    ] },
-  { id: "SD-T005", name: "Roberto Quispe", phone: "965432109", address: "Urb. Las Flores 567",
-    status: "en-camino", createdAt: _ago(58), confirmedAt: _ago(50), enCaminoAt: _ago(12),
-    totalItems: 2, totalPrice: 43, paymentMethod: "contraentrega-yape-plin", deliveryCost: 5,
-    completedOrders: [
-      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["anticuchos"], complementIds: ["sprite"] },
-      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: [] },
-    ] },
-  { id: "SD-T006", name: "Patricia Limas", phone: "934567890", address: "Recojo en tienda",
-    status: "delivered", createdAt: _ago(95), confirmedAt: _ago(85), deliveredAt: _ago(18),
-    totalItems: 3, totalPrice: 57, paymentMethod: "efectivo",
-    completedOrders: [
-      { name: "Chicken FAT", quantity: 3, price: 19, category: "fat", salsas: ["macerichada"], complementIds: [] },
-    ] },
-  { id: "SD-T007", name: "Jorge Ramírez", phone: "923456789", address: "Calle Real 890",
-    status: "programado", createdAt: _ago(42), totalItems: 2, totalPrice: 48,
-    paymentMethod: "contraentrega-yape-plin", deliveryCost: 5,
-    scheduledTime: "20:30", scheduledDate: new Date().toLocaleDateString('en-CA'),
-    completedOrders: [
-      { name: "Chicken FAT", quantity: 1, price: 19, category: "fat", salsas: ["teriyaki"], complementIds: ["fanta"] },
-      { name: "Pollo Grillado FIT", quantity: 1, price: 24, category: "fit", salsas: [], complementIds: ["agua-mineral"] },
-    ] },
-];
 
 interface Order {
   id: string;
@@ -282,7 +229,6 @@ export default function AdminPage() {
   // Set permanente: una vez anunciado como entregado, NUNCA se vuelve a anunciar
   const announcedDeliveredRef = useRef<Set<string>>(new Set());
   const [filter, setFilter] = useState<string>("all");
-  const [showMockData, setShowMockData] = useState(true);
   const [customerSearchTerm, setCustomerSearchTerm] = useState<string>("");
   const [chartTimeFilter, setChartTimeFilter] = useState<"days" | "weeks" | "months" | "years">("days");
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
@@ -1345,7 +1291,7 @@ export default function AdminPage() {
   };
 
   // Pedidos efectivos: reales + mock si está activado
-  const effectiveOrders = showMockData ? [...MOCK_ORDERS, ...orders] : orders;
+  const effectiveOrders = orders;
 
   // Filtrar pedidos según el filtro de fecha (pestaña "Gestión de Pedidos")
   let dateFilteredOrders = effectiveOrders;
@@ -2683,19 +2629,6 @@ export default function AdminPage() {
       <section className="px-6 pb-6">
         <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-center justify-end">
           <div className="flex gap-2 justify-end">
-            {/* Toggle datos de prueba */}
-            <button
-              onClick={() => setShowMockData(prev => !prev)}
-              className={`px-3 py-3 border rounded-lg text-xs font-bold transition-all ${
-                showMockData
-                  ? "bg-violet-50 border-violet-300 text-violet-600 hover:bg-violet-100"
-                  : "bg-white border-gray-200 text-gray-400 hover:border-gray-400"
-              }`}
-              title={showMockData ? "Ocultar pedidos de prueba" : "Mostrar pedidos de prueba"}
-            >
-              {showMockData ? "🧪 Prueba ON" : "🧪 Prueba OFF"}
-            </button>
-
             {/* Botón exportar CSV */}
             <button
               onClick={exportOrdersToCSV}
@@ -2820,22 +2753,6 @@ export default function AdminPage() {
 
       {/* Orders List */}
       <section className="px-6 pb-12">
-        {/* Banner datos de prueba */}
-        {showMockData && (
-          <div className="mb-4 flex items-center gap-3 bg-violet-50 border border-violet-200 rounded-xl px-4 py-2.5">
-            <span className="text-violet-500 text-base">🧪</span>
-            <p className="text-xs font-semibold text-violet-700 flex-1">
-              Mostrando <strong>{MOCK_ORDERS.length} pedidos de prueba</strong> para validar el diseño.
-              Los pedidos reales aparecerán cuando lleguen.
-            </p>
-            <button
-              onClick={() => setShowMockData(false)}
-              className="text-violet-400 hover:text-violet-600 text-xs font-bold transition-colors"
-            >
-              Ocultar
-            </button>
-          </div>
-        )}
         {loading ? (
           <div className="text-center py-12">
             <p className="text-2xl text-gray-600">Cargando pedidos...</p>
