@@ -2514,7 +2514,7 @@ export default function AdminPage() {
             <span>📦</span>
             <span>Pedidos</span>
             {(() => {
-              const n = orders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion").length;
+              const n = dateFilteredOrders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion").length;
               return n > 0 ? <span className="ml-auto bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{n}</span> : null;
             })()}
           </button>
