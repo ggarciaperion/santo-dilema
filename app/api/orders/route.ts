@@ -100,6 +100,9 @@ const tacoProducts = [
 
 const allProducts = [...fatProducts, ...fitProducts, ...tacoProducts];
 
+// Forzar ejecución dinámica — desactiva cualquier caché de Next.js en este módulo
+export const dynamic = "force-dynamic";
+
 // GET - Obtener pedidos (soporta ?status=en-camino y ?today=true para reducir carga)
 export async function GET(request: Request) {
   try {
@@ -189,31 +192,22 @@ export async function POST(request: Request) {
     const isScheduled = !!(scheduledDate && scheduledTime);
     const status = isScheduled ? 'programado' : (paymentMethod === 'anticipado' ? 'pendiente-verificacion' : 'pending');
 
-    // Generar ID con formato SD + correlativo + día + mes
-    const today = new Date();
-    const day = today.getDate().toString().padStart(2, '0');
+    // Generar ID con formato #DDMM-NN (en hora Peru)
+    const today = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Lima" }));
+    const day   = today.getDate().toString().padStart(2, '0');
     const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const year  = today.getFullYear().toString();
 
-    // Obtener pedidos existentes para calcular el correlativo
+    // Leer pedidos UNA SOLA VEZ — este array se reutiliza en saveOrder
+    // para evitar una segunda lectura a Redis (que podría devolver dato desactualizado)
     const existingOrders = await storage.getOrders();
 
-    // Filtrar pedidos del día actual que empiecen con "SD"
-    const todayOrders = existingOrders.filter((order: any) => {
-      if (!order.id.startsWith('SD')) return false;
+    // Correlativo atómico usando redis.incr — garantiza unicidad aunque lleguen
+    // múltiples requests simultáneas o la función tenga un cold start
+    const correlativeNum = await storage.getNextDailyCorrelative(day, month, year);
+    const correlative    = correlativeNum.toString().padStart(2, '0');
 
-      const orderDate = new Date(order.createdAt);
-      return (
-        orderDate.getDate() === today.getDate() &&
-        orderDate.getMonth() === today.getMonth() &&
-        orderDate.getFullYear() === today.getFullYear()
-      );
-    });
-
-    // Calcular el siguiente número correlativo del día
-    const correlative = (todayOrders.length + 1).toString().padStart(2, '0');
-
-    // Formato corto: #DD-NN  (día/mes abreviado + correlativo del día)
-    // Ej: #0406-01 → pedido 1 del 4 de junio
+    // Formato: #DDMM-NN  (ej: #0406-01 = pedido 1 del 4 de junio)
     const orderId = `#${day}${month}-${correlative}`;
 
     // Expandir completedOrders con datos completos de productos
@@ -261,9 +255,10 @@ export async function POST(request: Request) {
 
     console.log("✅ Pedido creado con ID:", newOrder.id, "| Método:", paymentMethod);
 
-    // Guardar usando la utilidad de storage
-    await storage.saveOrder(newOrder);
-    console.log("💾 Pedido guardado");
+    // Guardar pasando el array ya leído — evita segunda lectura a Redis
+    // y garantiza que el pedido se añade AL HISTORIAL COMPLETO
+    await storage.saveOrder(newOrder, existingOrders);
+    console.log("💾 Pedido guardado. ID:", newOrder.id, "| Total órdenes:", existingOrders.length + 1);
 
     return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {

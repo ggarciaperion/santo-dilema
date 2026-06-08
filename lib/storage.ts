@@ -229,9 +229,39 @@ export const storage = {
     }
   },
 
-  // Guardar una nueva orden
-  async saveOrder(order: Order): Promise<Order> {
-    const orders = await this.getOrders();
+  // Generar correlativo diario de forma atómica (evita IDs duplicados)
+  async getNextDailyCorrelative(day: string, month: string, year: string): Promise<number> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured. Please contact support.');
+      // incr es atómico — nunca produce duplicados aunque lleguen requests simultáneas
+      const key = `orders:counter:${day}${month}${year}`;
+      const count = await redis.incr(key);
+      // Expirar la clave del contador a los 7 días (limpieza automática)
+      await redis.expire(key, 7 * 24 * 3600);
+      return count;
+    } else {
+      // Desarrollo: calcular desde el archivo (comportamiento original)
+      const orders = await this.getOrders();
+      const todayOrders = orders.filter((order: any) => {
+        const orderDate = new Date(new Date(order.createdAt).toLocaleString('en-US', { timeZone: 'America/Lima' }));
+        return (
+          orderDate.getDate()     === parseInt(day,   10) &&
+          orderDate.getMonth()    === parseInt(month, 10) - 1 &&
+          orderDate.getFullYear() === parseInt(year,  10)
+        );
+      });
+      const correlatives = todayOrders.map((o: any) => {
+        const m = String(o.id).match(/-(\d+)$/);
+        return m ? parseInt(m[1], 10) : 0;
+      });
+      return correlatives.length > 0 ? Math.max(...correlatives) + 1 : 1;
+    }
+  },
+
+  // Guardar una nueva orden (acepta el array ya leído para evitar doble lectura)
+  async saveOrder(order: Order, preloadedOrders?: Order[]): Promise<Order> {
+    // Usar el array pre-cargado si lo pasan (evita una segunda lectura a Redis)
+    const orders = preloadedOrders ?? await this.getOrders();
     orders.unshift(order);
 
     if (isProduction) {
@@ -240,12 +270,12 @@ export const storage = {
       }
       // Producción: guardar en Redis
       await redis.set('orders', orders);
-      console.log('✅ Orden guardada en Redis');
+      console.log('✅ Orden guardada en Redis. Total:', orders.length);
     } else {
       // Desarrollo: guardar en archivo
       ensureDataDirectory();
       fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2));
-      console.log('✅ Orden guardada en archivo local');
+      console.log('✅ Orden guardada en archivo local. Total:', orders.length);
     }
 
     return order;
