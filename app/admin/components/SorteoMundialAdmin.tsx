@@ -61,7 +61,7 @@ const DEFAULT_CONFIG: Config = {
   equipoLocal: '', equipoVisitante: '',
   flagLocal: '', flagVisitante: '',
   fechaPartido: '', horaPartido: '',
-  mensajePromo: '🏆 ¡Adivina el resultado y gana alitas gratis!',
+  mensajePromo: '🏆 Quienes acierten entran al sorteo de alitas gratis.',
   premio: 'Alitas gratis',
 };
 

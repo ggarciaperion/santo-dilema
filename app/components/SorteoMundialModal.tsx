@@ -46,8 +46,10 @@ const FLAG_FALLBACK: Record<string, string> = {
 
 function getFlag(nombre: string | null, flagUrl: string | null): string {
   if (!nombre) return '⚽';
-  if (flagUrl && flagUrl.startsWith('http')) return flagUrl; // URL de imagen (no usamos aquí)
-  return FLAG_FALLBACK[nombre] || '🏳️';
+  // Si ya es un emoji de bandera (no URL HTTP), usarlo directamente
+  if (flagUrl && !flagUrl.startsWith('http')) return flagUrl;
+  // Fallback por nombre de país
+  return FLAG_FALLBACK[nombre] || '⚽';
 }
 
 type Step = 'loading' | 'form' | 'success' | 'closed' | 'hidden';
@@ -213,9 +215,9 @@ export default function SorteoMundialModal() {
                     </span>
                   </div>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>
-                    ¡Predice y gana
+                    ¡Adivina el resultado
                     <br />
-                    <span style={{ color: '#4ade80' }}>{config.premio || 'alitas gratis'}!</span>
+                    <span style={{ color: '#4ade80' }}>y entra al sorteo! 🎁</span>
                   </h2>
                 </div>
                 <button
@@ -368,7 +370,7 @@ export default function SorteoMundialModal() {
 
               {/* Fine print */}
               <p style={{ textAlign: 'center', fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)', marginTop: 10 }}>
-                Un celular por día · Solo Jue/Vie/Sáb/Dom · Válido en Santo Dilema
+                Quienes acierten entran al sorteo · Un celular por día · Jue–Dom · Santo Dilema
               </p>
             </div>
           )}
@@ -377,18 +379,28 @@ export default function SorteoMundialModal() {
             <div className="px-5 py-8 text-center">
               <div style={{ fontSize: 56, animation: 'smBounce 1s ease infinite', display: 'block', marginBottom: 12 }}>🏆</div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#4ade80', marginBottom: 6 }}>
-                ¡Ya estás participando!
+                ¡Predicción registrada!
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: 20 }}>
-                Registramos tu predicción.<br />
-                Si aciertas el resultado, <strong style={{ color: '#fff' }}>te contactaremos por WhatsApp</strong> para entregarte tu premio.
+              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: 16 }}>
+                Si tu predicción es correcta, <strong style={{ color: '#fff' }}>entrarás al sorteo</strong> junto con todos los que acierten.
               </p>
+              <div style={{
+                borderRadius: 12, padding: '12px 16px', marginBottom: 16,
+                background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.25)',
+              }}>
+                <p style={{ color: '#fbbf24', fontWeight: 700, fontSize: '0.82rem', margin: 0 }}>
+                  🎲 El ganador del sorteo es elegido entre todos los acertantes
+                </p>
+              </div>
               <div style={{
                 borderRadius: 12, padding: '12px 16px', marginBottom: 20,
                 background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
               }}>
-                <p style={{ color: '#4ade80', fontWeight: 700, fontSize: '0.85rem' }}>
+                <p style={{ color: '#4ade80', fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>
                   🎁 Premio: {config?.premio || 'Alitas gratis'}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', margin: '4px 0 0' }}>
+                  El ganador será contactado por WhatsApp
                 </p>
               </div>
               <button
