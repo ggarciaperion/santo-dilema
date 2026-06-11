@@ -181,18 +181,14 @@ export default function SorteoMundialModal() {
       <div
         className="fixed inset-0 z-[230] flex items-center justify-center p-3 sm:p-4"
         style={{
-          backgroundImage: 'url(/sorteo-mundial-bg.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(3px)',
           animation: 'smFadeIn 0.3s ease',
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}
         onClick={cerrar}
       >
-        {/* Overlay semitransparente sobre la imagen */}
-        <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.45)' }} />
         {/* Card */}
         <div
           className="relative w-full overflow-hidden"
@@ -202,18 +198,22 @@ export default function SorteoMundialModal() {
             maxHeight: '95dvh',
             overflowY: 'auto',
             borderRadius: 20,
-            background: 'linear-gradient(160deg, #0a1628 0%, #0d2240 50%, #0a1628 100%)',
+            backgroundImage: 'url(/sorteo-mundial-bg.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
             border: '1.5px solid rgba(34,197,94,0.35)',
             boxShadow: '0 25px 80px rgba(0,0,0,0.8), 0 0 60px rgba(34,197,94,0.08)',
             animation: 'smSlideUp 0.4s cubic-bezier(0.22,1,0.36,1)',
           }}
           onClick={e => e.stopPropagation()}
         >
+          {/* Overlay oscuro sobre la imagen para legibilidad */}
+          <div className="absolute inset-0" style={{ background: 'rgba(5,15,30,0.72)', borderRadius: 20, pointerEvents: 'none' }} />
           {/* Top accent bar */}
-          <div style={{ height: 4, background: 'linear-gradient(90deg, #16a34a, #eab308, #16a34a)', backgroundSize: '200% 100%', animation: 'smShine 3s linear infinite' }} />
+          <div style={{ position: 'relative', zIndex: 1, height: 4, background: 'linear-gradient(90deg, #16a34a, #eab308, #16a34a)', backgroundSize: '200% 100%', animation: 'smShine 3s linear infinite' }} />
 
           {step === 'form' && config && (
-            <div className="px-5 py-5">
+            <div className="px-5 py-5" style={{ position: 'relative', zIndex: 1 }}>
               {/* Header */}
               <div className="flex items-start justify-between mb-1">
                 <div>
@@ -385,7 +385,7 @@ export default function SorteoMundialModal() {
           )}
 
           {step === 'success' && (
-            <div className="px-5 py-8 text-center">
+            <div className="px-5 py-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ fontSize: 56, animation: 'smBounce 1s ease infinite', display: 'block', marginBottom: 12 }}>🏆</div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#4ade80', marginBottom: 6 }}>
                 ¡Predicción registrada!
@@ -425,7 +425,7 @@ export default function SorteoMundialModal() {
           )}
 
           {/* Bottom accent bar */}
-          <div style={{ height: 3, background: 'linear-gradient(90deg, #eab308, #16a34a, #eab308)', backgroundSize: '200% 100%', animation: 'smShine 4s linear infinite' }} />
+          <div style={{ position: 'relative', zIndex: 1, height: 3, background: 'linear-gradient(90deg, #eab308, #16a34a, #eab308)', backgroundSize: '200% 100%', animation: 'smShine 4s linear infinite' }} />
         </div>
       </div>
     </>
