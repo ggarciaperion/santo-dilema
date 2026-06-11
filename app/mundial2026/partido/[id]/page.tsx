@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getFixtures } from '@/lib/mundial2026/api'
 import { generateAdvancedPrediction } from '@/lib/mundial2026/predictions'
-import type { AdvancedPrediction, MatchWithTeams, RiskFactor } from '@/lib/mundial2026/types'
+import type { AdvancedPrediction, MatchEvent, MatchWithTeams, RiskFactor } from '@/lib/mundial2026/types'
 import RadarChart from '../../components/RadarChart'
 import ScoreMatrix from '../../components/ScoreMatrix'
 
@@ -34,13 +34,15 @@ const CONF_LABELS: Record<string, string> = {
   'low':       'BAJA',
 }
 const RISK_ICONS: Record<RiskFactor['type'], string> = {
-  altitude:  '⛰️',
-  form:      '📈',
-  h2h:       '⚔️',
-  market:    '💹',
-  fatigue:   '😴',
-  host:      '🏟️',
-  pressure:  '🧠',
+  altitude: '⛰️', form: '📈', h2h: '⚔️',
+  market: '💹', fatigue: '😴', host: '🏟️', pressure: '🧠',
+}
+
+const EVENT_ICON: Record<MatchEvent['type'], string> = {
+  goal: '⚽', own_goal: '⚽', penalty: '⚽', yellow: '🟨', red: '🟥',
+}
+const EVENT_LABEL: Record<MatchEvent['type'], string> = {
+  goal: 'Gol', own_goal: 'Gol en propia', penalty: 'Penalti', yellow: 'Amarilla', red: 'Roja',
 }
 
 function ModelRow({ label, h, d, a }: { label: string; h: number; d: number; a: number; color: string }) {
@@ -89,6 +91,85 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
+function EventTimeline({ events, homeShort, awayShort }: { events: MatchEvent[]; homeShort: string; awayShort: string }) {
+  if (!events || events.length === 0) return null
+  // Sort by minute (parse number from "77'" etc.)
+  const sorted = [...events].sort((a, b) => {
+    const ma = parseInt(a.minute) || 0
+    const mb = parseInt(b.minute) || 0
+    return ma - mb
+  })
+  return (
+    <div style={{ marginBottom: '16px' }}>
+      <Card style={{ padding: '16px 20px' }}>
+        <SectionTitle>Eventos del partido</SectionTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {sorted.map((ev, i) => {
+            const isHome   = ev.side === 'home'
+            const isGoal   = ev.type === 'goal' || ev.type === 'own_goal' || ev.type === 'penalty'
+            const isRed    = ev.type === 'red'
+            const accentColor = isGoal ? (isHome ? '#22c55e' : '#3b82f6') : isRed ? '#ef4444' : '#facc15'
+            return (
+              <div key={i} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 12px',
+                background: `${accentColor}08`,
+                border: `1px solid ${accentColor}22`,
+                borderRadius: '8px',
+                // goals and reds get slightly more emphasis
+                ...(isGoal || isRed ? { borderColor: `${accentColor}40` } : {}),
+              }}>
+                {/* Minute */}
+                <div style={{
+                  width: '36px', textAlign: 'right', flexShrink: 0,
+                  fontSize: '12px', fontWeight: 700,
+                  color: accentColor,
+                }}>
+                  {ev.minute}
+                </div>
+
+                {/* Icon */}
+                <div style={{ fontSize: '14px', flexShrink: 0 }}>{EVENT_ICON[ev.type]}</div>
+
+                {/* Player + event label — laid out home ← center → away */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                  {isHome ? (
+                    <>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {ev.playerName}
+                      </span>
+                      <span style={{ fontSize: '10px', color: '#475569', flexShrink: 0 }}>{EVENT_LABEL[ev.type]}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: '10px', color: '#475569', flexShrink: 0 }}>{EVENT_LABEL[ev.type]}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {ev.playerName}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {/* Side badge */}
+                <div style={{
+                  flexShrink: 0, fontSize: '10px', fontWeight: 700,
+                  color: isHome ? '#22c55e' : '#3b82f6',
+                  background: isHome ? 'rgba(34,197,94,0.1)' : 'rgba(59,130,246,0.1)',
+                  padding: '2px 7px', borderRadius: '4px',
+                }}>
+                  {isHome ? homeShort : awayShort}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+    </div>
+  )
+}
+
 export default async function PartidoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { fixtures } = await getFixtures()
@@ -96,8 +177,9 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
 
   if (!match) notFound()
 
-  const isScheduled = match.status === 'scheduled'
-  const pred: AdvancedPrediction | null = isScheduled
+  // Show analysis for scheduled AND live matches
+  const showAnalysis = match.status === 'scheduled' || match.status === 'live'
+  const pred: AdvancedPrediction | null = showAnalysis
     ? generateAdvancedPrediction(match.home, match.away, match.id, true, match.venue)
     : null
 
@@ -111,6 +193,9 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
     match.phase === 'semifinal'    ? 'Semifinal' :
     match.phase === 'thirdplace'   ? 'Tercer Puesto' : 'Gran Final'
 
+  const isLive     = match.status === 'live'
+  const isFinished = match.status === 'finished'
+
   return (
     <div style={{ minHeight: '100vh', background: '#05070F', color: '#f1f5f9', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
@@ -119,7 +204,6 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         .fade-up { animation: fadeUp 0.4s ease both; }
 
-        /* ── Layout grids ── */
         .cards-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
@@ -137,39 +221,21 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
           gap: 8px;
           font-size: 12px;
         }
-
-        /* ── ModelRow ── */
         .model-label {
-          width: 110px;
-          font-size: 12px;
-          color: #64748b;
-          font-weight: 600;
-          flex-shrink: 0;
+          width: 110px; font-size: 12px; color: #64748b; font-weight: 600; flex-shrink: 0;
         }
         .model-values {
-          display: flex;
-          gap: 8px;
-          font-size: 11px;
-          font-weight: 700;
-          min-width: 120px;
-          justify-content: flex-end;
-          flex-shrink: 0;
+          display: flex; gap: 8px; font-size: 11px; font-weight: 700;
+          min-width: 120px; justify-content: flex-end; flex-shrink: 0;
         }
-
-        /* ── Monte Carlo CI ── */
         .mc-ci { display: flex; gap: 12px; flex-wrap: wrap; }
-
-        /* ── Hero ── */
         .hero-flag { font-size: 64px; line-height: 1; }
         .hero-name { font-size: 22px; font-weight: 900; color: #f1f5f9; text-align: center; }
         .hero-center { text-align: center; min-width: 150px; }
         .hero-score { font-size: 42px; font-weight: 900; color: #f8fafc; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
         .hero-time  { font-size: 28px; font-weight: 900; color: #facc15; letter-spacing: -0.5px; }
-
-        /* ── Section padding ── */
         .content-pad { padding: 24px 20px 60px; }
 
-        /* ─────────── MOBILE ─────────── */
         @media (max-width: 720px) {
           .cards-grid { grid-template-columns: 1fr; }
         }
@@ -196,8 +262,10 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(180deg, #070C1A 0%, #05070F 100%)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: isLive
+          ? 'linear-gradient(180deg, #1a0707 0%, #05070F 100%)'
+          : 'linear-gradient(180deg, #070C1A 0%, #05070F 100%)',
+        borderBottom: `1px solid ${isLive ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)'}`,
         padding: '28px 16px 24px',
       }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -211,12 +279,23 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             <span style={{ fontSize: '12px', color: '#64748b', background: 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: '4px' }}>
               {phaseLabel}
             </span>
+            {isLive && (
+              <span style={{
+                fontSize: '11px', fontWeight: 700, color: '#ef4444',
+                background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
+                padding: '2px 10px', borderRadius: '4px',
+                display: 'flex', alignItems: 'center', gap: '5px',
+              }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', animation: 'pulse-live 1.4s infinite', display: 'inline-block' }} />
+                EN VIVO
+              </span>
+            )}
           </div>
 
-          {/* Teams header */}
+          {/* Teams */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center' }}>
 
-            {/* Home team */}
+            {/* Home */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', flex: 1 }}>
               <span className="hero-flag">{home.flag}</span>
               <div className="hero-name">{home.shortName}</div>
@@ -224,21 +303,39 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
               <div style={{ fontSize: '10px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{home.confederation}</div>
             </div>
 
-            {/* Center score/time */}
+            {/* Center */}
             <div className="hero-center">
-              {match.status === 'finished' || match.status === 'live' ? (
+              {isLive || isFinished ? (
                 <div>
                   <div className="hero-score">
-                    {match.homeScore ?? 0} <span style={{ color: '#1e293b' }}>:</span> {match.awayScore ?? 0}
+                    {match.homeScore ?? 0}
+                    <span style={{ color: '#1e293b', margin: '0 6px' }}>:</span>
+                    {match.awayScore ?? 0}
                   </div>
-                  {match.status === 'live' && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '6px' }}>
+                  {isLive && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '8px' }}>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', animation: 'pulse-live 1.4s infinite', display: 'inline-block' }} />
-                      <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 700 }}>EN VIVO {match.minute}′</span>
+                      <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>
+                        {match.minute ? `${match.minute}′` : 'EN VIVO'}
+                      </span>
                     </div>
                   )}
-                  {match.status === 'finished' && (
-                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>Partido finalizado</div>
+                  {isFinished && (
+                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '6px' }}>Partido finalizado</div>
+                  )}
+                  {/* Quick probs even for live/finished */}
+                  {pred && (
+                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '10px' }}>
+                      <div style={{ padding: '3px 7px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '5px', fontSize: '10px', fontWeight: 700, color: '#22c55e' }}>
+                        {pct(pred.homeWinProb)}
+                      </div>
+                      <div style={{ padding: '3px 7px', background: 'rgba(100,116,139,0.12)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '5px', fontSize: '10px', fontWeight: 700, color: '#94a3b8' }}>
+                        {pct(pred.drawProb)}
+                      </div>
+                      <div style={{ padding: '3px 7px', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)', borderRadius: '5px', fontSize: '10px', fontWeight: 700, color: '#3b82f6' }}>
+                        {pct(pred.awayWinProb)}
+                      </div>
+                    </div>
                   )}
                 </div>
               ) : (
@@ -267,7 +364,7 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
               )}
             </div>
 
-            {/* Away team */}
+            {/* Away */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', flex: 1 }}>
               <span className="hero-flag">{away.flag}</span>
               <div className="hero-name">{away.shortName}</div>
@@ -307,6 +404,24 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
       {pred ? (
         <div className="content-pad" style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
+          {/* ── Live source notice ── */}
+          {isLive && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '8px 14px', marginBottom: '14px',
+              background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
+              borderRadius: '8px', fontSize: '11px', color: '#94a3b8',
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', animation: 'pulse-live 1.4s infinite', display: 'inline-block', flexShrink: 0 }} />
+              Resultado en tiempo real vía ESPN · Análisis pre-partido (modelo calculado antes del inicio)
+            </div>
+          )}
+
+          {/* ── Events timeline (live / finished) ── */}
+          {(isLive || isFinished) && match.events && match.events.length > 0 && (
+            <EventTimeline events={match.events} homeShort={home.shortName} awayShort={away.shortName} />
+          )}
+
           {/* ── Insight narrative ── */}
           <div className="fade-up" style={{
             background: 'rgba(250,204,21,0.04)',
@@ -319,7 +434,7 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             lineHeight: 1.6,
           }}>
             <div style={{ fontSize: '10px', fontWeight: 700, color: '#facc15', letterSpacing: '0.1em', marginBottom: '8px' }}>
-              ◆ ANÁLISIS INTELIGENTE
+              ◆ ANÁLISIS ESTADÍSTICO
             </div>
             {pred.insight}
           </div>
@@ -331,8 +446,8 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             <Card>
               <SectionTitle>Comparativa de selecciones</SectionTitle>
               <RadarChart
-                home={pred.homeRadar}      homeLabel={home.shortName}  homeColor="#22c55e"
-                away={pred.awayRadar}      awayLabel={away.shortName}  awayColor="#3b82f6"
+                home={pred.homeRadar}  homeLabel={home.shortName}  homeColor="#22c55e"
+                away={pred.awayRadar}  awayLabel={away.shortName}  awayColor="#3b82f6"
               />
             </Card>
 
@@ -346,42 +461,32 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                 <span style={{ color: '#3b82f6', fontWeight: 700 }}>{away.shortName}</span>
               </div>
 
-              <ModelRow label="Ensemble"    h={pred.homeWinProb}                    d={pred.drawProb}                    a={pred.awayWinProb}                    color="#facc15" />
-              <ModelRow label="Dixon-Coles" h={pred.models.dixonColes.homeWin}      d={pred.models.dixonColes.draw}      a={pred.models.dixonColes.awayWin}      color="#22c55e" />
-              <ModelRow label="Monte Carlo" h={pred.models.monteCarlo.homeWin}      d={pred.models.monteCarlo.draw}      a={pred.models.monteCarlo.awayWin}      color="#a78bfa" />
-              <ModelRow label="Bayesiano"   h={pred.models.bayesian.homeWin}        d={pred.models.bayesian.draw}        a={pred.models.bayesian.awayWin}        color="#38bdf8" />
-              <ModelRow label="ELO"         h={pred.models.elo.homeWin}             d={pred.models.elo.draw}             a={pred.models.elo.awayWin}             color="#fb923c" />
+              <ModelRow label="Ensemble"    h={pred.homeWinProb}               d={pred.drawProb}               a={pred.awayWinProb}               color="#facc15" />
+              <ModelRow label="Dixon-Coles" h={pred.models.dixonColes.homeWin} d={pred.models.dixonColes.draw} a={pred.models.dixonColes.awayWin} color="#22c55e" />
+              <ModelRow label="Monte Carlo" h={pred.models.monteCarlo.homeWin} d={pred.models.monteCarlo.draw} a={pred.models.monteCarlo.awayWin} color="#a78bfa" />
+              <ModelRow label="Bayesiano"   h={pred.models.bayesian.homeWin}   d={pred.models.bayesian.draw}   a={pred.models.bayesian.awayWin}   color="#38bdf8" />
+              <ModelRow label="ELO"         h={pred.models.elo.homeWin}        d={pred.models.elo.draw}        a={pred.models.elo.awayWin}        color="#fb923c" />
 
-              {/* xG Expected */}
+              {/* xG */}
               <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
                 <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: '#22c55e' }}>
-                    {fmt2(pred.models.dixonColes.expectedGoalsH)}
-                  </div>
+                  <div style={{ fontSize: '22px', fontWeight: 800, color: '#22c55e' }}>{fmt2(pred.models.dixonColes.expectedGoalsH)}</div>
                   <div style={{ fontSize: '10px', color: '#475569', marginTop: '2px' }}>xG {home.shortName}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: '#1e293b', fontWeight: 800 }}>VS</div>
                 <div style={{ flex: 1, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: '#3b82f6' }}>
-                    {fmt2(pred.models.dixonColes.expectedGoalsA)}
-                  </div>
+                  <div style={{ fontSize: '22px', fontWeight: 800, color: '#3b82f6' }}>{fmt2(pred.models.dixonColes.expectedGoalsA)}</div>
                   <div style={{ fontSize: '10px', color: '#475569', marginTop: '2px' }}>xG {away.shortName}</div>
                 </div>
               </div>
 
-              {/* Monte Carlo CI */}
+              {/* MC CI */}
               <div style={{ marginTop: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '11px', color: '#64748b' }}>
                 <div style={{ fontWeight: 600, color: '#94a3b8', marginBottom: '6px' }}>IC 95% — Monte Carlo (n=50,000)</div>
                 <div className="mc-ci">
-                  <span style={{ color: '#22c55e' }}>
-                    {home.shortName}: {pct(pred.models.monteCarlo.homeWinCI[0])}–{pct(pred.models.monteCarlo.homeWinCI[1])}
-                  </span>
-                  <span>
-                    Empate: {pct(pred.models.monteCarlo.drawCI[0])}–{pct(pred.models.monteCarlo.drawCI[1])}
-                  </span>
-                  <span style={{ color: '#3b82f6' }}>
-                    {away.shortName}: {pct(pred.models.monteCarlo.awayWinCI[0])}–{pct(pred.models.monteCarlo.awayWinCI[1])}
-                  </span>
+                  <span style={{ color: '#22c55e' }}>{home.shortName}: {pct(pred.models.monteCarlo.homeWinCI[0])}–{pct(pred.models.monteCarlo.homeWinCI[1])}</span>
+                  <span>Empate: {pct(pred.models.monteCarlo.drawCI[0])}–{pct(pred.models.monteCarlo.drawCI[1])}</span>
+                  <span style={{ color: '#3b82f6' }}>{away.shortName}: {pct(pred.models.monteCarlo.awayWinCI[0])}–{pct(pred.models.monteCarlo.awayWinCI[1])}</span>
                 </div>
               </div>
             </Card>
@@ -389,18 +494,13 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             {/* SCORE MATRIX */}
             <Card>
               <SectionTitle>Mapa de probabilidad de marcadores</SectionTitle>
-              <ScoreMatrix
-                scores={pred.topScores}
-                homeLabel={home.shortName}
-                awayLabel={away.shortName}
-              />
+              <ScoreMatrix scores={pred.topScores} homeLabel={home.shortName} awayLabel={away.shortName} />
             </Card>
 
-            {/* CONFIDENCE & RISK FACTORS */}
+            {/* CONFIDENCE & RISK */}
             <Card>
               <SectionTitle>Factores de confianza y riesgo</SectionTitle>
 
-              {/* Confidence meter */}
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8' }}>Índice de certeza</span>
@@ -410,16 +510,13 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                 </div>
                 <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{
-                    height: '100%',
-                    width: `${pred.confidence.score}%`,
+                    height: '100%', width: `${pred.confidence.score}%`,
                     background: `linear-gradient(90deg, ${CONF_COLORS[pred.confidence.level]}, ${CONF_COLORS[pred.confidence.level]}88)`,
                     borderRadius: '4px',
-                    transition: 'width 0.5s ease',
                   }} />
                 </div>
               </div>
 
-              {/* Risk factors */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {pred.confidence.factors.map((f, i) => (
                   <div key={i} style={{
@@ -434,7 +531,8 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                       <div style={{ fontSize: '12px', color: '#e2e8f0', fontWeight: 500, lineHeight: 1.4 }}>{f.description}</div>
                     </div>
                     <div style={{
-                      fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 6px', borderRadius: '4px', flexShrink: 0,
+                      fontSize: '9px', fontWeight: 700, textTransform: 'uppercase',
+                      padding: '2px 6px', borderRadius: '4px', flexShrink: 0,
                       color: f.impact === 'positive' ? '#22c55e' : f.impact === 'negative' ? '#ef4444' : '#64748b',
                       background: f.impact === 'positive' ? 'rgba(34,197,94,0.12)' : f.impact === 'negative' ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)',
                     }}>
@@ -444,7 +542,6 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                 ))}
               </div>
 
-              {/* Venue details */}
               <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '8px' }}>Condiciones de sede</div>
                 <div className="venue-grid">
@@ -479,25 +576,18 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                       padding: '14px',
                       background: o.value ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)',
                       border: `1px solid ${o.value ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                      borderRadius: '10px',
-                      textAlign: 'center',
+                      borderRadius: '10px', textAlign: 'center',
                     }}>
-                      {o.value && (
-                        <div style={{ fontSize: '9px', fontWeight: 700, color: '#22c55e', letterSpacing: '0.08em', marginBottom: '6px' }}>
-                          ✦ VALOR DETECTADO
-                        </div>
-                      )}
+                      {o.value && <div style={{ fontSize: '9px', fontWeight: 700, color: '#22c55e', letterSpacing: '0.08em', marginBottom: '6px' }}>✦ VALOR DETECTADO</div>}
                       <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>{o.label}</div>
                       <div style={{ fontSize: '26px', fontWeight: 800, color: o.color }}>{o.odds?.toFixed(2) ?? '—'}</div>
                       <div style={{ fontSize: '10px', color: '#475569', marginTop: '4px' }}>mejor cuota</div>
                       <div style={{ marginTop: '8px', padding: '4px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b' }}>
-                          <span>Prob. mercado</span>
-                          <span style={{ fontWeight: 600, color: '#94a3b8' }}>{o.fair ? pct(o.fair) : '—'}</span>
+                          <span>Prob. mercado</span><span style={{ fontWeight: 600, color: '#94a3b8' }}>{o.fair ? pct(o.fair) : '—'}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
-                          <span>Prob. modelo</span>
-                          <span style={{ fontWeight: 600, color: o.color }}>{pct(o.model)}</span>
+                          <span>Prob. modelo</span><span style={{ fontWeight: 600, color: o.color }}>{pct(o.model)}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
                           <span>EV esperado</span>
@@ -509,15 +599,8 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                     </div>
                   ))}
                 </div>
-
                 {pred.valueAnalysis.sharpSignal && (
-                  <div style={{
-                    padding: '10px 14px',
-                    background: 'rgba(239,68,68,0.06)',
-                    border: '1px solid rgba(239,68,68,0.2)',
-                    borderRadius: '8px',
-                    fontSize: '12px', color: '#fca5a5',
-                  }}>
+                  <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', fontSize: '12px', color: '#fca5a5' }}>
                     🔔 <strong>Sharp money detectado:</strong> Pinnacle mueve línea hacia {
                       pred.valueAnalysis.sharpSignal === 'home' ? home.shortName :
                       pred.valueAnalysis.sharpSignal === 'away' ? away.shortName : 'empate'
@@ -528,44 +611,39 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* ── METHODOLOGY footnote ── */}
+          {/* ── METHODOLOGY ── */}
           <div style={{ marginTop: '24px', padding: '14px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', fontSize: '11px', color: '#334155', lineHeight: 1.6 }}>
             <strong style={{ color: '#475569' }}>Metodología:</strong> Ensemble ponderado (Dixon-Coles 40% + Monte Carlo 30% + Bayesiano 20% + ELO 10%).
             Dixon-Coles con corrección ρ={pred.models.dixonColes.rho} para marcadores bajos.
             Monte Carlo: {pred.models.monteCarlo.iterations.toLocaleString()} iteraciones, IC 95% via Wilson Score.
-            Parámetros de ataque/defensa estimados de clasificatorias 2022–2026 con decaimiento temporal.
-            Este análisis es estadístico y no constituye consejo financiero.
+            {(isLive || isFinished) && ' Análisis calculado antes del inicio del partido.'}
+            {' '}Scores en vivo: ESPN API (sin costo, actualización ~45s).
           </div>
 
         </div>
       ) : (
-        /* Finished / live match */
+        /* Finished without pred (shouldn't happen now, but fallback) */
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 16px 60px', textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>{match.status === 'live' ? '⚽' : '🏁'}</div>
-          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#f1f5f9', marginBottom: '8px' }}>
-            {match.status === 'live' ? 'Partido en curso' : 'Partido finalizado'}
-          </h2>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏁</div>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#f1f5f9', marginBottom: '8px' }}>Partido finalizado</h2>
           <div style={{ fontSize: '48px', fontWeight: 900, color: '#facc15', marginBottom: '8px' }}>
             {match.homeScore ?? 0} — {match.awayScore ?? 0}
           </div>
-          <p style={{ color: '#475569', fontSize: '14px' }}>
-            {home.flag} {home.shortName} vs {away.flag} {away.shortName}
-          </p>
+          <p style={{ color: '#475569', fontSize: '14px' }}>{home.flag} {home.shortName} vs {away.flag} {away.shortName}</p>
+          {match.events && match.events.length > 0 && (
+            <div style={{ maxWidth: '500px', margin: '24px auto 0' }}>
+              <EventTimeline events={match.events} homeShort={home.shortName} awayShort={away.shortName} />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Back button */}
+      {/* Back */}
       <div style={{ textAlign: 'center', padding: '0 0 40px' }}>
         <Link href="/mundial2026" style={{
-          display: 'inline-block',
-          padding: '10px 24px',
-          background: 'rgba(250,204,21,0.08)',
-          border: '1px solid rgba(250,204,21,0.25)',
-          borderRadius: '8px',
-          color: '#facc15',
-          fontWeight: 700,
-          fontSize: '13px',
-          textDecoration: 'none',
+          display: 'inline-block', padding: '10px 24px',
+          background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.25)',
+          borderRadius: '8px', color: '#facc15', fontWeight: 700, fontSize: '13px', textDecoration: 'none',
         }}>
           ← Volver al calendario
         </Link>

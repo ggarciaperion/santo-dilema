@@ -12,6 +12,7 @@ import type { Match, MatchWithTeams, Phase, ApiFixturesResponse } from './types'
 import { TEAMS, getTeam } from './teams'
 import { VENUES, getVenue } from './venues'
 import { getStaticFixtures } from './static-fixtures'
+import { getEspnLiveMap, overlayEspnData } from './espn-live'
 
 const BASE_URL  = 'https://v3.football.api-sports.io'
 const LEAGUE_ID = 1     // FIFA World Cup
@@ -247,8 +248,10 @@ export async function getFixtures(): Promise<ApiFixturesResponse> {
     }
   }
 
-  // 3. Fallback: use hardcoded WC 2026 static data
-  const fixtures = getStaticFixtures()
+  // 3. Fallback: static data + ESPN live overlay (free, no key needed)
+  const staticFixtures = getStaticFixtures()
+  const espnMap        = await getEspnLiveMap()
+  const fixtures       = overlayEspnData(staticFixtures, espnMap)
   return { fixtures, source: 'fallback', cachedAt: new Date().toISOString() }
 }
 

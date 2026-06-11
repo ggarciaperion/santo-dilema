@@ -9,6 +9,13 @@ export type Phase =
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'postponed'
 
+export interface MatchEvent {
+  type: 'goal' | 'own_goal' | 'penalty' | 'yellow' | 'red'
+  minute: string      // e.g. "9'" or "45+2'"
+  playerName: string
+  side: 'home' | 'away'
+}
+
 export type Confederation = 'UEFA' | 'CONMEBOL' | 'CONCACAF' | 'CAF' | 'AFC' | 'OFC'
 
 export interface Team {
@@ -51,6 +58,7 @@ export interface Match {
   status: MatchStatus
   minute?: number
   elapsed?: number
+  events?: MatchEvent[]
 }
 
 export interface MatchWithTeams extends Match {
