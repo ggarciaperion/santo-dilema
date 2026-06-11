@@ -83,8 +83,12 @@ export default function SorteoMundialModal() {
     // Delay de 1.5s para no bloquear la experiencia inicial
     const timer = setTimeout(async () => {
       try {
-        // Si ya participó hoy → no mostrar
-        if (checkParticipacion()) { setStep('hidden'); return; }
+        // ?preview_sorteo=1 bypasa localStorage (para pruebas de admin)
+        const bypass = typeof window !== 'undefined' &&
+          new URLSearchParams(window.location.search).get('preview_sorteo') === '1';
+
+        // Si ya participó hoy → no mostrar (salvo bypass)
+        if (!bypass && checkParticipacion()) { setStep('hidden'); return; }
 
         const res = await fetch('/api/sorteo-mundial/config');
         if (!res.ok) { setStep('hidden'); return; }
