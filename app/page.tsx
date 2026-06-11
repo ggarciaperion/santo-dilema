@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import YunzaModal from "@/components/YunzaModal";
+import SorteoMundialModal from "@/app/components/SorteoMundialModal";
 
 const LAUNCH_DATE = new Date('2026-02-13T23:30:00Z');
 
@@ -414,8 +415,9 @@ export default function Home() {
         </p>
       </div>
 
-      {/* ── MODALS / BANNERS (sin cambios) ── */}
+      {/* ── MODALS / BANNERS ── */}
       <YunzaModal isOpen={showYunzaModal} onClose={() => setShowYunzaModal(false)} />
+      <SorteoMundialModal />
 
       {showDiaTrabajador && (
         <div

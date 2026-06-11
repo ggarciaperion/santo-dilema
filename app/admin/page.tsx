@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import SorteoMundialAdmin from "./components/SorteoMundialAdmin";
 
 // Definiciones de salsas y complementos (igual que en checkout)
 const salsas: { id: string; name: string }[] = [
@@ -327,7 +328,7 @@ export default function AdminPage() {
   const [promotions, setPromotions] = useState<any[]>([]);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<any>(null);
-  const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty" | "challenge" | "ruleta">("promotions");
+  const [marketingSection, setMarketingSection] = useState<"promotions" | "campaigns" | "loyalty" | "challenge" | "ruleta" | "sorteo">("promotions");
   const [forcedPrizeId,    setForcedPrizeId]    = useState<number | null>(null);
   const [ruletaLoading,    setRuletaLoading]    = useState(false);
   const [ruletaSaving,     setRuletaSaving]     = useState(false);
@@ -6345,6 +6346,16 @@ export default function AdminPage() {
               >
                 🎰 Ruleta
               </button>
+              <button
+                onClick={() => setMarketingSection("sorteo")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  marketingSection === "sorteo"
+                    ? "text-green-400 border-b-4 border-green-400"
+                    : "text-gray-400 hover:text-gray-700"
+                }`}
+              >
+                🏆 Sorteo Mundial
+              </button>
             </div>
 
             {marketingSection === "promotions" && (
@@ -6868,6 +6879,12 @@ export default function AdminPage() {
               );
             })()}
           </section>
+
+            {marketingSection === "sorteo" && (
+              <div style={{ background: "#0a0f1e", minHeight: "100%", padding: "24px" }}>
+                <SorteoMundialAdmin />
+              </div>
+            )}
 
           {/* Promotion Modal */}
           {showPromotionModal && (

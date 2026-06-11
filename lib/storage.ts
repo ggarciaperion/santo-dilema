@@ -33,6 +33,9 @@ let customerProfilesFilePath: string = '';
 let menuPricesFilePath: string = '';
 let cajaFilePath: string = '';
 let birthdaySettingsFilePath: string = '';
+let sorteoMundialParticipantesFilePath: string = '';
+let sorteoMundialConfigFilePath: string = '';
+let sorteoMundialMetricasFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -57,6 +60,9 @@ if (!isProduction) {
   menuPricesFilePath = path.join(dataDir, 'menu-prices.json');
   cajaFilePath = path.join(dataDir, 'caja.json');
   birthdaySettingsFilePath = path.join(dataDir, 'birthday-settings.json');
+  sorteoMundialParticipantesFilePath = path.join(dataDir, 'sorteo-mundial-participantes.json');
+  sorteoMundialConfigFilePath = path.join(dataDir, 'sorteo-mundial-config.json');
+  sorteoMundialMetricasFilePath = path.join(dataDir, 'sorteo-mundial-metricas.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -112,6 +118,15 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(menuPricesFilePath)) {
       fs.writeFileSync(menuPricesFilePath, JSON.stringify({}, null, 2));
+    }
+    if (!fs.existsSync(sorteoMundialParticipantesFilePath)) {
+      fs.writeFileSync(sorteoMundialParticipantesFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(sorteoMundialConfigFilePath)) {
+      fs.writeFileSync(sorteoMundialConfigFilePath, JSON.stringify({ active: false, concursoAbierto: false }, null, 2));
+    }
+    if (!fs.existsSync(sorteoMundialMetricasFilePath)) {
+      fs.writeFileSync(sorteoMundialMetricasFilePath, JSON.stringify({ impresiones: 0, participaciones: 0, porDia: {} }, null, 2));
     }
   }
 }
@@ -1156,6 +1171,88 @@ export const storage = {
     } else {
       ensureDataDirectory();
       fs.writeFileSync(birthdaySettingsFilePath, JSON.stringify(data, null, 2));
+    }
+  },
+
+  // ========== SORTEO MUNDIAL ==========
+
+  async getSorteoMundialConfig(): Promise<any> {
+    const defaults = { active: false, concursoAbierto: false };
+    if (isProduction) {
+      if (!redis) return defaults;
+      return (await redis.get<any>('sorteoMundialConfig')) || defaults;
+    }
+    ensureDataDirectory();
+    try { return JSON.parse(fs.readFileSync(sorteoMundialConfigFilePath, 'utf-8')); }
+    catch { return defaults; }
+  },
+
+  async saveSorteoMundialConfig(data: any): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('sorteoMundialConfig', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(sorteoMundialConfigFilePath, JSON.stringify(data, null, 2));
+    }
+  },
+
+  async getSorteoMundialParticipantes(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any[]>('sorteoMundialParticipantes')) || [];
+    }
+    ensureDataDirectory();
+    try { return JSON.parse(fs.readFileSync(sorteoMundialParticipantesFilePath, 'utf-8')); }
+    catch { return []; }
+  },
+
+  async saveSorteoMundialParticipante(participante: any): Promise<any> {
+    const lista = await this.getSorteoMundialParticipantes();
+    lista.unshift(participante);
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('sorteoMundialParticipantes', lista);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(sorteoMundialParticipantesFilePath, JSON.stringify(lista, null, 2));
+    }
+    return participante;
+  },
+
+  async updateSorteoMundialParticipante(id: string, updates: any): Promise<any | null> {
+    const lista = await this.getSorteoMundialParticipantes();
+    const idx = lista.findIndex((p: any) => p.id === id);
+    if (idx === -1) return null;
+    lista[idx] = { ...lista[idx], ...updates };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('sorteoMundialParticipantes', lista);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(sorteoMundialParticipantesFilePath, JSON.stringify(lista, null, 2));
+    }
+    return lista[idx];
+  },
+
+  async getSorteoMundialMetricas(): Promise<any> {
+    const defaults = { impresiones: 0, participaciones: 0, porDia: {} };
+    if (isProduction) {
+      if (!redis) return defaults;
+      return (await redis.get<any>('sorteoMundialMetricas')) || defaults;
+    }
+    ensureDataDirectory();
+    try { return JSON.parse(fs.readFileSync(sorteoMundialMetricasFilePath, 'utf-8')); }
+    catch { return defaults; }
+  },
+
+  async saveSorteoMundialMetricas(data: any): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('sorteoMundialMetricas', data);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(sorteoMundialMetricasFilePath, JSON.stringify(data, null, 2));
     }
   },
 };
