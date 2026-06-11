@@ -181,18 +181,23 @@ export default function SorteoMundialModal() {
       <div
         className="fixed inset-0 z-[230] flex items-center justify-center p-3 sm:p-4"
         style={{
-          background: 'rgba(0,0,0,0.25)',
-          backdropFilter: 'blur(2px)',
+          backgroundImage: 'url(/sorteo-mundial-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           animation: 'smFadeIn 0.3s ease',
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}
         onClick={cerrar}
       >
+        {/* Overlay semitransparente sobre la imagen */}
+        <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.45)' }} />
         {/* Card */}
         <div
           className="relative w-full overflow-hidden"
           style={{
+            position: 'relative', zIndex: 1,
             maxWidth: 420,
             maxHeight: '95dvh',
             overflowY: 'auto',
