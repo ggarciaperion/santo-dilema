@@ -113,6 +113,25 @@ export const VENUES: Record<string, Venue> = {
     timezone: 'America/Chicago',
   },
 
+  atlanta: {
+    id: 'atlanta',
+    name: 'Mercedes-Benz Stadium',
+    city: 'Atlanta, GA',
+    country: 'USA',
+    capacity: 71000,
+    altitude: 320,
+    timezone: 'America/New_York',
+  },
+  lumen: {
+    id: 'lumen',
+    name: 'Lumen Field',
+    city: 'Seattle, WA',
+    country: 'USA',
+    capacity: 69000,
+    altitude: 5,
+    timezone: 'America/Los_Angeles',
+  },
+
   // ── CANADA ───────────────────────────────────────────────────────
   bcplace: {
     id: 'bcplace',
