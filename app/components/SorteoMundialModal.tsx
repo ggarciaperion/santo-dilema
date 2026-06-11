@@ -181,8 +181,8 @@ export default function SorteoMundialModal() {
       <div
         className="fixed inset-0 z-[230] flex items-center justify-center p-3 sm:p-4"
         style={{
-          background: 'rgba(0,0,0,0.92)',
-          backdropFilter: 'blur(8px)',
+          background: 'rgba(0,0,0,0.55)',
+          backdropFilter: 'blur(3px)',
           animation: 'smFadeIn 0.3s ease',
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.3s ease',
