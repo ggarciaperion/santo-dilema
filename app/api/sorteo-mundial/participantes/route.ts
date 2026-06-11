@@ -46,3 +46,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Error cargando participantes' }, { status: 500 });
   }
 }
+
+// DELETE — eliminar participante por id (?id=xxx)
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });
+
+    const lista = await storage.getSorteoMundialParticipantes();
+    const nueva = lista.filter((p: any) => p.id !== id);
+    if (nueva.length === lista.length) {
+      return NextResponse.json({ error: 'Participante no encontrado' }, { status: 404 });
+    }
+    await storage.saveSorteoMundialParticipantesList(nueva);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[sorteo-mundial/participantes DELETE]', err);
+    return NextResponse.json({ error: 'Error eliminando participante' }, { status: 500 });
+  }
+}

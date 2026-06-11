@@ -625,7 +625,7 @@ export default function SorteoMundialAdmin() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
                 <thead>
                   <tr>
-                    {['Nombre', 'Teléfono', 'Partido', 'Predicción', 'Fecha', 'Estado'].map(h => (
+                    {['Nombre', 'Teléfono', 'Partido', 'Predicción', 'Fecha', 'Estado', ''].map(h => (
                       <th key={h} style={{ textAlign: 'left', padding: '7px 10px', color: '#64748b', fontWeight: 700, fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid #e2e8f0' }}>{h}</th>
                     ))}
                   </tr>
@@ -646,6 +646,18 @@ export default function SorteoMundialAdmin() {
                           <span style={{ padding: '3px 8px', borderRadius: 20, background: badge.bg, color: badge.color, fontSize: '0.63rem', fontWeight: 700 }}>
                             {badge.label}
                           </span>
+                        </td>
+                        <td style={{ padding: '8px 10px' }}>
+                          <button
+                            onClick={async () => {
+                              if (!confirm(`¿Eliminar a ${p.nombre}?`)) return;
+                              await fetch(`/api/sorteo-mundial/participantes?id=${p.id}`, { method: 'DELETE' });
+                              setParticipantes(prev => prev.filter(x => x.id !== p.id));
+                            }}
+                            style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', fontSize: '0.63rem', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            🗑
+                          </button>
                         </td>
                       </tr>
                     );

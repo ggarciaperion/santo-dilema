@@ -1220,6 +1220,16 @@ export const storage = {
     return participante;
   },
 
+  async saveSorteoMundialParticipantesList(lista: any[]): Promise<void> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('sorteoMundialParticipantes', lista);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(sorteoMundialParticipantesFilePath, JSON.stringify(lista, null, 2));
+    }
+  },
+
   async updateSorteoMundialParticipante(id: string, updates: any): Promise<any | null> {
     const lista = await this.getSorteoMundialParticipantes();
     const idx = lista.findIndex((p: any) => p.id === id);
