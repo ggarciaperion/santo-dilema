@@ -11,6 +11,7 @@ import { Redis } from '@upstash/redis'
 import type { Match, MatchWithTeams, Phase, ApiFixturesResponse } from './types'
 import { TEAMS, getTeam } from './teams'
 import { VENUES, getVenue } from './venues'
+import { getStaticFixtures } from './static-fixtures'
 
 const BASE_URL  = 'https://v3.football.api-sports.io'
 const LEAGUE_ID = 1     // FIFA World Cup
@@ -246,8 +247,9 @@ export async function getFixtures(): Promise<ApiFixturesResponse> {
     }
   }
 
-  // 3. Fallback: empty state (user needs to configure API key)
-  return { fixtures: [], source: 'fallback' }
+  // 3. Fallback: use hardcoded WC 2026 static data
+  const fixtures = getStaticFixtures()
+  return { fixtures, source: 'fallback', cachedAt: new Date().toISOString() }
 }
 
 // ── Cache invalidation ────────────────────────────────────────────
