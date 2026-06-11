@@ -43,16 +43,16 @@ const RISK_ICONS: Record<RiskFactor['type'], string> = {
   pressure:  '🧠',
 }
 
-function ModelRow({ label, h, d, a, color }: { label: string; h: number; d: number; a: number; color: string }) {
+function ModelRow({ label, h, d, a }: { label: string; h: number; d: number; a: number; color: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-      <div style={{ width: '120px', fontSize: '12px', color: '#64748b', fontWeight: 600 }}>{label}</div>
-      <div style={{ flex: 1, display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', gap: '1px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      <div className="model-label">{label}</div>
+      <div style={{ flex: 1, display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', gap: '1px', minWidth: 0 }}>
         <div style={{ flex: h * 100, background: '#22c55e', borderRadius: '4px 0 0 4px' }} />
         <div style={{ flex: d * 100, background: '#475569' }} />
         <div style={{ flex: a * 100, background: '#3b82f6', borderRadius: '0 4px 4px 0' }} />
       </div>
-      <div style={{ display: 'flex', gap: '8px', fontSize: '11px', fontWeight: 700, minWidth: '130px', justifyContent: 'flex-end' }}>
+      <div className="model-values">
         <span style={{ color: '#22c55e' }}>{pct(h)}</span>
         <span style={{ color: '#64748b' }}>{pct(d)}</span>
         <span style={{ color: '#3b82f6' }}>{pct(a)}</span>
@@ -67,7 +67,7 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
       background: 'linear-gradient(135deg, #0D1627 0%, #0A1220 100%)',
       border: '1px solid rgba(255,255,255,0.07)',
       borderRadius: '16px',
-      padding: '24px',
+      padding: '20px',
       ...style,
     }}>
       {children}
@@ -118,19 +118,92 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
         @keyframes pulse-live { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         .fade-up { animation: fadeUp 0.4s ease both; }
-        .hover-card:hover { border-color: rgba(250,204,21,0.25) !important; }
+
+        /* ── Layout grids ── */
+        .cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+          gap: 16px;
+        }
+        .odds-grid-3 {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+        .venue-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          font-size: 12px;
+        }
+
+        /* ── ModelRow ── */
+        .model-label {
+          width: 110px;
+          font-size: 12px;
+          color: #64748b;
+          font-weight: 600;
+          flex-shrink: 0;
+        }
+        .model-values {
+          display: flex;
+          gap: 8px;
+          font-size: 11px;
+          font-weight: 700;
+          min-width: 120px;
+          justify-content: flex-end;
+          flex-shrink: 0;
+        }
+
+        /* ── Monte Carlo CI ── */
+        .mc-ci { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        /* ── Hero ── */
+        .hero-flag { font-size: 64px; line-height: 1; }
+        .hero-name { font-size: 22px; font-weight: 900; color: #f1f5f9; text-align: center; }
+        .hero-center { text-align: center; min-width: 150px; }
+        .hero-score { font-size: 42px; font-weight: 900; color: #f8fafc; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+        .hero-time  { font-size: 28px; font-weight: 900; color: #facc15; letter-spacing: -0.5px; }
+
+        /* ── Section padding ── */
+        .content-pad { padding: 24px 20px 60px; }
+
+        /* ─────────── MOBILE ─────────── */
+        @media (max-width: 720px) {
+          .cards-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+          .odds-grid-3 { grid-template-columns: 1fr; gap: 8px; }
+          .mc-ci { flex-direction: column; gap: 4px; }
+          .venue-grid { grid-template-columns: 1fr; gap: 6px; }
+          .hero-flag { font-size: 44px; }
+          .hero-name { font-size: 17px; }
+          .hero-center { min-width: 120px; }
+          .hero-score { font-size: 32px; }
+          .hero-time  { font-size: 22px; }
+          .content-pad { padding: 16px 14px 60px; }
+          .model-label { width: 78px; font-size: 11px; }
+          .model-values { min-width: 96px; font-size: 10px; gap: 4px; }
+        }
+        @media (max-width: 400px) {
+          .hero-flag { font-size: 36px; }
+          .hero-name { font-size: 15px; }
+          .model-label { width: 68px; font-size: 10px; }
+          .model-values { min-width: 84px; font-size: 10px; gap: 3px; }
+        }
       `}</style>
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <div style={{
         background: 'linear-gradient(180deg, #070C1A 0%, #05070F 100%)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
-        padding: '32px 24px 28px',
+        padding: '28px 16px 24px',
       }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
           {/* Breadcrumb */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <Link href="/mundial2026" style={{ fontSize: '12px', color: '#475569', textDecoration: 'none' }}>
               ← Mundial 2026
             </Link>
@@ -141,21 +214,21 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Teams header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center' }}>
 
             {/* Home team */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1, minWidth: 120 }}>
-              <span style={{ fontSize: '64px', lineHeight: 1 }}>{home.flag}</span>
-              <div style={{ fontSize: '22px', fontWeight: 900, color: '#f1f5f9', textAlign: 'center' }}>{home.shortName}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', flex: 1 }}>
+              <span className="hero-flag">{home.flag}</span>
+              <div className="hero-name">{home.shortName}</div>
               <div style={{ fontSize: '11px', color: '#475569', fontWeight: 500 }}>ELO {home.eloRating}</div>
               <div style={{ fontSize: '10px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{home.confederation}</div>
             </div>
 
-            {/* Center score/time + prediction summary */}
-            <div style={{ textAlign: 'center', minWidth: '160px' }}>
+            {/* Center score/time */}
+            <div className="hero-center">
               {match.status === 'finished' || match.status === 'live' ? (
                 <div>
-                  <div style={{ fontSize: '42px', fontWeight: 900, color: '#f8fafc', letterSpacing: '-1px', fontVariantNumeric: 'tabular-nums' }}>
+                  <div className="hero-score">
                     {match.homeScore ?? 0} <span style={{ color: '#1e293b' }}>:</span> {match.awayScore ?? 0}
                   </div>
                   {match.status === 'live' && (
@@ -170,23 +243,22 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                 </div>
               ) : (
                 <div>
-                  <div style={{ fontSize: '13px', color: '#475569', marginBottom: '4px' }}>🕐 Lima, Perú</div>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: '#facc15', letterSpacing: '-0.5px' }}>
+                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '4px' }}>🕐 Lima</div>
+                  <div className="hero-time">
                     {new Date(match.date).toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit', hour12: false })}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px', textTransform: 'capitalize' }}>
+                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px', textTransform: 'capitalize' }}>
                     {limaDateTime(match.date).split(',').slice(0, 2).join(',')}
                   </div>
-                  {/* Quick probability pills */}
                   {pred && (
-                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '12px' }}>
-                      <div style={{ padding: '4px 8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#22c55e' }}>
+                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '10px' }}>
+                      <div style={{ padding: '4px 7px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#22c55e' }}>
                         {pct(pred.homeWinProb)}
                       </div>
-                      <div style={{ padding: '4px 8px', background: 'rgba(100,116,139,0.15)', border: '1px solid rgba(100,116,139,0.25)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>
+                      <div style={{ padding: '4px 7px', background: 'rgba(100,116,139,0.15)', border: '1px solid rgba(100,116,139,0.25)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>
                         {pct(pred.drawProb)}
                       </div>
-                      <div style={{ padding: '4px 8px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#3b82f6' }}>
+                      <div style={{ padding: '4px 7px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#3b82f6' }}>
                         {pct(pred.awayWinProb)}
                       </div>
                     </div>
@@ -196,16 +268,16 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Away team */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1, minWidth: 120 }}>
-              <span style={{ fontSize: '64px', lineHeight: 1 }}>{away.flag}</span>
-              <div style={{ fontSize: '22px', fontWeight: 900, color: '#f1f5f9', textAlign: 'center' }}>{away.shortName}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', flex: 1 }}>
+              <span className="hero-flag">{away.flag}</span>
+              <div className="hero-name">{away.shortName}</div>
               <div style={{ fontSize: '11px', color: '#475569', fontWeight: 500 }}>ELO {away.eloRating}</div>
               <div style={{ fontSize: '10px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{away.confederation}</div>
             </div>
           </div>
 
           {/* Venue */}
-          <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: '#475569' }}>
+          <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '12px', color: '#475569' }}>
             📍 {venue.name} · {venue.city}
             {venue.altitude > 1000 && (
               <span style={{ marginLeft: '8px', color: '#f97316', fontWeight: 600 }}>⛰️ {venue.altitude}m</span>
@@ -214,7 +286,7 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
 
           {/* Confidence badge */}
           {pred && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '14px' }}>
               <div style={{
                 padding: '6px 14px',
                 background: `${CONF_COLORS[pred.confidence.level]}18`,
@@ -233,15 +305,15 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
 
       {/* ── CONTENT ──────────────────────────────────────────────────── */}
       {pred ? (
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '28px 20px 60px' }}>
+        <div className="content-pad" style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
           {/* ── Insight narrative ── */}
           <div className="fade-up" style={{
             background: 'rgba(250,204,21,0.04)',
             border: '1px solid rgba(250,204,21,0.15)',
             borderRadius: '12px',
-            padding: '16px 20px',
-            marginBottom: '20px',
+            padding: '14px 16px',
+            marginBottom: '16px',
             fontSize: '14px',
             color: '#cbd5e1',
             lineHeight: 1.6,
@@ -252,8 +324,8 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             {pred.insight}
           </div>
 
-          {/* ── 2-col grid ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(480px, 1fr))', gap: '16px' }}>
+          {/* ── Cards grid ── */}
+          <div className="cards-grid">
 
             {/* RADAR CHART */}
             <Card>
@@ -268,27 +340,27 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             <Card>
               <SectionTitle>Comparativa de modelos</SectionTitle>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginBottom: '4px', paddingLeft: '132px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginBottom: '4px', paddingLeft: '118px' }}>
                 <span style={{ color: '#22c55e', fontWeight: 700 }}>{home.shortName}</span>
                 <span>Empate</span>
                 <span style={{ color: '#3b82f6', fontWeight: 700 }}>{away.shortName}</span>
               </div>
 
-              <ModelRow label="Ensemble" h={pred.homeWinProb} d={pred.drawProb} a={pred.awayWinProb} color="#facc15" />
-              <ModelRow label="Dixon-Coles" h={pred.models.dixonColes.homeWin} d={pred.models.dixonColes.draw} a={pred.models.dixonColes.awayWin} color="#22c55e" />
-              <ModelRow label="Monte Carlo" h={pred.models.monteCarlo.homeWin} d={pred.models.monteCarlo.draw} a={pred.models.monteCarlo.awayWin} color="#a78bfa" />
-              <ModelRow label="Bayesiano" h={pred.models.bayesian.homeWin} d={pred.models.bayesian.draw} a={pred.models.bayesian.awayWin} color="#38bdf8" />
-              <ModelRow label="ELO" h={pred.models.elo.homeWin} d={pred.models.elo.draw} a={pred.models.elo.awayWin} color="#fb923c" />
+              <ModelRow label="Ensemble"    h={pred.homeWinProb}                    d={pred.drawProb}                    a={pred.awayWinProb}                    color="#facc15" />
+              <ModelRow label="Dixon-Coles" h={pred.models.dixonColes.homeWin}      d={pred.models.dixonColes.draw}      a={pred.models.dixonColes.awayWin}      color="#22c55e" />
+              <ModelRow label="Monte Carlo" h={pred.models.monteCarlo.homeWin}      d={pred.models.monteCarlo.draw}      a={pred.models.monteCarlo.awayWin}      color="#a78bfa" />
+              <ModelRow label="Bayesiano"   h={pred.models.bayesian.homeWin}        d={pred.models.bayesian.draw}        a={pred.models.bayesian.awayWin}        color="#38bdf8" />
+              <ModelRow label="ELO"         h={pred.models.elo.homeWin}             d={pred.models.elo.draw}             a={pred.models.elo.awayWin}             color="#fb923c" />
 
               {/* xG Expected */}
-              <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
+              <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
                 <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
                   <div style={{ fontSize: '22px', fontWeight: 800, color: '#22c55e' }}>
                     {fmt2(pred.models.dixonColes.expectedGoalsH)}
                   </div>
                   <div style={{ fontSize: '10px', color: '#475569', marginTop: '2px' }}>xG {home.shortName}</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', fontSize: '16px', color: '#1e293b', fontWeight: 800 }}>VS</div>
+                <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: '#1e293b', fontWeight: 800 }}>VS</div>
                 <div style={{ flex: 1, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
                   <div style={{ fontSize: '22px', fontWeight: 800, color: '#3b82f6' }}>
                     {fmt2(pred.models.dixonColes.expectedGoalsA)}
@@ -298,9 +370,9 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Monte Carlo CI */}
-              <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '11px', color: '#64748b' }}>
-                <div style={{ fontWeight: 600, color: '#94a3b8', marginBottom: '4px' }}>Intervalos de confianza 95% (Monte Carlo, n=50,000)</div>
-                <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ marginTop: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '11px', color: '#64748b' }}>
+                <div style={{ fontWeight: 600, color: '#94a3b8', marginBottom: '6px' }}>IC 95% — Monte Carlo (n=50,000)</div>
+                <div className="mc-ci">
                   <span style={{ color: '#22c55e' }}>
                     {home.shortName}: {pct(pred.models.monteCarlo.homeWinCI[0])}–{pct(pred.models.monteCarlo.homeWinCI[1])}
                   </span>
@@ -315,7 +387,7 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
             </Card>
 
             {/* SCORE MATRIX */}
-            <Card style={{ gridColumn: 'span 1' }}>
+            <Card>
               <SectionTitle>Mapa de probabilidad de marcadores</SectionTitle>
               <ScoreMatrix
                 scores={pred.topScores}
@@ -348,7 +420,7 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Risk factors */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {pred.confidence.factors.map((f, i) => (
                   <div key={i} style={{
                     display: 'flex', gap: '10px', alignItems: 'flex-start',
@@ -357,12 +429,12 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
                     border: `1px solid ${f.impact === 'positive' ? 'rgba(34,197,94,0.15)' : f.impact === 'negative' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)'}`,
                     borderRadius: '8px',
                   }}>
-                    <span style={{ fontSize: '16px' }}>{RISK_ICONS[f.type]}</span>
-                    <div style={{ flex: 1 }}>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>{RISK_ICONS[f.type]}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '12px', color: '#e2e8f0', fontWeight: 500, lineHeight: 1.4 }}>{f.description}</div>
                     </div>
                     <div style={{
-                      fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 6px', borderRadius: '4px',
+                      fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 6px', borderRadius: '4px', flexShrink: 0,
                       color: f.impact === 'positive' ? '#22c55e' : f.impact === 'negative' ? '#ef4444' : '#64748b',
                       background: f.impact === 'positive' ? 'rgba(34,197,94,0.12)' : f.impact === 'negative' ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)',
                     }}>
@@ -373,34 +445,34 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Venue details */}
-              <div style={{ marginTop: '16px', padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
+              <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '8px' }}>Condiciones de sede</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px' }}>
-                  <div><span style={{ color: '#475569' }}>Estadio:</span> <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.name}</span></div>
-                  <div><span style={{ color: '#475569' }}>Ciudad:</span> <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.city}</span></div>
-                  <div><span style={{ color: '#475569' }}>País:</span> <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.country}</span></div>
+                <div className="venue-grid">
+                  <div><span style={{ color: '#475569' }}>Estadio: </span><span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.name}</span></div>
+                  <div><span style={{ color: '#475569' }}>Ciudad: </span><span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.city}</span></div>
+                  <div><span style={{ color: '#475569' }}>País: </span><span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.country}</span></div>
                   <div>
-                    <span style={{ color: '#475569' }}>Altitud:</span>{' '}
+                    <span style={{ color: '#475569' }}>Altitud: </span>
                     <span style={{ color: venue.altitude > 1500 ? '#f97316' : '#22c55e', fontWeight: 700 }}>
                       {venue.altitude}m {venue.altitude > 1500 ? '⚠️' : '✓'}
                     </span>
                   </div>
-                  <div><span style={{ color: '#475569' }}>Aforo:</span> <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.capacity.toLocaleString()}</span></div>
+                  <div><span style={{ color: '#475569' }}>Aforo: </span><span style={{ color: '#e2e8f0', fontWeight: 600 }}>{venue.capacity.toLocaleString()}</span></div>
                 </div>
               </div>
             </Card>
 
           </div>
 
-          {/* ── MARKET INTELLIGENCE (if odds available) ── */}
+          {/* ── MARKET INTELLIGENCE ── */}
           {pred.valueAnalysis.hasOdds && (
             <div style={{ marginTop: '16px' }}>
               <Card>
                 <SectionTitle>Inteligencia de mercado</SectionTitle>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                <div className="odds-grid-3">
                   {[
                     { label: home.shortName, odds: pred.valueAnalysis.bestHomeOdds, ev: pred.valueAnalysis.homeEV, value: pred.valueAnalysis.valueHome, fair: pred.valueAnalysis.fairHomeProb, model: pred.homeWinProb, color: '#22c55e' },
-                    { label: 'Empate',       odds: pred.valueAnalysis.bestDrawOdds, ev: pred.valueAnalysis.drawEV, value: pred.valueAnalysis.valueDraw, fair: pred.valueAnalysis.fairDrawProb, model: pred.drawProb, color: '#94a3b8' },
+                    { label: 'Empate',       odds: pred.valueAnalysis.bestDrawOdds, ev: pred.valueAnalysis.drawEV, value: pred.valueAnalysis.valueDraw, fair: pred.valueAnalysis.fairDrawProb, model: pred.drawProb,    color: '#94a3b8' },
                     { label: away.shortName, odds: pred.valueAnalysis.bestAwayOdds, ev: pred.valueAnalysis.awayEV, value: pred.valueAnalysis.valueAway, fair: pred.valueAnalysis.fairAwayProb, model: pred.awayWinProb, color: '#3b82f6' },
                   ].map(o => (
                     <div key={o.label} style={{
@@ -468,7 +540,7 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
         </div>
       ) : (
         /* Finished / live match */
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 20px 60px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 16px 60px', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>{match.status === 'live' ? '⚽' : '🏁'}</div>
           <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#f1f5f9', marginBottom: '8px' }}>
             {match.status === 'live' ? 'Partido en curso' : 'Partido finalizado'}
