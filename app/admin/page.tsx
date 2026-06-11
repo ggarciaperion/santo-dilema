@@ -6881,9 +6881,7 @@ export default function AdminPage() {
           </section>
 
             {marketingSection === "sorteo" && (
-              <div style={{ background: "#0a0f1e", minHeight: "100%", padding: "24px" }}>
-                <SorteoMundialAdmin />
-              </div>
+              <SorteoMundialAdmin />
             )}
 
           {/* Promotion Modal */}
