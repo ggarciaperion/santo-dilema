@@ -215,7 +215,7 @@ export default function SorteoMundialModal() {
                   <div className="flex items-center gap-2 mb-0.5">
                     <span style={{ fontSize: 18 }}>🏆</span>
                     <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', color: '#eab308', textTransform: 'uppercase' }}>
-                      Mundial 2026 · Sorteo Semanal
+                      Mundial 2026 · Sorteo
                     </span>
                   </div>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>
