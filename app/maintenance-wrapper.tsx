@@ -23,8 +23,8 @@ export default function MaintenanceWrapper({ children }: { children: React.React
     );
   }
 
-  // /admin y /ruleta siempre accesibles aunque haya mantenimiento
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/ruleta")) {
+  // /admin, /ruleta y /mundial2026 siempre accesibles aunque haya mantenimiento
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/ruleta") || pathname?.startsWith("/mundial2026")) {
     return <>{children}</>;
   }
 
