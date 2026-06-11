@@ -66,10 +66,10 @@ const DEFAULT_CONFIG: Config = {
 };
 
 const ESTADO_BADGE: Record<string, { bg: string; color: string; label: string }> = {
-  participando: { bg: 'rgba(234,179,8,0.2)',   color: '#fbbf24', label: 'Participando' },
-  acerto:       { bg: 'rgba(34,197,94,0.2)',    color: '#4ade80', label: '✓ Acertó' },
-  no_acerto:    { bg: 'rgba(239,68,68,0.15)',   color: '#f87171', label: '✗ No acertó' },
-  ganador:      { bg: 'rgba(168,85,247,0.2)',   color: '#c084fc', label: '🏆 GANADOR' },
+  participando: { bg: '#fef9c3', color: '#854d0e', label: 'Participando' },
+  acerto:       { bg: '#dcfce7', color: '#15803d', label: '✓ Acertó' },
+  no_acerto:    { bg: '#fee2e2', color: '#b91c1c', label: '✗ No acertó' },
+  ganador:      { bg: '#f3e8ff', color: '#7c3aed', label: '🏆 GANADOR' },
 };
 
 function toHoraLima(isoUtc: string): string {
@@ -257,16 +257,16 @@ export default function SorteoMundialAdmin() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '9px 12px', borderRadius: 8, boxSizing: 'border-box',
-    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-    color: '#fff', fontSize: '0.85rem', outline: 'none',
+    background: '#fff', border: '1px solid #cbd5e1',
+    color: '#0f172a', fontSize: '0.85rem', outline: 'none',
   };
   const labelStyle: React.CSSProperties = {
-    fontSize: '0.62rem', fontWeight: 700, color: '#94a3b8',
+    fontSize: '0.62rem', fontWeight: 700, color: '#64748b',
     textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 4,
   };
   const cardStyle: React.CSSProperties = {
     borderRadius: 12, padding: '16px',
-    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+    background: '#f8fafc', border: '1px solid #e2e8f0',
   };
 
   const raw = config._raw;
@@ -281,28 +281,28 @@ export default function SorteoMundialAdmin() {
         ...cardStyle,
         marginBottom: 20,
         background: sorteoActivo
-          ? 'linear-gradient(135deg, rgba(34,197,94,0.12), rgba(21,128,61,0.08))'
-          : 'rgba(255,255,255,0.04)',
-        border: `1.5px solid ${sorteoActivo ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.08)'}`,
+          ? 'linear-gradient(135deg, #f0fdf4, #dcfce7)'
+          : '#f8fafc',
+        border: `1.5px solid ${sorteoActivo ? '#86efac' : '#e2e8f0'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <div style={{
               width: 10, height: 10, borderRadius: '50%',
-              background: sorteoActivo ? '#22c55e' : '#475569',
+              background: sorteoActivo ? '#22c55e' : '#cbd5e1',
               boxShadow: sorteoActivo ? '0 0 8px #22c55e' : 'none',
             }} />
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: sorteoActivo ? '#4ade80' : '#64748b', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: sorteoActivo ? '#15803d' : '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
               {sorteoActivo ? 'Sorteo activo' : 'Sorteo inactivo'}
             </span>
           </div>
           {config.matchLabel ? (
-            <p style={{ margin: 0, color: '#e2e8f0', fontWeight: 700, fontSize: '0.9rem' }}>
+            <p style={{ margin: 0, color: '#0f172a', fontWeight: 700, fontSize: '0.9rem' }}>
               ⚽ {config.matchLabel}
             </p>
           ) : (
-            <p style={{ margin: 0, color: '#475569', fontSize: '0.82rem' }}>Sin partido seleccionado</p>
+            <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.82rem' }}>Sin partido seleccionado</p>
           )}
           {raw && !raw.esDiaValido && (
             <p style={{ margin: '4px 0 0', color: '#f87171', fontSize: '0.7rem' }}>
@@ -349,7 +349,7 @@ export default function SorteoMundialAdmin() {
         </div>
       </div>
       {saveMsg && (
-        <p style={{ fontSize: '0.8rem', color: saveMsg.startsWith('✓') ? '#4ade80' : '#f87171', fontWeight: 600, marginBottom: 12, marginTop: -8 }}>
+        <p style={{ fontSize: '0.8rem', color: saveMsg.startsWith('✓') ? '#15803d' : '#dc2626', fontWeight: 600, marginBottom: 12, marginTop: -8 }}>
           {saveMsg}
         </p>
       )}
@@ -358,26 +358,26 @@ export default function SorteoMundialAdmin() {
       {metricas && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 20 }}>
           {[
-            { label: 'Impresiones', value: metricas.impresiones, color: '#60a5fa' },
-            { label: 'Participaciones', value: metricas.participaciones, color: '#4ade80' },
-            { label: 'Conversión', value: `${metricas.conversion}%`, color: '#fbbf24' },
+            { label: 'Impresiones', value: metricas.impresiones, color: '#2563eb' },
+            { label: 'Participaciones', value: metricas.participaciones, color: '#15803d' },
+            { label: 'Conversión', value: `${metricas.conversion}%`, color: '#b45309' },
           ].map(m => (
             <div key={m.label} style={{ ...cardStyle, textAlign: 'center' }}>
               <div style={{ fontSize: '1.4rem', fontWeight: 900, color: m.color }}>{m.value}</div>
-              <div style={{ fontSize: '0.6rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{m.label}</div>
+              <div style={{ fontSize: '0.6rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{m.label}</div>
             </div>
           ))}
         </div>
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid #e2e8f0' }}>
         {(['config', 'participantes', 'ganadores'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             padding: '8px 16px', borderRadius: '8px 8px 0 0', border: 'none', cursor: 'pointer',
-            background: tab === t ? 'rgba(34,197,94,0.15)' : 'transparent',
-            borderBottom: tab === t ? '2px solid #22c55e' : '2px solid transparent',
-            color: tab === t ? '#4ade80' : '#64748b',
+            background: tab === t ? '#f0fdf4' : 'transparent',
+            borderBottom: tab === t ? '2px solid #16a34a' : '2px solid transparent',
+            color: tab === t ? '#15803d' : '#64748b',
             fontSize: '0.78rem', fontWeight: 700,
           }}>
             {t === 'config' ? '⚙️ Configuración' : t === 'participantes' ? '👥 Participantes' : '🏆 Ganadores'}
@@ -392,28 +392,28 @@ export default function SorteoMundialAdmin() {
           {/* PARTIDOS DEL DÍA */}
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0' }}>
+              <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
                 📅 Partidos de hoy
-                <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 400, marginLeft: 8 }}>
+                <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 400, marginLeft: 8 }}>
                   ({new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', day: 'numeric', month: 'long' })})
                 </span>
               </p>
               <button onClick={loadFixtures} style={{
                 padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                background: 'rgba(255,255,255,0.07)', color: '#94a3b8', fontSize: '0.7rem',
+                background: '#f1f5f9', color: '#64748b', fontSize: '0.7rem',
               }}>↻ Recargar</button>
             </div>
 
             {loadingFixtures ? (
-              <p style={{ color: '#475569', fontSize: '0.8rem' }}>Cargando partidos...</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Cargando partidos...</p>
             ) : fixtures.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                <p style={{ color: '#475569', fontSize: '0.82rem', margin: '0 0 8px' }}>
+                <p style={{ color: '#94a3b8', fontSize: '0.82rem', margin: '0 0 8px' }}>
                   No hay partidos del Mundial hoy.
                 </p>
                 <button
                   onClick={() => setShowManual(true)}
-                  style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontSize: '0.75rem', cursor: 'pointer' }}
+                  style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer' }}
                 >
                   + Ingresar partido manualmente
                 </button>
@@ -431,9 +431,9 @@ export default function SorteoMundialAdmin() {
                       style={{
                         borderRadius: 12, padding: '12px 14px',
                         background: selected
-                          ? 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(21,128,61,0.1))'
-                          : finished ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
-                        border: `1.5px solid ${selected ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                          ? 'linear-gradient(135deg, #f0fdf4, #dcfce7)'
+                          : finished ? '#f8fafc' : '#fff',
+                        border: `1.5px solid ${selected ? '#86efac' : '#e2e8f0'}`,
                         cursor: finished ? 'default' : 'pointer',
                         display: 'flex', alignItems: 'center', gap: 12,
                         opacity: finished ? 0.55 : 1,
@@ -442,7 +442,7 @@ export default function SorteoMundialAdmin() {
                     >
                       {/* Local */}
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0', textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', textAlign: 'right' }}>
                           {f.home.shortName || f.home.name}
                         </span>
                         <FlagImg src={f.home.flag} name={f.home.name} size={26} />
@@ -451,24 +451,24 @@ export default function SorteoMundialAdmin() {
                       {/* Centro */}
                       <div style={{ textAlign: 'center', flexShrink: 0, minWidth: 60 }}>
                         {finished ? (
-                          <div style={{ fontWeight: 900, color: '#94a3b8', fontSize: '1rem' }}>
+                          <div style={{ fontWeight: 900, color: '#64748b', fontSize: '1rem' }}>
                             {f.homeScore} - {f.awayScore}
                           </div>
                         ) : (
                           <>
-                            <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 700 }}>VS</div>
-                            <div style={{ fontSize: '0.7rem', color: '#fbbf24', fontWeight: 700 }}>{hora}</div>
+                            <div style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700 }}>VS</div>
+                            <div style={{ fontSize: '0.7rem', color: '#b45309', fontWeight: 700 }}>{hora}</div>
                           </>
                         )}
                         {f.group && (
-                          <div style={{ fontSize: '0.58rem', color: '#475569', marginTop: 2 }}>Grupo {f.group}</div>
+                          <div style={{ fontSize: '0.58rem', color: '#94a3b8', marginTop: 2 }}>Grupo {f.group}</div>
                         )}
                       </div>
 
                       {/* Visitante */}
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                         <FlagImg src={f.away.flag} name={f.away.name} size={26} />
-                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0' }}>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
                           {f.away.shortName || f.away.name}
                         </span>
                       </div>
@@ -480,14 +480,14 @@ export default function SorteoMundialAdmin() {
                         </div>
                       )}
                       {finished && (
-                        <span style={{ fontSize: '0.6rem', color: '#475569', flexShrink: 0 }}>FINALIZADO</span>
+                        <span style={{ fontSize: '0.6rem', color: '#94a3b8', flexShrink: 0 }}>FINALIZADO</span>
                       )}
                     </div>
                   );
                 })}
                 <button
                   onClick={() => setShowManual(!showManual)}
-                  style={{ alignSelf: 'flex-start', padding: '5px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#64748b', fontSize: '0.7rem', cursor: 'pointer', marginTop: 4 }}
+                  style={{ alignSelf: 'flex-start', padding: '5px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: '0.7rem', cursor: 'pointer', marginTop: 4 }}
                 >
                   {showManual ? '− Ocultar entrada manual' : '+ Partido manual'}
                 </button>
@@ -497,8 +497,8 @@ export default function SorteoMundialAdmin() {
 
           {/* PARTIDO MANUAL */}
           {showManual && (
-            <div style={{ ...cardStyle, border: '1px solid rgba(234,179,8,0.2)' }}>
-              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fbbf24', marginBottom: 14 }}>
+            <div style={{ ...cardStyle, border: '1px solid #fde68a' }}>
+              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#b45309', marginBottom: 14 }}>
                 ✏️ Partido manual
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -531,21 +531,21 @@ export default function SorteoMundialAdmin() {
 
           {/* PARTIDO SELECCIONADO — preview */}
           {config.equipoLocal && config.equipoVisitante && (
-            <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.03)' }}>
+            <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 12, background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, fontSize: '0.62rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Partido seleccionado</p>
-                <p style={{ margin: 0, fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>
+                <p style={{ margin: 0, fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>
                   {config.equipoLocal} vs {config.equipoVisitante}
                 </p>
                 {config.horaPartido && (
-                  <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#fbbf24' }}>
+                  <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#b45309' }}>
                     ⏰ {config.horaPartido} hrs Lima
                   </p>
                 )}
               </div>
               <button
                 onClick={() => { setConfig(p => ({ ...p, matchId: '', matchLabel: '', equipoLocal: '', equipoVisitante: '', flagLocal: '', flagVisitante: '', fechaPartido: '', horaPartido: '' })); setSelectedMatchId(''); }}
-                style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)', color: '#f87171', fontSize: '0.72rem', cursor: 'pointer' }}
+                style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', fontSize: '0.72rem', cursor: 'pointer' }}
               >
                 ✕ Cambiar
               </button>
@@ -554,7 +554,7 @@ export default function SorteoMundialAdmin() {
 
           {/* MENSAJE Y PREMIO */}
           <div style={cardStyle}>
-            <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0', marginBottom: 14 }}>🎁 Mensaje y premio</p>
+            <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a', marginBottom: 14 }}>🎁 Mensaje y premio</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
                 <label style={labelStyle}>Mensaje promocional</label>
@@ -574,25 +574,25 @@ export default function SorteoMundialAdmin() {
           {/* GUARDAR CONFIG (sin activar) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={saveConfig} disabled={saving} style={{
-              padding: '9px 20px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)',
-              background: 'rgba(255,255,255,0.06)', cursor: 'pointer',
-              color: '#94a3b8', fontSize: '0.82rem', fontWeight: 600,
+              padding: '9px 20px', borderRadius: 10, border: '1px solid #cbd5e1',
+              background: '#f8fafc', cursor: 'pointer',
+              color: '#475569', fontSize: '0.82rem', fontWeight: 600,
             }}>
               {saving ? '⏳...' : '💾 Guardar sin activar'}
             </button>
             {saveMsg && (
-              <span style={{ fontSize: '0.78rem', color: saveMsg.startsWith('✓') ? '#4ade80' : '#f87171', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.78rem', color: saveMsg.startsWith('✓') ? '#15803d' : '#dc2626', fontWeight: 600 }}>
                 {saveMsg}
               </span>
             )}
           </div>
 
           {/* Info de vigencia */}
-          <div style={{ ...cardStyle, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8', lineHeight: 1.6 }}>
-              <strong style={{ color: '#a5b4fc' }}>ℹ️ Vigencia automática:</strong> el modal se muestra solo
-              los <strong style={{ color: '#e2e8f0' }}>jueves, viernes, sábados y domingos</strong> entre
-              las <strong style={{ color: '#e2e8f0' }}>00:00 y las 23:00 hrs Lima</strong>.
+          <div style={{ ...cardStyle, background: '#eef2ff', border: '1px solid #c7d2fe' }}>
+            <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: 1.6 }}>
+              <strong style={{ color: '#4338ca' }}>ℹ️ Vigencia automática:</strong> el modal se muestra solo
+              los <strong style={{ color: '#0f172a' }}>jueves, viernes, sábados y domingos</strong> entre
+              las <strong style={{ color: '#0f172a' }}>00:00 y las 23:00 hrs Lima</strong>.
               Se oculta automáticamente a las 23:00 o cuando desactives el sorteo.
             </p>
           </div>
@@ -607,39 +607,39 @@ export default function SorteoMundialAdmin() {
               value={filtroFecha} onChange={e => setFiltroFecha(e.target.value)} />
             <input style={{ ...inputStyle, width: 160, flex: 'none' }} type="text"
               placeholder="Buscar teléfono..." value={filtroTel} onChange={e => setFiltroTel(e.target.value)} />
-            <button onClick={loadParticipantes} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'rgba(99,102,241,0.25)', color: '#a5b4fc', fontSize: '0.8rem', fontWeight: 700 }}>
+            <button onClick={loadParticipantes} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#e0e7ff', color: '#4338ca', fontSize: '0.8rem', fontWeight: 700 }}>
               🔍 Filtrar
             </button>
-            <button onClick={exportCSV} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700 }}>
+            <button onClick={exportCSV} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#dcfce7', color: '#15803d', fontSize: '0.8rem', fontWeight: 700 }}>
               📥 CSV
             </button>
           </div>
 
           {loadingP ? (
-            <p style={{ color: '#64748b', fontSize: '0.85rem' }}>Cargando...</p>
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Cargando...</p>
           ) : participantes.length === 0 ? (
-            <p style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin resultados.</p>
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Sin resultados.</p>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <p style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: 8 }}>{participantes.length} registro(s)</p>
+              <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: 8 }}>{participantes.length} registro(s)</p>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
                 <thead>
                   <tr>
                     {['Nombre', 'Teléfono', 'Partido', 'Predicción', 'Fecha', 'Estado'].map(h => (
-                      <th key={h} style={{ textAlign: 'left', padding: '7px 10px', color: '#475569', fontWeight: 700, fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{h}</th>
+                      <th key={h} style={{ textAlign: 'left', padding: '7px 10px', color: '#64748b', fontWeight: 700, fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid #e2e8f0' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {participantes.map(p => {
-                    const badge = ESTADO_BADGE[p.estado] || { bg: 'rgba(255,255,255,0.06)', color: '#94a3b8', label: p.estado };
+                    const badge = ESTADO_BADGE[p.estado] || { bg: '#f1f5f9', color: '#64748b', label: p.estado };
                     return (
-                      <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                        <td style={{ padding: '8px 10px', color: '#e2e8f0', fontWeight: 600 }}>{p.nombre}</td>
-                        <td style={{ padding: '8px 10px', color: '#94a3b8' }}>{p.telefono}</td>
-                        <td style={{ padding: '8px 10px', color: '#94a3b8', whiteSpace: 'nowrap' }}>{p.matchLabel}</td>
-                        <td style={{ padding: '8px 10px', color: '#60a5fa' }}>{p.prediccionLabel}</td>
-                        <td style={{ padding: '8px 10px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                      <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '8px 10px', color: '#0f172a', fontWeight: 600 }}>{p.nombre}</td>
+                        <td style={{ padding: '8px 10px', color: '#475569' }}>{p.telefono}</td>
+                        <td style={{ padding: '8px 10px', color: '#475569', whiteSpace: 'nowrap' }}>{p.matchLabel}</td>
+                        <td style={{ padding: '8px 10px', color: '#2563eb' }}>{p.prediccionLabel}</td>
+                        <td style={{ padding: '8px 10px', color: '#94a3b8', whiteSpace: 'nowrap' }}>
                           {new Date(p.fechaParticipacion).toLocaleDateString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td style={{ padding: '8px 10px' }}>
@@ -661,8 +661,8 @@ export default function SorteoMundialAdmin() {
       {tab === 'ganadores' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={cardStyle}>
-            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0', marginBottom: 14 }}>
-              Partido: <span style={{ color: '#4ade80' }}>{config.matchLabel || '(sin configurar)'}</span>
+            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: 14 }}>
+              Partido: <span style={{ color: '#15803d' }}>{config.matchLabel || '(sin configurar)'}</span>
             </p>
 
             <label style={labelStyle}>Resultado del partido</label>
@@ -670,9 +670,9 @@ export default function SorteoMundialAdmin() {
               {(['local', 'empate', 'visitante'] as const).map(r => (
                 <button key={r} onClick={() => setResultadoPartido(r)} style={{
                   flex: 1, padding: '9px 8px', borderRadius: 8, cursor: 'pointer',
-                  background: resultadoPartido === r ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)',
-                  border: resultadoPartido === r ? '1.5px solid #22c55e' : '1px solid rgba(255,255,255,0.1)',
-                  color: resultadoPartido === r ? '#4ade80' : '#94a3b8',
+                  background: resultadoPartido === r ? '#dcfce7' : '#f8fafc',
+                  border: resultadoPartido === r ? '1.5px solid #16a34a' : '1px solid #e2e8f0',
+                  color: resultadoPartido === r ? '#15803d' : '#64748b',
                   fontSize: '0.75rem', fontWeight: 700,
                 } as React.CSSProperties}>
                   {r === 'local' ? `Gana ${config.equipoLocal || 'Local'}` : r === 'visitante' ? `Gana ${config.equipoVisitante || 'Visitante'}` : 'Empate'}
@@ -682,15 +682,15 @@ export default function SorteoMundialAdmin() {
 
             <button onClick={cargarAcertantes} disabled={!resultadoPartido} style={{
               padding: '9px 18px', borderRadius: 8, border: 'none', cursor: resultadoPartido ? 'pointer' : 'not-allowed',
-              background: resultadoPartido ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.05)',
-              color: resultadoPartido ? '#a5b4fc' : '#475569', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16,
+              background: resultadoPartido ? '#e0e7ff' : '#f8fafc',
+              color: resultadoPartido ? '#4338ca' : '#94a3b8', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16,
             }}>
               🔍 Ver acertantes
             </button>
 
             {acertantes.length > 0 && (
               <div style={{ marginBottom: 16 }}>
-                <p style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 700, marginBottom: 8 }}>
+                <p style={{ fontSize: '0.72rem', color: '#15803d', fontWeight: 700, marginBottom: 8 }}>
                   {acertantes.length} acertante(s)
                 </p>
                 <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -699,12 +699,12 @@ export default function SorteoMundialAdmin() {
                     return (
                       <div key={a.id} onClick={() => setGanadorManualId(a.id)} style={{
                         padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                        background: ganadorManualId === a.id ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${ganadorManualId === a.id ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                        background: ganadorManualId === a.id ? '#f0fdf4' : '#fff',
+                        border: `1px solid ${ganadorManualId === a.id ? '#86efac' : '#e2e8f0'}`,
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                       }}>
                         <div>
-                          <p style={{ margin: 0, color: '#e2e8f0', fontWeight: 700, fontSize: '0.82rem' }}>{a.nombre}</p>
+                          <p style={{ margin: 0, color: '#0f172a', fontWeight: 700, fontSize: '0.82rem' }}>{a.nombre}</p>
                           <p style={{ margin: 0, color: '#64748b', fontSize: '0.72rem' }}>{a.telefono}</p>
                         </div>
                         <span style={{ padding: '3px 8px', borderRadius: 20, background: badge.bg, color: badge.color, fontSize: '0.63rem', fontWeight: 700 }}>
@@ -727,7 +727,7 @@ export default function SorteoMundialAdmin() {
                   flex: 1, padding: '10px', borderRadius: 10, border: 'none',
                   cursor: ganadorManualId ? 'pointer' : 'not-allowed',
                   background: ganadorManualId ? 'linear-gradient(135deg, #b45309, #92400e)' : 'rgba(255,255,255,0.05)',
-                  color: ganadorManualId ? '#fff' : '#475569', fontSize: '0.82rem', fontWeight: 700,
+                  color: ganadorManualId ? '#fff' : '#94a3b8', fontSize: '0.82rem', fontWeight: 700,
                 }}>👆 Seleccionado</button>
               </div>
             )}
@@ -736,13 +736,13 @@ export default function SorteoMundialAdmin() {
           {ganadorInfo && (
             <div style={{
               borderRadius: 14, padding: '20px', textAlign: 'center',
-              background: 'linear-gradient(145deg, rgba(168,85,247,0.15), rgba(126,34,206,0.1))',
-              border: '1.5px solid rgba(168,85,247,0.4)',
+              background: 'linear-gradient(145deg, #faf5ff, #f3e8ff)',
+              border: '1.5px solid #d8b4fe',
             }}>
               <div style={{ fontSize: 40, marginBottom: 8 }}>🏆</div>
-              <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>¡Ganador!</p>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#fff', margin: '0 0 4px' }}>{ganadorInfo.nombre}</h3>
-              <p style={{ color: '#c084fc', fontSize: '0.9rem', fontWeight: 600 }}>📱 {ganadorInfo.telefono}</p>
+              <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>¡Ganador!</p>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#0f172a', margin: '0 0 4px' }}>{ganadorInfo.nombre}</h3>
+              <p style={{ color: '#7c3aed', fontSize: '0.9rem', fontWeight: 600 }}>📱 {ganadorInfo.telefono}</p>
             </div>
           )}
         </div>
