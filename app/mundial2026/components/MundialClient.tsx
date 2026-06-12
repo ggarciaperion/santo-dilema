@@ -1,11 +1,24 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import type { MatchWithTeams, Phase, ApiFixturesResponse } from '@/lib/mundial2026/types'
 import MatchCard from './MatchCard'
 
 interface Props {
   initialData: ApiFixturesResponse
+}
+
+const POLL_INTERVAL = 45_000  // 45s
+
+/** True if any match is live or started less than 3h ago (still in match window) */
+function hasActiveMatch(fixtures: MatchWithTeams[]): boolean {
+  const now = Date.now()
+  return fixtures.some(f => {
+    if (f.status === 'live') return true
+    if (f.status === 'finished' || f.status === 'postponed') return false
+    const elapsed = now - new Date(f.date).getTime()
+    return elapsed >= 0 && elapsed < 3 * 60 * 60 * 1000
+  })
 }
 
 type PhaseTab = Phase | 'all'
@@ -67,8 +80,30 @@ const FINISH_COLORS = { bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0
 export default function MundialClient({ initialData }: Props) {
   const [activePhase, setActivePhase]  = useState<PhaseTab>('groups')
   const [activeGroup, setActiveGroup]  = useState<string>('all')
+  const [fixtures, setFixtures]        = useState<MatchWithTeams[]>(initialData.fixtures)
+  const [source, setSource]            = useState(initialData.source)
+  const [cachedAt, setCachedAt]        = useState(initialData.cachedAt)
 
-  const { fixtures, source, cachedAt } = initialData
+  // Live polling — re-fetches every 45s when a match window is open
+  const fixturesRef = useRef(fixtures)
+  useEffect(() => { fixturesRef.current = fixtures }, [fixtures])
+
+  useEffect(() => {
+    const tick = async () => {
+      if (!hasActiveMatch(fixturesRef.current)) return
+      try {
+        const res = await fetch('/api/mundial/fixtures', { cache: 'no-store' })
+        if (!res.ok) return
+        const data: ApiFixturesResponse = await res.json()
+        setFixtures(data.fixtures)
+        setSource(data.source)
+        setCachedAt(data.cachedAt)
+        fixturesRef.current = data.fixtures
+      } catch { /* silent */ }
+    }
+    const id = setInterval(tick, POLL_INTERVAL)
+    return () => clearInterval(id)
+  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live matches — always show at top regardless of filter
   const liveMatches = useMemo(

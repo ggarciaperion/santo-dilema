@@ -197,6 +197,23 @@ function venueIdFromApiVenue(name: string, city: string): string {
   return 'metlife'  // default
 }
 
+// ── Helpers ───────────────────────────────────────────────────────
+
+/**
+ * Returns true if any fixture is currently in its live window
+ * (started ≤ 3 hours ago and not finished/postponed).
+ * Used to bypass the 6h Redis cache so live scores are always fresh.
+ */
+function hasMatchProbablyLive(fixtures: MatchWithTeams[]): boolean {
+  const now = Date.now()
+  return fixtures.some(f => {
+    if (f.status === 'finished' || f.status === 'postponed') return false
+    const matchTime = new Date(f.date).getTime()
+    const elapsed   = now - matchTime
+    return elapsed >= 0 && elapsed < 3 * 60 * 60 * 1000
+  })
+}
+
 // ── Main data access function ─────────────────────────────────────
 
 export async function getFixtures(): Promise<ApiFixturesResponse> {
@@ -207,13 +224,26 @@ export async function getFixtures(): Promise<ApiFixturesResponse> {
     try {
       const cached = await redis.get<{ fixtures: MatchWithTeams[]; cachedAt: string }>(CACHE_KEY_FIXTURES)
       if (cached) {
-        const cachedAt = new Date(cached.cachedAt)
-        const nextRefresh = new Date(cachedAt.getTime() + TTL_FIXTURES * 1000)
-        return {
-          fixtures: cached.fixtures,
-          source: 'cache',
-          cachedAt: cached.cachedAt,
-          nextRefresh: nextRefresh.toISOString(),
+        if (hasMatchProbablyLive(cached.fixtures)) {
+          // Match window is open — bypass 6h cache, overlay live ESPN scores
+          const espnMap = await getEspnLiveMap()
+          if (espnMap.size > 0) {
+            return {
+              fixtures: overlayEspnData(cached.fixtures, espnMap),
+              source:   'cache',
+              cachedAt: new Date().toISOString(),
+            }
+          }
+          // ESPN unavailable → fall through to API-Football re-fetch
+        } else {
+          const cachedAt    = new Date(cached.cachedAt)
+          const nextRefresh = new Date(cachedAt.getTime() + TTL_FIXTURES * 1000)
+          return {
+            fixtures:    cached.fixtures,
+            source:      'cache',
+            cachedAt:    cached.cachedAt,
+            nextRefresh: nextRefresh.toISOString(),
+          }
         }
       }
     } catch (e) {
