@@ -18,41 +18,53 @@ import type {
 } from '../types'
 import { getTeamParams } from '../data/team-params'
 import { TEAMS } from '../teams'
+import { calcH2HAdjustment } from './h2h-model'
 
-// Ensemble weights
+// Ensemble weights (must sum to 1.0)
 const W = { dixon: 0.40, monte: 0.30, bayes: 0.20, elo: 0.10 }
 
 export function buildEnsemble(
-  dc:    DixonColesResult,
-  mc:    MonteCarloResult,
-  bayes: BayesianResult,
-  elo:   EloModel,
+  dc:       DixonColesResult,
+  mc:       MonteCarloResult,
+  bayes:    BayesianResult,
+  elo:      EloModel,
+  homeCode: string,
+  awayCode: string,
 ): EnsembleResult {
-  const homeWin =
+  // Base weighted sum
+  let homeWin =
     W.dixon * dc.homeWin +
     W.monte * mc.homeWin +
     W.bayes * bayes.homeWin +
     W.elo   * elo.homeWin
 
-  const draw =
+  let draw =
     W.dixon * dc.draw +
     W.monte * mc.draw +
     W.bayes * bayes.draw +
     W.elo   * elo.draw
 
-  const awayWin =
+  let awayWin =
     W.dixon * dc.awayWin +
     W.monte * mc.awayWin +
     W.bayes * bayes.awayWin +
     W.elo   * elo.awayWin
 
-  // Normalize
-  const total = homeWin + draw + awayWin
+  // Normalize base
+  let total = homeWin + draw + awayWin
+  homeWin /= total
+  draw    /= total
+  awayWin /= total
+
+  // H2H adjustment layer
+  const h2h = calcH2HAdjustment(homeCode, awayCode, homeWin, draw, awayWin)
+
   return {
-    homeWin: homeWin / total,
-    draw:    draw    / total,
-    awayWin: awayWin / total,
+    homeWin: h2h.hasData ? h2h.h2hHomeWin : homeWin,
+    draw:    h2h.hasData ? h2h.h2hDraw    : draw,
+    awayWin: h2h.hasData ? h2h.h2hAwayWin : awayWin,
     weights: { dixon: W.dixon, elo: W.elo, bayesian: W.bayes },
+    h2h,
   }
 }
 
@@ -172,6 +184,24 @@ export function buildConfidence(
   if (ensemble.homeWin > 0.50 && hp.pressureRating < 0.60) {
     score -= 5
     factors.push({ type: 'pressure', description: `${homeCode} tiene historial negativo en fases decisivas`, impact: 'negative', magnitude: 'medium' })
+  }
+
+  // Factor 8: H2H data availability and signal
+  if (ensemble.h2h?.hasData) {
+    const h2h = ensemble.h2h
+    if (h2h.wcMeets >= 2) {
+      score += 4
+      factors.push({ type: 'h2h', description: `Rivalidad histórica rica en Mundiales (${h2h.wcMeets} encuentros WC, ${h2h.played} totales)`, impact: 'positive', magnitude: 'low' })
+    } else if (h2h.played >= 20) {
+      score += 2
+      factors.push({ type: 'h2h', description: `Amplio historial H2H (${h2h.played} partidos) — ajuste aplicado (${(h2h.blendFactor * 100).toFixed(0)}%)`, impact: 'positive', magnitude: 'low' })
+    }
+    if (Math.abs(h2h.deltaHomeWin) > 0.05) {
+      const favored = h2h.deltaHomeWin > 0 ? homeCode : awayCode
+      factors.push({ type: 'h2h', description: `H2H favorece a ${favored} por encima de lo que sugieren los modelos estadísticos`, impact: 'neutral', magnitude: 'medium' })
+    }
+  } else {
+    score -= 2  // slight penalty for no H2H data
   }
 
   score = Math.max(20, Math.min(95, score))

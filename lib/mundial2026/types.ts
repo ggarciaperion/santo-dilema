@@ -127,6 +127,18 @@ export interface BayesianResult {
   priorWeight: number
 }
 
+export interface H2HAdjustment {
+  hasData:      boolean
+  blendFactor:  number
+  h2hHomeWin:   number
+  h2hDraw:      number
+  h2hAwayWin:   number
+  played:       number
+  wcMeets:      number
+  deltaHomeWin: number
+  deltaAwayWin: number
+}
+
 export interface EnsembleResult {
   homeWin:  number
   draw:     number
@@ -137,6 +149,8 @@ export interface EnsembleResult {
     elo:     number
     bayesian: number
   }
+  // H2H adjustment metadata
+  h2h?: H2HAdjustment
 }
 
 // ── Score probability ──────────────────────────────────────────────

@@ -3,12 +3,15 @@
  *
  * Pipeline:
  *   1. Dixon-Coles bivariate Poisson (primary model)
- *   2. Monte Carlo simulation (50,000 iterations)
- *   3. Bayesian updating (recent form prior)
+ *   2. Monte Carlo simulation (100,000 iterations)
+ *   3. Bayesian updating (recent form prior + opponent quality)
  *   4. ELO model (long-run strength)
- *   5. Ensemble weighting (40/30/20/10)
- *   6. Confidence assessment
- *   7. Value analysis (if odds available)
+ *   5. H2H adjustment layer (up to ±15% blend)
+ *   6. Ensemble weighting (40/30/20/10)
+ *   7. Confidence assessment
+ *   8. Value analysis (if odds available)
+ *
+ * Cache: Upstash Redis (prod) with 6h TTL; in-process Map fallback (dev)
  */
 
 import type {
@@ -25,6 +28,26 @@ import {
 } from './engine/ensemble'
 import { enrichWithValue } from './odds/client'
 
+// ── Redis client (prod only) ───────────────────────────────────────
+let _redis: any = null
+async function getRedis() {
+  if (_redis) return _redis
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    const { Redis } = await import('@upstash/redis')
+    _redis = new Redis({
+      url:   process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+  }
+  return _redis
+}
+
+const CACHE_KEY   = (matchId: string) => `mundial2026:pred:v2:${matchId}`
+const CACHE_TTL   = 60 * 60 * 6  // 6 hours
+
+// In-process fallback (dev / same serverless instance)
+const _localCache = new Map<string, AdvancedPrediction>()
+
 // ── ELO model (retained for ensemble input) ───────────────────────
 function calcElo(home: Team, away: Team, neutralVenue = true): EloModel {
   const homeAdv = neutralVenue ? 0 : 100
@@ -40,9 +63,6 @@ function calcElo(home: Team, away: Team, neutralVenue = true): EloModel {
     awayWin: E_a * (1 - drawProb),
   }
 }
-
-// In-process cache (cleared on deploy/cold start)
-const _cache = new Map<string, AdvancedPrediction>()
 
 export function generatePrediction(
   home: Team,
@@ -65,8 +85,9 @@ export function generateAdvancedPrediction(
   venue?:           Venue,
   precomputedValue?: ValueAnalysis,
 ): AdvancedPrediction {
-  const cached = _cache.get(matchId)
-  if (cached) return cached
+  // Check in-process cache first (free, synchronous)
+  const localHit = _localCache.get(matchId)
+  if (localHit) return localHit
 
   const isHost =
     (home.code === 'MEX' || home.code === 'USA' || home.code === 'CAN')
@@ -74,11 +95,11 @@ export function generateAdvancedPrediction(
 
   // ── Models ──────────────────────────────────────────────────────
   const dc    = calcDixonColes({ homeCode: home.code, awayCode: away.code, venueType })
-  const mc    = runMonteCarlo({ expectedGoalsH: dc.expectedGoalsH, expectedGoalsA: dc.expectedGoalsA, iterations: 50000 })
+  const mc    = runMonteCarlo({ expectedGoalsH: dc.expectedGoalsH, expectedGoalsA: dc.expectedGoalsA, iterations: 100000 })
   const bayes = calcBayesian({ homeCode: home.code, awayCode: away.code })
   const elo   = calcElo(home, away, neutralVenue)
 
-  const ensemble   = buildEnsemble(dc, mc, bayes, elo)
+  const ensemble   = buildEnsemble(dc, mc, bayes, elo, home.code, away.code)
   const topScores  = mergeTopScores(dc, mc)
   const homeRadar  = buildRadar(home.code)
   const awayRadar  = buildRadar(away.code)
@@ -105,7 +126,49 @@ export function generateAdvancedPrediction(
     insight,
   }
 
-  _cache.set(matchId, adv)
+  _localCache.set(matchId, adv)
+  return adv
+}
+
+/**
+ * Async version with Redis cache (call from API routes)
+ * Falls back to synchronous generation if Redis is unavailable.
+ */
+export async function generateAdvancedPredictionCached(
+  home:             Team,
+  away:             Team,
+  matchId:          string,
+  neutralVenue     = true,
+  venue?:           Venue,
+  precomputedValue?: ValueAnalysis,
+): Promise<AdvancedPrediction> {
+  // 1. In-process cache
+  const localHit = _localCache.get(matchId)
+  if (localHit) return localHit
+
+  // 2. Redis cache
+  const redis = await getRedis()
+  if (redis) {
+    try {
+      const cached = await redis.get(CACHE_KEY(matchId))
+      if (cached) {
+        const adv = cached as AdvancedPrediction
+        _localCache.set(matchId, adv)  // warm local cache too
+        return adv
+      }
+    } catch { /* Redis miss — compute fresh */ }
+  }
+
+  // 3. Compute
+  const adv = generateAdvancedPrediction(home, away, matchId, neutralVenue, venue, precomputedValue)
+
+  // 4. Persist to Redis
+  if (redis) {
+    try {
+      await redis.set(CACHE_KEY(matchId), adv, { ex: CACHE_TTL })
+    } catch { /* non-fatal */ }
+  }
+
   return adv
 }
 
@@ -133,6 +196,22 @@ function legacyFromAdvanced(adv: AdvancedPrediction): Prediction {
 }
 
 export function invalidatePredictionCache(matchId?: string) {
-  if (matchId) _cache.delete(matchId)
-  else _cache.clear()
+  if (matchId) _localCache.delete(matchId)
+  else _localCache.clear()
+
+  // Note: Redis invalidation must be called separately if needed
+  // (async, call invalidatePredictionCacheRedis from an API route)
+}
+
+export async function invalidatePredictionCacheRedis(matchId?: string) {
+  const redis = await getRedis()
+  if (!redis) return
+  if (matchId) {
+    await redis.del(CACHE_KEY(matchId))
+  } else {
+    // Pattern delete — use carefully (admin only)
+    const keys = await redis.keys('mundial2026:pred:v2:*')
+    if (keys.length > 0) await redis.del(...keys)
+  }
+  invalidatePredictionCache(matchId)
 }
