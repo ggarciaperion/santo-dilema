@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import SorteoAnimadoTab from './SorteoAnimadoTab';
 
 interface Config {
   active: boolean;
@@ -97,7 +98,7 @@ function FlagImg({ src, name, size = 32 }: { src: string; name: string; size?: n
 }
 
 export default function SorteoMundialAdmin() {
-  const [tab, setTab] = useState<'config' | 'participantes' | 'ganadores'>('config');
+  const [tab, setTab] = useState<'config' | 'participantes' | 'ganadores' | 'sorteo'>('config');
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
@@ -372,17 +373,26 @@ export default function SorteoMundialAdmin() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid #e2e8f0' }}>
-        {(['config', 'participantes', 'ganadores'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            padding: '8px 16px', borderRadius: '8px 8px 0 0', border: 'none', cursor: 'pointer',
-            background: tab === t ? '#f0fdf4' : 'transparent',
-            borderBottom: tab === t ? '2px solid #16a34a' : '2px solid transparent',
-            color: tab === t ? '#15803d' : '#64748b',
-            fontSize: '0.78rem', fontWeight: 700,
-          }}>
-            {t === 'config' ? '⚙️ Configuración' : t === 'participantes' ? '👥 Participantes' : '🏆 Ganadores'}
-          </button>
-        ))}
+        {(['config', 'participantes', 'ganadores', 'sorteo'] as const).map(t => {
+          const labels: Record<string, string> = {
+            config: 'Configuracion',
+            participantes: 'Participantes',
+            ganadores: 'Ganadores',
+            sorteo: 'Sorteo Animado',
+          };
+          const isAnimado = t === 'sorteo';
+          return (
+            <button key={t} onClick={() => setTab(t)} style={{
+              padding: '8px 16px', borderRadius: '8px 8px 0 0', border: 'none', cursor: 'pointer',
+              background: tab === t ? (isAnimado ? '#faf5ff' : '#f0fdf4') : 'transparent',
+              borderBottom: tab === t ? `2px solid ${isAnimado ? '#7c3aed' : '#16a34a'}` : '2px solid transparent',
+              color: tab === t ? (isAnimado ? '#7c3aed' : '#15803d') : '#64748b',
+              fontSize: '0.78rem', fontWeight: 700,
+            }}>
+              {labels[t]}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── TAB: CONFIG ── */}
@@ -667,6 +677,17 @@ export default function SorteoMundialAdmin() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ── TAB: SORTEO ANIMADO ── */}
+      {tab === 'sorteo' && (
+        <SorteoAnimadoTab
+          matchId={config.matchId}
+          matchLabel={config.matchLabel}
+          equipoLocal={config.equipoLocal}
+          equipoVisitante={config.equipoVisitante}
+          premio={config.premio}
+        />
       )}
 
       {/* ── TAB: GANADORES ── */}
