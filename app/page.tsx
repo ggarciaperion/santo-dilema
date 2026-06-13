@@ -399,6 +399,18 @@ export default function Home() {
         >
           910 677 186
         </p>
+        <p
+          className="font-bold text-center"
+          style={{
+            fontSize: "0.7rem",
+            color: "#ffffff",
+            fontWeight: 800,
+            letterSpacing: "0.12em",
+            marginTop: "4px",
+          }}
+        >
+          RESTAURANTE EN CHANCAY
+        </p>
       </div>
 
       {/* ── DARK KITCHEN LABEL (bottom center) ── */}
