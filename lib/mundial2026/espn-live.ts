@@ -61,17 +61,20 @@ function espnState(state: string, completed: boolean): MatchStatus {
   return 'scheduled'
 }
 
-// In-process cache (no Redis needed — ESPN is fast and free)
+// In-process cache per serverless instance.
+// 15s during live matches — acceptable latency without hammering ESPN.
 let _cacheTs   = 0
 let _cacheMap: Map<string, EspnMatchSnapshot> | null = null
-const CACHE_MS = 45_000
+const CACHE_MS = 15_000
 
 export async function getEspnLiveMap(): Promise<Map<string, EspnMatchSnapshot>> {
   const now = Date.now()
   if (_cacheMap && now - _cacheTs < CACHE_MS) return _cacheMap
 
   try {
-    const res = await fetch(ESPN_URL, { next: { revalidate: 60 } })
+    // cache: 'no-store' — bypass Next.js data cache entirely.
+    // We use the in-process _cacheMap (15s) for rate-limiting ESPN calls.
+    const res = await fetch(ESPN_URL, { cache: 'no-store' })
     if (!res.ok) return _cacheMap ?? new Map()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

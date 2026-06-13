@@ -5,6 +5,7 @@ import { generateAdvancedPrediction } from '@/lib/mundial2026/predictions'
 import type { AdvancedPrediction, MatchEvent, MatchWithTeams, RiskFactor } from '@/lib/mundial2026/types'
 import RadarChart from '../../components/RadarChart'
 import ScoreMatrix from '../../components/ScoreMatrix'
+import LiveMatchUpdater from '../../components/LiveMatchUpdater'
 
 export const dynamic = 'force-dynamic'
 
@@ -648,6 +649,15 @@ export default async function PartidoPage({ params }: { params: Promise<{ id: st
           ← Volver al calendario
         </Link>
       </div>
+
+      {/* Live polling — refreshes this Server Component every 15s when match is live */}
+      {isLive && (
+        <LiveMatchUpdater
+          matchId={match.id}
+          initScore={`${match.homeScore ?? 0}:${match.awayScore ?? 0}:${match.minute ?? ''}`}
+          isLive={isLive}
+        />
+      )}
 
     </div>
   )

@@ -19,8 +19,8 @@ const LEAGUE_ID = 1     // FIFA World Cup
 const SEASON    = 2026
 
 // Cache TTLs (seconds)
-const TTL_FIXTURES  = 60 * 60 * 6   // 6 hours  — fixture list
-const TTL_LIVE      = 60 * 3         // 3 min    — during active matches
+const TTL_FIXTURES  = 60 * 60 * 6   // 6 hours  — fixture list (no live matches)
+const TTL_LIVE      = 20             // 20s      — during active matches (matches ESPN in-process cache ~15s)
 const TTL_STANDINGS = 60 * 60 * 2   // 2 hours  — group standings
 
 const CACHE_KEY_FIXTURES = 'mundial2026:fixtures:all'
@@ -49,7 +49,8 @@ async function apiFetch<T>(endpoint: string): Promise<T | null> {
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       headers: { 'x-apisports-key': key },
-      next: { revalidate: TTL_FIXTURES },
+      // No Next.js data cache — Redis (TTL_LIVE / TTL_FIXTURES) is our cache layer.
+      cache: 'no-store',
     })
 
     if (!res.ok) {

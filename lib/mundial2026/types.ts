@@ -335,7 +335,7 @@ export interface MatchAnalysis {
 
 export interface ApiFixturesResponse {
   fixtures: MatchWithTeams[]
-  source: 'api' | 'cache' | 'fallback'
+  source: 'api' | 'cache' | 'fallback' | 'espn'
   cachedAt?: string
   nextRefresh?: string
 }

@@ -8,10 +8,16 @@ interface Props {
   initialData: ApiFixturesResponse
 }
 
-const POLL_INTERVAL = 45_000  // 45s
+const POLL_LIVE     = 15_000  // 15s — while a match is live
+const POLL_IDLE     = 60_000  // 60s — no live matches
 
-/** True if any match is live or started less than 3h ago (still in match window) */
-function hasActiveMatch(fixtures: MatchWithTeams[]): boolean {
+/** True if any match is currently live */
+function hasLiveMatch(fixtures: MatchWithTeams[]): boolean {
+  return fixtures.some(f => f.status === 'live')
+}
+
+/** True if any match started in the last 3h and isn't finished/postponed yet */
+function hasActiveWindow(fixtures: MatchWithTeams[]): boolean {
   const now = Date.now()
   return fixtures.some(f => {
     if (f.status === 'live') return true
@@ -84,13 +90,36 @@ export default function MundialClient({ initialData }: Props) {
   const [source, setSource]            = useState(initialData.source)
   const [cachedAt, setCachedAt]        = useState(initialData.cachedAt)
 
-  // Live polling — re-fetches every 45s when a match window is open
   const fixturesRef = useRef(fixtures)
   useEffect(() => { fixturesRef.current = fixtures }, [fixtures])
 
+  // Dual polling strategy:
+  //  - Live endpoint (/api/mundial/live) every 15s when a match is in progress
+  //    → ESPN direct, zero CDN cache, lightweight
+  //  - Full fixtures (/api/mundial/fixtures) every 60s during match window
+  //    → catches status changes, new matches starting, etc.
   useEffect(() => {
-    const tick = async () => {
-      if (!hasActiveMatch(fixturesRef.current)) return
+    // Fast live overlay — updates score+minute of ongoing matches
+    const liveTick = async () => {
+      if (!hasLiveMatch(fixturesRef.current)) return
+      try {
+        const res = await fetch('/api/mundial/live', { cache: 'no-store' })
+        if (!res.ok) return
+        const data: { matches: MatchWithTeams[]; fetchedAt: string } = await res.json()
+        if (!data.matches?.length) return
+        // Merge live data into current fixtures without replacing non-live cards
+        setFixtures(prev => {
+          const liveMap = new Map(data.matches.map(m => [m.id, m]))
+          return prev.map(f => liveMap.get(f.id) ?? f)
+        })
+        setCachedAt(data.fetchedAt)
+        setSource('espn')
+      } catch { /* silent */ }
+    }
+
+    // Full refresh — picks up new live matches, finished transitions, etc.
+    const fullTick = async () => {
+      if (!hasActiveWindow(fixturesRef.current)) return
       try {
         const res = await fetch('/api/mundial/fixtures', { cache: 'no-store' })
         if (!res.ok) return
@@ -101,8 +130,10 @@ export default function MundialClient({ initialData }: Props) {
         fixturesRef.current = data.fixtures
       } catch { /* silent */ }
     }
-    const id = setInterval(tick, POLL_INTERVAL)
-    return () => clearInterval(id)
+
+    const liveId = setInterval(liveTick, POLL_LIVE)
+    const fullId = setInterval(fullTick, POLL_IDLE)
+    return () => { clearInterval(liveId); clearInterval(fullId) }
   }, [])  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live matches — always show at top regardless of filter
