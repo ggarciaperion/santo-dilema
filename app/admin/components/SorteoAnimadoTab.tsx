@@ -404,9 +404,9 @@ function PaperSlip({ winnerNombre }: { winnerNombre: string }) {
 /* ══════════════════════════════════════════════════════
    AUDIO SYNTHESIS
 ══════════════════════════════════════════════════════ */
-function scheduleSorteoAudio(ac: AudioContext, dest: AudioNode, base: number) {
+function scheduleSorteoAudio(ac: BaseAudioContext, dest: AudioNode | null, base: number) {
   const master=ac.createGain(); master.gain.value=0.65;
-  master.connect(dest); master.connect(ac.destination);
+  if(dest) master.connect(dest); master.connect(ac.destination);
 
   const mkNoise=(dur:number)=>{
     const len=Math.ceil(ac.sampleRate*dur), buf=ac.createBuffer(1,len,ac.sampleRate), d=buf.getChannelData(0);
@@ -580,40 +580,23 @@ export default function SorteoAnimadoTab({ premio }: Props) {
     const logo=new window.Image();
     await new Promise<void>(r=>{logo.onload=()=>r();logo.onerror=()=>r();logo.src='/logoprincipal1.png';});
 
-    if(!('captureStream' in canvas)){alert('Usa Chrome o Edge.');return;}
-    const AudioCtxClass=window.AudioContext||(window as {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
-    if(!AudioCtxClass){alert('Tu navegador no soporta Web Audio API.');return;}
-    const ac=new AudioCtxClass();
-    const audioDest=ac.createMediaStreamDestination();
+    setRecording(true); setVideoProgress(0); setVideoUrl(null);
 
-    const mime=
-      MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')?'video/webm;codecs=vp9,opus':
-      MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')?'video/webm;codecs=vp8,opus':
-      'video/webm';
-
-    const vidStream=(canvas as HTMLCanvasElement&{captureStream(fps:number):MediaStream}).captureStream(30);
-    const combined=new MediaStream([...vidStream.getVideoTracks(),...audioDest.stream.getAudioTracks()]);
-    const chunks:Blob[]=[];
-    const recorder=new MediaRecorder(combined,{mimeType:mime,videoBitsPerSecond:2_200_000});
-    recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-    recorder.onstop=()=>{
-      ac.close();
-      setVideoUrl(URL.createObjectURL(new Blob(chunks,{type:mime})));
-      setRecording(false); setVideoProgress(100);
-    };
-
-    setRecording(true); setVideoProgress(0);
-    recorder.start();
-    const audioBase=ac.currentTime+0.08;
-    scheduleSorteoAudio(ac,audioDest,audioBase);
-
-    /* ── Video canvas data ── */
     const TOTAL=20_000;
-    const t0=performance.now();
+    const FPS=30;
+    const TOTAL_FRAMES=Math.ceil(TOTAL/1000*FPS);
+    const VDR=165,VBR=30,CX=270;
 
     const videoPool=[...todos.map(p=>p.nombre),...NOMBRES_FICTICIOS].sort(()=>Math.random()-0.5);
+    const numBalls=Math.min(videoPool.length,15);
+    const vBalls=Array.from({length:numBalls},(_,i)=>({
+      Ax:40+(i*23)%90,Ay:35+(i*31)%90,
+      wx:0.9+i*0.22,wy:1.1+i*0.19,
+      phx:i*0.85,phy:i*1.3,
+      label:videoPool[i].split(' ')[0].slice(0,9),
+      color:BALL_COLORS[i%BALL_COLORS.length],
+    }));
 
-    // Confetti
     const confP=Array.from({length:100},()=>({
       x:Math.random()*540,y:-Math.random()*450,
       vx:(Math.random()-0.5)*4.5,vy:Math.random()*4+1.3,
@@ -632,30 +615,15 @@ export default function SorteoAnimadoTab({ premio }: Props) {
       {x:360,y:200,t:17000,c:['#22c55e','#fff','#7c3aed']},
     ];
 
-    // Pre-compute ball Lissajous params for video drum
-    const VDR=165; // video drum radius
-    const VBR=30;  // video ball radius
-    const numBalls=Math.min(videoPool.length,15);
-    const vBalls=Array.from({length:numBalls},(_,i)=>({
-      Ax: 40+(i*23)%90, Ay: 35+(i*31)%90,
-      wx: 0.9+i*0.22,   wy: 1.1+i*0.19,
-      phx: i*0.85,      phy: i*1.3,
-      label: videoPool[i].split(' ')[0].slice(0,9),
-      color: BALL_COLORS[i%BALL_COLORS.length],
-    }));
-
-    const CX=270; // video canvas center x
-
     const drawBg=(el:number)=>{
       const bgG=ctx.createLinearGradient(0,0,0,960);
-      bgG.addColorStop(0,'#040d1c'); bgG.addColorStop(0.55,'#081630'); bgG.addColorStop(1,'#020810');
-      ctx.fillStyle=bgG; ctx.fillRect(0,0,540,960);
-      ctx.strokeStyle='rgba(255,255,255,0.022)'; ctx.lineWidth=1;
+      bgG.addColorStop(0,'#040d1c');bgG.addColorStop(0.55,'#081630');bgG.addColorStop(1,'#020810');
+      ctx.fillStyle=bgG;ctx.fillRect(0,0,540,960);
+      ctx.strokeStyle='rgba(255,255,255,0.022)';ctx.lineWidth=1;
       for(let x=0;x<=540;x+=54){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,960);ctx.stroke();}
       for(let y=0;y<=960;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(540,y);ctx.stroke();}
       spotlight(ctx,60,960,Math.sin(el*0.00042)*0.5,52,880,0.065);
       spotlight(ctx,480,960,Math.sin(el*0.00036+1.2)*0.5,52,880,0.065);
-      // Sparkles
       for(let i=0;i<18;i++){
         const px=((i*131+60)%480)+30,py=((i*89+150)%650)+160;
         const a=0.12+Math.sin(el*0.004+i*0.65)*0.1;
@@ -679,9 +647,8 @@ export default function SorteoAnimadoTab({ premio }: Props) {
       }
     };
 
-    // Draw a single ball on the video canvas
     const drawVideoBall=(x:number,y:number,r:number,label:string,color:string,alpha:number,isWinner:boolean)=>{
-      ctx.save(); ctx.globalAlpha=alpha;
+      ctx.save();ctx.globalAlpha=alpha;
       if(isWinner){ctx.shadowColor='#f59e0b';ctx.shadowBlur=28;}
       const g=ctx.createRadialGradient(x-r*0.3,y-r*0.35,r*0.05,x,y,r);
       const lighter=lightenHex(color,60);
@@ -692,7 +659,6 @@ export default function SorteoAnimadoTab({ premio }: Props) {
       ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
       ctx.fillStyle='rgba(255,255,255,0.18)';
       ctx.beginPath();ctx.arc(x-r*0.28,y-r*0.3,r*0.36,0,Math.PI*2);ctx.fill();
-      // Paper slip
       const pw=r*1.15,ph=r*0.52;
       ctx.fillStyle=isWinner?'#fffde7':'rgba(255,255,255,0.85)';
       ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=3;
@@ -704,44 +670,33 @@ export default function SorteoAnimadoTab({ premio }: Props) {
       ctx.restore();
     };
 
-    // Draw lottery drum on video canvas
-    const drawVideoDrum=(el:number,DCX:number,DCY:number,drumRot:number,sp:number)=>{
-      // Glow ring
+    const drawVideoDrum=(el:number,DCX:number,DCY:number,dRot:number,sp:number)=>{
       ctx.shadowColor='#f59e0b';ctx.shadowBlur=22;
       ctx.beginPath();ctx.arc(DCX,DCY,VDR+6,0,Math.PI*2);
       ctx.strokeStyle='rgba(245,158,11,0.6)';ctx.lineWidth=4;ctx.stroke();
       ctx.shadowBlur=0;
-
-      // Clip interior
       ctx.save();
       ctx.beginPath();ctx.arc(DCX,DCY,VDR,0,Math.PI*2);ctx.clip();
       ctx.fillStyle='#050e1f';ctx.fillRect(DCX-VDR,DCY-VDR,VDR*2,VDR*2);
-      // Cage lines
       ctx.strokeStyle='rgba(245,158,11,0.1)';ctx.lineWidth=1.5;
       for(let li=0;li<10;li++){
-        const a=drumRot+(li*Math.PI/5);
+        const a=dRot+(li*Math.PI/5);
         ctx.beginPath();
         ctx.moveTo(DCX+Math.cos(a)*VDR,DCY+Math.sin(a)*VDR);
         ctx.lineTo(DCX-Math.cos(a)*VDR,DCY-Math.sin(a)*VDR);ctx.stroke();
       }
       ctx.beginPath();ctx.arc(DCX,DCY,VDR*0.5,0,Math.PI*2);
       ctx.strokeStyle='rgba(245,158,11,0.07)';ctx.stroke();
-
-      // Balls (Lissajous paths)
       const tSec=el*0.001;
       vBalls.forEach(b=>{
         const bx=b.Ax*Math.sin(b.wx*tSec+b.phx);
         const by=b.Ay*Math.sin(b.wy*tSec+b.phy);
         drawVideoBall(DCX+bx,DCY+by,VBR,b.label,b.color,1,false);
       });
-
-      // Vignette
       const vig=ctx.createRadialGradient(DCX,DCY,VDR*0.65,DCX,DCY,VDR);
       vig.addColorStop(0,'transparent');vig.addColorStop(1,'rgba(4,12,26,0.4)');
       ctx.fillStyle=vig;ctx.fillRect(DCX-VDR,DCY-VDR,VDR*2,VDR*2);
       ctx.restore();
-
-      // Chute
       const cW2=56,cH2=40,cX2=DCX-cW2/2,cY2=DCY+VDR;
       const cg=ctx.createLinearGradient(0,cY2,0,cY2+cH2);
       cg.addColorStop(0,'rgba(245,158,11,0.2)');cg.addColorStop(1,'rgba(245,158,11,0.06)');
@@ -751,17 +706,11 @@ export default function SorteoAnimadoTab({ premio }: Props) {
 
     let drumRot=0;
 
-    const draw=(now:number)=>{
-      const el=now-t0;
-      const prog=Math.min(el/TOTAL,1);
-      if(prog>=1){recorder.stop();return;}
-      setVideoProgress(Math.round(prog*95));
-
+    const drawAt=(el:number)=>{
       drawBg(el);
       drawHeader();
       ctx.textAlign='center';
 
-      /* ── PHASE 1: INTRO 0-3s ── */
       if(el<3000){
         const fade=Math.min(el/700,1);
         ctx.globalAlpha=fade;
@@ -787,10 +736,7 @@ export default function SorteoAnimadoTab({ premio }: Props) {
         ctx.fillText('El ganador sera contactado por WhatsApp',CX,540);
         ctx.fillStyle='#dc2626';ctx.font='bold 19px Arial';ctx.fillText('@santodilema',CX,890);
         ctx.globalAlpha=1;
-      }
-
-      /* ── PHASE 2: COUNTDOWN 3-8.5s ── */
-      else if(el<8500){
+      } else if(el<8500){
         const ce=el-3000,num=Math.max(1,5-Math.floor(ce/1100)),wth=(ce%1100)/1100;
         ctx.fillStyle='#94a3b8';ctx.font='bold 16px Arial';ctx.fillText('EL SORTEO COMIENZA EN...',CX,210);
         for(let ri=0;ri<4;ri++){ctx.beginPath();ctx.arc(CX,520,95+ri*38,0,Math.PI*2);ctx.strokeStyle=`rgba(245,158,11,${0.14-ri*0.025})`;ctx.lineWidth=1.5;ctx.stroke();}
@@ -801,28 +747,20 @@ export default function SorteoAnimadoTab({ premio }: Props) {
         ctx.fillStyle='#f59e0b';ctx.font='bold 216px Arial';ctx.fillText(String(num),0,76);
         ctx.shadowBlur=0;ctx.restore();ctx.globalAlpha=1;
         ctx.fillStyle='#334155';ctx.font='14px Arial';ctx.fillText(`${premio||'Alitas gratis'} en juego`,CX,820);
-      }
-
-      /* ── PHASE 3: LOTTERY DRUM 8.5-15s ── */
-      else if(el<15000){
+      } else if(el<15000){
         const se=el-8500,sp=se/6500;
         drumRot+=0.015;
         const pa=0.6+Math.sin(se*0.009)*0.4;
         ctx.globalAlpha=pa;ctx.fillStyle='#f59e0b';ctx.font='bold 20px Arial';
         ctx.fillText('SORTEANDO AL GANADOR',CX,200);ctx.globalAlpha=1;
-        // Draw the drum
         drawVideoDrum(el,CX,490,drumRot,sp);
-        // Progress bar
         ctx.fillStyle='rgba(255,255,255,0.05)';rrect(ctx,55,748,430,8,4);ctx.fill();
         const barG=ctx.createLinearGradient(55,0,485,0);
         barG.addColorStop(0,'#dc2626');barG.addColorStop(1,'#f59e0b');
         ctx.fillStyle=barG;rrect(ctx,55,748,430*sp,8,4);ctx.fill();
         ctx.fillStyle='rgba(255,255,255,0.07)';rrect(ctx,80,788,380,52,12);ctx.fill();
         ctx.fillStyle='#f59e0b';ctx.font='bold 16px Arial';ctx.fillText(`Premio: ${premio||'Alitas gratis'}`,CX,820);
-      }
-
-      /* ── PHASE 4: WINNER REVEAL 15-20s ── */
-      else {
+      } else {
         const re=el-15000,rp=re/5000;
         if(re<280){ctx.fillStyle=`rgba(255,255,255,${(1-re/280)*0.72})`;ctx.fillRect(0,0,540,960);}
         confP.forEach(p=>{
@@ -833,39 +771,29 @@ export default function SorteoAnimadoTab({ premio }: Props) {
         bursts.forEach(b=>{
           if(el>b.t){const age=(el-b.t)/780;if(age<1)fireBurst(ctx,b.x,b.y,age*96,(1-age)*0.85,b.c);}
         });
-
-        // Gold banner
         ctx.globalAlpha=Math.min(rp*6,1);
         const bnG=ctx.createLinearGradient(50,165,490,255);
         bnG.addColorStop(0,'#6b3003');bnG.addColorStop(0.3,'#f59e0b');bnG.addColorStop(0.7,'#f59e0b');bnG.addColorStop(1,'#6b3003');
         ctx.fillStyle=bnG;rrect(ctx,50,163,440,80,22);ctx.fill();
         ctx.fillStyle='#0a0a0a';ctx.font='bold 30px Arial';ctx.fillText('GANADOR/A DEL SORTEO',CX,216);
-
-        // Winner ball exits chute → paper slip unfolds
         const exitProg=Math.min(rp*4,1);
-        // Winner ball coming out of drum
         if(exitProg<0.5){
           const eP=exitProg*2;
           drawVideoBall(CX,680+eP*80,VBR*(1+eP*0.5),winner.nombre.split(' ')[0].slice(0,9),'#f59e0b',1,true);
         }
-
-        // Paper slip unfolds
         if(rp>0.15){
           const slipP=Math.min((rp-0.15)*4,1);
           ctx.globalAlpha=slipP;
           ctx.save();
           ctx.translate(CX,390);ctx.scale(1,slipP);
-          // Paper
           ctx.fillStyle='#fffde7';
           ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=20;
           rrect(ctx,-200,-75,400,150,14);ctx.fill();
           ctx.shadowBlur=0;
           ctx.strokeStyle='rgba(180,150,0,0.4)';ctx.lineWidth=2;
           rrect(ctx,-200,-75,400,150,14);ctx.stroke();
-          // Fold line
           ctx.strokeStyle='rgba(180,150,0,0.2)';ctx.lineWidth=1;
           ctx.beginPath();ctx.moveTo(-200,0);ctx.lineTo(200,0);ctx.stroke();
-          // Name
           ctx.fillStyle='#1a1a1a';ctx.font='bold 46px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
           const words2=winner.nombre.split(' ');const lines:string[]=[];let ln2='';
           words2.forEach(w=>{const t=ln2?`${ln2} ${w}`:w;if(ctx.measureText(t).width>360&&ln2){lines.push(ln2);ln2=w;}else ln2=t;});
@@ -875,14 +803,112 @@ export default function SorteoAnimadoTab({ premio }: Props) {
           ctx.restore();
           ctx.globalAlpha=1;
         }
-
         ctx.globalAlpha=Math.min((rp-0.45)*5,1);
         ctx.fillStyle='#475569';ctx.font='13px Arial';ctx.fillText('El ganador sera contactado por WhatsApp',CX,678);
         ctx.globalAlpha=Math.min((rp-0.62)*5,1);
         ctx.fillStyle='#dc2626';ctx.font='bold 20px Arial';ctx.fillText('@santodilema',CX,890);
         ctx.globalAlpha=1;
       }
+    };
 
+    // ── WebCodecs MP4 path (Chrome 94+, Safari 16.4+, Edge 94+) ──
+    const W=window as any;
+    const hasWebCodecs=typeof W.VideoEncoder!=='undefined'&&typeof W.AudioEncoder!=='undefined';
+
+    if(hasWebCodecs){
+      try{
+        const {Muxer,ArrayBufferTarget}=await import('mp4-muxer');
+        const target=new ArrayBufferTarget();
+        const muxer=new Muxer({
+          target,
+          video:{codec:'avc',width:540,height:960},
+          audio:{codec:'aac',numberOfChannels:2,sampleRate:44100},
+          fastStart:'in-memory',
+        });
+
+        const venc=new W.VideoEncoder({
+          output:(c:any,m:any)=>muxer.addVideoChunk(c,m),
+          error:console.error,
+        });
+        venc.configure({codec:'avc1.4d002a',width:540,height:960,bitrate:2_200_000,framerate:30});
+
+        const aenc=new W.AudioEncoder({
+          output:(c:any,m:any)=>muxer.addAudioChunk(c,m),
+          error:console.error,
+        });
+        aenc.configure({codec:'mp4a.40.2',numberOfChannels:2,sampleRate:44100,bitrate:128_000});
+
+        // Pre-render audio offline (instant, no real-time wait)
+        const offCtx=new OfflineAudioContext(2,Math.ceil(44100*20.5),44100);
+        scheduleSorteoAudio(offCtx,null,0.05);
+        const audioBuf=await offCtx.startRendering();
+        const ACHUNK=1024,ch0=audioBuf.getChannelData(0),ch1=audioBuf.getChannelData(1);
+        for(let i=0;i<audioBuf.length;i+=ACHUNK){
+          const fc=Math.min(ACHUNK,audioBuf.length-i);
+          const planar=new Float32Array(fc*2);
+          planar.set(ch0.subarray(i,i+fc),0);
+          planar.set(ch1.subarray(i,i+fc),fc);
+          const ad=new W.AudioData({
+            format:'f32-planar',sampleRate:44100,
+            numberOfFrames:fc,numberOfChannels:2,
+            timestamp:Math.round(i/44100*1_000_000),
+            data:planar,
+          });
+          aenc.encode(ad);ad.close();
+        }
+        await aenc.flush();
+
+        // Render video frames faster than real-time
+        for(let fi=0;fi<TOTAL_FRAMES;fi++){
+          const el=fi/FPS*1000;
+          drawAt(el);
+          const vf=new W.VideoFrame(canvas,{
+            timestamp:Math.round(el*1000),
+            duration:Math.round(1_000_000/FPS),
+          });
+          venc.encode(vf,{keyFrame:fi%FPS===0});
+          vf.close();
+          setVideoProgress(Math.round(fi/TOTAL_FRAMES*92));
+          if(fi%15===14) await new Promise(r=>setTimeout(r,0));
+        }
+        await venc.flush();
+        muxer.finalize();
+
+        const blob=new Blob([target.buffer],{type:'video/mp4'});
+        setVideoUrl(URL.createObjectURL(blob));
+        setRecording(false);setVideoProgress(100);
+        return;
+      }catch(err){
+        console.error('WebCodecs MP4 failed, falling back to WebM',err);
+      }
+    }
+
+    // ── MediaRecorder WebM fallback (Firefox / older browsers) ──
+    if(!('captureStream' in canvas)){alert('Usa Chrome o Edge para generar el video.');setRecording(false);return;}
+    const AudioCtxClass=window.AudioContext||(window as {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
+    if(!AudioCtxClass){alert('Tu navegador no soporta Web Audio API.');setRecording(false);return;}
+    const ac=new AudioCtxClass();
+    const audioDest=ac.createMediaStreamDestination();
+    const mime=MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')?'video/webm;codecs=vp9,opus':MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')?'video/webm;codecs=vp8,opus':'video/webm';
+    const vidStream=(canvas as HTMLCanvasElement&{captureStream(fps:number):MediaStream}).captureStream(30);
+    const combined=new MediaStream([...vidStream.getVideoTracks(),...audioDest.stream.getAudioTracks()]);
+    const chunks:Blob[]=[];
+    const recorder=new MediaRecorder(combined,{mimeType:mime,videoBitsPerSecond:2_200_000});
+    recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+    recorder.onstop=()=>{
+      ac.close();
+      setVideoUrl(URL.createObjectURL(new Blob(chunks,{type:mime})));
+      setRecording(false);setVideoProgress(100);
+    };
+    recorder.start();
+    scheduleSorteoAudio(ac,audioDest,ac.currentTime+0.08);
+    const t0=performance.now();
+    const draw=(now:number)=>{
+      const el=now-t0;
+      const prog=Math.min(el/TOTAL,1);
+      if(prog>=1){recorder.stop();return;}
+      setVideoProgress(Math.round(prog*95));
+      drawAt(el);
       frameRef.current=requestAnimationFrame(draw);
     };
     frameRef.current=requestAnimationFrame(draw);
@@ -1017,11 +1043,11 @@ export default function SorteoAnimadoTab({ premio }: Props) {
       {videoUrl&&winner&&(
         <div style={{borderRadius:14,padding:'20px 22px',textAlign:'center',background:'linear-gradient(135deg,#050e1d,#0a0505)',border:'1.5px solid rgba(220,38,38,0.38)'}}>
           <p style={{fontSize:'0.9rem',fontWeight:700,color:'#dc2626',marginBottom:5}}>Video listo</p>
-          <p style={{fontSize:'0.7rem',color:'#334155',marginBottom:18}}>20 seg · 9:16 Stories · Musica incluida · Balotera + papelito ganador · ~4 MB</p>
-          <a href={videoUrl} download={`sorteo-mundial-${winner.nombre.replace(/\s+/g,'-').toLowerCase()}.webm`} style={{display:'inline-block',padding:'13px 40px',borderRadius:12,background:'linear-gradient(135deg,#dc2626,#b91c1c)',color:'#fff',fontSize:'0.95rem',fontWeight:700,textDecoration:'none',boxShadow:'0 6px 18px rgba(220,38,38,0.42)'}}>
-            Descargar video (.webm)
+          <p style={{fontSize:'0.7rem',color:'#334155',marginBottom:18}}>20 seg · 9:16 Stories · Musica incluida · Balotera + papelito ganador · MP4 H.264</p>
+          <a href={videoUrl} download={`sorteo-mundial-${winner.nombre.replace(/\s+/g,'-').toLowerCase()}.mp4`} style={{display:'inline-block',padding:'13px 40px',borderRadius:12,background:'linear-gradient(135deg,#dc2626,#b91c1c)',color:'#fff',fontSize:'0.95rem',fontWeight:700,textDecoration:'none',boxShadow:'0 6px 18px rgba(220,38,38,0.42)'}}>
+            Descargar video (.mp4)
           </a>
-          <p style={{fontSize:'0.6rem',color:'#1e293b',marginTop:10}}>Compatible con Instagram, TikTok y WhatsApp · Para .mp4: convertio.co</p>
+          <p style={{fontSize:'0.6rem',color:'#1e293b',marginTop:10}}>Compatible con Instagram, TikTok y WhatsApp · Formato MP4 nativo</p>
         </div>
       )}
 
