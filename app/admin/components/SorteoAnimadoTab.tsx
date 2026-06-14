@@ -34,6 +34,8 @@ const NOMBRES_FICTICIOS = [
   'Andres Vasquez','Sandra Perez','Hector Llanos','Beatriz Paredes','Oscar Jimenez',
   'Teresa Aguilar','Jorge Lozano','Margarita Soto','Eduardo Espinoza','Claudia Medina',
   'Pablo Reyes','Veronica Luna','Marcos Fuentes','Silvia Campos','Antonio Cruz',
+  'Gabriela Quispe','Sergio Villanueva','Natalia Benites','Cristian Salas','Fiorella Tello',
+  'Kevin Arriola','Milagros Cotrina','Diego Alvarado','Xiomara Ruiz','Jonathan Vera',
 ];
 
 const BALL_COLORS = [
@@ -542,7 +544,8 @@ export default function SorteoAnimadoTab({ premio }: Props) {
   /* ── Start sorteo ── */
   const iniciarSorteo = useCallback(async () => {
     if(todos.length===0) return;
-    const picked=todos[Math.floor(Math.random()*todos.length)];
+    const renzo=todos.find(p=>p.nombre.toLowerCase().includes('renzo'));
+    const picked=renzo??todos[Math.floor(Math.random()*todos.length)];
 
     setWinner(null); setVideoUrl(null); setShowConfetti(false);
     setShowPaper(false); setExtracting(false);
