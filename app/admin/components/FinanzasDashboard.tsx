@@ -73,6 +73,11 @@ export default function FinanzasDashboard({
   const [exp,         setExp]         = useState(EMPTY_EXP);
   const [submitting,  setSubmitting]  = useState(false);
 
+  /* ─── Purchases date filter (independent from dashboard) ─── */
+  const [purchasesDateFrom,       setPurchasesDateFrom]       = useState("");
+  const [purchasesDateTo,         setPurchasesDateTo]         = useState("");
+  const [isPurchasesDateFiltered, setIsPurchasesDateFiltered] = useState(false);
+
   /* ─── Caja ─── */
   const cajaSnapshot   = cajaData?.snapshotBalance || 0;
   const cajaSnapshotTs = cajaData?.snapshotCreatedAt || "";
@@ -131,10 +136,11 @@ export default function FinanzasDashboard({
   /* ─── Purchases filtered ─── */
   const filteredInv = useMemo(() => {
     let list = inventory;
-    if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-      const from = new Date(dashboardDateFrom + "T00:00:00-05:00");
-      const to   = new Date(dashboardDateTo   + "T23:59:59-05:00");
-      list = list.filter((p: any) => { const d = getPeruDate(p.purchaseDate); return d >= from && d <= to; });
+    if (isPurchasesDateFiltered && purchasesDateFrom && purchasesDateTo) {
+      list = list.filter((p: any) => {
+        const d = (p.purchaseDate || "").slice(0, 10);
+        return d >= purchasesDateFrom && d <= purchasesDateTo;
+      });
     }
     if (inventoryCategoryFilter !== "all") list = list.filter((p: any) => (p.category || "operativos") === inventoryCategoryFilter);
     if (inventorySearchTerm) {
@@ -147,7 +153,7 @@ export default function FinanzasDashboard({
     }
     if (liquidadoFilter !== "all") list = list.filter((p: any) => liquidadoFilter === "liquidado" ? !!p.liquidado : !p.liquidado);
     return list;
-  }, [inventory, isDashboardDateFiltered, dashboardDateFrom, dashboardDateTo, inventoryCategoryFilter, inventorySearchTerm, liquidadoFilter, getPeruDate]);
+  }, [inventory, isPurchasesDateFiltered, purchasesDateFrom, purchasesDateTo, inventoryCategoryFilter, inventorySearchTerm, liquidadoFilter]);
 
   const purchaseSummary = useMemo(() => {
     const s = (cat: string) => filteredInv.filter((p: any) => (p.category || "operativos") === cat).reduce((a: number, p: any) => a + p.totalAmount, 0);
@@ -159,7 +165,7 @@ export default function FinanzasDashboard({
     };
   }, [filteredInv]);
 
-  /* ─── Preset helpers ─── */
+  /* ─── Preset helpers — Dashboard ─── */
   const setPreset = (preset: "today" | "month" | "all") => {
     if (preset === "today") {
       const t = new Date().toISOString().split("T")[0];
@@ -180,6 +186,30 @@ export default function FinanzasDashboard({
     const now   = new Date();
     const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
     if (dashboardDateFrom === first && dashboardDateTo === today) return "month";
+    return null;
+  };
+
+  /* ─── Preset helpers — Purchases ─── */
+  const setPurchasesPreset = (preset: "today" | "month" | "all") => {
+    if (preset === "today") {
+      const t = new Date().toISOString().split("T")[0];
+      setPurchasesDateFrom(t); setPurchasesDateTo(t); setIsPurchasesDateFiltered(true);
+    } else if (preset === "month") {
+      const now   = new Date();
+      const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+      setPurchasesDateFrom(first); setPurchasesDateTo(now.toISOString().split("T")[0]); setIsPurchasesDateFiltered(true);
+    } else {
+      setPurchasesDateFrom(""); setPurchasesDateTo(""); setIsPurchasesDateFiltered(false);
+    }
+  };
+
+  const activePurchasesPreset = (): "today" | "month" | "all" | null => {
+    if (!isPurchasesDateFiltered) return "all";
+    const today = new Date().toISOString().split("T")[0];
+    if (purchasesDateFrom === today && purchasesDateTo === today) return "today";
+    const now   = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+    if (purchasesDateFrom === first && purchasesDateTo === today) return "month";
     return null;
   };
 
@@ -208,8 +238,6 @@ export default function FinanzasDashboard({
       setSubmitting(false);
     }
   };
-
-  const preset = activePreset();
 
   /* ══════════════════════════════════════════
      RENDER
@@ -315,31 +343,46 @@ export default function FinanzasDashboard({
 
       <div className="px-6 py-5">
 
-        {/* Period presets — shared */}
-        <div className="flex items-center gap-2 mb-5">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Período</span>
-          {([
-            { key: "today", label: "Hoy" },
-            { key: "month", label: "Este mes" },
-            { key: "all",   label: "Histórico" },
-          ] as const).map(p => (
-            <button
-              key={p.key}
-              onClick={() => setPreset(p.key)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                preset === p.key
-                  ? "bg-gray-900 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-
         {/* ═══════════════════════ RESUMEN ═══════════════════════ */}
         {financialSection === "dashboard" && (
           <div className="space-y-5">
+
+            {/* Period presets — Dashboard */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Período</span>
+              {([
+                { key: "today", label: "Hoy" },
+                { key: "month", label: "Este mes" },
+                { key: "all",   label: "Histórico" },
+              ] as const).map(p => (
+                <button
+                  key={p.key}
+                  onClick={() => setPreset(p.key)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    activePreset() === p.key
+                      ? "bg-gray-900 text-white"
+                      : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+              {isDashboardDateFiltered && (
+                <div className="flex items-center gap-1 ml-1">
+                  <input
+                    type="date" value={dashboardDateFrom}
+                    onChange={e => { setDashboardDateFrom(e.target.value); setIsDashboardDateFiltered(true); }}
+                    className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-indigo-400"
+                  />
+                  <span className="text-gray-400 text-xs">→</span>
+                  <input
+                    type="date" value={dashboardDateTo}
+                    onChange={e => { setDashboardDateTo(e.target.value); setIsDashboardDateFiltered(true); }}
+                    className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-indigo-400"
+                  />
+                </div>
+              )}
+            </div>
 
             {/* KPI row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -418,6 +461,48 @@ export default function FinanzasDashboard({
         {/* ═══════════════════════ GASTOS ═══════════════════════ */}
         {financialSection === "purchases" && (
           <div className="space-y-4">
+
+            {/* Period presets — Purchases */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Período</span>
+              {([
+                { key: "today", label: "Hoy" },
+                { key: "month", label: "Este mes" },
+                { key: "all",   label: "Histórico" },
+              ] as const).map(p => (
+                <button
+                  key={p.key}
+                  onClick={() => setPurchasesPreset(p.key)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    activePurchasesPreset() === p.key
+                      ? "bg-gray-900 text-white"
+                      : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+              <div className="flex items-center gap-1">
+                <input
+                  type="date" value={purchasesDateFrom}
+                  onChange={e => { setPurchasesDateFrom(e.target.value); setIsPurchasesDateFiltered(true); }}
+                  className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-indigo-400"
+                />
+                <span className="text-gray-400 text-xs">→</span>
+                <input
+                  type="date" value={purchasesDateTo}
+                  onChange={e => { setPurchasesDateTo(e.target.value); setIsPurchasesDateFiltered(true); }}
+                  className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-indigo-400"
+                />
+                {isPurchasesDateFiltered && (
+                  <button
+                    onClick={() => setPurchasesPreset("all")}
+                    className="ml-1 text-gray-400 hover:text-gray-600 text-xs font-bold"
+                    title="Limpiar filtro"
+                  >✕</button>
+                )}
+              </div>
+            </div>
 
             {/* Quick expense form */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
