@@ -36,6 +36,7 @@ let birthdaySettingsFilePath: string = '';
 let sorteoMundialParticipantesFilePath: string = '';
 let sorteoMundialConfigFilePath: string = '';
 let sorteoMundialMetricasFilePath: string = '';
+let comprobantesFilePath: string = '';
 
 // Solo inicializar filesystem en desarrollo
 if (!isProduction) {
@@ -63,6 +64,7 @@ if (!isProduction) {
   sorteoMundialParticipantesFilePath = path.join(dataDir, 'sorteo-mundial-participantes.json');
   sorteoMundialConfigFilePath = path.join(dataDir, 'sorteo-mundial-config.json');
   sorteoMundialMetricasFilePath = path.join(dataDir, 'sorteo-mundial-metricas.json');
+  comprobantesFilePath = path.join(dataDir, 'comprobantes.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -127,6 +129,9 @@ function ensureDataDirectory() {
     }
     if (!fs.existsSync(sorteoMundialMetricasFilePath)) {
       fs.writeFileSync(sorteoMundialMetricasFilePath, JSON.stringify({ impresiones: 0, participaciones: 0, porDia: {} }, null, 2));
+    }
+    if (!fs.existsSync(comprobantesFilePath)) {
+      fs.writeFileSync(comprobantesFilePath, JSON.stringify([], null, 2));
     }
   }
 }
@@ -205,6 +210,32 @@ interface StockDeduction {
   }>;
   deductionDate: string;
   createdAt: string;
+}
+
+interface Comprobante {
+  id: string;           // "B001-00001" | "F001-00001"
+  tipo: 'boleta' | 'factura';
+  serie: string;        // "B001" | "F001"
+  correlativo: number;
+  orderId: string;
+  clienteNombre: string;
+  clienteDocTipo: 'DNI' | 'RUC' | 'CE';
+  clienteDocNum: string;
+  clienteDireccion?: string;
+  items: Array<{
+    descripcion: string;
+    cantidad: number;
+    precioUnitario: number;
+    total: number;
+  }>;
+  subtotal: number;
+  igv: number;
+  total: number;
+  estado: 'emitido' | 'anulado';
+  fechaEmision: string;
+  createdAt: string;
+  updatedAt?: string;
+  motivoAnulacion?: string;
 }
 
 interface DailyClose {
@@ -1264,5 +1295,58 @@ export const storage = {
       ensureDataDirectory();
       fs.writeFileSync(sorteoMundialMetricasFilePath, JSON.stringify(data, null, 2));
     }
+  },
+
+  // ─── COMPROBANTES ────────────────────────────────────────────────────────
+  async getComprobantes(): Promise<Comprobante[]> {
+    if (isProduction) {
+      if (!redis) return [];
+      return (await redis.get<Comprobante[]>('comprobantes')) || [];
+    }
+    ensureDataDirectory();
+    try { return JSON.parse(fs.readFileSync(comprobantesFilePath, 'utf-8')); }
+    catch { return []; }
+  },
+
+  async getNextComprobCorrelativo(tipo: 'boleta' | 'factura'): Promise<number> {
+    const key = `comprobante_correlativo_${tipo}`;
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return await redis.incr(key);
+    }
+    // En desarrollo, calcular desde el array
+    const comprobantes = await this.getComprobantes();
+    const max = comprobantes
+      .filter((c) => c.tipo === tipo)
+      .reduce((m, c) => Math.max(m, c.correlativo), 0);
+    return max + 1;
+  },
+
+  async saveComprobante(comprobante: Comprobante): Promise<Comprobante> {
+    const comprobantes = await this.getComprobantes();
+    comprobantes.unshift(comprobante);
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('comprobantes', comprobantes);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(comprobantesFilePath, JSON.stringify(comprobantes, null, 2));
+    }
+    return comprobante;
+  },
+
+  async updateComprobante(id: string, updates: Partial<Comprobante>): Promise<Comprobante | null> {
+    const comprobantes = await this.getComprobantes();
+    const idx = comprobantes.findIndex((c) => c.id === id);
+    if (idx === -1) return null;
+    comprobantes[idx] = { ...comprobantes[idx], ...updates };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('comprobantes', comprobantes);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(comprobantesFilePath, JSON.stringify(comprobantes, null, 2));
+    }
+    return comprobantes[idx];
   },
 };
