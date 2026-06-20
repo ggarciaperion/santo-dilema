@@ -5009,29 +5009,6 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* ===== NIVEL 3: RECUPERACIÓN ===== */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-5 mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Recuperación de inversión</p>
-                      <span className={`text-sm font-black ${recuperacionCapital >= 100 ? 'text-emerald-600' : 'text-gray-700'}`}>
-                        {recuperacionCapital.toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${recuperacionCapital >= 100 ? 'bg-emerald-500' : 'bg-gray-400'}`}
-                        style={{ width: `${Math.min(recuperacionCapital, 100)}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs text-gray-400">
-                      <span>
-                        {recuperacionCapital >= 100
-                          ? `Excedente: S/ ${(totalVentas - totalCompras).toFixed(2)}`
-                          : `Falta recuperar: S/ ${(totalCompras - totalVentas).toFixed(2)}`}
-                      </span>
-                      <span>ROI: {roi.toFixed(1)}%</span>
-                    </div>
-                  </div>
 
                   {/* Aviso */}
                   <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
