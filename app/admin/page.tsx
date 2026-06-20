@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SorteoMundialAdmin from "./components/SorteoMundialAdmin";
-import ComprobantesTab from "./components/ComprobantesTab";
 
 // Definiciones de salsas y complementos (igual que en checkout)
 const salsas: { id: string; name: string }[] = [
@@ -236,7 +235,7 @@ export default function AdminPage() {
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [audioContextInitialized, setAudioContextInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing" | "carta" | "comprobantes">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "customers" | "analytics" | "financial" | "marketing" | "carta">("orders");
   const [overtimeOrderIds, setOvertimeOrderIds] = useState<Set<string>>(new Set());
   const [menuStock, setMenuStock] = useState<Record<string, boolean>>({});
   const [menuStockSaving, setMenuStockSaving] = useState<string | null>(null);
@@ -253,9 +252,6 @@ export default function AdminPage() {
   const [canjeModal, setCanjeModal] = useState<{ orderId: string } | null>(null);
   const [canjeNoteInput, setCanjeNoteInput] = useState("");
   const [canjeSaving, setCanjeSaving] = useState(false);
-  const [comprobanteModal, setComprobanteModal] = useState<any>(null);
-  const [compForm, setCompForm] = useState({ tipo: 'boleta', nombre: '', docTipo: 'DNI', docNum: '', direccion: '' });
-  const [compSaving, setCompSaving] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   // Estados de filtro de fechas para la pestaña "Gestión de Pedidos"
   const [ordersDateFrom, setOrdersDateFrom] = useState<string>("");
@@ -2589,14 +2585,6 @@ export default function AdminPage() {
             <span>📢</span>
             {!sidebarCollapsed && <span>Marketing</span>}
           </button>
-          <button
-            onClick={() => setActiveTab("comprobantes")}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "comprobantes" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
-            title={sidebarCollapsed ? 'Comprobantes' : ''}
-          >
-            <span>🧾</span>
-            {!sidebarCollapsed && <span>Comprobantes</span>}
-          </button>
         </nav>
         <div className="px-2 py-3 border-t border-gray-100 space-y-0.5">
           <Link
@@ -3272,14 +3260,6 @@ export default function AdminPage() {
                 {order.status === 'delivered' && (
                   <div className="flex mt-auto">
                     <div className="flex-1 bg-emerald-50 text-emerald-600 py-2.5 text-xs font-black text-center uppercase tracking-wide rounded-bl-2xl">✓ Entregado</div>
-                    <button
-                      onClick={() => {
-                        setComprobanteModal(order);
-                        setCompForm({ tipo: 'boleta', nombre: order.name || '', docTipo: 'DNI', docNum: '', direccion: order.address || '' });
-                      }}
-                      className="px-3 bg-blue-50 hover:bg-blue-100 text-blue-600 border-l border-gray-100 text-xs font-bold transition-all"
-                      title="Emitir comprobante"
-                    >🧾</button>
                     <button onClick={async () => { if (!confirm('¿Eliminar?')) return; await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' }); setOrders(prev => prev.filter(o => o.id !== order.id)); }}
                       className="px-4 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-400 border-l border-gray-100 text-xs transition-all rounded-br-2xl">🗑</button>
                   </div>
@@ -7633,8 +7613,6 @@ export default function AdminPage() {
             </div>
           </div>
         </section>
-      ) : activeTab === "comprobantes" ? (
-        <ComprobantesTab />
       ) : null}
 
       {/* ==================== MODAL DE INVENTARIO (GLOBAL) ==================== */}
@@ -8648,136 +8626,6 @@ export default function AdminPage() {
           </div>
         </div>
       )}
-
-      {/* ==================== MODAL EMISIÓN DE COMPROBANTE ==================== */}
-      {comprobanteModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4" onClick={() => setComprobanteModal(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gray-900 text-white px-6 py-4">
-              <h3 className="text-lg font-black">Emitir Comprobante</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Pedido {comprobanteModal.id} — S/ {(comprobanteModal.totalPrice ?? 0).toFixed(2)}</p>
-            </div>
-            <div className="px-6 py-5 space-y-4">
-              {/* Tipo */}
-              <div>
-                <label className="text-xs text-gray-500 font-bold uppercase block mb-2">Tipo de comprobante</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {(['boleta', 'factura'] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setCompForm(prev => ({ ...prev, tipo: t, docTipo: t === 'factura' ? 'RUC' : 'DNI' }))}
-                      className={`py-3 rounded-xl border-2 font-black text-sm uppercase tracking-wide transition-all ${compForm.tipo === t ? 'bg-gray-900 border-gray-900 text-white' : 'border-gray-200 text-gray-500 hover:border-gray-400'}`}
-                    >
-                      {t === 'boleta' ? '🧾 Boleta' : '📄 Factura'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Nombre / Razón social */}
-              <div>
-                <label className="text-xs text-gray-500 font-bold uppercase block mb-1.5">{compForm.tipo === 'factura' ? 'Razón social' : 'Nombre cliente'}</label>
-                <input
-                  type="text"
-                  value={compForm.nombre}
-                  onChange={(e) => setCompForm(prev => ({ ...prev, nombre: e.target.value }))}
-                  placeholder={compForm.tipo === 'factura' ? 'Empresa S.A.C.' : 'Nombre completo'}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-gray-400"
-                />
-              </div>
-              {/* Documento */}
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500 font-bold uppercase block mb-1.5">Tipo doc.</label>
-                  <select
-                    value={compForm.docTipo}
-                    onChange={(e) => setCompForm(prev => ({ ...prev, docTipo: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-gray-400"
-                  >
-                    {compForm.tipo === 'boleta' ? (
-                      <>
-                        <option value="DNI">DNI</option>
-                        <option value="CE">CE</option>
-                      </>
-                    ) : (
-                      <option value="RUC">RUC</option>
-                    )}
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-gray-500 font-bold uppercase block mb-1.5">N° documento</label>
-                  <input
-                    type="text"
-                    value={compForm.docNum}
-                    onChange={(e) => setCompForm(prev => ({ ...prev, docNum: e.target.value }))}
-                    placeholder={compForm.tipo === 'factura' ? '20xxxxxxxxx' : '########'}
-                    maxLength={compForm.tipo === 'factura' ? 11 : 9}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-mono text-gray-800 focus:outline-none focus:border-gray-400"
-                  />
-                </div>
-              </div>
-              {/* Dirección (opcional) */}
-              <div>
-                <label className="text-xs text-gray-500 font-bold uppercase block mb-1.5">Dirección <span className="font-normal normal-case text-gray-300">(opcional)</span></label>
-                <input
-                  type="text"
-                  value={compForm.direccion}
-                  onChange={(e) => setCompForm(prev => ({ ...prev, direccion: e.target.value }))}
-                  placeholder="Calle, distrito, ciudad"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-gray-400"
-                />
-              </div>
-            </div>
-            <div className="px-6 pb-5 flex gap-3">
-              <button
-                disabled={compSaving || !compForm.nombre.trim() || !compForm.docNum.trim()}
-                onClick={async () => {
-                  setCompSaving(true);
-                  try {
-                    const order = comprobanteModal;
-                    const cart: any[] = order.cart || [];
-                    const items = cart.length > 0
-                      ? cart.map((item: any) => ({
-                          descripcion: item.name || item.productId || 'Producto',
-                          cantidad: item.quantity || 1,
-                          total: (item.finalPrice ?? item.price ?? 0) * (item.quantity || 1),
-                        }))
-                      : [{ descripcion: `Pedido ${order.id}`, cantidad: 1, total: order.totalPrice ?? 0 }];
-                    const res = await fetch('/api/comprobantes', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        tipo: compForm.tipo,
-                        orderId: order.id,
-                        clienteNombre: compForm.nombre,
-                        clienteDocTipo: compForm.docTipo,
-                        clienteDocNum: compForm.docNum,
-                        clienteDireccion: compForm.direccion || undefined,
-                        items,
-                      }),
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                      setComprobanteModal(null);
-                      window.open(`/comprobante/${encodeURIComponent(data.id)}`, '_blank');
-                    } else {
-                      alert(data.error || 'Error al emitir');
-                    }
-                  } finally {
-                    setCompSaving(false);
-                  }
-                }}
-                className="flex-1 bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white py-3 rounded-xl font-black text-sm transition"
-              >
-                {compSaving ? 'Emitiendo...' : `Emitir ${compForm.tipo === 'boleta' ? 'Boleta' : 'Factura'}`}
-              </button>
-              <button onClick={() => setComprobanteModal(null)} className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition">
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
 
       </main>
     </div>
