@@ -4862,14 +4862,14 @@ export default function AdminPage() {
                     {/* Ventas */}
                     <div className="bg-white border border-gray-100 rounded-xl p-5">
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ventas</p>
-                      <p className="text-3xl font-black text-gray-900">S/ {totalVentas.toFixed(0)}</p>
+                      <p className="text-3xl font-black text-gray-900">S/ {totalVentas.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-2">{deliveredOrders.length} pedidos entregados</p>
                     </div>
 
                     {/* Gastos */}
                     <div className="bg-white border border-gray-100 rounded-xl p-5">
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Gastos</p>
-                      <p className="text-3xl font-black text-gray-900">S/ {totalCompras.toFixed(0)}</p>
+                      <p className="text-3xl font-black text-gray-900">S/ {totalCompras.toFixed(2)}</p>
                       <p className="text-xs text-gray-400 mt-2">{filteredPurchases.length} compras registradas</p>
                     </div>
 
@@ -4877,7 +4877,7 @@ export default function AdminPage() {
                     <div className={`bg-white border rounded-xl p-5 ${cajaUtilidad >= 0 ? 'border-emerald-100' : 'border-red-100'}`}>
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Utilidad</p>
                       <p className={`text-3xl font-black ${cajaUtilidad >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                        S/ {cajaUtilidad.toFixed(0)}
+                        S/ {cajaUtilidad.toFixed(2)}
                       </p>
                       <p className={`text-xs mt-2 font-medium ${cajaUtilidad >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                         {margenCaja.toFixed(1)}% margen sobre ventas
