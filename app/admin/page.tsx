@@ -425,10 +425,9 @@ export default function AdminPage() {
   // Inicializar filtro de fechas en Dashboard (mes actual por defecto)
   useEffect(() => {
     if (activeTab === "financial" && financialSection === "dashboard" && !dashboardDateInitialized) {
-      const now = new Date();
-      const today = new Date(now.toLocaleString('en-US', { timeZone: 'America/Lima' }));
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-      const firstDayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`;
+      const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+      const [y, m] = todayStr.split("-").map(Number);
+      const firstDayStr = `${y}-${String(m).padStart(2, "0")}-01`;
 
       setDashboardDateFrom(firstDayStr);
       setDashboardDateTo(todayStr);
@@ -4678,11 +4677,9 @@ export default function AdminPage() {
               );
 
               if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
-                const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
                 deliveredOrders = deliveredOrders.filter((o: any) => {
-                  const orderDate = getPeruDate(o.createdAt);
-                  return orderDate >= fromDate && orderDate <= toDate;
+                  const dateStr = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+                  return dateStr >= dashboardDateFrom && dateStr <= dashboardDateTo;
                 });
               }
 
@@ -4802,21 +4799,22 @@ export default function AdminPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => {
-                            const today = new Date().toISOString().split('T')[0];
+                            const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
                             setDashboardDateFrom(today);
                             setDashboardDateTo(today);
                             setIsDashboardDateFiltered(true);
                           }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isDashboardDateFiltered && dashboardDateFrom === new Date().toISOString().split('T')[0] && dashboardDateTo === new Date().toISOString().split('T')[0] ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isDashboardDateFiltered && dashboardDateFrom === new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }) && dashboardDateTo === new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
                         >
                           Hoy
                         </button>
                         <button
                           onClick={() => {
-                            const today = new Date();
-                            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                            setDashboardDateFrom(firstDay.toISOString().split('T')[0]);
-                            setDashboardDateTo(today.toISOString().split('T')[0]);
+                            const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+                            const [y, m] = today.split("-").map(Number);
+                            const firstDay = `${y}-${String(m).padStart(2, "0")}-01`;
+                            setDashboardDateFrom(firstDay);
+                            setDashboardDateTo(today);
                             setIsDashboardDateFiltered(true);
                           }}
                           className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-white text-gray-600 border-gray-200 hover:border-gray-400"
