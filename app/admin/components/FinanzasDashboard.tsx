@@ -110,10 +110,14 @@ export default function FinanzasDashboard({
     let inv = inventory;
 
     if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-      const from = new Date(dashboardDateFrom + "T00:00:00-05:00");
-      const to   = new Date(dashboardDateTo   + "T23:59:59-05:00");
-      delivered = delivered.filter((o: any) => { const d = getPeruDate(o.createdAt); return d >= from && d <= to; });
-      inv       = inv.filter((p: any) => { const d = (p.purchaseDate || "").slice(0,10); return d >= dashboardDateFrom && d <= dashboardDateTo; });
+      delivered = delivered.filter((o: any) => {
+        const dateStr = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+        return dateStr >= dashboardDateFrom && dateStr <= dashboardDateTo;
+      });
+      inv = inv.filter((p: any) => {
+        const d = (p.purchaseDate || "").slice(0, 10);
+        return d >= dashboardDateFrom && d <= dashboardDateTo;
+      });
     }
 
     const totalVentas  = delivered.reduce((s: number, o: any) => s + (o.totalPrice || 0), 0);
@@ -165,15 +169,20 @@ export default function FinanzasDashboard({
     };
   }, [filteredInv]);
 
+  /* ─── Helper: fecha en zona horaria Perú ─── */
+  const peruDateStr = (d: Date = new Date()) =>
+    d.toLocaleDateString("en-CA", { timeZone: "America/Lima" }); // "YYYY-MM-DD"
+
   /* ─── Preset helpers — Dashboard ─── */
   const setPreset = (preset: "today" | "month" | "all") => {
     if (preset === "today") {
-      const t = new Date().toISOString().split("T")[0];
+      const t = peruDateStr();
       setDashboardDateFrom(t); setDashboardDateTo(t); setIsDashboardDateFiltered(true);
     } else if (preset === "month") {
-      const now   = new Date();
-      const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
-      setDashboardDateFrom(first); setDashboardDateTo(now.toISOString().split("T")[0]); setIsDashboardDateFiltered(true);
+      const today = peruDateStr();
+      const [y, m] = today.split("-").map(Number);
+      const first  = `${y}-${String(m).padStart(2, "0")}-01`;
+      setDashboardDateFrom(first); setDashboardDateTo(today); setIsDashboardDateFiltered(true);
     } else {
       setDashboardDateFrom(""); setDashboardDateTo(""); setIsDashboardDateFiltered(false);
     }
@@ -181,10 +190,10 @@ export default function FinanzasDashboard({
 
   const activePreset = (): "today" | "month" | "all" | null => {
     if (!isDashboardDateFiltered) return "all";
-    const today = new Date().toISOString().split("T")[0];
+    const today = peruDateStr();
     if (dashboardDateFrom === today && dashboardDateTo === today) return "today";
-    const now   = new Date();
-    const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+    const [y, m] = today.split("-").map(Number);
+    const first  = `${y}-${String(m).padStart(2, "0")}-01`;
     if (dashboardDateFrom === first && dashboardDateTo === today) return "month";
     return null;
   };
@@ -192,12 +201,13 @@ export default function FinanzasDashboard({
   /* ─── Preset helpers — Purchases ─── */
   const setPurchasesPreset = (preset: "today" | "month" | "all") => {
     if (preset === "today") {
-      const t = new Date().toISOString().split("T")[0];
+      const t = peruDateStr();
       setPurchasesDateFrom(t); setPurchasesDateTo(t); setIsPurchasesDateFiltered(true);
     } else if (preset === "month") {
-      const now   = new Date();
-      const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
-      setPurchasesDateFrom(first); setPurchasesDateTo(now.toISOString().split("T")[0]); setIsPurchasesDateFiltered(true);
+      const today = peruDateStr();
+      const [y, m] = today.split("-").map(Number);
+      const first  = `${y}-${String(m).padStart(2, "0")}-01`;
+      setPurchasesDateFrom(first); setPurchasesDateTo(today); setIsPurchasesDateFiltered(true);
     } else {
       setPurchasesDateFrom(""); setPurchasesDateTo(""); setIsPurchasesDateFiltered(false);
     }
@@ -205,10 +215,10 @@ export default function FinanzasDashboard({
 
   const activePurchasesPreset = (): "today" | "month" | "all" | null => {
     if (!isPurchasesDateFiltered) return "all";
-    const today = new Date().toISOString().split("T")[0];
+    const today = peruDateStr();
     if (purchasesDateFrom === today && purchasesDateTo === today) return "today";
-    const now   = new Date();
-    const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+    const [y, m] = today.split("-").map(Number);
+    const first  = `${y}-${String(m).padStart(2, "0")}-01`;
     if (purchasesDateFrom === first && purchasesDateTo === today) return "month";
     return null;
   };
