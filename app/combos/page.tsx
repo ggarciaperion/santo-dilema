@@ -331,6 +331,7 @@ export default function CombosPage() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [openMessage, setOpenMessage] = useState("");
+  const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
   const [activeCombo, setActiveCombo] = useState<ComboConfig | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState<Selections>(emptySelections());
@@ -348,6 +349,10 @@ export default function CombosPage() {
       setIsOpen(isBusinessOpen());
       setOpenMessage(getNextOpenMessage());
     }, 60_000);
+    fetch("/api/menu-prices")
+      .then((r) => r.json())
+      .then((data) => setMenuPrices(data))
+      .catch(() => {});
     return () => clearInterval(iv);
   }, []);
 
@@ -420,10 +425,11 @@ export default function CombosPage() {
   const saveToCart = () => {
     if (!activeCombo) return;
     const comboGroupId = `cg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const activePrice = menuPrices[activeCombo.id] ?? activeCombo.price;
     const comboOriginalTotal = activeCombo.maxSavings > 0
-      ? parseFloat((activeCombo.price + activeCombo.maxSavings).toFixed(2))
+      ? parseFloat((activePrice + activeCombo.maxSavings).toFixed(2))
       : undefined;
-    const comboMeta = { comboGroupId, comboName: activeCombo.name, comboPrice: activeCombo.price, comboOriginalTotal };
+    const comboMeta = { comboGroupId, comboName: activeCombo.name, comboPrice: activePrice, comboOriginalTotal };
     const items: any[] = [];
     for (const step of activeCombo.steps) {
       if (step.type === "sauces") {
@@ -668,7 +674,7 @@ export default function CombosPage() {
       {/* ── COMBO GRID ── */}
       <main className="relative z-10 max-w-3xl mx-auto px-4 pb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
         {COMBOS.map((combo, i) => (
-          <ComboCard key={combo.id} combo={combo} isOpen={isOpen} index={i} onSelect={() => openModal(combo)} />
+          <ComboCard key={combo.id} combo={combo} isOpen={isOpen} index={i} onSelect={() => openModal(combo)} menuPrices={menuPrices} />
         ))}
       </main>
 
@@ -801,6 +807,7 @@ export default function CombosPage() {
           visible={sheetVisible}
           isStepValid={isStepValid()}
           isLastStep={isLastStep}
+          effectivePrice={menuPrices[activeCombo.id] ?? activeCombo.price}
           onClose={closeAll}
           onToggleSauce={toggleSauce}
           onSelectSalad={selectSalad}
@@ -816,6 +823,7 @@ export default function CombosPage() {
           combo={activeCombo}
           summary={buildSummary(activeCombo, selections)}
           visible={sheetVisible}
+          effectivePrice={menuPrices[activeCombo.id] ?? activeCombo.price}
           onKeepShopping={handleKeepShopping}
           onCheckout={handleGoToCheckout}
         />
@@ -1013,9 +1021,10 @@ function PreCheckoutModal({
 //  COMBO CARD
 // ──────────────────────────────────────────────────────────────────
 
-function ComboCard({ combo, isOpen, index, onSelect }: { combo: ComboConfig; isOpen: boolean; index: number; onSelect: () => void }) {
+function ComboCard({ combo, isOpen, index, onSelect, menuPrices }: { combo: ComboConfig; isOpen: boolean; index: number; onSelect: () => void; menuPrices: Record<string, number> }) {
   const [hovered, setHovered] = useState(false);
   const { rgb } = combo.colors;
+  const effectivePrice = menuPrices[combo.id] ?? combo.price;
 
   return (
     <article
@@ -1133,7 +1142,7 @@ function ComboCard({ combo, isOpen, index, onSelect }: { combo: ComboConfig; isO
           <div className="leading-none">
             {combo.maxSavings > 0 && (
               <div className="text-[11px] text-gray-600 line-through mb-0.5">
-                S/ {(combo.price + combo.maxSavings).toFixed(2)}
+                S/ {(effectivePrice + combo.maxSavings).toFixed(2)}
               </div>
             )}
             <div className="flex items-baseline gap-1">
@@ -1144,7 +1153,7 @@ function ComboCard({ combo, isOpen, index, onSelect }: { combo: ComboConfig; isO
                   textShadow: `0 0 12px rgba(${rgb},0.5)`,
                 }}
               >
-                S/ {combo.price.toFixed(2)}
+                S/ {effectivePrice.toFixed(2)}
               </span>
               <span className="text-xs font-bold" style={{ color: `rgb(${rgb})` }}>combo</span>
             </div>
@@ -1173,11 +1182,11 @@ function ComboCard({ combo, isOpen, index, onSelect }: { combo: ComboConfig; isO
 // ──────────────────────────────────────────────────────────────────
 
 function SelectionModal({
-  combo, currentStep, selections, visible, isStepValid, isLastStep,
+  combo, currentStep, selections, visible, isStepValid, isLastStep, effectivePrice,
   onClose, onToggleSauce, onSelectSalad, onToggleTaco, onSelectTacoComplement, onNext, onBack,
 }: {
   combo: ComboConfig; currentStep: number; selections: Selections;
-  visible: boolean; isStepValid: boolean; isLastStep: boolean;
+  visible: boolean; isStepValid: boolean; isLastStep: boolean; effectivePrice: number;
   onClose: () => void;
   onToggleSauce: (productId: string, sauceId: string, maxCount: number) => void;
   onSelectSalad: (id: string) => void;
@@ -1207,7 +1216,7 @@ function SelectionModal({
               {combo.emoji} {combo.name}
             </h3>
             <p className={`text-xs mt-1 font-medium ${combo.colors.text}`}>
-              S/ {combo.price.toFixed(2)} · Paso {currentStep + 1} de {totalSteps}
+              S/ {effectivePrice.toFixed(2)} · Paso {currentStep + 1} de {totalSteps}
             </p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
@@ -1272,11 +1281,12 @@ function SelectionModal({
 // ──────────────────────────────────────────────────────────────────
 
 function ConfirmationModal({
-  combo, summary, visible, onKeepShopping, onCheckout,
+  combo, summary, visible, effectivePrice, onKeepShopping, onCheckout,
 }: {
   combo: ComboConfig;
   summary: SummaryItem[];
   visible: boolean;
+  effectivePrice: number;
   onKeepShopping: () => void;
   onCheckout: () => void;
 }) {
@@ -1314,7 +1324,7 @@ function ConfirmationModal({
               ¡Combo agregado!
             </p>
             <p className={`text-xs mt-0.5 font-medium ${combo.colors.text}`}>
-              {combo.name} · S/ {combo.price.toFixed(2)}
+              {combo.name} · S/ {effectivePrice.toFixed(2)}
             </p>
           </div>
         </div>
@@ -1347,7 +1357,7 @@ function ConfirmationModal({
           {/* Total */}
           <div className="flex items-center justify-between pt-2 border-t border-white/5 mt-2">
             <span className="text-sm text-gray-400">Total combo</span>
-            <span className="text-xl font-bold text-white">S/ {combo.price.toFixed(2)}</span>
+            <span className="text-xl font-bold text-white">S/ {effectivePrice.toFixed(2)}</span>
           </div>
 
           {/* Navegación seguir comprando */}
