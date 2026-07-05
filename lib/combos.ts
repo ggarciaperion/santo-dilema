@@ -33,15 +33,6 @@ export const COMBO_RULES: ComboRule[] = [
     priority: 4,
   },
   {
-    id: 'combo-3',
-    name: 'Combo Alitas',
-    emoji: '🍗',
-    description: 'Pequeño Dilema + Dúo Dilema',
-    requiredProducts: ['pequeno-dilema', 'duo-dilema'],
-    price: 52,
-    priority: 3,
-  },
-  {
     id: 'combo-2',
     name: 'Combo Especial',
     emoji: '🌮',
