@@ -3,12 +3,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import MpCardModal from "../components/MpCardModal";
-import type { ComboResult } from "../../lib/combos";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -276,52 +275,10 @@ export default function CheckoutPage() {
     setShowMobileFormModal(true);
   }, []);
 
-  // ── COMBOS EXPLÍCITOS (solo los que vienen de /combos con comboGroupId) ──
-  const comboResult = useMemo((): ComboResult => {
-    const groups = new Map<string, typeof completedOrders>();
-    for (const order of completedOrders) {
-      if (!order.comboGroupId) continue;
-      if (!groups.has(order.comboGroupId)) groups.set(order.comboGroupId, []);
-      groups.get(order.comboGroupId)!.push(order);
-    }
-    const appliedCombos: ComboResult["appliedCombos"] = [];
-    for (const [, items] of groups) {
-      const first = items[0];
-      const comboPrice = first.comboPrice ?? 0;
-      const originalTotal = items.reduce((s, o) => s + (o.originalPrice ?? 0) * o.quantity, 0);
-      const savings = parseFloat((originalTotal - comboPrice).toFixed(2));
-      appliedCombos.push({
-        rule: {
-          id: first.comboGroupId!,
-          name: first.comboName ?? "Combo",
-          emoji: "🔥",
-          description: "",
-          requiredProducts: items.map(o => o.productId),
-          price: comboPrice,
-          priority: 1,
-        },
-        resolvedProducts: items.map(o => o.productId),
-        originalTotal,
-        comboPrice,
-        savings,
-      });
-    }
-    const totalSavings = appliedCombos.reduce((s, c) => s + c.savings, 0);
-    return { appliedCombos, totalSavings };
-  }, [completedOrders]);
-  const hasComboDiscount = comboResult.appliedCombos.length > 0;
-  const comboDiscountAmount = comboResult.totalSavings;
-
   // Detectar si hay productos con descuentos individuales (ej: promo de salsas)
-  // Si hay combo activo, los descuentos individuales quedan anulados (no acumulable)
-  const hasIndividualDiscount = !hasComboDiscount && completedOrders.some(o => o.discountApplied === true);
+  const hasIndividualDiscount = completedOrders.some(o => o.discountApplied === true);
 
-  // Verificar si hay alguna promoción activa (combo o individual)
-  const hasAnyActivePromotion = hasComboDiscount || hasIndividualDiscount;
-  // ─────────────────────────────────────────────────────────────────
-
-  // Calcular subtotal CON PROMOS individuales (finalPrice) — base correcta para combos
-  // Los combos son descuentos ADICIONALES sobre los precios ya promociados
+  // Calcular subtotal con precios del menú (respetando descuentos individuales del cartel)
   const subtotalWithPromos = completedOrders.reduce((total, order) => {
     const fatProduct = fatProducts.find((p) => p.id === order.productId);
     const fitProduct = fitProducts.find((p) => p.id === order.productId);
@@ -335,16 +292,8 @@ export default function CheckoutPage() {
     return total + effectivePrice * order.quantity + complementsTotal;
   }, 0);
 
-  // subtotal: con promos individuales, sin combo ni cupón
-  const subtotal = hasComboDiscount
-    ? subtotalWithPromos  // combo: partir de precios promociados y restar descuento combo
-    : subtotalWithPromos; // sin combo: igual usa precios promociados
-
-  // Delivery siempre incluido — sin cobro de zona
-  const deliveryCost = 0;
-
   const deliveryZoneCost = deliveryZone === 'alrededores' ? 4.00 : 0;
-  const realTotal = subtotal - comboDiscountAmount + deliveryZoneCost;
+  const realTotal = subtotalWithPromos + deliveryZoneCost;
 
   // Validar si el formulario está completo
   // ── PROGRAMAR COMPRA ─────────────────────────────────────────────
@@ -510,8 +459,6 @@ export default function CheckoutPage() {
       formDataToSend.append('completedOrders', JSON.stringify(completedOrders));
       formDataToSend.append('totalItems', completedOrders.length.toString());
       formDataToSend.append('totalPrice', realTotal.toString());
-      formDataToSend.append('comboDiscount', comboDiscountAmount.toFixed(2));
-      formDataToSend.append('comboNames', comboResult.appliedCombos.map(c => c.rule.name).join(', '));
       formDataToSend.append('couponDiscount', '0');
       formDataToSend.append('couponCode', '');
       formDataToSend.append('paymentMethod', overridePaymentMethod || paymentMethod || 'contraentrega');
@@ -736,137 +683,85 @@ export default function CheckoutPage() {
 
               {/* Lista de productos */}
               <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto custom-scrollbar">
-                {/* Combos detectados — mostrar como un solo item unificado */}
-                {comboResult.appliedCombos.map((combo, i) => {
-                  const comboItemNames = combo.resolvedProducts.map(pid => {
-                    const p = fatProducts.find(x => x.id === pid) || fitProducts.find(x => x.id === pid) || tacoProducts.find(x => x.id === pid);
-                    return p?.name ?? pid;
-                  });
+                {completedOrders.map((order, index) => {
+                  const product = fatProducts.find((p) => p.id === order.productId) || fitProducts.find((p) => p.id === order.productId) || tacoProducts.find((p) => p.id === order.productId);
+                  if (!product) return null;
+
+                  const basePrice = order.finalPrice ?? order.originalPrice ?? product.price;
+                  const productTotal = basePrice * order.quantity;
+
                   return (
                     <div
-                      key={`combo-${combo.rule.id}-${i}`}
-                      className="bg-gradient-to-r from-emerald-900/50 to-teal-900/40 rounded-xl p-3 border border-emerald-500/40"
+                      key={`${order.productId}-${index}`}
+                      className="bg-black/30 rounded-xl p-3 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-all"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-14 h-14 rounded-lg bg-emerald-800/60 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 text-2xl">
-                          {combo.rule.emoji}
+                        <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 border border-fuchsia-400/20">
+                          {product.image.startsWith('/') ? (
+                            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl">{product.image}</span>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-emerald-300 font-black text-sm leading-tight">{combo.rule.name}</p>
-                          <p className="text-emerald-400/70 text-xs mt-0.5">{comboItemNames.join(' + ')}</p>
-                          <p className="text-emerald-400 text-[10px] font-bold mt-1">🎉 Ahorro: S/ {combo.savings.toFixed(2)}</p>
+                          <p className="text-white font-bold text-sm leading-tight">
+                            {order.quantity > 1 && <span className="text-fuchsia-400">{order.quantity}x </span>}
+                            {product.name}
+                          </p>
+                          {order.salsas && order.salsas.length > 0 && (
+                            <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
+                              <span>{order.productId === "taco-duo" ? "🌮" : "🌶️"}</span>
+                              <span className="flex-1">
+                                {order.productId === "taco-duo"
+                                  ? order.salsas.map((id) => tacoFlavors[id] || id).join(" + ")
+                                  : order.salsas.map((sId) => salsas.find((s) => s.id === sId)?.name).filter(Boolean).join(", ")}
+                              </span>
+                            </div>
+                          )}
+                          {order.complementIds.length > 0 && (
+                            <div className="text-xs text-fuchsia-300 space-y-1 mt-1.5">
+                              {order.complementIds.map((compId, ci) => {
+                                const comp = availableComplements[compId];
+                                if (!comp) return null;
+                                return (
+                                  <div key={`${compId}-${ci}`} className="flex justify-between items-center">
+                                    <span className="opacity-80">+ {comp.name}</span>
+                                    {comp.price > 0 && <span className="font-mono text-xs">S/ {comp.price.toFixed(2)}</span>}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-gray-500 line-through text-[10px] font-mono">S/ {combo.originalTotal.toFixed(2)}</p>
-                          <p className="text-emerald-300 font-black text-sm font-mono">S/ {combo.comboPrice.toFixed(2)}</p>
+                          {order.finalPrice != null && order.originalPrice != null && order.finalPrice < order.originalPrice && (
+                            <div className="flex flex-col items-end gap-1 mb-1">
+                              <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">🔥 PROMO</span>
+                              <span className="text-gray-500 line-through text-[10px] font-mono">
+                                S/ {(order.originalPrice * order.quantity).toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                          <span className="font-black text-sm font-mono text-amber-400">
+                            S/ {productTotal.toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>
                   );
                 })}
-
-                {/* Productos standalone (no consumidos por ningún combo) */}
-                {(() => {
-                  const remaining = new Map<string, number>();
-                  for (const combo of comboResult.appliedCombos) {
-                    for (const pid of combo.resolvedProducts) {
-                      remaining.set(pid, (remaining.get(pid) ?? 0) + 1);
-                    }
-                  }
-                  return completedOrders.map((order, index) => {
-                    const consumed = Math.min(order.quantity, remaining.get(order.productId) ?? 0);
-                    remaining.set(order.productId, (remaining.get(order.productId) ?? 0) - consumed);
-                    const standaloneQty = order.quantity - consumed;
-                    if (standaloneQty === 0) return null;
-
-                    const product = fatProducts.find((p) => p.id === order.productId) || fitProducts.find((p) => p.id === order.productId) || tacoProducts.find((p) => p.id === order.productId);
-                    if (!product) return null;
-
-                    const basePrice = order.finalPrice ?? order.originalPrice ?? product.price;
-                    const productTotal = basePrice * standaloneQty;
-
-                    return (
-                      <div
-                        key={`${order.productId}-${index}`}
-                        className="bg-black/30 rounded-xl p-3 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-all"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 border border-fuchsia-400/20">
-                            {product.image.startsWith('/') ? (
-                              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-2xl">{product.image}</span>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white font-bold text-sm leading-tight">
-                              {standaloneQty > 1 && <span className="text-fuchsia-400">{standaloneQty}x </span>}
-                              {product.name}
-                            </p>
-                            {order.salsas && order.salsas.length > 0 && (
-                              <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
-                                <span>{order.productId === "taco-duo" ? "🌮" : "🌶️"}</span>
-                                <span className="flex-1">
-                                  {order.productId === "taco-duo"
-                                    ? order.salsas.map((id) => tacoFlavors[id] || id).join(" + ")
-                                    : order.salsas.map((sId) => salsas.find((s) => s.id === sId)?.name).filter(Boolean).join(", ")}
-                                </span>
-                              </div>
-                            )}
-                            {order.complementIds.length > 0 && (
-                              <div className="text-xs text-fuchsia-300 space-y-1 mt-1.5">
-                                {order.complementIds.map((compId, ci) => {
-                                  const comp = availableComplements[compId];
-                                  if (!comp) return null;
-                                  return (
-                                    <div key={`${compId}-${ci}`} className="flex justify-between items-center">
-                                      <span className="opacity-80">+ {comp.name}</span>
-                                      {comp.price > 0 && <span className="font-mono text-xs">S/ {comp.price.toFixed(2)}</span>}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            {order.finalPrice != null && order.originalPrice != null && order.finalPrice < order.originalPrice && (
-                              <div className="flex flex-col items-end gap-1 mb-1">
-                                <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">🔥 PROMO</span>
-                                <span className="text-gray-500 line-through text-[10px] font-mono">
-                                  S/ {(order.originalPrice * standaloneQty).toFixed(2)}
-                                </span>
-                              </div>
-                            )}
-                            <span className="font-black text-sm font-mono text-amber-400">
-                              S/ {productTotal.toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
               </div>
 
               {/* Totales */}
               <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
-                {(hasComboDiscount || hasIndividualDiscount) && (
-                  <>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-400">Subtotal:</span>
-                      <span className="text-gray-400 line-through font-mono text-xs">S/ {subtotalWithPromos.toFixed(2)}</span>
-                    </div>
-                    {hasComboDiscount && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-emerald-400 font-bold">
-                          🎉 {comboResult.appliedCombos.length === 1
-                            ? comboResult.appliedCombos[0].rule.name
-                            : `${comboResult.appliedCombos.length} Combos`}:
-                        </span>
-                        <span className="text-emerald-400 font-bold font-mono">-S/ {comboDiscountAmount.toFixed(2)}</span>
-                      </div>
-                    )}
-                  </>
+                {hasIndividualDiscount && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Subtotal:</span>
+                    <span className="text-gray-400 line-through font-mono text-xs">S/ {completedOrders.reduce((t, o) => {
+                      const p = fatProducts.find(x => x.id === o.productId) || fitProducts.find(x => x.id === o.productId) || tacoProducts.find(x => x.id === o.productId);
+                      return t + (o.originalPrice ?? p?.price ?? 0) * o.quantity + o.complementIds.reduce((s, c) => s + (availableComplements[c]?.price || 0), 0);
+                    }, 0).toFixed(2)}</span>
+                  </div>
                 )}
 
 
