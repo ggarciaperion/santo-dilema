@@ -8,7 +8,6 @@ import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
 import BannerCarousel from "../components/BannerCarousel";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
-import { detectCombos } from "../../lib/combos";
 
 interface Product {
   id: string;
@@ -35,10 +34,6 @@ interface CompletedOrder {
   originalPrice?: number;
   finalPrice?: number;
   category?: string;
-  comboGroupId?: string;
-  comboName?: string;
-  comboPrice?: number;
-  comboOriginalTotal?: number;
 }
 
 const products: Product[] = [
@@ -308,11 +303,6 @@ export default function FatPage() {
     ) || null;
   };
 
-  // Detección de combos promocionales
-  const comboResult = useMemo(() => detectCombos(completedOrders), [completedOrders]);
-  const hasComboDiscount = comboResult.appliedCombos.length > 0;
-  const comboDiscountAmount = comboResult.totalSavings;
-
   const completedTotal = completedOrders.reduce((total, order) => {
     const basePrice = order.finalPrice ?? order.originalPrice ?? (() => {
       let product = products.find(p => p.id === order.productId);
@@ -327,8 +317,6 @@ export default function FatPage() {
     });
     return total + orderTotal;
   }, 0);
-
-  const comboTotal = completedTotal - comboDiscountAmount;
 
   const navigateToCheckout = () => {
     clearCart();
@@ -752,10 +740,6 @@ export default function FatPage() {
   const cancelDeleteOrder = () => {
     setShowDeleteModal(false);
     setDeleteOrderIndex(null);
-  };
-
-  const handleDeleteComboGroup = (groupId: string) => {
-    setCompletedOrders(prev => prev.filter(o => o.comboGroupId !== groupId));
   };
 
   const handleAddComplement = (productId: string, complement: Product) => {
@@ -1432,64 +1416,7 @@ export default function FatPage() {
               Tu orden
             </h3>
             <div className="space-y-2 md:space-y-4">
-              {(() => {
-                const _seenCombos = new Set<string>();
-                return completedOrders.map((order, index) => {
-                // ── Combo group card ──────────────────────────────────────
-                if (order.comboGroupId) {
-                  if (_seenCombos.has(order.comboGroupId)) return null;
-                  _seenCombos.add(order.comboGroupId);
-                  const _gi = completedOrders.filter(o => o.comboGroupId === order.comboGroupId);
-                  return (
-                    <div key={`cg-${order.comboGroupId}`} className="bg-gray-900/80 rounded-xl border-2 border-amber-400/40 p-3 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-                      <div className="flex items-start justify-between mb-2.5">
-                        <div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
-                          <h4 className="text-sm md:text-base font-black text-white mt-0.5">{order.comboName}</h4>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-right">
-                            {order.comboOriginalTotal && (
-                              <div className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</div>
-                            )}
-                            <div className="text-amber-400 font-black text-lg gold-glow">S/ {order.comboPrice?.toFixed(2)}</div>
-                          </div>
-                          <button onClick={() => handleDeleteComboGroup(order.comboGroupId!)} className="text-red-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 leading-none ml-1">✕</button>
-                        </div>
-                      </div>
-                      <div className="space-y-1.5 border-t border-white/5 pt-2">
-                        {_gi.map((item, i) => {
-                          let prod = products.find(p => p.id === item.productId);
-                          let iFit = false, iTaco = false;
-                          if (!prod) { prod = fitProducts.find(p => p.id === item.productId); iFit = true; }
-                          if (!prod) { prod = tacoProducts.find(p => p.id === item.productId); iFit = false; iTaco = true; }
-                          if (!prod) return null;
-                          return (
-                            <div key={i} className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40">
-                                {prod.image.startsWith('/') ? (
-                                  <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="text-lg flex items-center justify-center h-full">{prod.image}</span>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs text-white font-semibold truncate">{prod.name}</p>
-                                {!iFit && !iTaco && item.salsas && item.salsas.length > 0 && (
-                                  <p className="text-[10px] text-amber-300/70 truncate">🌶️ {item.salsas.map(s => salsas.find(sa => sa.id === s)?.name ?? s).join(", ")}</p>
-                                )}
-                                {iTaco && item.salsas && item.salsas.length > 0 && (
-                                  <p className="text-[10px] text-emerald-300/70 truncate">🌮 {item.salsas.map(id => tacoFlavorNames[id] ?? id).join(" + ")}</p>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                }
+              {completedOrders.map((order, index) => {
                 // ── Individual item ───────────────────────────────────────
                 // Buscar producto en fat products
                 let product = products.find((p) => p.id === order.productId);
@@ -1541,7 +1468,7 @@ export default function FatPage() {
                             {/* Precio del menú */}
                             <div className={`${isTacoOrder ? 'text-emerald-300/80' : isFitOrder ? 'text-cyan-300/80' : 'text-red-300/80'} flex justify-between items-center`}>
                               <span>• {product.name} x{order.quantity}</span>
-                              {order.discountApplied && !hasComboDiscount ? (
+                              {order.discountApplied ? (
                                 <span className="flex items-center gap-1.5">
                                   <span className="text-gray-500 line-through text-[10px]">S/ {((order.originalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
                                   <span className="text-amber-400 font-bold text-sm gold-glow">S/ {((order.finalPrice ?? (menuPrices[product.id] || product.price)) * order.quantity).toFixed(2)}</span>
@@ -1606,8 +1533,7 @@ export default function FatPage() {
                     </div>
                   </div>
                 );
-                });
-              })()}
+              })}
             </div>
 
 
@@ -1636,25 +1562,9 @@ export default function FatPage() {
             <div className="flex justify-between items-center gap-3 md:gap-5">
               <div className="flex items-center gap-2 md:gap-3">
                 <span className="text-white font-bold text-sm md:text-xl">Total</span>
-                {hasComboDiscount ? (
-                  <div className="flex flex-col items-start">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-gray-400 line-through text-sm md:text-xl">
-                        S/ {completedTotal.toFixed(2)}
-                      </span>
-                      <span className="bg-emerald-600 text-white text-[10px] md:text-xs font-black px-1.5 py-0.5 rounded">
-                        🎉 {comboResult.appliedCombos.length === 1 ? comboResult.appliedCombos[0].rule.name : `${comboResult.appliedCombos.length} Combos`}
-                      </span>
-                    </div>
-                    <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
-                      S/ {comboTotal.toFixed(2)}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
-                    S/ {completedTotal.toFixed(2)}
-                  </span>
-                )}
+                <span className="text-amber-400 font-black text-xl md:text-4xl gold-glow">
+                  S/ {completedTotal.toFixed(2)}
+                </span>
               </div>
               {isOpen ? (
                 <button

@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
-import { detectCombos } from "../../lib/combos";
 import WhatsAppButton from "../components/WhatsAppButton";
 import BannerCarousel from "../components/BannerCarousel";
 
@@ -21,10 +20,6 @@ interface CompletedOrder {
   originalPrice?: number;
   discountApplied?: boolean;
   category?: string;
-  comboGroupId?: string;
-  comboName?: string;
-  comboPrice?: number;
-  comboOriginalTotal?: number;
 }
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -274,11 +269,6 @@ export default function TacosPage() {
     setCrossCategoryOrders((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const handleDeleteComboGroup = useCallback((groupId: string) => {
-    setCrossCategoryOrders((prev) => prev.filter((o) => o.comboGroupId !== groupId));
-    setCompletedOrders((prev) => prev.filter((o) => o.comboGroupId !== groupId));
-  }, []);
-
   const confirmDeleteOrder = useCallback(() => {
     if (deleteOrderIndex === null) return;
     setCompletedOrders((prev) => prev.filter((_, i) => i !== deleteOrderIndex));
@@ -316,18 +306,9 @@ export default function TacosPage() {
 
   const bebidasTotal = bebidas.reduce((acc, b) => acc + (bebidaQty[b.id] || 0) * b.price, 0);
 
-  // Detección de combos: combinar órdenes de otras páginas + tacos actuales
-  const allOrders = useMemo(
-    () => [...crossCategoryOrders, ...completedOrders],
-    [crossCategoryOrders, completedOrders]
-  );
-  const comboResult = useMemo(() => detectCombos(allOrders), [allOrders]);
-  const hasComboDiscount = comboResult.appliedCombos.length > 0;
-  const comboDiscountAmount = comboResult.totalSavings;
-
   const baseTotal = completedOrders.length * duoEffectivePrice + bebidasTotal +
     crossCategoryOrders.reduce((sum, o) => sum + (o.finalPrice ?? o.originalPrice ?? 0) * o.quantity, 0);
-  const total = hasComboDiscount ? baseTotal - comboDiscountAmount : baseTotal;
+  const total = baseTotal;
   const duoCount = completedOrders.length;
   const hasAnyOrder = completedOrders.length > 0 || crossCategoryOrders.length > 0 || bebidasTotal > 0;
 
@@ -832,62 +813,8 @@ export default function TacosPage() {
             Tu orden
           </h3>
           <div className="space-y-2 md:space-y-3">
-            {/* Órdenes de otras páginas (alitas / ensaladas) — con agrupación de combos */}
-            {(() => {
-              const _seenCombos = new Set<string>();
-              return crossCategoryOrders.map((order, index) => {
-                // ── Combo group card ──────────────────────────────────────
-                if (order.comboGroupId) {
-                  if (_seenCombos.has(order.comboGroupId)) return null;
-                  _seenCombos.add(order.comboGroupId);
-                  const _crossItems = crossCategoryOrders.filter(o => o.comboGroupId === order.comboGroupId);
-                  const _tacoItems  = completedOrders.filter(o => o.comboGroupId === order.comboGroupId);
-                  const _allItems   = [..._crossItems, ..._tacoItems];
-                  return (
-                    <div key={`cg-${order.comboGroupId}`} className="bg-gray-900/80 rounded-xl border-2 border-amber-400/40 p-3 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-                      <div className="flex items-start justify-between mb-2.5">
-                        <div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
-                          <h4 className="text-sm font-black text-white mt-0.5">{order.comboName}</h4>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-right">
-                            {order.comboOriginalTotal && (
-                              <div className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</div>
-                            )}
-                            <div className="text-amber-400 font-black text-lg gold-glow">S/ {order.comboPrice?.toFixed(2)}</div>
-                          </div>
-                          <button onClick={() => handleDeleteComboGroup(order.comboGroupId!)} className="text-emerald-500 hover:text-red-400 text-xl font-bold transition-all opacity-70 hover:opacity-100 leading-none ml-1">✕</button>
-                        </div>
-                      </div>
-                      <div className="space-y-1.5 border-t border-white/5 pt-2">
-                        {_allItems.map((item, i) => {
-                          const cProd = CROSS_PRODUCTS[item.productId];
-                          const cName = cProd?.name ?? (item.productId === "taco-duo" ? "Dúo de Tacos" : item.productId);
-                          const cImg  = cProd?.image ?? "/tacoinicio.png";
-                          const isTacoItem = item.productId === "taco-duo";
-                          return (
-                            <div key={i} className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40 relative">
-                                <Image src={cImg} alt={cName} fill className="object-cover" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs text-white font-semibold truncate">{cName}</p>
-                                {!isTacoItem && item.salsas && item.salsas.length > 0 && (
-                                  <p className="text-[10px] text-amber-300/70 truncate">🌶️ {item.salsas.map(s => SALSAS_NAMES[s] ?? s).join(", ")}</p>
-                                )}
-                                {isTacoItem && item.salsas && item.salsas.length > 0 && (
-                                  <p className="text-[10px] text-emerald-300/70 truncate">🌮 {item.salsas.map(id => getFlavorName(id)).join(" + ")}</p>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                }
+            {/* Órdenes de otras páginas (alitas / ensaladas) */}
+            {crossCategoryOrders.map((order, index) => {
                 // ── Individual cross-category order ───────────────────────
                 const prod = CROSS_PRODUCTS[order.productId];
                 if (!prod) return null;
@@ -922,12 +849,9 @@ export default function TacosPage() {
                     </div>
                   </div>
                 );
-              });
-            })()}
+            })}
 
             {completedOrders.map((order, index) => {
-              // Skip taco orders already shown inside a combo group card
-              if (order.comboGroupId && crossCategoryOrders.some(o => o.comboGroupId === order.comboGroupId)) return null;
               const f1 = flavors.find(f => f.id === order.salsas[0]);
               const f2 = flavors.find(f => f.id === order.salsas[1]);
               return (
@@ -1042,25 +966,9 @@ export default function TacosPage() {
             <div className="flex justify-between items-center gap-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-sm md:text-lg">Total</span>
-                {hasComboDiscount ? (
-                  <div className="flex flex-col items-start">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-gray-400 line-through text-sm">
-                        S/ {baseTotal.toFixed(2)}
-                      </span>
-                      <span className="bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded">
-                        🎉 {comboResult.appliedCombos.length === 1 ? comboResult.appliedCombos[0].rule.name : `${comboResult.appliedCombos.length} Combos`}
-                      </span>
-                    </div>
-                    <span className="text-emerald-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
-                      S/ {total.toFixed(2)}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-emerald-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
-                    S/ {total.toFixed(2)}
-                  </span>
-                )}
+                <span className="text-emerald-400 font-black text-xl md:text-3xl" style={{ textShadow: "0 0 8px rgba(52,211,153,0.5)" }}>
+                  S/ {total.toFixed(2)}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
