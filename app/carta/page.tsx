@@ -3,197 +3,21 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-// ─── DATOS ────────────────────────────────────────────────────────────────────
-
 const WA_LINK = "https://wa.me/51910677186?text=Hola%20%F0%9F%91%8B%20quiero%20hacer%20un%20pedido";
-
-const SALSAS = [
-  "BBQ ahumada", "Santo Picante", "Acevichada Imperial",
-  "Crispy Celestial", "Parrillera", "Honey Mustard", "Oriental Teriyaki", "Sweet & Sour",
-];
-
-const ALITAS = [
-  {
-    id: "pequeno-dilema",
-    name: "Pequeño Dilema",
-    desc: "8 alitas crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa, no vas a querer quedarte en solo 8.",
-    price: 22.00,
-    image: "/pequeno-dilema.png",
-    badge: null,
-  },
-  {
-    id: "duo-dilema",
-    name: "Dúo Dilema",
-    desc: "14 alitas con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
-    price: 34.00,
-    image: "/duo-dilema.png",
-    badge: "MÁS PEDIDO",
-  },
-  {
-    id: "santo-pecado",
-    name: "Santo Pecado",
-    desc: "20 alitas, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
-    price: 47.00,
-    image: "/todos-pecan.png",
-    badge: "PARA COMPARTIR",
-  },
-];
-
-const ENSALADAS = [
-  {
-    id: "ensalada-clasica",
-    name: "Clásica Fresh Bowl",
-    desc: "Lechuga bogi, tomate cherry, pepino, zanahoria, maíz americano, palta y huevo. Con vinagreta clásica de la casa.",
-    price: 18.50,
-    image: "/clasica-fresh-bowl.png",
-    badge: null,
-  },
-  {
-    id: "ensalada-proteica",
-    name: "César Power Bowl",
-    desc: "Lechuga romana, pollo grillado, tomate cherry, crutones y parmesano. Con salsa César cremosa de la casa.",
-    price: 22.50,
-    image: "/cesar-power-bowl.png",
-    badge: null,
-  },
-  {
-    id: "ensalada-caesar",
-    name: "Protein Fit Bowl",
-    desc: "Mix de hojas verdes, quinua, palta, tomate cherry, semillas y pollo grillado. Con aderezo de yogurt griego.",
-    price: 23.50,
-    image: "/protein-fit-bowl.png",
-    badge: null,
-  },
-  {
-    id: "ensalada-mediterranea",
-    name: "Tuna Fresh Bowl",
-    desc: "Lechuga romana, atún en trozos, tomate cherry, pepino, choclo, palta y huevo. Aderezo a elección.",
-    price: 23.50,
-    image: "/4.png",
-    badge: null,
-  },
-  {
-    id: "cobb-supreme-bowl",
-    name: "Cobb Supreme Bowl",
-    desc: "Lechuga fresca con pollo grillado, tocino ahumado crocante, queso fresco, tomate en dados, huevo cocido y palta en cubos. Vinagreta de la casa.",
-    price: 23.50,
-    image: "/cobb.png",
-    badge: null,
-  },
-  {
-    id: "crispy-chicken-bowl",
-    name: "Crispy Chicken Bowl",
-    desc: "Mix de hojas verdes con pollo crispy dorado, maíz americano, queso mozzarella, tomate cherry y palta. Aderezo honey mustard.",
-    price: 22.50,
-    image: "/crispy.png",
-    badge: "FAVORITA",
-  },
-  {
-    id: "pasta-power-bowl",
-    name: "Pasta Power Bowl",
-    desc: "Fideos tornillo con zanahoria, maíz, arvejitas, jamón, brócoli y pollo grillado en dados. Bañados con nuestro aderezo especial.",
-    price: 22.50,
-    image: "/pasta.png",
-    badge: null,
-  },
-];
-
-const TACOS_SABORES = [
-  {
-    id: "crunch",
-    name: "Crunch Supreme Taco",
-    tagline: "Crujiente y tentador",
-    desc: "Pollo crispy dorado, lechuga fresca, pico de gallo, aros de cebolla crunchy, aioli y salsa BBQ cremosa. Tortilla soft.",
-    image: "/crunch.png",
-  },
-  {
-    id: "tex",
-    name: "Tex Supreme Taco",
-    tagline: "Con ese toque tex-mex",
-    desc: "Pollo crispy, lechuga fresca, guacamole cremoso, pico de gallo, aros de cebolla crunchy y cilantro dressing. Tortilla soft.",
-    image: "/tex.png",
-  },
-  {
-    id: "bacon",
-    name: "Bacon Deluxe Taco",
-    tagline: "El que lo prueba, repite",
-    desc: "Pollo crispy, bacon crocante, cheddar fundido, pimientos y cebolla salteados, lechuga fresca, pico de gallo y salsa especial. Tortilla soft.",
-    image: "/bacon.png",
-  },
-];
-
-const COMBOS = [
-  {
-    id: "combo-chiguan",
-    name: "Combo Chiguan",
-    emoji: "🔥",
-    desc: "4 Alitas de pollo con tu salsa + Crunch Supreme Taco. Alitas meets street food.",
-    items: ["4 alitas · salsa a elección", "Crunch Supreme Taco + nachos"],
-    price: 20.00,
-    badge: "ENTRY LEVEL",
-    color: "#f97316",
-    glow: "rgba(249,115,22,0.5)",
-  },
-  {
-    id: "combo-perfecto",
-    name: "Combo Perfecto",
-    emoji: "🥗",
-    desc: "Pequeño Dilema + Ensalada FIT a elección. Balance que no miente.",
-    items: ["Pequeño Dilema · 8 alitas + papas", "Ensalada FIT a elección"],
-    price: 40.00,
-    badge: "POPULAR",
-    color: "#06b6d4",
-    glow: "rgba(6,182,212,0.5)",
-  },
-  {
-    id: "combo-especial",
-    name: "Combo Especial",
-    emoji: "🌮",
-    desc: "Pequeño Dilema + Dúo de Tacos. La combinación que nadie esperaba pero todos necesitaban.",
-    items: ["Pequeño Dilema · 8 alitas + papas", "Dúo de Tacos · 2 sabores"],
-    price: 42.00,
-    badge: null,
-    color: "#34d399",
-    glow: "rgba(52,211,153,0.5)",
-  },
-  {
-    id: "combo-santo",
-    name: "Combo Santo Dilema",
-    emoji: "🍗",
-    desc: "Dúo Dilema + Ensalada FIT + Dúo de Tacos. Cuando no puedes decidir, la respuesta siempre es las tres.",
-    items: ["Dúo Dilema · 14 alitas + papas", "Ensalada FIT a elección", "Dúo de Tacos · 2 sabores"],
-    price: 76.00,
-    badge: "PARA COMPARTIR",
-    color: "#f59e0b",
-    glow: "rgba(245,158,11,0.5)",
-  },
-];
-
-const EXTRAS = [
-  { name: "Extra papas fritas", price: 5.00, emoji: "🍟" },
-  { name: "Extra salsa para alitas", price: 3.00, emoji: "🥫" },
-  { name: "Extra aderezo para ensaladas", price: 3.00, emoji: "🥗" },
-];
-
-const BEBIDAS = [
-  { name: "Inka Cola 500ml", price: 4.00, emoji: "🟡" },
-  { name: "Coca Cola 500ml", price: 4.00, emoji: "🔴" },
-  { name: "Fanta 500ml", price: 4.00, emoji: "🟠" },
-  { name: "Sprite 500ml", price: 4.00, emoji: "🟢" },
-  { name: "Agua mineral", price: 3.00, emoji: "💧" },
-];
-
-// ─── SECCIONES NAV ────────────────────────────────────────────────────────────
 
 const SECCIONES = [
   { id: "alitas",    label: "Alitas",    emoji: "🍗", color: "#ef4444", bg: "rgba(239,68,68,0.15)" },
   { id: "ensaladas", label: "Ensaladas", emoji: "🥗", color: "#06b6d4", bg: "rgba(6,182,212,0.15)" },
   { id: "tacos",     label: "Tacos",     emoji: "🌮", color: "#34d399", bg: "rgba(52,211,153,0.15)" },
   { id: "combos",    label: "Combos",    emoji: "🔥", color: "#f59e0b", bg: "rgba(245,158,11,0.15)" },
-  { id: "extras",    label: "Extras",    emoji: "🍟", color: "#a78bfa", bg: "rgba(167,139,250,0.15)" },
 ];
 
-// ─── COMPONENTES ──────────────────────────────────────────────────────────────
+const IMAGENES = [
+  { id: "alitas",    src: "/carta-alitas.jpeg",    alt: "Carta de Alitas",    color: "#ef4444", glow: "rgba(239,68,68,0.3)",    label: "Pedir Alitas 🍗",    emoji: "🍗", title: "Alitas",    sub: "Premium Wings" },
+  { id: "ensaladas", src: "/carta-ensaladas.jpeg", alt: "Carta de Ensaladas", color: "#06b6d4", glow: "rgba(6,182,212,0.3)",    label: "Pedir Ensalada 🥗", emoji: "🥗", title: "Ensaladas", sub: "Premium Salads · Bowls Saludables" },
+  { id: "tacos",     src: "/carta-tacos.jpeg",     alt: "Carta de Tacos",     color: "#34d399", glow: "rgba(52,211,153,0.3)",   label: "Pedir Tacos 🌮",    emoji: "🌮", title: "Tacos",     sub: "Authentic Street Tacos" },
+  { id: "combos",    src: "/carta-combos.jpeg",    alt: "Carta de Combos",    color: "#f59e0b", glow: "rgba(245,158,11,0.3)",   label: "Pedir Combo 🔥",    emoji: "🔥", title: "Combos",    sub: "Best Value Deals · Ahorra más" },
+];
 
 function WaButton({ label = "Pedir por WhatsApp", full = false }: { label?: string; full?: boolean }) {
   return (
@@ -217,61 +41,10 @@ function WaButton({ label = "Pedir por WhatsApp", full = false }: { label?: stri
   );
 }
 
-function SectionHeader({ id, emoji, label, color, glow, sub }: {
-  id: string; emoji: string; label: string; color: string; glow: string; sub: string;
-}) {
-  return (
-    <div id={id} className="pt-6 pb-4 px-4">
-      <div className="flex items-center gap-3 mb-1">
-        <div
-          className="w-1.5 h-10 rounded-full flex-shrink-0"
-          style={{ background: color, boxShadow: `0 0 12px ${glow}` }}
-        />
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{emoji}</span>
-            <h2
-              className="text-3xl leading-none"
-              style={{
-                fontFamily: "var(--font-graffiti, 'Lilita One', sans-serif)",
-                color,
-                textShadow: `0 0 20px ${glow}, 0 0 40px ${glow}`,
-              }}
-            >
-              {label}
-            </h2>
-          </div>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)", letterSpacing: "0.1em" }}>
-            {sub}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PrecioTag({ price }: { price: number }) {
-  return (
-    <span
-      className="text-xl font-black tabular-nums"
-      style={{
-        color: "#f59e0b",
-        textShadow: "0 0 12px rgba(245,158,11,0.6)",
-        fontVariantNumeric: "tabular-nums",
-      }}
-    >
-      S/ {price.toFixed(2)}
-    </span>
-  );
-}
-
-// ─── PAGE ─────────────────────────────────────────────────────────────────────
-
 export default function CartaPage() {
   const navRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState("alitas");
 
-  // Scroll activo en sección
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -295,15 +68,14 @@ export default function CartaPage() {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const offset = 110; // header + nav height
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    const top = el.getBoundingClientRect().top + window.scrollY - 110;
     window.scrollTo({ top, behavior: "smooth" });
   };
 
   return (
     <main style={{ background: "#0a0a0a", minHeight: "100vh", overflowX: "hidden" }}>
 
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <header
         className="relative overflow-hidden"
         style={{
@@ -311,12 +83,9 @@ export default function CartaPage() {
           borderBottom: "1px solid rgba(245,158,11,0.2)",
         }}
       >
-        {/* Glow decorativo */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "radial-gradient(ellipse 80% 60% at 50% -20%, rgba(245,158,11,0.12), transparent)",
-          }}
+          style={{ background: "radial-gradient(ellipse 80% 60% at 50% -20%, rgba(245,158,11,0.12), transparent)" }}
         />
         <div className="relative z-10 max-w-xl mx-auto px-5 py-6 text-center">
           <Image
@@ -333,7 +102,6 @@ export default function CartaPage() {
               fontFamily: "var(--font-graffiti, 'Lilita One', sans-serif)",
               color: "#f59e0b",
               textShadow: "0 0 24px rgba(245,158,11,0.7), 0 0 48px rgba(245,158,11,0.4)",
-              letterSpacing: "-0.01em",
             }}
           >
             Nuestra Carta
@@ -345,7 +113,7 @@ export default function CartaPage() {
         </div>
       </header>
 
-      {/* ── NAV STICKY ── */}
+      {/* NAV STICKY */}
       <div
         ref={navRef}
         className="sticky top-0 z-20 overflow-x-auto scrollbar-hide"
@@ -379,469 +147,66 @@ export default function CartaPage() {
         </div>
       </div>
 
+      {/* SECCIONES */}
       <div className="max-w-xl mx-auto">
-
-        {/* ════════════ ALITAS ════════════ */}
-        <section>
-          <SectionHeader
-            id="alitas"
-            emoji="🍗"
-            label="Alitas"
-            color="#ef4444"
-            glow="rgba(239,68,68,0.6)"
-            sub="Premium Wings"
-          />
-
-          {/* Imagen carta */}
-          <div className="px-4 mb-4">
-            <div
-              className="rounded-2xl overflow-hidden relative"
-              style={{ border: "1px solid rgba(239,68,68,0.3)", boxShadow: "0 0 20px rgba(239,68,68,0.15)" }}
-            >
-              <Image
-                src="/carta-alitas.jpeg"
-                alt="Carta de Alitas Santo Dilema"
-                width={600}
-                height={400}
-                className="w-full h-auto object-cover"
-                priority
-              />
-              <div
-                className="absolute inset-0"
-                style={{ background: "linear-gradient(to top, rgba(10,10,10,0.4) 0%, transparent 50%)" }}
-              />
-            </div>
-          </div>
-
-          {/* Salsas */}
-          <div className="px-4 mb-4">
-            <div
-              className="rounded-2xl p-4"
-              style={{ background: "#111", border: "1px solid rgba(239,68,68,0.2)" }}
-            >
-              <p className="text-xs font-black mb-3" style={{ color: "#ef4444", letterSpacing: "0.12em" }}>
-                🌶 8 SALSAS A ELECCIÓN
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {SALSAS.map((s) => (
-                  <span
-                    key={s}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                    style={{
-                      background: "rgba(239,68,68,0.12)",
-                      color: "rgba(255,255,255,0.7)",
-                      border: "1px solid rgba(239,68,68,0.25)",
-                    }}
-                  >
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Productos */}
-          <div className="px-4 space-y-3 mb-6">
-            {ALITAS.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl overflow-hidden flex gap-0"
-                style={{
-                  background: "#141414",
-                  border: "1px solid rgba(239,68,68,0.2)",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
-                }}
-              >
-                <div className="relative w-[110px] flex-shrink-0">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                    sizes="110px"
-                  />
-                </div>
-                <div className="flex-1 p-3.5 flex flex-col justify-between min-w-0">
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="text-sm font-black text-white leading-tight">{item.name}</h3>
-                      {item.badge && (
-                        <span
-                          className="text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
-                          style={{
-                            background: "rgba(239,68,68,0.2)",
-                            color: "#f87171",
-                            border: "1px solid rgba(239,68,68,0.4)",
-                          }}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] leading-relaxed mb-2.5" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      {item.desc}
-                    </p>
-                  </div>
-                  <PrecioTag price={item.price} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="px-4 pb-8">
-            <WaButton label="Pedir Alitas 🍗" full />
-          </div>
-        </section>
-
-        {/* ════════════ ENSALADAS ════════════ */}
-        <section style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <SectionHeader
-            id="ensaladas"
-            emoji="🥗"
-            label="Ensaladas"
-            color="#06b6d4"
-            glow="rgba(6,182,212,0.6)"
-            sub="Premium Salads · Bowls Saludables"
-          />
-
-          <div className="px-4 mb-4">
-            <div
-              className="rounded-2xl overflow-hidden relative"
-              style={{ border: "1px solid rgba(6,182,212,0.3)", boxShadow: "0 0 20px rgba(6,182,212,0.15)" }}
-            >
-              <Image
-                src="/carta-ensaladas.jpeg"
-                alt="Carta de Ensaladas Santo Dilema"
-                width={600}
-                height={400}
-                className="w-full h-auto object-cover"
-              />
-              <div
-                className="absolute inset-0"
-                style={{ background: "linear-gradient(to top, rgba(10,10,10,0.4) 0%, transparent 50%)" }}
-              />
-            </div>
-          </div>
-
-          <div className="px-4 space-y-3 mb-6">
-            {ENSALADAS.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl overflow-hidden flex"
-                style={{
-                  background: "#141414",
-                  border: "1px solid rgba(6,182,212,0.2)",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
-                }}
-              >
-                <div className="relative w-[110px] flex-shrink-0">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                    sizes="110px"
-                  />
-                </div>
-                <div className="flex-1 p-3.5 flex flex-col justify-between min-w-0">
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="text-sm font-black text-white leading-tight">{item.name}</h3>
-                      {item.badge && (
-                        <span
-                          className="text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
-                          style={{
-                            background: "rgba(6,182,212,0.2)",
-                            color: "#22d3ee",
-                            border: "1px solid rgba(6,182,212,0.4)",
-                          }}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] leading-relaxed mb-2.5" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      {item.desc}
-                    </p>
-                  </div>
-                  <PrecioTag price={item.price} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="px-4 pb-8">
-            <WaButton label="Pedir Ensalada 🥗" full />
-          </div>
-        </section>
-
-        {/* ════════════ TACOS ════════════ */}
-        <section style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <SectionHeader
-            id="tacos"
-            emoji="🌮"
-            label="Tacos"
-            color="#34d399"
-            glow="rgba(52,211,153,0.6)"
-            sub="Authentic Street Tacos"
-          />
-
-          <div className="px-4 mb-4">
-            <div
-              className="rounded-2xl overflow-hidden relative"
-              style={{ border: "1px solid rgba(52,211,153,0.3)", boxShadow: "0 0 20px rgba(52,211,153,0.15)" }}
-            >
-              <Image
-                src="/carta-tacos.jpeg"
-                alt="Carta de Tacos Santo Dilema"
-                width={600}
-                height={400}
-                className="w-full h-auto object-cover"
-              />
-              <div
-                className="absolute inset-0"
-                style={{ background: "linear-gradient(to top, rgba(10,10,10,0.4) 0%, transparent 50%)" }}
-              />
-            </div>
-          </div>
-
-          {/* Formato único */}
-          <div className="px-4 mb-4">
-            <div
-              className="rounded-2xl p-4 flex items-center justify-between"
-              style={{ background: "#111", border: "1px solid rgba(52,211,153,0.25)" }}
-            >
-              <div>
-                <p className="text-base font-black text-white leading-none">Dúo de Tacos</p>
-                <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  Elige 2 sabores · incluye complemento
-                </p>
-              </div>
-              <PrecioTag price={24.90} />
-            </div>
-          </div>
-
-          {/* Sabores */}
-          <div className="px-4 mb-3">
-            <p className="text-xs font-black mb-3" style={{ color: "#34d399", letterSpacing: "0.1em" }}>
-              🌮 ELIGE TUS 2 SABORES
-            </p>
-            <div className="space-y-3">
-              {TACOS_SABORES.map((taco) => (
+        {IMAGENES.map((sec, i) => (
+          <section
+            key={sec.id}
+            style={{ borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : undefined }}
+          >
+            {/* Título */}
+            <div id={sec.id} className="pt-6 pb-4 px-4">
+              <div className="flex items-center gap-3 mb-1">
                 <div
-                  key={taco.id}
-                  className="rounded-2xl overflow-hidden flex"
-                  style={{
-                    background: "#141414",
-                    border: "1px solid rgba(52,211,153,0.2)",
-                    boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
-                  }}
-                >
-                  <div className="relative w-[100px] flex-shrink-0">
-                    <Image
-                      src={`/${taco.id}.png`}
-                      alt={taco.name}
-                      fill
-                      className="object-cover"
-                      sizes="100px"
-                    />
-                  </div>
-                  <div className="flex-1 p-3.5">
-                    <p className="text-sm font-black text-white leading-tight mb-0.5">{taco.name}</p>
-                    <p className="text-[10px] font-semibold mb-1.5" style={{ color: "#34d399" }}>
-                      {taco.tagline}
-                    </p>
-                    <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      {taco.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Complemento */}
-          <div className="px-4 mb-6">
-            <div
-              className="rounded-2xl p-3.5"
-              style={{ background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.15)" }}
-            >
-              <p className="text-[11px] font-black mb-2" style={{ color: "#34d399", letterSpacing: "0.08em" }}>
-                🌽 INCLUYE COMPLEMENTO A ELECCIÓN
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                {["Nachos 🌽", "Chifles 🍌", "Papas fritas 🍟"].map((c) => (
-                  <span
-                    key={c}
-                    className="text-xs px-3 py-1 rounded-full font-semibold"
-                    style={{ background: "rgba(52,211,153,0.1)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(52,211,153,0.2)" }}
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="px-4 pb-8">
-            <WaButton label="Pedir Tacos 🌮" full />
-          </div>
-        </section>
-
-        {/* ════════════ COMBOS ════════════ */}
-        <section style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <SectionHeader
-            id="combos"
-            emoji="🔥"
-            label="Combos"
-            color="#f59e0b"
-            glow="rgba(245,158,11,0.6)"
-            sub="Best Value Deals · Ahorra más"
-          />
-
-          <div className="px-4 mb-4">
-            <div
-              className="rounded-2xl overflow-hidden relative"
-              style={{ border: "1px solid rgba(245,158,11,0.3)", boxShadow: "0 0 20px rgba(245,158,11,0.15)" }}
-            >
-              <Image
-                src="/carta-combos.jpeg"
-                alt="Carta de Combos Santo Dilema"
-                width={600}
-                height={400}
-                className="w-full h-auto object-cover"
-              />
-              <div
-                className="absolute inset-0"
-                style={{ background: "linear-gradient(to top, rgba(10,10,10,0.4) 0%, transparent 50%)" }}
-              />
-            </div>
-          </div>
-
-          <div className="px-4 space-y-3 mb-6">
-            {COMBOS.map((combo) => (
-              <div
-                key={combo.id}
-                className="rounded-2xl p-4"
-                style={{
-                  background: "#141414",
-                  border: `1px solid ${combo.color}40`,
-                  boxShadow: `0 2px 16px rgba(0,0,0,0.4), 0 0 0 1px ${combo.color}10 inset`,
-                }}
-              >
-                <div className="flex items-start justify-between gap-3 mb-2">
+                  className="w-1.5 h-10 rounded-full flex-shrink-0"
+                  style={{ background: sec.color, boxShadow: `0 0 12px ${sec.glow}` }}
+                />
+                <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">{combo.emoji}</span>
-                    <div>
-                      <h3 className="text-base font-black text-white leading-tight">{combo.name}</h3>
-                      {combo.badge && (
-                        <span
-                          className="text-[9px] font-black px-2 py-0.5 rounded-full mt-0.5 inline-block"
-                          style={{
-                            background: `${combo.color}25`,
-                            color: combo.color,
-                            border: `1px solid ${combo.color}50`,
-                          }}
-                        >
-                          {combo.badge}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-2xl">{sec.emoji}</span>
+                    <h2
+                      className="text-3xl leading-none"
+                      style={{
+                        fontFamily: "var(--font-graffiti, 'Lilita One', sans-serif)",
+                        color: sec.color,
+                        textShadow: `0 0 20px ${sec.glow}, 0 0 40px ${sec.glow}`,
+                      }}
+                    >
+                      {sec.title}
+                    </h2>
                   </div>
-                  <PrecioTag price={combo.price} />
+                  <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)", letterSpacing: "0.1em" }}>
+                    {sec.sub}
+                  </p>
                 </div>
-                <p className="text-[11px] mb-3" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  {combo.desc}
-                </p>
-                <div className="space-y-1">
-                  {combo.items.map((item, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div
-                        className="w-1 h-1 rounded-full flex-shrink-0"
-                        style={{ background: combo.color }}
-                      />
-                      <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>
-                        {item}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="px-4 pb-8">
-            <WaButton label="Pedir Combo 🔥" full />
-          </div>
-        </section>
-
-        {/* ════════════ EXTRAS Y BEBIDAS ════════════ */}
-        <section style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <SectionHeader
-            id="extras"
-            emoji="🍟"
-            label="Extras & Bebidas"
-            color="#a78bfa"
-            glow="rgba(167,139,250,0.6)"
-            sub="Para completar tu pedido"
-          />
-
-          <div className="px-4 space-y-3 mb-6">
-            {/* Extras */}
-            <div
-              className="rounded-2xl overflow-hidden"
-              style={{ background: "#141414", border: "1px solid rgba(167,139,250,0.2)" }}
-            >
-              <div
-                className="px-4 py-2.5"
-                style={{ background: "rgba(167,139,250,0.08)", borderBottom: "1px solid rgba(167,139,250,0.15)" }}
-              >
-                <p className="text-xs font-black" style={{ color: "#a78bfa", letterSpacing: "0.1em" }}>
-                  🍟 EXTRAS
-                </p>
-              </div>
-              <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                {EXTRAS.map((item) => (
-                  <div key={item.name} className="px-4 py-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-lg">{item.emoji}</span>
-                      <span className="text-sm font-semibold text-white">{item.name}</span>
-                    </div>
-                    <PrecioTag price={item.price} />
-                  </div>
-                ))}
               </div>
             </div>
 
-            {/* Bebidas */}
-            <div
-              className="rounded-2xl overflow-hidden"
-              style={{ background: "#141414", border: "1px solid rgba(167,139,250,0.2)" }}
-            >
+            {/* Imagen carta */}
+            <div className="px-4 mb-6">
               <div
-                className="px-4 py-2.5"
-                style={{ background: "rgba(167,139,250,0.08)", borderBottom: "1px solid rgba(167,139,250,0.15)" }}
+                className="rounded-2xl overflow-hidden relative"
+                style={{ border: `1px solid ${sec.color}50`, boxShadow: `0 0 20px ${sec.glow}` }}
               >
-                <p className="text-xs font-black" style={{ color: "#a78bfa", letterSpacing: "0.1em" }}>
-                  🥤 BEBIDAS
-                </p>
-              </div>
-              <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                {BEBIDAS.map((item) => (
-                  <div key={item.name} className="px-4 py-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-lg">{item.emoji}</span>
-                      <span className="text-sm font-semibold text-white">{item.name}</span>
-                    </div>
-                    <PrecioTag price={item.price} />
-                  </div>
-                ))}
+                <Image
+                  src={sec.src}
+                  alt={sec.alt}
+                  width={600}
+                  height={800}
+                  className="w-full h-auto object-cover"
+                  priority={i === 0}
+                />
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* ── FOOTER CTA ── */}
+            {/* WA button */}
+            <div className="px-4 pb-8">
+              <WaButton label={sec.label} full />
+            </div>
+          </section>
+        ))}
+
+        {/* FOOTER CTA */}
         <div
           className="px-4 pb-12 pt-2"
           style={{ background: "linear-gradient(180deg, transparent 0%, rgba(245,158,11,0.04) 100%)" }}
@@ -881,7 +246,6 @@ export default function CartaPage() {
             </p>
           </div>
         </div>
-
       </div>
     </main>
   );
