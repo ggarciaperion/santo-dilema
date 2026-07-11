@@ -2826,6 +2826,22 @@ export default function AdminPage() {
               const SIDE_IDS  = new Set(['papas-fritas','nachos','chifles']);
               const tacoNames: Record<string,string> = {'santo-crujiente':'Crunch Supreme','tex-dilema':'Tex Supreme','santo-bacon':'Bacon Deluxe'};
               const allItems: any[] = (order as any).completedOrders || [];
+              // Calcular total correcto respetando precios de combo
+              const effectiveTotal = (() => {
+                if (!allItems.length) return order.totalPrice || 0;
+                const hasCombo = allItems.some((it: any) => it.comboGroupId);
+                if (!hasCombo) return order.totalPrice || 0;
+                const seen = new Set<string>();
+                const sub = allItems.reduce((s: number, it: any) => {
+                  if (it.comboGroupId) {
+                    if (seen.has(it.comboGroupId)) return s;
+                    seen.add(it.comboGroupId);
+                    return s + (it.comboPrice || 0);
+                  }
+                  return s + (it.finalPrice ?? it.originalPrice ?? 0) * (it.quantity || 1);
+                }, 0);
+                return sub + ((order as any).deliveryCost || 0);
+              })();
               const CAT: Record<string,{dot:string;bg:string;text:string;label:string}> = {
                 fat:  {dot:'bg-orange-400', bg:'bg-orange-50',  text:'text-orange-700', label:'FAT'},
                 fit:  {dot:'bg-green-400',  bg:'bg-green-50',   text:'text-green-700',  label:'FIT'},
@@ -3122,7 +3138,7 @@ export default function AdminPage() {
                         Total{(order as any).deliveryCost > 0 ? ' · incl. delivery' : ''}
                       </p>
                       <p className="text-2xl font-black text-gray-900 tabular-nums leading-none">
-                        S/{(typeof order.totalPrice === 'number' ? order.totalPrice : 0).toFixed(2)}
+                        S/{effectiveTotal.toFixed(2)}
                       </p>
                       {(order as any).couponDiscount > 0 && (
                         <p className="text-[9px] text-purple-500 font-semibold mt-0.5">cupón -{(order as any).couponDiscount}%</p>
@@ -3196,7 +3212,7 @@ export default function AdminPage() {
                             <><p>EFECTIVO</p>
                               {(order as any).cantoCancelo && (
                                 <p className="text-[9px] font-medium opacity-70">
-                                  vuelto S/{(parseFloat((order as any).cantoCancelo) - (typeof order.totalPrice === 'number' ? order.totalPrice : 0)).toFixed(2)}
+                                  vuelto S/{(parseFloat((order as any).cantoCancelo) - effectiveTotal).toFixed(2)}
                                 </p>
                               )}
                             </>
