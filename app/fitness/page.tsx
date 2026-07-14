@@ -199,7 +199,10 @@ const QUICK_EX: Record<string, string[]> = {
 };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
-const todayStr = () => new Date().toISOString().split('T')[0];
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
 
 function getProgramWeek(start: string, current: string) {
   const diff = Math.floor((new Date(current).getTime() - new Date(start).getTime()) / 86400000);
@@ -381,10 +384,14 @@ export default function FitnessPage() {
     const sl = localStorage.getItem('fitness_logs');
     const sp = localStorage.getItem('fitness_progress');
     const ss = localStorage.getItem('fitness_start');
-    if (sl) setLogs(JSON.parse(sl));
+    const parsedLogs = sl ? JSON.parse(sl) : {};
+    if (sl) setLogs(parsedLogs);
     if (sp) setProgress(JSON.parse(sp));
-    const s = ss || todayStr();
-    if (!ss) localStorage.setItem('fitness_start', s);
+    const todayLocal = todayStr();
+    // If no log data yet, always start from today (fixes timezone off-by-one bug)
+    const hasAnyLog = Object.keys(parsedLogs).length > 0;
+    const s = (hasAnyLog && ss) ? ss : todayLocal;
+    localStorage.setItem('fitness_start', s);
     setStartDate(s);
   }, []);
 
@@ -451,6 +458,9 @@ export default function FitnessPage() {
   const phase      = PROGRAM[phaseKey];
   const todayWT    = phase.workouts[getDOW(today)];
   const suggestedEx = QUICK_EX[todayWT] ?? [];
+
+  // ── Creatine dose: 6g loading phase (week 1), 3g maintenance ──
+  const creatineDose = currentWeek <= 1 ? 6 : 3;
 
   // ── Today's planned session ──
   const todayDOW = getDOW(today);
@@ -662,7 +672,7 @@ export default function FitnessPage() {
             <div className="flex items-center gap-2">
               <span className="text-base">⚡</span>
               <div className="text-left">
-                <p className={`text-sm font-bold ${todayLog.creatine ? 'text-green-300' : 'text-zinc-300'}`}>Creatina 3g</p>
+                <p className={`text-sm font-bold ${todayLog.creatine ? 'text-green-300' : 'text-zinc-300'}`}>Creatina {creatineDose}g{creatineDose === 6 ? ' (carga)' : ''}</p>
                 <p className="text-zinc-500 text-xs">Creapure · post-entreno</p>
               </div>
             </div>
@@ -1179,8 +1189,8 @@ export default function FitnessPage() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">⚡</span>
             <div>
-              <p className={`font-bold ${todayLog.creatine ? 'text-green-300' : 'text-zinc-200'}`}>Creatina Creapure 3g</p>
-              <p className="text-zinc-500 text-xs">Dymatize · idealmente post-entreno</p>
+              <p className={`font-bold ${todayLog.creatine ? 'text-green-300' : 'text-zinc-200'}`}>Creatina Creapure {creatineDose}g{creatineDose === 6 ? ' 🔥 carga' : ''}</p>
+              <p className="text-zinc-500 text-xs">Dymatize · {creatineDose === 6 ? 'semana 1: carga · 2 tomas de 3g' : 'mantenimiento · post-entreno'}</p>
             </div>
           </div>
           <span className={`text-2xl transition-all duration-300 ${todayLog.creatine ? 'anim-pop' : ''}`}
@@ -1222,7 +1232,7 @@ export default function FitnessPage() {
           <p>• <span className="text-cyan-400 font-bold">165g proteína</span> = 4–5 pechugas de pollo (200g) + 2 scoops whey</p>
           <p>• <span className="text-purple-400 font-bold">215g carbos</span> = 3 tazas arroz cocido + 1 camote mediano + 2 plátanos</p>
           <p>• <span className="text-amber-400 font-bold">70g grasas</span> = 2 cucharadas aceite oliva + huevos enteros del día</p>
-          <p>• <span className="text-green-400 font-bold">Creatina:</span> 3g/día (carga 6g primeros 7 días) — siempre post-entreno</p>
+          <p>• <span className="text-green-400 font-bold">Creatina:</span> {creatineDose === 6 ? <><strong className="text-white">6g/día esta semana</strong> (fase de carga — 2 tomas de 3g). Semana 2: bajas a 3g/día</> : <>3g/día (mantenimiento). Semana 1 fueron 6g de carga</>} — siempre post-entreno</p>
           <p>• El <span className="text-white font-bold">score diario</span> incluye comidas, agua, creatina, whey y entreno</p>
         </div>
       </div>
@@ -1484,9 +1494,15 @@ export default function FitnessPage() {
     <div className="space-y-4 anim-fade-up">
       <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Inicio del programa</p>
-        <input type="date" value={startDate}
-          onChange={e => { setStartDate(e.target.value); localStorage.setItem('fitness_start', e.target.value); }}
-          className="w-full bg-zinc-800 text-white rounded-xl px-4 py-3 border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" style={{ fontSize: '16px' }} />
+        <div className="flex gap-2 items-center">
+          <input type="date" value={startDate}
+            onChange={e => { setStartDate(e.target.value); localStorage.setItem('fitness_start', e.target.value); }}
+            className="flex-1 bg-zinc-800 text-white rounded-xl px-4 py-3 border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" style={{ fontSize: '16px' }} />
+          <button onClick={() => { const t = todayStr(); setStartDate(t); localStorage.setItem('fitness_start', t); }}
+            className="bg-cyan-600 text-white rounded-xl px-4 py-3 text-sm font-bold flex-shrink-0 transition-all active:scale-95">
+            Hoy
+          </button>
+        </div>
         <p className="text-zinc-500 text-xs mt-2">Semana {currentWeek} de 12 · {phase.phase}</p>
       </div>
 
@@ -1499,7 +1515,7 @@ export default function FitnessPage() {
             { l: 'Carbohidratos', v: '235 g/día', c: '#8b5cf6' },
             { l: 'Grasas', v: '67 g/día', c: '#f59e0b' },
             { l: 'Agua', v: '8 vasos (3.5L)', c: '#fff' },
-            { l: 'Creatina', v: '5 g/día', c: '#22c55e' },
+            { l: 'Creatina', v: creatineDose === 6 ? `${creatineDose}g/día (carga sem.1)` : `${creatineDose}g/día (mantenimiento)`, c: '#22c55e' },
             { l: 'Sueño mínimo', v: '7.5 horas', c: '#fff' },
           ].map(r => (
             <div key={r.l} className="flex justify-between py-1.5 border-b border-zinc-800 last:border-0">
