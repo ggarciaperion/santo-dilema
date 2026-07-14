@@ -78,7 +78,7 @@ const STYLES = `
 interface SetEntry { reps: number; weight: number; done?: boolean; }
 interface ExerciseEntry { id: string; name: string; sets: SetEntry[]; }
 interface DayLog {
-  date: string; water: number; creatine: boolean;
+  date: string; water: number; creatine: boolean; whey: number; cardio: boolean;
   meals: Record<string, boolean>; workoutDone: boolean;
   workoutType: string; exercises: ExerciseEntry[];
   notes: string; workoutStartedAt?: number; workoutDuration?: number;
@@ -98,24 +98,28 @@ const PROGRAM: Record<string, { phase: string; short: string; color: string; wor
     workouts: ['Push', 'Pull', 'Legs', 'Upper', 'Lower', 'Cardio + Abs', 'Descanso'] },
 };
 const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-const MEAL_NAMES  = ['Desayuno', 'Media mañana', 'Almuerzo', 'Pre-entreno', 'Cena'];
-const MEAL_ICONS  = ['☀️', '🍌', '🍽️', '⚡', '🌙'];
-const MEAL_TIMES  = ['7:00', '10:30', '13:00', '17:30', '20:00'];
+const MEAL_NAMES  = ['Desayuno', 'Media mañana', 'Almuerzo', 'Pre-entreno', 'Post-entreno', 'Cena', 'Snack nocturno'];
+const MEAL_ICONS  = ['☀️', '🍌', '🍽️', '⚡', '💪', '🌙', '🌛'];
+const MEAL_TIMES  = ['7:00', '10:30', '13:00', '17:00', '19:00', '20:30', '22:00'];
 const MEAL_DESC   = [
-  'Avena 100g + Whey 30g + plátano',
-  'Shake whey + fruta',
-  'Pollo 200g + arroz 150g + ensalada',
-  'Shake + banana',
-  'Proteína 180g + camote 150g + ensalada',
+  'Avena 80g + 2 huevos + 3 claras + plátano',
+  '1 scoop whey + manzana o pera',
+  'Pollo 200g + arroz 150g + ensalada libre',
+  'Pollo 100g + arroz 100g + fruta',
+  '1 scoop whey + plátano grande',
+  'Carne/pollo 180g + verduras + papa 100g',
+  '3 claras hervidas o ½ scoop whey (opcional)',
 ];
+// Proteína estimada por comida (g)
+const MEAL_PROTEIN = [45, 25, 45, 20, 30, 40, 12];
 const WATER_GOAL = 8;
 const QUICK_EX: Record<string, string[]> = {
   'Full Body A': ['Sentadilla', 'Press banca', 'Remo con barra', 'Press militar', 'Curl bíceps', 'Press francés'],
   'Full Body B': ['RDL', 'Jalón al pecho', 'Press inclinado DB', 'Remo polea', 'Extensión cuád.', 'Curl femoral'],
-  'Upper A': ['Press banca', 'Press inclinado DB', 'Press militar', 'Elevaciones laterales', 'Fondos', 'Extensión tríceps'],
-  'Upper B': ['Dominadas', 'Remo con barra', 'Remo polea', 'Face pull', 'Curl EZ', 'Curl martillo'],
-  'Lower A': ['Sentadilla', 'Prensa', 'Extensión cuád.', 'Curl femoral', 'Gemelos', 'Plancha'],
-  'Lower B': ['Peso muerto', 'Sentadilla búlgara', 'Hip thrust', 'Curl femoral pie', 'RDL 1 pierna', 'Plancha lateral'],
+  'Upper A': ['Press banca mancuernas', 'Press inclinado DB', 'Press militar sentado', 'Elevaciones laterales', 'Fondos banco/máquina', 'Extensión tríceps polea'],
+  'Upper B': ['Jalón al pecho', 'Remo con barra', 'Remo mancuerna 1 brazo', 'Curl bíceps barra', 'Curl martillo', 'Plancha frontal'],
+  'Lower A': ['Sentadilla goblet', 'Prensa de piernas', 'Extensión cuádriceps', 'Hip thrust', 'Zancadas mancuernas', 'Elevación talones'],
+  'Lower B': ['Hip thrust barra', 'Peso muerto rumano RDL', 'Curl femoral acostado', 'Abducción cadera máquina', 'Sentadilla sumo DB', 'Crunch polea/suelo'],
   'Push': ['Press banca', 'Press inclinado barra', 'Aperturas polea', 'Press hombros DB', 'Elevaciones lat.', 'Fondos lastrados'],
   'Pull': ['Peso muerto', 'Dominadas lastradas', 'Remo Pendlay', 'Jalón agarre neutro', 'Remo 1 brazo', 'Curl araña'],
   'Legs': ['Sentadilla', 'Prensa 45°', 'Sentadilla búlgara', 'Extensión cuád.', 'Hip thrust', 'Gemelos'],
@@ -163,7 +167,11 @@ function getExercisePR(name: string, logs: Record<string, DayLog>, skip?: string
 function dailyScore(log: DayLog) {
   const meals  = MEAL_NAMES.filter(m => log.meals[m]).length / MEAL_NAMES.length;
   const water  = Math.min(log.water, WATER_GOAL) / WATER_GOAL;
-  return Math.round(meals * 30 + water * 20 + (log.creatine ? 15 : 0) + (log.workoutDone ? 35 : 0));
+  const supls  = (log.creatine ? 1 : 0) + (log.whey >= 1 ? 1 : 0);
+  return Math.round(meals * 25 + water * 20 + supls * 7.5 + (log.workoutDone ? 35 : 0) + (log.cardio ? 5 : 0));
+}
+function estimatedProtein(log: DayLog) {
+  return MEAL_NAMES.reduce((sum, m, i) => sum + (log.meals[m] ? MEAL_PROTEIN[i] : 0), 0);
 }
 function getStreak(logs: Record<string, DayLog>) {
   const today = new Date();
@@ -321,7 +329,7 @@ export default function FitnessPage() {
 
   // ── Today log ──
   const todayLog: DayLog = logs[today] ?? {
-    date: today, water: 0, creatine: false, meals: {}, workoutDone: false,
+    date: today, water: 0, creatine: false, whey: 0, cardio: false, meals: {}, workoutDone: false,
     workoutType: '', exercises: [], notes: '',
   };
 
@@ -368,6 +376,7 @@ export default function FitnessPage() {
   const streak      = useMemo(() => getStreak(logs), [logs]);
   const adherence   = useMemo(() => weeklyAdherence(logs, phaseKey), [logs, phaseKey]);
   const mealsCount  = MEAL_NAMES.filter(m => todayLog.meals[m]).length;
+  const proteinEst  = useMemo(() => estimatedProtein(todayLog), [todayLog]);
   const sessionVol  = todayLog.exercises.reduce((a, ex) => a + ex.sets.reduce((b, s) => b + s.weight * s.reps, 0), 0);
 
   // ── Exercise helpers ──
@@ -505,23 +514,53 @@ export default function FitnessPage() {
           </div>
         </div>
 
-        {/* Creatine */}
-        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-zinc-400 text-xs uppercase tracking-widest">Creatina</p>
+        {/* Creatine + Whey */}
+        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-zinc-400 text-xs uppercase tracking-widest">Suplementos</p>
             <span className="text-lg">⚡</span>
           </div>
-          <p className={`text-4xl font-black leading-none mb-1 transition-all duration-300 ${todayLog.creatine ? 'anim-pop' : ''}`}
-            style={{ color: todayLog.creatine ? '#22c55e' : '#3f3f46' }}>
-            {todayLog.creatine ? '✓' : '○'}
-          </p>
-          <p className="text-zinc-500 text-xs mb-3">5g/día</p>
+          {/* Creatina */}
           <button onClick={() => updateToday({ creatine: !todayLog.creatine })}
-            className={`w-full rounded-xl py-2 text-sm font-bold transition-all active:scale-95 ${
-              todayLog.creatine ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
+            className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
+              todayLog.creatine ? 'bg-green-900/30 border border-green-600/40' : 'bg-zinc-800 border border-zinc-700'
             }`}>
-            {todayLog.creatine ? 'Tomada ✓' : 'Marcar'}
+            <div className="flex items-center gap-2">
+              <span className="text-base">⚡</span>
+              <div className="text-left">
+                <p className={`text-sm font-bold ${todayLog.creatine ? 'text-green-300' : 'text-zinc-300'}`}>Creatina 3g</p>
+                <p className="text-zinc-500 text-xs">Creapure · post-entreno</p>
+              </div>
+            </div>
+            <span className={`text-lg transition-all ${todayLog.creatine ? 'anim-pop' : ''}`}
+              style={{ color: todayLog.creatine ? '#22c55e' : '#3f3f46' }}>
+              {todayLog.creatine ? '✓' : '○'}
+            </span>
           </button>
+          {/* Whey */}
+          <div className={`w-full rounded-xl px-3 py-2.5 border ${(todayLog.whey ?? 0) >= 1 ? 'bg-cyan-900/20 border-cyan-600/40' : 'bg-zinc-800 border-zinc-700'}`}>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🥤</span>
+                <div>
+                  <p className={`text-sm font-bold ${(todayLog.whey ?? 0) >= 1 ? 'text-cyan-300' : 'text-zinc-300'}`}>
+                    Whey {todayLog.whey ?? 0}/2 scoops
+                  </p>
+                  <p className="text-zinc-500 text-xs">Meta: 1–2 scoops · ~25g c/u</p>
+                </div>
+              </div>
+              <span className="text-lg" style={{ color: (todayLog.whey ?? 0) >= 2 ? '#22c55e' : (todayLog.whey ?? 0) >= 1 ? '#06b6d4' : '#3f3f46' }}>
+                {(todayLog.whey ?? 0) >= 2 ? '✓' : (todayLog.whey ?? 0) >= 1 ? '½' : '○'}
+              </span>
+            </div>
+            <div className="flex gap-1.5">
+              <button onClick={() => updateToday({ whey: Math.max(0, (todayLog.whey ?? 0) - 1) })}
+                className="flex-1 bg-zinc-700 text-white rounded-lg py-1 text-sm font-bold transition-all active:scale-95">−</button>
+              <button onClick={() => updateToday({ whey: Math.min(3, (todayLog.whey ?? 0) + 1) })}
+                className="flex-1 text-white rounded-lg py-1 text-sm font-bold transition-all active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #0891b2, #14b8a6)' }}>+ scoop</button>
+            </div>
+          </div>
         </div>
 
         {/* Meals */}
@@ -533,7 +572,7 @@ export default function FitnessPage() {
           </div>
           <p className="text-3xl font-black text-teal-400">{mealsCount}<span className="text-sm text-zinc-500">/{MEAL_NAMES.length}</span></p>
           <div className="my-2"><Bar pct={(mealsCount / MEAL_NAMES.length) * 100} color="#14b8a6" h={5} /></div>
-          <p className="text-zinc-500 text-xs">Tap para registrar →</p>
+          <p className="text-cyan-400 text-xs font-bold">{proteinEst}g proteína estimada</p>
         </div>
 
         {/* Workout */}
@@ -853,6 +892,25 @@ export default function FitnessPage() {
         </button>
       )}
 
+      {/* Cardio */}
+      <button onClick={() => updateToday({ cardio: !todayLog.cardio })}
+        className={`w-full flex items-center justify-between rounded-2xl px-4 py-4 transition-all active:scale-[0.98] ${
+          todayLog.cardio ? 'border border-green-600/40' : 'bg-zinc-900 border border-zinc-800 hover:border-zinc-600'
+        }`}
+        style={todayLog.cardio ? { background: 'rgba(22,163,74,0.1)' } : {}}>
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🚶</span>
+          <div className="text-left">
+            <p className={`font-bold ${todayLog.cardio ? 'text-green-300' : 'text-zinc-200'}`}>Cardio completado</p>
+            <p className="text-zinc-500 text-xs">Caminata inclinada 30–40 min · 120–140 ppm</p>
+          </div>
+        </div>
+        <span className={`text-2xl transition-all duration-300 ${todayLog.cardio ? 'anim-pop' : ''}`}
+          style={{ color: todayLog.cardio ? '#22c55e' : '#3f3f46' }}>
+          {todayLog.cardio ? '✓' : '○'}
+        </span>
+      </button>
+
       {/* Notes */}
       <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-2">Notas</p>
@@ -868,12 +926,26 @@ export default function FitnessPage() {
     <div className="space-y-4 anim-fade-up">
       {/* Macro overview */}
       <div className="rounded-3xl p-5" style={{ background: 'linear-gradient(135deg, #0d1117, #0f1f1a)', border: '1px solid rgba(20,184,166,0.2)' }}>
-        <p className="text-zinc-400 text-xs uppercase tracking-widest mb-4">Objetivos nutricionales · 2,200 kcal</p>
+        <p className="text-zinc-400 text-xs uppercase tracking-widest mb-4">Objetivos nutricionales · 2,150 kcal</p>
+        {/* Proteína en tiempo real */}
+        <div className="bg-cyan-900/20 border border-cyan-600/30 rounded-2xl p-3 mb-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-cyan-300 text-sm font-bold flex items-center gap-1.5">💪 Proteína del día</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-cyan-400 font-black text-xl">{proteinEst}</span>
+              <span className="text-zinc-500 text-xs">/165g</span>
+            </div>
+          </div>
+          <Bar pct={(proteinEst / 165) * 100} color="#06b6d4" h={8} />
+          <p className="text-zinc-500 text-xs mt-1">
+            {proteinEst >= 165 ? '✓ Meta cumplida' : `Faltan ${165 - proteinEst}g · suma comidas abajo`}
+          </p>
+        </div>
         <div className="space-y-3">
           {[
             { label: 'Proteína', g: 165, kcal: 660, color: '#06b6d4', icon: '💪' },
-            { label: 'Carbohidratos', g: 235, kcal: 940, color: '#8b5cf6', icon: '⚡' },
-            { label: 'Grasas', g: 67, kcal: 600, color: '#f59e0b', icon: '🥑' },
+            { label: 'Carbohidratos', g: 215, kcal: 860, color: '#8b5cf6', icon: '⚡' },
+            { label: 'Grasas', g: 70, kcal: 630, color: '#f59e0b', icon: '🥑' },
           ].map((m, i) => (
             <div key={m.label}>
               <div className="flex items-center justify-between mb-1">
@@ -883,7 +955,7 @@ export default function FitnessPage() {
                   <span className="text-zinc-600 text-xs">{m.kcal} kcal</span>
                 </div>
               </div>
-              <Bar pct={(m.kcal / 2200) * 100} color={m.color} h={6} delay={i * 150} />
+              <Bar pct={(m.kcal / 2150) * 100} color={m.color} h={6} delay={i * 150} />
             </div>
           ))}
         </div>
@@ -941,19 +1013,20 @@ export default function FitnessPage() {
         <p className="text-zinc-600 text-xs text-center">Toca para marcar · Meta 3.5–4 litros/día</p>
       </div>
 
-      {/* Creatine */}
-      <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-        <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Suplementación</p>
+      {/* Suplementación */}
+      <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 space-y-3">
+        <p className="text-zinc-400 text-xs uppercase tracking-widest">Suplementación</p>
+        {/* Creatina */}
         <button onClick={() => updateToday({ creatine: !todayLog.creatine })}
-          className={`w-full flex items-center justify-between rounded-2xl px-4 py-4 transition-all active:scale-[0.98] ${
+          className={`w-full flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all active:scale-[0.98] ${
             todayLog.creatine ? 'border border-green-600/40' : 'bg-zinc-800 border border-zinc-700'
           }`}
           style={todayLog.creatine ? { background: 'rgba(22,163,74,0.1)' } : {}}>
           <div className="flex items-center gap-3">
             <span className="text-2xl">⚡</span>
             <div>
-              <p className={`font-bold ${todayLog.creatine ? 'text-green-300' : 'text-zinc-200'}`}>Creatina 5g</p>
-              <p className="text-zinc-500 text-xs">Monohidratada · cualquier horario</p>
+              <p className={`font-bold ${todayLog.creatine ? 'text-green-300' : 'text-zinc-200'}`}>Creatina Creapure 3g</p>
+              <p className="text-zinc-500 text-xs">Dymatize · idealmente post-entreno</p>
             </div>
           </div>
           <span className={`text-2xl transition-all duration-300 ${todayLog.creatine ? 'anim-pop' : ''}`}
@@ -961,22 +1034,42 @@ export default function FitnessPage() {
             {todayLog.creatine ? '✓' : '○'}
           </span>
         </button>
-        <button onClick={() => updateToday({ creatine: !todayLog.creatine })}
-          className={`w-full mt-2 rounded-xl py-2 text-sm font-bold transition-all active:scale-95 ${
-            todayLog.creatine ? 'bg-green-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-          }`}>
-          {todayLog.creatine ? '✓ Tomada hoy' : 'Marcar como tomada'}
-        </button>
+        {/* Whey */}
+        <div className={`rounded-2xl px-4 py-3.5 border ${(todayLog.whey ?? 0) >= 1 ? 'border-cyan-600/40' : 'bg-zinc-800 border-zinc-700'}`}
+          style={(todayLog.whey ?? 0) >= 1 ? { background: 'rgba(8,145,178,0.1)' } : {}}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🥤</span>
+              <div>
+                <p className={`font-bold ${(todayLog.whey ?? 0) >= 1 ? 'text-cyan-300' : 'text-zinc-200'}`}>
+                  100% Whey — {todayLog.whey ?? 0} scoop{(todayLog.whey ?? 0) !== 1 ? 's' : ''}
+                </p>
+                <p className="text-zinc-500 text-xs">Meta: 1–2 scoops · ~25g proteína c/u</p>
+              </div>
+            </div>
+            <span className="text-2xl" style={{ color: (todayLog.whey ?? 0) >= 2 ? '#22c55e' : (todayLog.whey ?? 0) >= 1 ? '#06b6d4' : '#3f3f46' }}>
+              {(todayLog.whey ?? 0) >= 2 ? '✓' : (todayLog.whey ?? 0) >= 1 ? '½' : '○'}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => updateToday({ whey: Math.max(0, (todayLog.whey ?? 0) - 1) })}
+              className="flex-1 bg-zinc-700 text-white rounded-xl py-2 text-sm font-bold transition-all active:scale-95">− scoop</button>
+            <button onClick={() => updateToday({ whey: Math.min(3, (todayLog.whey ?? 0) + 1) })}
+              className="flex-1 text-white rounded-xl py-2 text-sm font-bold transition-all active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #0891b2, #14b8a6)' }}>+ scoop</button>
+          </div>
+        </div>
       </div>
 
       {/* Quick insights */}
       <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-        <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Macros en perspectiva</p>
+        <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Referencia rápida</p>
         <div className="space-y-2 text-xs text-zinc-400">
-          <p>• <span className="text-cyan-400 font-bold">165g proteína</span> = 5 pechugas de pollo (200g c/u) · o 1.1kg atún en lata</p>
-          <p>• <span className="text-purple-400 font-bold">235g carbos</span> = 3 tazas arroz cocido + 1 camote mediano</p>
-          <p>• <span className="text-amber-400 font-bold">67g grasas</span> = 1 palta + 2 cucharadas aceite oliva + 30g maní</p>
-          <p>• El <span className="text-white font-bold">whey post-entreno</span> solo reemplaza proteína de comida — no es obligatorio si cumples 165g</p>
+          <p>• <span className="text-cyan-400 font-bold">165g proteína</span> = 4–5 pechugas de pollo (200g) + 2 scoops whey</p>
+          <p>• <span className="text-purple-400 font-bold">215g carbos</span> = 3 tazas arroz cocido + 1 camote mediano + 2 plátanos</p>
+          <p>• <span className="text-amber-400 font-bold">70g grasas</span> = 2 cucharadas aceite oliva + huevos enteros del día</p>
+          <p>• <span className="text-green-400 font-bold">Creatina:</span> 3g/día (carga 6g primeros 7 días) — siempre post-entreno</p>
+          <p>• El <span className="text-white font-bold">score diario</span> incluye comidas, agua, creatina, whey y entreno</p>
         </div>
       </div>
     </div>
