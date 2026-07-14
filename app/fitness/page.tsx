@@ -56,6 +56,8 @@ const STYLES = `
   .anim-pr        { animation: prBadge 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
   .anim-slide-in  { animation: slideIn 0.3s ease both; }
   .anim-timer     { animation: timerPulse 1s ease-in-out infinite; }
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  button, a { touch-action: manipulation; }
   .shimmer-text {
     background: linear-gradient(90deg, #06b6d4 0%, #fff 40%, #14b8a6 60%, #06b6d4 100%);
     background-size: 200% auto;
@@ -584,13 +586,13 @@ export default function FitnessPage() {
         <div className="absolute inset-0 opacity-10"
           style={{ background: `radial-gradient(circle at 80% 50%, ${phase.color} 0%, transparent 60%)` }} />
         <p className="text-zinc-400 text-xs uppercase tracking-widest">{greeting()} · {fmtDate(today)}</p>
-        <div className="flex items-center justify-between mt-3">
-          <div>
+        <div className="flex items-center justify-between mt-3 gap-3">
+          <div className="min-w-0 flex-1">
             <p className="text-white font-black text-2xl leading-none">Semana {currentWeek}<span className="text-zinc-500 text-base font-normal"> /12</span></p>
-            <p className="font-semibold mt-1" style={{ color: phase.color }}>{phase.phase}</p>
-            <p className="text-zinc-400 text-sm mt-1">Hoy toca: <span className="text-white font-bold">{todayWT}</span></p>
+            <p className="font-semibold mt-1 truncate" style={{ color: phase.color }}>{phase.phase}</p>
+            <p className="text-zinc-400 text-sm mt-1 truncate">Hoy: <span className="text-white font-bold">{todayWT}</span></p>
             {/* Progress bar */}
-            <div className="mt-3 w-48">
+            <div className="mt-3">
               <Bar pct={(currentWeek / 12) * 100} color={phase.color} h={4} />
               <p className="text-zinc-500 text-xs mt-1">{Math.round((currentWeek / 12) * 100)}% completado</p>
             </div>
@@ -731,7 +733,7 @@ export default function FitnessPage() {
       {/* Weekly calendar */}
       <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Esta semana</p>
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="grid grid-cols-7 gap-0.5">
           {DAY_NAMES.map((name, i) => {
             const base = new Date(today);
             const diff = i - getDOW(today);
@@ -744,17 +746,17 @@ export default function FitnessPage() {
             const isDone = l?.workoutDone;
             const isPast = ds < today;
             return (
-              <div key={i} className={`rounded-xl p-1.5 text-center transition-all ${isToday ? 'ring-1' : ''}`}
+              <div key={i} className={`rounded-lg p-1 text-center transition-all ${isToday ? 'ring-1' : ''}`}
                 style={{ background: isToday ? 'rgba(6,182,212,0.08)' : 'rgba(39,39,42,0.4)',
                   boxShadow: isToday ? `0 0 0 1px ${phase.color}` : 'none' }}>
-                <p className="text-zinc-500 text-xs">{name}</p>
-                <div className={`mt-1 w-7 h-7 mx-auto rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                <p className="text-zinc-500" style={{ fontSize: '9px' }}>{name}</p>
+                <div className={`mt-0.5 w-6 h-6 mx-auto rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
                   isDone ? 'text-white' : isRest ? 'bg-zinc-800 text-zinc-600' :
                   isToday ? 'text-white' : isPast ? 'bg-zinc-800 text-zinc-500' : 'bg-zinc-800 text-zinc-400'
                 }`} style={isDone ? { background: '#16a34a' } : isToday && !isDone ? { background: phase.color } : {}}>
                   {isDone ? '✓' : isRest ? '—' : base.getDate()}
                 </div>
-                <p className="text-zinc-600 mt-0.5 truncate" style={{ fontSize: '8px' }}>{wt.split(' ')[0]}</p>
+                <p className="text-zinc-600 mt-0.5 truncate" style={{ fontSize: '7px' }}>{wt.split(' ')[0]}</p>
               </div>
             );
           })}
@@ -823,7 +825,7 @@ export default function FitnessPage() {
         <div className="rounded-3xl p-6 text-center relative overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #052e16, #14532d)', border: '1px solid rgba(34,197,94,0.4)' }}>
           <p className="text-5xl mb-3 anim-pop">🎉</p>
-          <p className="text-green-400 font-black text-2xl">¡Entrenamiento completado!</p>
+          <p className="text-green-400 font-black text-xl">¡Entrenamiento completado!</p>
           <p className="text-white text-base font-bold mt-1">{todaySess.label}</p>
           <p className="text-green-300 text-sm mt-2">
             {todayLog.workoutDuration ? `Duración: ${fmtSecs(todayLog.workoutDuration)}` : ''}
@@ -846,7 +848,7 @@ export default function FitnessPage() {
           return (
             <div className="space-y-3">
               {/* Progress dots */}
-              <div className="flex items-center gap-1.5 px-1">
+              <div className="flex items-center gap-0.5 px-1">
                 {todaySess.exercises.map((_, i) => (
                   <div key={i} className="flex-1 rounded-full transition-all duration-500"
                     style={{ height: i === gExIdx ? 6 : 4,
@@ -870,7 +872,7 @@ export default function FitnessPage() {
                       Serie {gSetIdx + 1}/{ex.sets}
                     </span>
                   </div>
-                  <p className="text-white font-black text-xl leading-tight">{ex.name}</p>
+                  <p className="text-white font-black text-lg leading-tight">{ex.name}</p>
                   <p className="mt-1 text-sm font-bold" style={{ color: todaySess.color }}>
                     {ex.sets} × {ex.reps} reps · Descanso {ex.rest}s
                   </p>
@@ -880,9 +882,9 @@ export default function FitnessPage() {
                     </div>
                   )}
                   {prevSess && (
-                    <div className="mt-2 flex items-center justify-between bg-zinc-800/40 rounded-xl px-3 py-2">
-                      <p className="text-zinc-500 text-xs">Última vez:</p>
-                      <p className="text-cyan-400 text-xs font-bold">
+                    <div className="mt-2 flex items-center justify-between bg-zinc-800/40 rounded-xl px-3 py-2 gap-2">
+                      <p className="text-zinc-500 text-xs flex-shrink-0">Última vez:</p>
+                      <p className="text-cyan-400 text-xs font-bold text-right truncate">
                         {prevSess.sets.slice(0, 3).map(s => `${s.weight || '—'}×${s.reps}`).join(' · ')}
                       </p>
                     </div>
@@ -898,7 +900,7 @@ export default function FitnessPage() {
               {restActive ? (
                 <div className="bg-zinc-900 rounded-2xl p-5 border border-amber-500/50 text-center anim-pop">
                   <p className="text-amber-400 text-xs uppercase tracking-widest mb-1 font-bold">Descansando</p>
-                  <p className="text-white font-black text-6xl font-mono leading-none mb-3">{fmtSecs(rest)}</p>
+                  <p className="text-white font-black font-mono leading-none mb-3" style={{ fontSize: 'clamp(2.5rem, 14vw, 4rem)' }}>{fmtSecs(rest)}</p>
                   <Bar pct={restTotal > 0 ? (rest / restTotal) * 100 : 0} color="#f59e0b" h={8} />
                   <p className="text-zinc-500 text-xs mt-3 mb-4">
                     Próximo: {isLastSet
@@ -916,20 +918,20 @@ export default function FitnessPage() {
                   <p className="text-zinc-400 text-xs uppercase tracking-widest">
                     Registra la serie {gSetIdx + 1} · Meta: {ex.reps} reps
                   </p>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-zinc-500 text-xs mb-1.5 block">Peso (kg) · pon 0 si es corporal</label>
                       <input type="number" inputMode="decimal" value={gWeight}
                         onChange={e => setGWeight(e.target.value)}
                         placeholder={prevSess ? String(prevSess.sets[Math.min(gSetIdx, prevSess.sets.length - 1)]?.weight ?? 0) : '0'}
-                        className="w-full bg-zinc-800 text-white text-center rounded-xl py-4 text-2xl font-black border border-zinc-700 focus:border-cyan-500 outline-none" />
+                        className="w-full bg-zinc-800 text-white text-center rounded-xl py-3 text-xl font-black border border-zinc-700 focus:border-cyan-500 outline-none" style={{ fontSize: '1.25rem' }} />
                     </div>
                     <div>
                       <label className="text-zinc-500 text-xs mb-1.5 block">Reps completadas</label>
                       <input type="number" inputMode="numeric" value={gReps}
                         onChange={e => setGReps(e.target.value)}
                         placeholder={ex.reps.split('–')[0]}
-                        className="w-full bg-zinc-800 text-white text-center rounded-xl py-4 text-2xl font-black border border-zinc-700 focus:border-cyan-500 outline-none" />
+                        className="w-full bg-zinc-800 text-white text-center rounded-xl py-3 text-xl font-black border border-zinc-700 focus:border-cyan-500 outline-none" style={{ fontSize: '1.25rem' }} />
                     </div>
                   </div>
                   <button onClick={completeSet}
@@ -977,9 +979,9 @@ export default function FitnessPage() {
                 {DAY_LABEL[todayDOW]} · Semana {currentWeek}
               </p>
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-5xl">{todaySess.emoji}</span>
+                <span className="text-4xl flex-shrink-0">{todaySess.emoji}</span>
                 <div>
-                  <p className="text-white font-black text-xl leading-tight">{todaySess.label}</p>
+                  <p className="text-white font-black text-lg leading-tight">{todaySess.label}</p>
                   {todaySess.isHome && (
                     <p className="text-amber-400 text-xs mt-1 font-medium">🏠 En casa · Solo mancuernas · Cuerpo completo</p>
                   )}
@@ -1017,7 +1019,7 @@ export default function FitnessPage() {
                   <div key={i} className={`px-4 py-3 flex items-start gap-3 transition-all ${
                     i < todaySess.exercises.length - 1 ? 'border-b border-zinc-800/60' : ''
                   } ${done ? 'opacity-50' : ''}`}>
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black mt-0.5"
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-black mt-0.5"
                       style={{ background: done ? '#16a34a' : `${todaySess.color}20`, color: done ? '#fff' : todaySess.color }}>
                       {done ? '✓' : i + 1}
                     </div>
@@ -1066,7 +1068,7 @@ export default function FitnessPage() {
             <p className="text-zinc-400 text-xs uppercase tracking-widest mb-2">Notas del día</p>
             <textarea value={todayLog.notes} onChange={e => updateToday({ notes: e.target.value })}
               placeholder="PRs, sensaciones, dolores, energía..."
-              rows={2} className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2.5 text-sm border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors" />
+              rows={2} className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2.5 border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors" style={{ fontSize: '16px' }} />
           </div>
         </>
       )}
@@ -1268,13 +1270,13 @@ export default function FitnessPage() {
                 <label className="text-zinc-400 text-xs">{f.label}</label>
                 <input type="number" value={pf[f.key as keyof typeof pf]} placeholder={f.ph}
                   onChange={e => setPf(p => ({ ...p, [f.key]: e.target.value }))}
-                  className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2.5 text-sm border border-zinc-700 focus:border-cyan-500 outline-none mt-1 transition-colors" />
+                  className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2.5 border border-zinc-700 focus:border-cyan-500 outline-none mt-1 transition-colors" style={{ fontSize: '16px' }} />
               </div>
             ))}
           </div>
           <textarea value={pf.notes} onChange={e => setPf(p => ({ ...p, notes: e.target.value }))}
             placeholder="Notas (cómo te ves, energía, fotos tomadas...)" rows={2}
-            className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2 text-sm border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors" />
+            className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2 border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors" style={{ fontSize: '16px' }} />
           <div className="flex gap-2">
             <button onClick={submitProgress}
               className="flex-1 text-white rounded-xl py-3 text-sm font-bold transition-all active:scale-95"
@@ -1464,7 +1466,7 @@ export default function FitnessPage() {
                   { label: 'Duración media', value: avgDur > 0 ? Math.round(avgDur / 60) : '—', unit: 'min', color: '#f59e0b' },
                 ].map(s => (
                   <div key={s.label} className="bg-zinc-800 rounded-xl p-3">
-                    <p style={{ color: s.color }} className="font-black text-xl leading-none">{s.value}</p>
+                    <p style={{ color: s.color }} className="font-black text-lg leading-none">{s.value}</p>
                     <p className="text-zinc-500 text-xs">{s.unit}</p>
                     <p className="text-zinc-600 text-xs mt-0.5">{s.label}</p>
                   </div>
@@ -1484,7 +1486,7 @@ export default function FitnessPage() {
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Inicio del programa</p>
         <input type="date" value={startDate}
           onChange={e => { setStartDate(e.target.value); localStorage.setItem('fitness_start', e.target.value); }}
-          className="w-full bg-zinc-800 text-white rounded-xl px-4 py-3 text-sm border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" />
+          className="w-full bg-zinc-800 text-white rounded-xl px-4 py-3 border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" style={{ fontSize: '16px' }} />
         <p className="text-zinc-500 text-xs mt-2">Semana {currentWeek} de 12 · {phase.phase}</p>
       </div>
 
@@ -1561,32 +1563,32 @@ export default function FitnessPage() {
       <style>{STYLES}</style>
       <ToastContainer toasts={toasts} remove={id => setToasts(t => t.filter(x => x.id !== id))} />
 
-      <div className="min-h-screen text-white" style={{ background: '#080b0f' }}>
+      <div className="min-h-screen text-white overflow-x-hidden" style={{ background: '#080b0f' }}>
         {/* Header */}
-        <div className="sticky top-0 z-40" style={{ background: 'rgba(8,11,15,0.96)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(39,39,42,0.8)' }}>
-          <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-zinc-500 text-xs uppercase tracking-widest">Plan 12 semanas</p>
+        <div className="sticky top-0 z-40" style={{ background: 'rgba(8,11,15,0.96)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(39,39,42,0.8)', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+          <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-zinc-500 text-[10px] uppercase tracking-widest">Plan 12 semanas</p>
               <p className="font-black text-lg leading-none shimmer-text">FITNESS TRACKER</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {/* Rest timer indicator in header */}
               {restActive && (
-                <div className="anim-pop px-3 py-1 rounded-full border border-amber-500/40 text-amber-400 font-mono text-sm font-bold"
+                <div className="anim-pop px-2 py-1 rounded-full border border-amber-500/40 text-amber-400 font-mono text-xs font-bold"
                   style={{ background: 'rgba(245,158,11,0.1)' }}>
                   ⏱ {fmtSecs(rest)}
                 </div>
               )}
               <div className="text-right">
                 <p className="font-bold text-sm" style={{ color: phase.color }}>S{currentWeek}/12</p>
-                <p className="text-zinc-500 text-xs">{todayWT}</p>
+                <p className="text-zinc-500 text-[10px] truncate max-w-[80px]">{todayWT}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="max-w-md mx-auto px-4 py-4 pb-28">
+        <div className="max-w-md mx-auto px-4 py-4 pb-36">
           {tab === 'dashboard' && DashboardContent}
           {tab === 'workout'   && WorkoutContent}
           {tab === 'nutrition' && NutritionContent}
@@ -1596,8 +1598,8 @@ export default function FitnessPage() {
 
         {/* Bottom nav */}
         <div className="fixed bottom-0 left-0 right-0 z-40"
-          style={{ background: 'rgba(8,11,15,0.97)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(39,39,42,0.8)' }}>
-          <div className="max-w-md mx-auto px-3 py-2">
+          style={{ background: 'rgba(8,11,15,0.97)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(39,39,42,0.8)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <div className="max-w-md mx-auto px-2 py-2">
             <div className="grid grid-cols-5 gap-1">
               {([
                 { key: 'dashboard', icon: '◉', label: 'Hoy' },
@@ -1607,7 +1609,7 @@ export default function FitnessPage() {
                 { key: 'settings',  icon: '⚙️', label: 'Config' },
               ] as const).map(item => (
                 <button key={item.key} onClick={() => setTab(item.key)}
-                  className={`flex flex-col items-center py-2 px-1 rounded-2xl transition-all active:scale-95 ${
+                  className={`flex flex-col items-center py-2.5 px-0.5 rounded-xl transition-all active:scale-95 min-w-0 ${
                     tab === item.key ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'
                   }`}
                   style={tab === item.key ? {
@@ -1615,7 +1617,7 @@ export default function FitnessPage() {
                     boxShadow: `0 0 0 1px ${phase.color}40`,
                   } : {}}>
                   <span className="text-base">{item.icon}</span>
-                  <span className="text-xs mt-0.5 font-medium">{item.label}</span>
+                  <span className="text-[10px] mt-0.5 font-medium leading-none">{item.label}</span>
                 </button>
               ))}
             </div>
