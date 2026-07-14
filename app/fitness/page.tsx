@@ -87,6 +87,72 @@ interface ProgressEntry {
   date: string; weight: number; waist?: number; chest?: number; arms?: number; notes?: string;
 }
 interface Toast { id: number; msg: string; type: 'pr' | 'done' | 'info'; }
+interface PlannedEx { name: string; sets: number; reps: string; rest: number; tip?: string; }
+interface DaySession { label: string; color: string; emoji: string; isRest: boolean; isCardio: boolean; isHome?: boolean; exercises: PlannedEx[]; }
+
+// ─── SESIONES PLANIFICADAS ────────────────────────────────────────────────────
+const HOME_DB: PlannedEx[] = [
+  { name: 'Sentadilla goblet (mancuerna al pecho)', sets: 3, reps: '12–15', rest: 90, tip: 'Talones en el suelo, rodillas hacia afuera, espalda recta — sin importar el peso' },
+  { name: 'Hip thrust en suelo con mancuerna', sets: 4, reps: '15', rest: 90, tip: 'Hombros en el suelo, empuja con los glúteos, aprieta 1 segundo arriba' },
+  { name: 'Zancadas alternas con mancuernas', sets: 3, reps: '10/lado', rest: 90, tip: 'Rodilla trasera casi toca el suelo, torso recto' },
+  { name: 'Press de suelo con mancuernas (floor press)', sets: 3, reps: '10–12', rest: 90, tip: 'Tumbado en el suelo, codos a 45° del cuerpo, baja hasta tocar el suelo' },
+  { name: 'Remo inclinado 1 brazo (apoyo en silla)', sets: 3, reps: '10/lado', rest: 75, tip: 'Codo pegado al cuerpo, jala hacia la cadera, no gires el torso' },
+  { name: 'Press de hombros sentado con mancuernas', sets: 3, reps: '10–12', rest: 90, tip: 'Mancuernas a la altura de los oídos, empuja hacia arriba sin arquear la espalda' },
+  { name: 'Curl de bíceps alternado', sets: 3, reps: '12', rest: 60, tip: 'Codo fijo al cuerpo, sube hasta el hombro, baja en 2 segundos' },
+  { name: 'Extensión de tríceps tumbado (skullcrusher DB)', sets: 3, reps: '12', rest: 60, tip: 'Codos apuntando al techo, baja hacia la frente, extiende arriba' },
+  { name: 'Plancha frontal', sets: 3, reps: '30 seg', rest: 45, tip: 'Cuerpo recto de cabeza a talones, aprieta abdomen y glúteos' },
+];
+const UPPER_A_EX: PlannedEx[] = [
+  { name: 'Press de banca con mancuernas', sets: 3, reps: '10–12', rest: 90, tip: 'Codos a 45°, baja hasta sentir el pecho estirado, sube explosivo' },
+  { name: 'Press inclinado mancuernas (30°)', sets: 3, reps: '10–12', rest: 90, tip: 'Banco inclinado, enfoca la parte alta del pecho' },
+  { name: 'Press militar sentado con mancuernas', sets: 3, reps: '10–12', rest: 90, tip: 'Mancuernas a la altura de los oídos, no arquees la espalda' },
+  { name: 'Elevaciones laterales', sets: 3, reps: '12–15', rest: 60, tip: 'Muy ligero, codo ligeramente doblado, llega a la altura del hombro' },
+  { name: 'Fondos en banco o máquina', sets: 3, reps: '10–12', rest: 60, tip: 'Codos hacia atrás, no los abras al lado' },
+  { name: 'Extensión tríceps en polea', sets: 3, reps: '12–15', rest: 60, tip: 'Codos fijos al costado del cuerpo, extiende completamente' },
+];
+const LOWER_A_EX: PlannedEx[] = [
+  { name: 'Sentadilla goblet o con barra', sets: 4, reps: '10–12', rest: 120, tip: 'Talones en el suelo, rodillas hacia afuera, profundidad paralela' },
+  { name: 'Prensa de piernas', sets: 3, reps: '12', rest: 90, tip: 'Pies a lo ancho de hombros, no bloquees las rodillas arriba' },
+  { name: 'Extensión cuádriceps en máquina', sets: 3, reps: '12–15', rest: 60, tip: 'Extiende completamente, baja controlado en 2–3 segundos' },
+  { name: 'Hip thrust con barra o mancuerna', sets: 4, reps: '12–15', rest: 90, tip: 'Hombros en el banco, aprieta los glúteos arriba y mantén 1 seg' },
+  { name: 'Zancadas con mancuernas', sets: 3, reps: '10/lado', rest: 90, tip: 'Paso largo, rodilla trasera casi al suelo, torso recto' },
+  { name: 'Elevación de talones (pantorrillas)', sets: 4, reps: '15–20', rest: 45, tip: 'Sube todo lo que puedas, baja lento, siéntelo estirar bien' },
+];
+const UPPER_B_EX: PlannedEx[] = [
+  { name: 'Jalón al pecho en polea', sets: 4, reps: '10–12', rest: 90, tip: 'Agarre más ancho que hombros, lleva la barra al pecho, no balancees' },
+  { name: 'Remo con barra', sets: 4, reps: '10–12', rest: 90, tip: 'Torso a 45°, lleva la barra al ombligo, aprieta la espalda arriba' },
+  { name: 'Remo mancuerna 1 brazo', sets: 3, reps: '10/lado', rest: 75, tip: 'Apoyado en banco, codo pegado, jala hasta la cadera' },
+  { name: 'Curl de bíceps con barra', sets: 3, reps: '10–12', rest: 60, tip: 'Codos fijos al lado, sube hasta arriba, baja en 2 segundos' },
+  { name: 'Curl martillo con mancuernas', sets: 3, reps: '12', rest: 60, tip: 'Agarre neutro (pulgar arriba), trabaja el braquial' },
+  { name: 'Plancha frontal', sets: 3, reps: '30–45 seg', rest: 45, tip: 'Cuerpo recto, aprieta el abdomen y los glúteos' },
+];
+const LOWER_B_EX: PlannedEx[] = [
+  { name: 'Hip thrust con barra (GLÚTEOS — prioridad)', sets: 4, reps: '12–15', rest: 90, tip: 'Aprieta fuerte los glúteos arriba, no uses la espalda baja' },
+  { name: 'Peso muerto rumano (RDL)', sets: 4, reps: '10–12', rest: 120, tip: 'Espalda recta, siente el estiramiento en isquiotibiales, rodillas ligeramente dobladas' },
+  { name: 'Curl femoral acostado en máquina', sets: 3, reps: '12–15', rest: 75, tip: 'Baja controlado en 2–3 segundos, sin impulso' },
+  { name: 'Abducción de cadera en máquina', sets: 3, reps: '15–20', rest: 60, tip: 'Peso ligero, abre lento, cierra más lento todavía' },
+  { name: 'Sentadilla sumo con mancuerna', sets: 3, reps: '12', rest: 90, tip: 'Pies abiertos y puntados hacia afuera, mancuerna en el centro' },
+  { name: 'Crunch en polea o suelo', sets: 3, reps: '15–20', rest: 45, tip: 'Flexiona desde el ombligo, no jales con el cuello' },
+  { name: 'Elevaciones de piernas tumbado', sets: 3, reps: '12–15', rest: 45, tip: 'Espalda pegada al suelo, sube las piernas rectas, baja lento' },
+];
+const CARDIO_EX: PlannedEx[] = [
+  { name: 'Caminata inclinada (12% / 5.5 km/h)', sets: 1, reps: '35 min', rest: 0, tip: 'Meta: frecuencia cardíaca 120–140 ppm · "Puedes hablar pero con esfuerzo"' },
+  { name: 'Bicicleta estacionaria (alternativa)', sets: 1, reps: '30 min', rest: 0, tip: 'Ritmo moderado sostenido — misma zona cardíaca' },
+];
+const SESSION_BY_DOW: DaySession[] = [
+  { label: 'Upper A — Pecho · Hombros · Tríceps',      color: '#8b5cf6', emoji: '💪', isRest: false, isCardio: false, exercises: UPPER_A_EX },
+  { label: 'Lower A — Cuádriceps · Glúteos',            color: '#06b6d4', emoji: '🦵', isRest: false, isCardio: false, exercises: LOWER_A_EX },
+  { label: 'Descanso activo',                            color: '#22c55e', emoji: '🌿', isRest: true,  isCardio: false, exercises: [] },
+  { label: 'Upper B — Espalda · Bíceps · Core',         color: '#f59e0b', emoji: '🏋️', isRest: false, isCardio: false, exercises: UPPER_B_EX },
+  { label: 'Lower B — Glúteos · Isquiotibiales',        color: '#ec4899', emoji: '🍑', isRest: false, isCardio: false, exercises: LOWER_B_EX },
+  { label: 'Cardio — Quema de grasa',                   color: '#14b8a6', emoji: '🏃', isRest: false, isCardio: true,  exercises: CARDIO_EX },
+  { label: 'Descanso total — recarga y come bien',       color: '#6b7280', emoji: '😴', isRest: true,  isCardio: false, exercises: [] },
+];
+const HOME_SESSION: DaySession = {
+  label: 'Casa — Full Body con Mancuernas', color: '#f59e0b', emoji: '🏠',
+  isRest: false, isCardio: false, isHome: true, exercises: HOME_DB,
+};
+const DAY_LABEL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const PROGRAM: Record<string, { phase: string; short: string; color: string; workouts: string[] }> = {
@@ -290,6 +356,14 @@ export default function FitnessPage() {
   const [rest, setRest] = useState(0);
   const [restActive, setRestActive] = useState(false);
   const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const afterRestRef = useRef<(() => void) | null>(null);
+
+  // Guided workout
+  const [guided, setGuided] = useState(false);
+  const [gExIdx, setGExIdx] = useState(0);
+  const [gSetIdx, setGSetIdx] = useState(0);
+  const [gWeight, setGWeight] = useState('');
+  const [gReps, setGReps] = useState('');
 
   // Workout UI
   const [newExName, setNewExName] = useState('');
@@ -352,7 +426,12 @@ export default function FitnessPage() {
   useEffect(() => {
     if (restActive && rest > 0) {
       restRef.current = setInterval(() => setRest(r => {
-        if (r <= 1) { setRestActive(false); clearInterval(restRef.current!); return 0; }
+        if (r <= 1) {
+          setRestActive(false);
+          clearInterval(restRef.current!);
+          if (afterRestRef.current) { afterRestRef.current(); afterRestRef.current = null; }
+          return 0;
+        }
         return r - 1;
       }), 1000);
     }
@@ -370,6 +449,59 @@ export default function FitnessPage() {
   const phase      = PROGRAM[phaseKey];
   const todayWT    = phase.workouts[getDOW(today)];
   const suggestedEx = QUICK_EX[todayWT] ?? [];
+
+  // ── Today's planned session ──
+  const todayDOW = getDOW(today);
+  const isFirstDay = startDate === today;
+  const todaySession: DaySession = (isFirstDay && todayDOW === 1)
+    ? HOME_SESSION
+    : SESSION_BY_DOW[todayDOW] ?? SESSION_BY_DOW[0];
+
+  // ── Guided workout functions ──
+  const startGuided = useCallback(() => {
+    if (todaySession.exercises.length > 0 && todayLog.exercises.length === 0) {
+      const exs: ExerciseEntry[] = todaySession.exercises.map(pe => ({
+        id: `g_${pe.name.slice(0, 20)}_${Date.now()}`,
+        name: pe.name,
+        sets: Array.from({ length: pe.sets }, () => ({ reps: 0, weight: 0, done: false })),
+      }));
+      updateToday({ exercises: exs, workoutStartedAt: Date.now(), workoutType: todaySession.label });
+    } else {
+      updateToday({ workoutStartedAt: Date.now(), workoutType: todaySession.label });
+    }
+    setGuided(true); setGExIdx(0); setGSetIdx(0); setGWeight(''); setGReps('');
+  }, [todaySession, todayLog.exercises.length, updateToday]);
+
+  const completeSet = useCallback(() => {
+    const ex = todaySession.exercises[gExIdx];
+    if (!ex) return;
+    const w = parseFloat(gWeight) || 0;
+    const r = parseInt(gReps) || parseInt(ex.reps.split('–')[0]) || 12;
+    const prevPR = getExercisePR(ex.name, logs, today);
+    const exs = todayLog.exercises.map(e => {
+      if (e.name !== ex.name) return e;
+      const sets = e.sets.map((s, si) => si === gSetIdx ? { ...s, weight: w, reps: r, done: true } : s);
+      if (w > prevPR && prevPR > 0) setTimeout(() => addToast(`🏆 PR en ${ex.name}: ${w} kg!`, 'pr'), 200);
+      return { ...e, sets };
+    });
+    updateToday({ exercises: exs });
+    setGWeight(''); setGReps('');
+    const isLastSet = gSetIdx >= ex.sets - 1;
+    const isLastEx  = gExIdx >= todaySession.exercises.length - 1;
+    if (isLastSet && isLastEx) {
+      const dur = todayLog.workoutStartedAt ? Math.floor((Date.now() - todayLog.workoutStartedAt) / 1000) : 0;
+      if (timerRef.current) clearInterval(timerRef.current);
+      updateToday({ workoutDone: true, workoutType: todaySession.label, workoutDuration: dur });
+      addToast('¡Entrenamiento completado! 💪', 'done');
+      setGuided(false);
+      return;
+    }
+    const advance = isLastSet
+      ? () => { setGExIdx(g => g + 1); setGSetIdx(0); }
+      : () => { setGSetIdx(s => s + 1); };
+    if (ex.rest > 0) { afterRestRef.current = advance; startRest(ex.rest); }
+    else advance();
+  }, [gExIdx, gSetIdx, gWeight, gReps, todaySession, todayLog, logs, today, updateToday, addToast, startRest, timerRef]);
 
   // ── Daily stats ──
   const score       = useMemo(() => dailyScore(todayLog), [todayLog]);
@@ -682,242 +814,262 @@ export default function FitnessPage() {
   );
 
   // ─── TAB: WORKOUT ─────────────────────────────────────────────────────────
+  const todaySess = todaySession;
   const WorkoutContent = (
     <div className="space-y-4 anim-fade-up">
-      {/* Header */}
-      <div className="rounded-3xl p-5 relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg, #0d1117, #0f172a)`, border: `1px solid rgba(6,182,212,0.2)` }}>
-        <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 70% 50%, ${phase.color}, transparent 60%)` }} />
-        <p className="text-zinc-400 text-xs uppercase tracking-widest">Semana {currentWeek} · {phase.short}</p>
-        <p className="text-white font-black text-2xl mt-1">{todayWT}</p>
-        {/* Timer display */}
-        {(todayLog.workoutStartedAt && !todayLog.workoutDone) && (
-          <p className="font-mono font-black text-3xl mt-2 anim-timer">{fmtSecs(elapsed)}</p>
-        )}
-        {todayLog.workoutDone && todayLog.workoutDuration && (
-          <p className="text-green-400 font-mono font-bold mt-2">✓ {fmtSecs(todayLog.workoutDuration)}</p>
-        )}
-        {/* Volume */}
-        {sessionVol > 0 && (
-          <p className="text-zinc-400 text-sm mt-1">Volumen: <span className="text-cyan-400 font-bold">{sessionVol.toLocaleString()} kg</span></p>
-        )}
-        {/* Action buttons */}
-        <div className="flex gap-2 mt-3">
-          {!todayLog.workoutStartedAt && !todayLog.workoutDone && (
-            <button onClick={startWorkout}
-              className="flex-1 text-white rounded-xl py-3 font-bold text-sm transition-all active:scale-95"
-              style={{ background: `linear-gradient(135deg, ${phase.color}, #14b8a6)`, boxShadow: `0 4px 20px ${phase.color}40` }}>
-              ▶ Iniciar entrenamiento
-            </button>
-          )}
-          {todayLog.workoutStartedAt && !todayLog.workoutDone && (
-            <button onClick={markWorkoutDone}
-              className="flex-1 bg-green-600 hover:bg-green-500 text-white rounded-xl py-3 font-bold text-sm transition-all active:scale-95">
-              ✓ Completar
-            </button>
-          )}
-          {todayLog.workoutDone && (
-            <div className="flex-1 bg-green-900/40 border border-green-600/40 text-green-400 rounded-xl py-3 text-center font-bold text-sm anim-pop">
-              ✅ Completado
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Rest timer */}
-      {restActive && (
-        <div className="bg-zinc-900 rounded-2xl p-4 border border-amber-500/40 anim-pop">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-amber-400 text-xs uppercase tracking-widest font-bold">Descanso</p>
-              <p className="text-white font-black text-3xl font-mono">{fmtSecs(rest)}</p>
-            </div>
-            <div className="flex gap-2">
-              {[60, 90, 120].map(s => (
-                <button key={s} onClick={() => startRest(s)}
-                  className={`rounded-xl px-3 py-2 text-xs font-bold transition-all ${rest === s && restActive ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}>
-                  {s}s
-                </button>
-              ))}
-              <button onClick={() => { setRestActive(false); setRest(0); }}
-                className="bg-zinc-800 text-zinc-500 rounded-xl px-3 py-2 text-xs hover:bg-zinc-700 transition-all">✕</button>
-            </div>
-          </div>
-          <div className="mt-2">
-            <Bar pct={rest > 0 ? (rest / 120) * 100 : 0} color="#f59e0b" h={4} />
-          </div>
+      {/* ── COMPLETADO ─────────────────────────────────────────── */}
+      {todayLog.workoutDone ? (
+        <div className="rounded-3xl p-6 text-center relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #052e16, #14532d)', border: '1px solid rgba(34,197,94,0.4)' }}>
+          <p className="text-5xl mb-3 anim-pop">🎉</p>
+          <p className="text-green-400 font-black text-2xl">¡Entrenamiento completado!</p>
+          <p className="text-white text-base font-bold mt-1">{todaySess.label}</p>
+          <p className="text-green-300 text-sm mt-2">
+            {todayLog.workoutDuration ? `Duración: ${fmtSecs(todayLog.workoutDuration)}` : ''}
+            {sessionVol > 0 ? ` · Volumen: ${sessionVol.toLocaleString()} kg` : ''}
+          </p>
+          <p className="text-green-700 text-xs mt-3">Registra tu peso y medidas en la pestaña Progreso →</p>
         </div>
-      )}
 
-      {/* Suggested exercises */}
-      {suggestedEx.length > 0 && (
-        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-          <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Plan del día</p>
-          <div className="flex flex-wrap gap-2">
-            {suggestedEx.map((ex, i) => {
-              const alreadyAdded = todayLog.exercises.some(e => e.name === ex);
-              const pr = getExercisePR(ex, logs, today);
-              return (
-                <button key={ex}
-                  onClick={() => !alreadyAdded && addExercise(ex)}
-                  style={{ animationDelay: `${i * 50}ms` }}
-                  className={`anim-slide-in text-xs rounded-xl px-3 py-2 font-medium transition-all active:scale-95 flex items-center gap-1 ${
-                    alreadyAdded
-                      ? 'bg-green-900/40 border border-green-600/40 text-green-400 cursor-default'
-                      : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'
-                  }`}>
-                  {alreadyAdded ? '✓' : '+'} {ex}
-                  {pr > 0 && !alreadyAdded && <span className="text-amber-400 font-bold">·PR {pr}</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      ) : guided ? (
+        // ── MODO GUIADO ────────────────────────────────────────────
+        (() => {
+          const ex = todaySess.exercises[gExIdx];
+          if (!ex) return null;
+          const isLastEx  = gExIdx >= todaySess.exercises.length - 1;
+          const isLastSet = gSetIdx >= ex.sets - 1;
+          const prevHist  = getExerciseHistory(ex.name, logs, today);
+          const prevSess  = prevHist[0];
+          const restTotal = ex.rest;
 
-      {/* Exercise log */}
-      {todayLog.exercises.map((ex, exIdx) => {
-        const hist = getExerciseHistory(ex.name, logs, today);
-        const pr = getExercisePR(ex.name, logs, today);
-        const lastSession = hist[0];
-        const isExpanded = expandedEx === ex.id || !expandedEx;
-        const currentMaxW = Math.max(0, ...ex.sets.map(s => s.weight));
-        const isNewPR = currentMaxW > pr && pr > 0;
-        const setsVol = ex.sets.reduce((a, s) => a + s.weight * s.reps, 0);
-        return (
-          <div key={ex.id} className="bg-zinc-900 rounded-2xl overflow-hidden border transition-all"
-            style={{ borderColor: isNewPR ? '#f59e0b' : '#27272a', animationDelay: `${exIdx * 60}ms` }}>
-            {/* Exercise header */}
-            <button className="w-full flex items-center justify-between p-4 text-left"
-              onClick={() => setExpandedEx(expandedEx === ex.id ? null : ex.id)}>
-              <div className="flex items-center gap-2">
-                {isNewPR && <span className="anim-pr text-base">🏆</span>}
-                <div>
-                  <p className="text-white font-bold text-sm">{ex.name}</p>
-                  <p className="text-zinc-500 text-xs">
-                    {setsVol > 0 ? `${setsVol} kg vol` : ''}
-                    {pr > 0 ? ` · PR: ${pr} kg` : ''}
-                    {isNewPR ? <span className="text-amber-400 font-bold"> · ¡NUEVO PR!</span> : ''}
-                  </p>
-                </div>
+          return (
+            <div className="space-y-3">
+              {/* Progress dots */}
+              <div className="flex items-center gap-1.5 px-1">
+                {todaySess.exercises.map((_, i) => (
+                  <div key={i} className="flex-1 rounded-full transition-all duration-500"
+                    style={{ height: i === gExIdx ? 6 : 4,
+                      background: i < gExIdx ? todaySess.color : i === gExIdx ? todaySess.color : '#27272a' }} />
+                ))}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-zinc-500 text-xs">{ex.sets.filter(s => s.done).length}/{ex.sets.length} series</span>
-                <span className="text-zinc-400 text-sm">{expandedEx === ex.id ? '▲' : '▼'}</span>
-                <button onClick={e => { e.stopPropagation(); removeExercise(ex.id); }}
-                  className="text-zinc-600 hover:text-red-400 text-xs ml-1 transition-colors">✕</button>
-              </div>
-            </button>
+              <p className="text-zinc-500 text-xs text-center">
+                Ejercicio {gExIdx + 1} de {todaySess.exercises.length} · Semana {currentWeek}
+              </p>
 
-            {(isExpanded || expandedEx === ex.id) && (
-              <div className="px-4 pb-4">
-                {/* Last session hint */}
-                {lastSession && (
-                  <div className="mb-3 bg-zinc-800/60 rounded-xl px-3 py-2 flex items-center gap-2">
-                    <span className="text-zinc-500 text-xs">Última sesión:</span>
-                    <span className="text-zinc-300 text-xs font-medium">
-                      {lastSession.sets.slice(0, 3).map((s, i) => `${s.weight}×${s.reps}`).join(' · ')}
+              {/* Exercise card */}
+              <div className="rounded-3xl p-5 relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #0d1117, #0f172a)', border: `1.5px solid ${todaySess.color}50` }}>
+                <div className="absolute inset-0 opacity-10"
+                  style={{ background: `radial-gradient(circle at 80% 20%, ${todaySess.color}, transparent 60%)` }} />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-3xl">{todaySess.emoji}</span>
+                    <span className="text-xs font-bold px-2 py-1 rounded-full"
+                      style={{ background: `${todaySess.color}20`, color: todaySess.color }}>
+                      Serie {gSetIdx + 1}/{ex.sets}
                     </span>
-                    {lastSession.maxWeight > 0 && (
-                      <span className="text-cyan-400 text-xs ml-auto font-bold">→ intenta {lastSession.maxWeight + 2.5} kg</span>
-                    )}
                   </div>
-                )}
-
-                {/* Sets */}
-                <div className="space-y-2">
-                  <div className="grid grid-cols-12 gap-2 text-xs text-zinc-500 px-1">
-                    <span className="col-span-1">#</span>
-                    <span className="col-span-4 text-center">Peso (kg)</span>
-                    <span className="col-span-4 text-center">Reps</span>
-                    <span className="col-span-2 text-center">✓</span>
-                    <span className="col-span-1"></span>
-                  </div>
-                  {ex.sets.map((set, si) => (
-                    <div key={si} className={`grid grid-cols-12 gap-2 items-center rounded-xl px-1 py-0.5 transition-all ${set.done ? 'opacity-60' : ''}`}>
-                      <span className="col-span-1 text-zinc-500 text-sm font-bold">{si + 1}</span>
-                      <input type="number" value={set.weight || ''} placeholder="kg"
-                        onChange={e => updateSet(ex.id, si, 'weight', parseFloat(e.target.value) || 0)}
-                        className="col-span-4 bg-zinc-800 text-white text-center rounded-xl py-2.5 text-sm border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" />
-                      <input type="number" value={set.reps || ''} placeholder="reps"
-                        onChange={e => updateSet(ex.id, si, 'reps', parseInt(e.target.value) || 0)}
-                        className="col-span-4 bg-zinc-800 text-white text-center rounded-xl py-2.5 text-sm border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" />
-                      <button onClick={() => toggleSetDone(ex.id, si)}
-                        className={`col-span-2 h-10 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-                          set.done ? 'bg-green-600 text-white' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
-                        }`}>
-                        {set.done ? '✓' : '○'}
-                      </button>
-                      <button onClick={() => { const s = ex.sets.filter((_, i) => i !== si); updateToday({ exercises: todayLog.exercises.map(e => e.id === ex.id ? { ...e, sets: s } : e) }); }}
-                        className="col-span-1 text-zinc-700 hover:text-red-400 text-xs transition-colors">✕</button>
+                  <p className="text-white font-black text-xl leading-tight">{ex.name}</p>
+                  <p className="mt-1 text-sm font-bold" style={{ color: todaySess.color }}>
+                    {ex.sets} × {ex.reps} reps · Descanso {ex.rest}s
+                  </p>
+                  {ex.tip && (
+                    <div className="mt-3 bg-zinc-800/70 rounded-xl px-3 py-2.5">
+                      <p className="text-zinc-400 text-xs leading-relaxed">💡 {ex.tip}</p>
                     </div>
-                  ))}
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <button onClick={() => addSet(ex.id)}
-                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl py-2 text-xs font-bold transition-all active:scale-95">
-                    + Serie
-                  </button>
-                  <button onClick={() => startRest(90)}
-                    className="bg-zinc-800 hover:bg-zinc-700 text-amber-400 rounded-xl px-3 py-2 text-xs font-bold transition-all">
-                    ⏱ Rest
-                  </button>
+                  )}
+                  {prevSess && (
+                    <div className="mt-2 flex items-center justify-between bg-zinc-800/40 rounded-xl px-3 py-2">
+                      <p className="text-zinc-500 text-xs">Última vez:</p>
+                      <p className="text-cyan-400 text-xs font-bold">
+                        {prevSess.sets.slice(0, 3).map(s => `${s.weight || '—'}×${s.reps}`).join(' · ')}
+                      </p>
+                    </div>
+                  )}
+                  {/* Workout timer */}
+                  {todayLog.workoutStartedAt && (
+                    <p className="text-zinc-600 text-xs mt-2 font-mono">⏱ {fmtSecs(elapsed)}</p>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
-        );
-      })}
 
-      {/* Add exercise */}
-      {showAddEx ? (
-        <div className="bg-zinc-900 rounded-2xl p-4 border border-cyan-500/30 anim-pop">
-          <input type="text" value={newExName} autoFocus
-            onChange={e => setNewExName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addExercise(newExName)}
-            placeholder="Nombre del ejercicio..."
-            className="w-full bg-zinc-800 text-white rounded-xl px-4 py-3 text-sm border border-zinc-700 focus:border-cyan-500 outline-none mb-3 transition-colors" />
-          <div className="flex gap-2">
-            <button onClick={() => addExercise(newExName)}
-              className="flex-1 text-white rounded-xl py-2.5 text-sm font-bold transition-all active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #0891b2, #14b8a6)' }}>Agregar</button>
-            <button onClick={() => setShowAddEx(false)}
-              className="flex-1 bg-zinc-800 text-zinc-400 rounded-xl py-2.5 text-sm transition-all">Cancelar</button>
-          </div>
-        </div>
+              {/* REST TIMER */}
+              {restActive ? (
+                <div className="bg-zinc-900 rounded-2xl p-5 border border-amber-500/50 text-center anim-pop">
+                  <p className="text-amber-400 text-xs uppercase tracking-widest mb-1 font-bold">Descansando</p>
+                  <p className="text-white font-black text-6xl font-mono leading-none mb-3">{fmtSecs(rest)}</p>
+                  <Bar pct={restTotal > 0 ? (rest / restTotal) * 100 : 0} color="#f59e0b" h={8} />
+                  <p className="text-zinc-500 text-xs mt-3 mb-4">
+                    Próximo: {isLastSet
+                      ? (isLastEx ? 'Último ejercicio completado 🎉' : `→ ${todaySess.exercises[gExIdx + 1]?.name}`)
+                      : `Serie ${gSetIdx + 2} de ${ex.sets}`}
+                  </p>
+                  <button onClick={() => { setRestActive(false); setRest(0); if (afterRestRef.current) { afterRestRef.current(); afterRestRef.current = null; } }}
+                    className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl py-3 text-sm font-bold transition-all active:scale-95">
+                    Saltar descanso →
+                  </button>
+                </div>
+              ) : (
+                /* SET INPUT */
+                <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 space-y-4">
+                  <p className="text-zinc-400 text-xs uppercase tracking-widest">
+                    Registra la serie {gSetIdx + 1} · Meta: {ex.reps} reps
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-zinc-500 text-xs mb-1.5 block">Peso (kg) · pon 0 si es corporal</label>
+                      <input type="number" inputMode="decimal" value={gWeight}
+                        onChange={e => setGWeight(e.target.value)}
+                        placeholder={prevSess ? String(prevSess.sets[Math.min(gSetIdx, prevSess.sets.length - 1)]?.weight ?? 0) : '0'}
+                        className="w-full bg-zinc-800 text-white text-center rounded-xl py-4 text-2xl font-black border border-zinc-700 focus:border-cyan-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-zinc-500 text-xs mb-1.5 block">Reps completadas</label>
+                      <input type="number" inputMode="numeric" value={gReps}
+                        onChange={e => setGReps(e.target.value)}
+                        placeholder={ex.reps.split('–')[0]}
+                        className="w-full bg-zinc-800 text-white text-center rounded-xl py-4 text-2xl font-black border border-zinc-700 focus:border-cyan-500 outline-none" />
+                    </div>
+                  </div>
+                  <button onClick={completeSet}
+                    className="w-full text-black font-black text-lg rounded-2xl py-5 transition-all active:scale-[0.97]"
+                    style={{ background: `linear-gradient(135deg, ${todaySess.color}, #14b8a6)`,
+                      boxShadow: `0 6px 24px ${todaySess.color}50` }}>
+                    ✓ Serie {gSetIdx + 1} completada
+                    {isLastSet && isLastEx ? ' · Finalizar' : isLastSet ? ' · Siguiente ejercicio' : ''}
+                  </button>
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="flex gap-2">
+                {gExIdx > 0 && !restActive && (
+                  <button onClick={() => { setGExIdx(g => g - 1); setGSetIdx(0); setGWeight(''); setGReps(''); }}
+                    className="bg-zinc-800 text-zinc-400 rounded-xl px-4 py-3 text-sm font-bold transition-all active:scale-95">
+                    ← Anterior
+                  </button>
+                )}
+                {!restActive && (
+                  <button onClick={() => {
+                    if (isLastEx) { markWorkoutDone(); setGuided(false); }
+                    else { setGExIdx(g => g + 1); setGSetIdx(0); setGWeight(''); setGReps(''); }
+                  }}
+                    className="flex-1 bg-zinc-800 text-zinc-400 rounded-xl py-3 text-sm font-bold transition-all active:scale-95">
+                    {isLastEx ? '🎉 Finalizar entreno' : 'Saltar ejercicio →'}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()
+
       ) : (
-        <button onClick={() => setShowAddEx(true)}
-          className="w-full bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-cyan-500 text-zinc-500 hover:text-cyan-400 rounded-2xl py-4 text-sm font-medium transition-all">
-          + Ejercicio personalizado
-        </button>
-      )}
-
-      {/* Cardio */}
-      <button onClick={() => updateToday({ cardio: !todayLog.cardio })}
-        className={`w-full flex items-center justify-between rounded-2xl px-4 py-4 transition-all active:scale-[0.98] ${
-          todayLog.cardio ? 'border border-green-600/40' : 'bg-zinc-900 border border-zinc-800 hover:border-zinc-600'
-        }`}
-        style={todayLog.cardio ? { background: 'rgba(22,163,74,0.1)' } : {}}>
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🚶</span>
-          <div className="text-left">
-            <p className={`font-bold ${todayLog.cardio ? 'text-green-300' : 'text-zinc-200'}`}>Cardio completado</p>
-            <p className="text-zinc-500 text-xs">Caminata inclinada 30–40 min · 120–140 ppm</p>
+        // ── VISTA PREVIA / INICIO ──────────────────────────────────
+        <>
+          {/* Header sesión */}
+          <div className="rounded-3xl p-5 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #0d1117, #0f172a)', border: `1px solid ${todaySess.color}40` }}>
+            <div className="absolute inset-0 opacity-10"
+              style={{ background: `radial-gradient(circle at 70% 40%, ${todaySess.color}, transparent 60%)` }} />
+            <div className="relative z-10">
+              <p className="text-zinc-500 text-xs uppercase tracking-widest mb-2">
+                {DAY_LABEL[todayDOW]} · Semana {currentWeek}
+              </p>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-5xl">{todaySess.emoji}</span>
+                <div>
+                  <p className="text-white font-black text-xl leading-tight">{todaySess.label}</p>
+                  {todaySess.isHome && (
+                    <p className="text-amber-400 text-xs mt-1 font-medium">🏠 En casa · Solo mancuernas · Cuerpo completo</p>
+                  )}
+                  {!todaySess.isRest && (
+                    <p className="text-zinc-500 text-xs mt-0.5">{todaySess.exercises.length} ejercicios · ~{todaySess.isCardio ? '35' : '60'} min</p>
+                  )}
+                </div>
+              </div>
+              {!todaySess.isRest ? (
+                <button onClick={startGuided}
+                  className="w-full text-black font-black text-base rounded-2xl py-4 transition-all active:scale-[0.97]"
+                  style={{ background: `linear-gradient(135deg, ${todaySess.color}, #14b8a6)`,
+                    boxShadow: `0 4px 24px ${todaySess.color}50` }}>
+                  ▶ Iniciar entrenamiento
+                </button>
+              ) : (
+                <div className="bg-green-900/20 border border-green-600/30 rounded-2xl px-4 py-3 text-center">
+                  <p className="text-green-400 font-bold text-sm">Día de descanso — recupera y come bien</p>
+                  <p className="text-green-700 text-xs mt-0.5">Camina 20–30 min suave si quieres activarte</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <span className={`text-2xl transition-all duration-300 ${todayLog.cardio ? 'anim-pop' : ''}`}
-          style={{ color: todayLog.cardio ? '#22c55e' : '#3f3f46' }}>
-          {todayLog.cardio ? '✓' : '○'}
-        </span>
-      </button>
 
-      {/* Notes */}
-      <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-        <p className="text-zinc-400 text-xs uppercase tracking-widest mb-2">Notas</p>
-        <textarea value={todayLog.notes} onChange={e => updateToday({ notes: e.target.value })}
-          placeholder="PRs, sensaciones, dolores, ajustes..."
-          rows={3} className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2.5 text-sm border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors" />
-      </div>
+          {/* Lista de ejercicios del día */}
+          {todaySess.exercises.length > 0 && (
+            <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
+              <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+                <p className="text-zinc-400 text-xs uppercase tracking-widest">Plan de hoy — ejercicio a ejercicio</p>
+                <p className="text-xs font-bold" style={{ color: todaySess.color }}>{todaySess.exercises.length} ejerc.</p>
+              </div>
+              {todaySess.exercises.map((ex, i) => {
+                const done = todayLog.exercises.find(e => e.name === ex.name)?.sets.every(s => s.done);
+                return (
+                  <div key={i} className={`px-4 py-3 flex items-start gap-3 transition-all ${
+                    i < todaySess.exercises.length - 1 ? 'border-b border-zinc-800/60' : ''
+                  } ${done ? 'opacity-50' : ''}`}>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black mt-0.5"
+                      style={{ background: done ? '#16a34a' : `${todaySess.color}20`, color: done ? '#fff' : todaySess.color }}>
+                      {done ? '✓' : i + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold ${done ? 'text-zinc-500' : 'text-white'}`}>{ex.name}</p>
+                      <p className="text-zinc-500 text-xs mt-0.5">{ex.sets} series × {ex.reps} · descanso {ex.rest === 0 ? 'continuo' : `${ex.rest}s`}</p>
+                      {ex.tip && !done && <p className="text-zinc-600 text-xs mt-0.5 italic leading-relaxed">{ex.tip}</p>}
+                    </div>
+                    <span className="text-zinc-700 text-xs font-mono flex-shrink-0">{ex.sets}×{ex.reps}</span>
+                  </div>
+                );
+              })}
+              <div className="px-4 pb-4 pt-3">
+                <button onClick={startGuided}
+                  className="w-full text-black font-black text-sm rounded-xl py-3 transition-all active:scale-95"
+                  style={{ background: `linear-gradient(135deg, ${todaySess.color}, #14b8a6)` }}>
+                  ▶ Empezar con ejercicio 1
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Cardio tracker */}
+          {todaySess.isCardio && (
+            <button onClick={() => updateToday({ cardio: !todayLog.cardio, workoutDone: !todayLog.cardio, workoutType: todaySess.label })}
+              className={`w-full flex items-center justify-between rounded-2xl px-4 py-4 transition-all active:scale-[0.98] border ${
+                todayLog.cardio ? 'border-green-600/40' : 'bg-zinc-900 border-zinc-800'
+              }`}
+              style={todayLog.cardio ? { background: 'rgba(22,163,74,0.1)' } : {}}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏃</span>
+                <div>
+                  <p className={`font-bold ${todayLog.cardio ? 'text-green-300' : 'text-zinc-200'}`}>Cardio completado</p>
+                  <p className="text-zinc-500 text-xs">Caminata inclinada 35 min · 120–140 ppm</p>
+                </div>
+              </div>
+              <span className={`text-2xl ${todayLog.cardio ? 'anim-pop' : ''}`}
+                style={{ color: todayLog.cardio ? '#22c55e' : '#3f3f46' }}>
+                {todayLog.cardio ? '✓' : '○'}
+              </span>
+            </button>
+          )}
+
+          {/* Notas */}
+          <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
+            <p className="text-zinc-400 text-xs uppercase tracking-widest mb-2">Notas del día</p>
+            <textarea value={todayLog.notes} onChange={e => updateToday({ notes: e.target.value })}
+              placeholder="PRs, sensaciones, dolores, energía..."
+              rows={2} className="w-full bg-zinc-800 text-white rounded-xl px-3 py-2.5 text-sm border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors" />
+          </div>
+        </>
+      )}
     </div>
   );
 
