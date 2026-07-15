@@ -203,13 +203,16 @@ const todayStr = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 };
+// Convert a Date object to local YYYY-MM-DD (avoids UTC offset bug)
+const localDateStr = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
 function getProgramWeek(start: string, current: string) {
   const diff = Math.floor((new Date(current).getTime() - new Date(start).getTime()) / 86400000);
   return Math.max(1, Math.min(12, Math.floor(diff / 7) + 1));
 }
 function getPhaseKey(w: number) { return w <= 3 ? '1-3' : w <= 8 ? '4-8' : '9-12'; }
-function getDOW(d: string) { const n = new Date(d).getDay(); return n === 0 ? 6 : n - 1; }
+function getDOW(d: string) { const n = new Date(d + 'T12:00:00').getDay(); return n === 0 ? 6 : n - 1; }
 function fmtDate(d: string) {
   return new Date(d + 'T12:00:00').toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
 }
@@ -248,8 +251,8 @@ function getStreak(logs: Record<string, DayLog>) {
   const today = new Date();
   let streak = 0;
   for (let i = 0; i < 60; i++) {
-    const d = new Date(today); d.setDate(d.getDate() - i);
-    const ds = d.toISOString().split('T')[0];
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = localDateStr(d);
     const l = logs[ds];
     const active = l && (l.workoutDone || l.water >= 4 || Object.values(l.meals).some(Boolean) || l.creatine);
     if (active) streak++;
@@ -268,8 +271,8 @@ function weeklyAdherence(logs: Record<string, DayLog>, phaseKey: string) {
   const today = new Date();
   let planned = 0, done = 0;
   for (let i = 0; i < 7; i++) {
-    const d = new Date(today); d.setDate(d.getDate() - getDOW(todayStr()) + i);
-    const ds = d.toISOString().split('T')[0];
+    const d = new Date(); d.setDate(d.getDate() - getDOW(todayStr()) + i);
+    const ds = localDateStr(d);
     const dow = getDOW(ds);
     if (plan[dow] !== 'Descanso') { planned++; if (logs[ds]?.workoutDone) done++; }
   }
@@ -745,10 +748,10 @@ export default function FitnessPage() {
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-3">Esta semana</p>
         <div className="grid grid-cols-7 gap-0.5">
           {DAY_NAMES.map((name, i) => {
-            const base = new Date(today);
+            const base = new Date(today + 'T12:00:00');
             const diff = i - getDOW(today);
             base.setDate(base.getDate() + diff);
-            const ds = base.toISOString().split('T')[0];
+            const ds = localDateStr(base);
             const l = logs[ds];
             const isToday = ds === today;
             const wt = phase.workouts[i];
