@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const prices = await storage.getMenuPrices();
-    return NextResponse.json(prices);
+    return NextResponse.json(prices, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch {
-    return NextResponse.json({});
+    return NextResponse.json({}, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   }
 }
 

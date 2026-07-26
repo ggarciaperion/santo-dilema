@@ -331,11 +331,11 @@ export default function FitPage() {
       .then((r) => r.json())
       .then((data) => setMenuStock(data))
       .catch(() => {});
-    fetch("/api/menu-discounts")
+    fetch("/api/menu-discounts", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setMenuDiscounts(data))
       .catch(() => {});
-    fetch("/api/menu-prices")
+    fetch("/api/menu-prices", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setMenuPrices(data))
       .catch(() => {});

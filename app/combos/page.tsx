@@ -349,7 +349,7 @@ export default function CombosPage() {
       setIsOpen(isBusinessOpen());
       setOpenMessage(getNextOpenMessage());
     }, 60_000);
-    fetch("/api/menu-prices")
+    fetch("/api/menu-prices", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setMenuPrices(data))
       .catch(() => {});
