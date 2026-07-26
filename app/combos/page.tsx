@@ -332,6 +332,7 @@ export default function CombosPage() {
   const [isOpen, setIsOpen] = useState(true);
   const [openMessage, setOpenMessage] = useState("");
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
+  const [menuDiscounts, setMenuDiscounts] = useState<Record<string, number>>({});
   const [activeCombo, setActiveCombo] = useState<ComboConfig | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState<Selections>(emptySelections());
@@ -352,6 +353,10 @@ export default function CombosPage() {
     fetch("/api/menu-prices", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setMenuPrices(data))
+      .catch(() => {});
+    fetch("/api/menu-discounts", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => setMenuDiscounts(data))
       .catch(() => {});
     return () => clearInterval(iv);
   }, []);
@@ -425,10 +430,13 @@ export default function CombosPage() {
   const saveToCart = () => {
     if (!activeCombo) return;
     const comboGroupId = `cg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    const activePrice = menuPrices[activeCombo.id] ?? activeCombo.price;
-    const comboOriginalTotal = activeCombo.maxSavings > 0
-      ? parseFloat((activePrice + activeCombo.maxSavings).toFixed(2))
-      : undefined;
+    const basePrice = menuPrices[activeCombo.id] ?? activeCombo.price;
+    const activePrice = menuDiscounts[activeCombo.id] ?? basePrice;
+    const comboOriginalTotal = menuDiscounts[activeCombo.id]
+      ? parseFloat(basePrice.toFixed(2))
+      : activeCombo.maxSavings > 0
+        ? parseFloat((activePrice + activeCombo.maxSavings).toFixed(2))
+        : undefined;
     const comboMeta = { comboGroupId, comboName: activeCombo.name, comboPrice: activePrice, comboOriginalTotal };
     const items: any[] = [];
     for (const step of activeCombo.steps) {
@@ -674,7 +682,7 @@ export default function CombosPage() {
       {/* ── COMBO GRID ── */}
       <main className="relative z-10 max-w-3xl mx-auto px-4 pb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
         {COMBOS.map((combo, i) => (
-          <ComboCard key={combo.id} combo={combo} isOpen={isOpen} index={i} onSelect={() => openModal(combo)} menuPrices={menuPrices} />
+          <ComboCard key={combo.id} combo={combo} isOpen={isOpen} index={i} onSelect={() => openModal(combo)} menuPrices={menuPrices} menuDiscounts={menuDiscounts} />
         ))}
       </main>
 
@@ -807,7 +815,7 @@ export default function CombosPage() {
           visible={sheetVisible}
           isStepValid={isStepValid()}
           isLastStep={isLastStep}
-          effectivePrice={menuPrices[activeCombo.id] ?? activeCombo.price}
+          effectivePrice={menuDiscounts[activeCombo.id] ?? menuPrices[activeCombo.id] ?? activeCombo.price}
           onClose={closeAll}
           onToggleSauce={toggleSauce}
           onSelectSalad={selectSalad}
@@ -823,7 +831,7 @@ export default function CombosPage() {
           combo={activeCombo}
           summary={buildSummary(activeCombo, selections)}
           visible={sheetVisible}
-          effectivePrice={menuPrices[activeCombo.id] ?? activeCombo.price}
+          effectivePrice={menuDiscounts[activeCombo.id] ?? menuPrices[activeCombo.id] ?? activeCombo.price}
           onKeepShopping={handleKeepShopping}
           onCheckout={handleGoToCheckout}
         />
@@ -1021,10 +1029,12 @@ function PreCheckoutModal({
 //  COMBO CARD
 // ──────────────────────────────────────────────────────────────────
 
-function ComboCard({ combo, isOpen, index, onSelect, menuPrices }: { combo: ComboConfig; isOpen: boolean; index: number; onSelect: () => void; menuPrices: Record<string, number> }) {
+function ComboCard({ combo, isOpen, index, onSelect, menuPrices, menuDiscounts }: { combo: ComboConfig; isOpen: boolean; index: number; onSelect: () => void; menuPrices: Record<string, number>; menuDiscounts: Record<string, number> }) {
   const [hovered, setHovered] = useState(false);
   const { rgb } = combo.colors;
-  const effectivePrice = menuPrices[combo.id] ?? combo.price;
+  const basePrice = menuPrices[combo.id] ?? combo.price;
+  const discountPrice = menuDiscounts[combo.id];
+  const effectivePrice = discountPrice ?? basePrice;
 
   return (
     <article
@@ -1140,11 +1150,15 @@ function ComboCard({ combo, isOpen, index, onSelect, menuPrices }: { combo: Comb
         <div className="flex items-center justify-between gap-3 pt-3 mt-auto"
           style={{ borderTop: `1px solid rgba(${rgb},0.12)` }}>
           <div className="leading-none">
-            {combo.maxSavings > 0 && (
+            {discountPrice ? (
+              <div className="text-[11px] text-gray-600 line-through mb-0.5">
+                S/ {basePrice.toFixed(2)}
+              </div>
+            ) : combo.maxSavings > 0 ? (
               <div className="text-[11px] text-gray-600 line-through mb-0.5">
                 S/ {(effectivePrice + combo.maxSavings).toFixed(2)}
               </div>
-            )}
+            ) : null}
             <div className="flex items-baseline gap-1">
               <span
                 className="text-2xl font-black"
