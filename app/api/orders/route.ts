@@ -288,10 +288,10 @@ export async function DELETE(request: Request) {
   }
 }
 
-// PATCH - Actualizar estado de un pedido (o marcar como canje)
+// PATCH - Actualizar estado de un pedido (o marcar como canje o corregir total)
 export async function PATCH(request: Request) {
   try {
-    const { id, status, isCanje, canjeNote } = await request.json();
+    const { id, status, isCanje, canjeNote, totalPrice } = await request.json();
 
     const now = getPeruTimestamp();
     const updates: Record<string, any> = { updatedAt: now };
@@ -306,6 +306,10 @@ export async function PATCH(request: Request) {
     if (isCanje !== undefined) {
       updates.isCanje = isCanje;
       updates.canjeNote = canjeNote ?? "";
+    }
+
+    if (totalPrice !== undefined) {
+      updates.totalPrice = totalPrice;
     }
 
     const updatedOrder = await storage.updateOrder(id, updates);
