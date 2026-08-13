@@ -1168,6 +1168,9 @@ export default function FatPage() {
                           alt={product.name}
                           fill
                           sizes="(max-width: 768px) 100vw, 300px"
+                          priority={index < 4}
+                          placeholder="blur"
+                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgIFBP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Aqpubm5ubm5ubm5ubm5ubm5ubm5ubm5v/2Q=="
                           className={`${product.id === "pequeno-dilema" ? "object-contain object-center" : `object-cover ${product.id === "santo-pecado" ? "object-top" : "object-center"}`}`}
                           style={product.id === "pequeno-dilema" ? { transform: "scale(1.3)" } : product.id === "duo-dilema" ? { transform: "scale(1.18) translateX(-8%)" } : undefined}
                         />

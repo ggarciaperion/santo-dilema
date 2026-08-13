@@ -1088,7 +1088,7 @@ function ComboCard({ combo, isOpen, index, onSelect, menuPrices, menuDiscounts }
               : combo.id === "combo-chiguan"
               ? (hovered ? "scale(1.06)" : "scale(1.0)")
               : (hovered ? "scale(1.06)" : "scale(1)"), transition: "transform 0.4s ease" }}>
-            <Image src={combo.images[0]} alt="" fill className="object-cover" />
+            <Image src={combo.images[0]} alt="" fill className="object-cover" priority={index < 5} placeholder="blur" blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgIFBP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Aqpubm5ubm5ubm5ubm5ubm5ubm5ubm5v/2Q==" />
           </div>
         ) : combo.images.length === 3 ? (
           <div className="flex h-full items-center">
