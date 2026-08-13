@@ -80,9 +80,10 @@ export default function Home() {
   }, []);
 
   const MOBILE_IMAGES: Record<string, string> = {
-    fit: "/ensamovil.png",
-    fat: "/alamovil.png",
-    taco: "/tacomovil.png",
+    fit: "/gh.jpeg",
+    fat: "/jh.jpeg",
+    taco: "/bl.jpeg",
+    combos: "/yy.jpeg",
   };
 
   // Intro timing: fade out at 2.1s, unmount at 2.6s
@@ -258,7 +259,7 @@ export default function Home() {
                 src={isMobile && MOBILE_IMAGES[sec.id] ? MOBILE_IMAGES[sec.id] : sec.images[0]}
                 alt={sec.label}
                 fill
-                className="object-cover"
+                className="object-cover object-center"
                 style={{
                   filter: "brightness(0.35)",
                   transition: "transform 0.6s ease",
