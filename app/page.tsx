@@ -259,11 +259,12 @@ export default function Home() {
                 src={isMobile && MOBILE_IMAGES[sec.id] ? MOBILE_IMAGES[sec.id] : sec.images[0]}
                 alt={sec.label}
                 fill
-                className="object-cover object-center"
+                className="object-cover"
                 style={{
                   filter: "brightness(0.35)",
                   transition: "transform 0.6s ease",
                   transform: hoveredCard === sec.id ? "scale(1.08)" : "scale(1)",
+                  objectPosition: sec.id === "fit" ? "35% center" : sec.id === "combos" ? "65% center" : "center",
                 }}
               />
             )}
