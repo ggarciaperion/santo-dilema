@@ -8,6 +8,7 @@ import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
 import BannerCarousel from "../components/BannerCarousel";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
+import PageMotionWrapper from "../components/PageMotionWrapper";
 
 interface Product {
   id: string;
@@ -42,7 +43,7 @@ const products: Product[] = [
     name: "Pequeño Dilema",
     description: "8 alitas crujientes con papas francesas y tu salsa elegida. El primer bocado es una trampa, no vas a querer quedarte en solo 8.",
     price: 22.00,
-    image: "/pequeno-dilema.png?v=3",
+    image: "/cv.jpeg",
     category: "fat",
   },
   {
@@ -50,7 +51,7 @@ const products: Product[] = [
     name: "Dúo Dilema",
     description: "14 alitas con papas francesas y 2 salsas para hacer lo que se te antoje. Spoiler: el arrepentimiento llega después, no durante.",
     price: 34.00,
-    image: "/duo-dilema.png?v=3",
+    image: "/vv.jpeg",
     category: "fat",
   },
   {
@@ -58,7 +59,7 @@ const products: Product[] = [
     name: "Santo Pecado",
     description: "20 alitas, papas francesas y 3 salsas para combinar sin culpa. Para los que no entienden el concepto de 'suficiente'.",
     price: 47.00,
-    image: "/todos-pecan.png?v=3",
+    image: "/ss.jpeg",
     category: "fat",
   },
 ];
@@ -829,7 +830,35 @@ export default function FatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+    <PageMotionWrapper color="red" className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+
+      {/* ── KEYFRAMES ── */}
+      <style>{`@keyframes fatGridPulse { 0%, 100% { opacity: 0.04; } 50% { opacity: 0.10; } }`}</style>
+
+      {/* ── FONDO base ── */}
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 120% 55% at 50% 0%, rgba(180,20,20,0.50) 0%, rgba(0,0,0,0) 60%), radial-gradient(ellipse 70% 50% at 15% 60%, rgba(220,60,0,0.16) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 85% 80%, rgba(239,68,68,0.12) 0%, transparent 50%)" }}
+      />
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: "linear-gradient(rgba(239,68,68,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.10) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          animation: "fatGridPulse 4s ease-in-out infinite",
+        }}
+      />
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-0 left-[12%] w-1 h-80 rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(239,68,68,0.65), transparent)" }} />
+        <div className="absolute top-0 left-[28%] w-0.5 h-64 -rotate-6 origin-top" style={{ background: "linear-gradient(to bottom, rgba(251,146,60,0.50), transparent)" }} />
+        <div className="absolute top-0 left-[52%] w-1 h-72 rotate-8 origin-top" style={{ background: "linear-gradient(to bottom, rgba(239,68,68,0.45), transparent)" }} />
+        <div className="absolute top-0 right-[18%] w-1 h-96 -rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(251,113,133,0.55), transparent)" }} />
+        <div className="absolute top-0 right-[36%] w-0.5 h-56 rotate-4 origin-top" style={{ background: "linear-gradient(to bottom, rgba(220,38,38,0.40), transparent)" }} />
+        <div className="absolute top-16 left-[22%] w-2 h-2 rounded-full" style={{ background: "rgba(239,68,68,0.8)", boxShadow: "0 0 8px rgba(239,68,68,0.6)" }} />
+        <div className="absolute top-28 right-[30%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(251,146,60,0.9)", boxShadow: "0 0 6px rgba(251,146,60,0.7)" }} />
+        <div className="absolute top-10 left-[60%] w-2 h-2 rounded-full" style={{ background: "rgba(251,113,133,0.75)", boxShadow: "0 0 8px rgba(251,113,133,0.5)" }} />
+        <div className="absolute top-36 right-[18%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(239,68,68,0.65)" }} />
+        <div className="absolute top-20 left-[78%] w-2.5 h-2.5 rounded-full" style={{ background: "rgba(220,38,38,0.60)", boxShadow: "0 0 10px rgba(220,38,38,0.5)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-64" style={{ background: "linear-gradient(to top, rgba(100,10,10,0.28), transparent)" }} />
+      </div>
 
       {/* Toast de orden agregada */}
       {showSuccessToast && (
@@ -1084,7 +1113,7 @@ export default function FatPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`cards-stagger flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
             {products.map((product, index) => {
@@ -1121,13 +1150,28 @@ export default function FatPage() {
                       </div>
                     )}
                     {product.image.startsWith('/') ? (
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 300px"
-                        className={`object-cover ${product.id === "santo-pecado" ? "object-top" : "object-center"}`}
-                      />
+                      <>
+                        {/* Fondo difuminado para rellenar espacios laterales */}
+                        {product.id === "pequeno-dilema" && (
+                          <Image
+                            src={product.image}
+                            alt=""
+                            fill
+                            sizes="(max-width: 768px) 100vw, 300px"
+                            className="object-cover object-center"
+                            style={{ filter: "blur(30px)", transform: "scale(1.3)" }}
+                            aria-hidden
+                          />
+                        )}
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 300px"
+                          className={`${product.id === "pequeno-dilema" ? "object-contain object-center" : `object-cover ${product.id === "santo-pecado" ? "object-top" : "object-center"}`}`}
+                          style={product.id === "pequeno-dilema" ? { transform: "scale(1.3)" } : product.id === "duo-dilema" ? { transform: "scale(1.18) translateX(-8%)" } : undefined}
+                        />
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-900/40 to-orange-900/40">
                         <span className="text-5xl">{product.image}</span>
@@ -1795,6 +1839,6 @@ export default function FatPage() {
       })()}
 
       <WhatsAppButton lifted={completedOrders.length > 0} />
-    </div>
+    </PageMotionWrapper>
   );
 }

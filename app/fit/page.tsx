@@ -7,6 +7,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useCart } from "../context/CartContext";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
+import PageMotionWrapper from "../components/PageMotionWrapper";
 
 interface Product {
   id: string;
@@ -541,7 +542,35 @@ export default function FitPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black relative">
+    <PageMotionWrapper color="cyan" className="min-h-screen bg-black relative">
+
+      {/* ── KEYFRAMES ── */}
+      <style>{`@keyframes fitGridPulse { 0%, 100% { opacity: 0.04; } 50% { opacity: 0.10; } }`}</style>
+
+      {/* ── FONDO base ── */}
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 120% 55% at 50% 0%, rgba(6,120,160,0.50) 0%, rgba(0,0,0,0) 60%), radial-gradient(ellipse 70% 50% at 15% 60%, rgba(6,182,212,0.14) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 85% 80%, rgba(20,184,166,0.12) 0%, transparent 50%)" }}
+      />
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: "linear-gradient(rgba(6,182,212,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.10) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          animation: "fitGridPulse 4s ease-in-out infinite",
+        }}
+      />
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-0 left-[12%] w-1 h-80 rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(6,182,212,0.65), transparent)" }} />
+        <div className="absolute top-0 left-[28%] w-0.5 h-64 -rotate-6 origin-top" style={{ background: "linear-gradient(to bottom, rgba(34,211,238,0.50), transparent)" }} />
+        <div className="absolute top-0 left-[52%] w-1 h-72 rotate-8 origin-top" style={{ background: "linear-gradient(to bottom, rgba(6,182,212,0.45), transparent)" }} />
+        <div className="absolute top-0 right-[18%] w-1 h-96 -rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(20,184,166,0.55), transparent)" }} />
+        <div className="absolute top-0 right-[36%] w-0.5 h-56 rotate-4 origin-top" style={{ background: "linear-gradient(to bottom, rgba(8,145,178,0.40), transparent)" }} />
+        <div className="absolute top-16 left-[22%] w-2 h-2 rounded-full" style={{ background: "rgba(6,182,212,0.8)", boxShadow: "0 0 8px rgba(6,182,212,0.6)" }} />
+        <div className="absolute top-28 right-[30%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(34,211,238,0.9)", boxShadow: "0 0 6px rgba(34,211,238,0.7)" }} />
+        <div className="absolute top-10 left-[60%] w-2 h-2 rounded-full" style={{ background: "rgba(20,184,166,0.75)", boxShadow: "0 0 8px rgba(20,184,166,0.5)" }} />
+        <div className="absolute top-36 right-[18%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(6,182,212,0.65)" }} />
+        <div className="absolute top-20 left-[78%] w-2.5 h-2.5 rounded-full" style={{ background: "rgba(8,145,178,0.60)", boxShadow: "0 0 10px rgba(8,145,178,0.5)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-64" style={{ background: "linear-gradient(to top, rgba(6,60,80,0.28), transparent)" }} />
+      </div>
 
       {/* Toast de orden agregada */}
       {showSuccessToast && (
@@ -804,7 +833,7 @@ export default function FitPage() {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className={`flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
+            className={`cards-stagger flex flex-col md:flex-row md:flex-wrap md:justify-center items-center gap-5 md:gap-6 lg:gap-8 scrollbar-hide px-3 md:px-4 pt-6 pb-8 md:py-8 lg:py-10 select-none md:cursor-default md:overflow-visible`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollBehavior: isDragging ? 'auto' : 'smooth', userSelect: 'none', overflow: 'visible' }}
           >
             {products.map((product) => {
@@ -1379,6 +1408,6 @@ export default function FitPage() {
       })()}
 
       <WhatsAppButton lifted={completedOrders.length > 0} />
-    </div>
+    </PageMotionWrapper>
   );
 }

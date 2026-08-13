@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
+import PageMotionWrapper from "../components/PageMotionWrapper";
 
 // ──────────────────────────────────────────────────────────────────
 //  DATA
@@ -143,7 +144,7 @@ const COMBOS: ComboConfig[] = [
         summaryDetails: ["Sabor fijo · Nachos incluidos"],
       },
     ],
-    images: ["/pequeno-dilema.png", "/crunch.png"],
+    images: ["/bn.jpeg"],
     colors: {
       text:    "text-violet-400",
       border:  "border-violet-500/30",
@@ -167,7 +168,7 @@ const COMBOS: ComboConfig[] = [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Elige tu salsa para las alitas" },
       { type: "salad", label: "Elige tu ensalada" },
     ],
-    images: ["/pequeno-dilema.png", "/cobb.png"],
+    images: ["/nb.jpeg"],
     colors: {
       text:    "text-emerald-400",
       border:  "border-emerald-500/30",
@@ -191,7 +192,7 @@ const COMBOS: ComboConfig[] = [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Elige tu salsa para las alitas" },
       { type: "tacos", label: "Elige los 2 sabores de tus tacos" },
     ],
-    images: ["/pequeno-dilema.png", "/tacoinicio.png"],
+    images: ["/rr.jpeg"],
     colors: {
       text:    "text-orange-400",
       border:  "border-orange-500/30",
@@ -215,7 +216,7 @@ const COMBOS: ComboConfig[] = [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Salsa del Pequeño Dilema" },
       { type: "sauces", productId: "duo-dilema",     productName: "Dúo Dilema",     count: 2, label: "2 salsas para el Dúo Dilema" },
     ],
-    images: ["/pequeno-dilema.png", "/duo-dilema.png"],
+    images: ["/lo.jpeg"],
     colors: {
       text:    "text-fuchsia-400",
       border:  "border-fuchsia-500/30",
@@ -240,7 +241,7 @@ const COMBOS: ComboConfig[] = [
       { type: "salad", label: "Elige tu ensalada" },
       { type: "tacos", label: "Elige los 2 sabores de tus tacos" },
     ],
-    images: ["/duo-dilema.png", "/cobb.png", "/tacoinicio.png"],
+    images: ["/bc.jpeg"],
     colors: {
       text:    "text-red-400",
       border:  "border-red-500/30",
@@ -520,7 +521,7 @@ export default function CombosPage() {
   // ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
+    <PageMotionWrapper color="gold" className="min-h-screen bg-[#080808] text-white">
 
       {/* ── KEYFRAMES ── */}
       <style>{`
@@ -534,20 +535,37 @@ export default function CombosPage() {
         }
       `}</style>
 
-      {/* ── FONDO con textura ── */}
+      {/* ── FONDO base ── */}
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 120% 55% at 50% 0%, rgba(180,80,0,0.55) 0%, rgba(8,8,8,0) 60%), radial-gradient(ellipse 70% 50% at 15% 60%, rgba(245,120,0,0.18) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 85% 80%, rgba(245,158,11,0.15) 0%, transparent 50%)" }}
+      />
+      {/* Grid texture */}
       <div className="fixed inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: "linear-gradient(rgba(245,158,11,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.07) 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(rgba(245,158,11,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.12) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
           animation: "combosPulse 4s ease-in-out infinite",
         }}
       />
-      <div className="fixed inset-0 pointer-events-none z-0"
-        style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%)" }}
-      />
+      {/* Diagonal light streaks */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-0 left-[12%] w-1 h-80 rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(245,158,11,0.7), transparent)" }} />
+        <div className="absolute top-0 left-[28%] w-0.5 h-64 -rotate-6 origin-top" style={{ background: "linear-gradient(to bottom, rgba(251,146,60,0.55), transparent)" }} />
+        <div className="absolute top-0 left-[52%] w-1 h-72 rotate-8 origin-top" style={{ background: "linear-gradient(to bottom, rgba(245,158,11,0.50), transparent)" }} />
+        <div className="absolute top-0 right-[18%] w-1 h-96 -rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(251,191,36,0.60), transparent)" }} />
+        <div className="absolute top-0 right-[36%] w-0.5 h-56 rotate-4 origin-top" style={{ background: "linear-gradient(to bottom, rgba(234,88,12,0.45), transparent)" }} />
+        {/* Floating dots */}
+        <div className="absolute top-16 left-[22%] w-2 h-2 rounded-full" style={{ background: "rgba(245,158,11,0.8)", boxShadow: "0 0 8px rgba(245,158,11,0.6)" }} />
+        <div className="absolute top-28 right-[30%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(251,146,60,0.9)", boxShadow: "0 0 6px rgba(251,146,60,0.7)" }} />
+        <div className="absolute top-10 left-[60%] w-2 h-2 rounded-full" style={{ background: "rgba(251,191,36,0.75)", boxShadow: "0 0 8px rgba(251,191,36,0.5)" }} />
+        <div className="absolute top-36 right-[18%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(245,158,11,0.65)" }} />
+        <div className="absolute top-20 left-[78%] w-2.5 h-2.5 rounded-full" style={{ background: "rgba(234,88,12,0.60)", boxShadow: "0 0 10px rgba(234,88,12,0.5)" }} />
+        {/* Bottom ambient glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-64" style={{ background: "linear-gradient(to top, rgba(120,53,15,0.30), transparent)" }} />
+      </div>
 
       {/* ── ICONOS DECORATIVOS DE FONDO ── */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: 0.14 }}>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: 0.35 }}>
 
         {/* Llama grande izquierda */}
         <svg className="absolute top-20 left-6 w-24 h-24 text-amber-400 float-slow" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -846,7 +864,7 @@ export default function CombosPage() {
           onConfirm={() => { setPreCheckoutVisible(false); router.push("/checkout"); }}
         />
       )}
-    </div>
+    </PageMotionWrapper>
   );
 }
 
@@ -1061,7 +1079,18 @@ function ComboCard({ combo, isOpen, index, onSelect, menuPrices, menuDiscounts }
       {/* ── IMAGE AREA ── */}
       <div className="relative bg-black overflow-hidden" style={{ height: 200 }}>
         {/* Product images */}
-        {combo.images.length === 3 ? (
+        {combo.images.length === 1 ? (
+          <div className="relative h-full w-full"
+            style={{ transform: combo.id === "combo-especial"
+              ? (hovered ? "scale(1.18) translateX(-3%)" : "scale(1.12) translateX(-3%)")
+              : combo.id === "combo-perfecto"
+              ? (hovered ? "scale(1.06)" : "scale(1.0)")
+              : combo.id === "combo-chiguan"
+              ? (hovered ? "scale(1.06)" : "scale(1.0)")
+              : (hovered ? "scale(1.06)" : "scale(1)"), transition: "transform 0.4s ease" }}>
+            <Image src={combo.images[0]} alt="" fill className="object-cover" />
+          </div>
+        ) : combo.images.length === 3 ? (
           <div className="flex h-full items-center">
             <div className="w-1/3 relative h-full"><Image src={combo.images[0]} alt="" fill className="object-contain p-3" /></div>
             <PlusSeparator colors={combo.colors} />
@@ -1096,10 +1125,12 @@ function ComboCard({ combo, isOpen, index, onSelect, menuPrices, menuDiscounts }
           <span
             className="absolute top-3 left-3 text-[10px] font-black rounded-full px-2.5 py-1 uppercase tracking-wider"
             style={{
-              background: `rgba(${rgb},0.15)`,
-              border: `1px solid rgba(${rgb},0.4)`,
-              color: `rgb(${rgb})`,
-              boxShadow: `0 0 8px rgba(${rgb},0.2)`,
+              background: `linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 100%)`,
+              border: `1px solid rgba(255,255,255,0.45)`,
+              color: `#ffffff`,
+              boxShadow: `0 2px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3)`,
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
             }}
           >
             Ahorra S/ {combo.maxSavings.toFixed(2)}

@@ -8,6 +8,7 @@ import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import WhatsAppButton from "../components/WhatsAppButton";
 import BannerCarousel from "../components/BannerCarousel";
+import PageMotionWrapper from "../components/PageMotionWrapper";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -320,7 +321,35 @@ export default function TacosPage() {
   const allSelected = bothSelected && selectedComplemento !== null;
 
   return (
-    <div className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+    <PageMotionWrapper color="green" className="min-h-screen bg-black md:bg-transparent relative overflow-visible">
+
+      {/* ── KEYFRAMES ── */}
+      <style>{`@keyframes tacosGridPulse { 0%, 100% { opacity: 0.04; } 50% { opacity: 0.10; } }`}</style>
+
+      {/* ── FONDO base ── */}
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 120% 55% at 50% 0%, rgba(10,120,60,0.50) 0%, rgba(0,0,0,0) 60%), radial-gradient(ellipse 70% 50% at 15% 60%, rgba(16,185,129,0.14) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 85% 80%, rgba(52,211,153,0.12) 0%, transparent 50%)" }}
+      />
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: "linear-gradient(rgba(16,185,129,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.10) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          animation: "tacosGridPulse 4s ease-in-out infinite",
+        }}
+      />
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-0 left-[12%] w-1 h-80 rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(16,185,129,0.65), transparent)" }} />
+        <div className="absolute top-0 left-[28%] w-0.5 h-64 -rotate-6 origin-top" style={{ background: "linear-gradient(to bottom, rgba(52,211,153,0.50), transparent)" }} />
+        <div className="absolute top-0 left-[52%] w-1 h-72 rotate-8 origin-top" style={{ background: "linear-gradient(to bottom, rgba(16,185,129,0.45), transparent)" }} />
+        <div className="absolute top-0 right-[18%] w-1 h-96 -rotate-12 origin-top" style={{ background: "linear-gradient(to bottom, rgba(52,211,153,0.55), transparent)" }} />
+        <div className="absolute top-0 right-[36%] w-0.5 h-56 rotate-4 origin-top" style={{ background: "linear-gradient(to bottom, rgba(5,150,105,0.40), transparent)" }} />
+        <div className="absolute top-16 left-[22%] w-2 h-2 rounded-full" style={{ background: "rgba(16,185,129,0.8)", boxShadow: "0 0 8px rgba(16,185,129,0.6)" }} />
+        <div className="absolute top-28 right-[30%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(52,211,153,0.9)", boxShadow: "0 0 6px rgba(52,211,153,0.7)" }} />
+        <div className="absolute top-10 left-[60%] w-2 h-2 rounded-full" style={{ background: "rgba(16,185,129,0.75)", boxShadow: "0 0 8px rgba(16,185,129,0.5)" }} />
+        <div className="absolute top-36 right-[18%] w-1.5 h-1.5 rounded-full" style={{ background: "rgba(52,211,153,0.65)" }} />
+        <div className="absolute top-20 left-[78%] w-2.5 h-2.5 rounded-full" style={{ background: "rgba(5,150,105,0.60)", boxShadow: "0 0 10px rgba(5,150,105,0.5)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-64" style={{ background: "linear-gradient(to top, rgba(5,60,30,0.28), transparent)" }} />
+      </div>
 
       {/* Toast de orden agregada */}
       {showSuccessToast && (
@@ -1418,6 +1447,6 @@ export default function TacosPage() {
 
       {/* ── WhatsApp button ────────────────────────────────────────────────── */}
       <WhatsAppButton lifted={isOpen || hasAnyOrder} />
-    </div>
+    </PageMotionWrapper>
   );
 }
