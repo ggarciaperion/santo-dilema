@@ -2,8 +2,8 @@
 // Dominio de pruebas: siempre abierto
 const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app"];
 
-// Apertura temporal hasta medianoche hoy (25 julio 2026)
-const TEMP_OPEN_UNTIL = new Date("2026-07-26T05:00:00Z");
+// Apertura temporal — carga de pedidos del domingo 6 sept (hasta medianoche Lima hora)
+const TEMP_OPEN_UNTIL = new Date("2026-09-11T05:00:00Z"); // = medianoche 10 sept Lima
 // Cierre por Día del Trabajador (1 mayo) — reabre el 2 mayo a las 6:00 PM hora Perú
 const TEMP_CLOSURE_UNTIL = new Date("2026-05-02T23:00:00Z");
 
