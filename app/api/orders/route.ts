@@ -192,12 +192,11 @@ export async function POST(request: Request) {
     const isScheduled = !!(scheduledDate && scheduledTime);
     const status = isScheduled ? 'programado' : (paymentMethod === 'anticipado' ? 'pendiente-verificacion' : 'pending');
 
-    // ── FECHA VALOR OVERRIDE — domingo 6 sept (pedidos no subidos ese día) ──────
-    // REMOVER este bloque una vez que los pedidos estén cargados.
-    const day   = '06';
-    const month = '09';
-    const year  = '2026';
-    // ────────────────────────────────────────────────────────────────────────────
+    // Generar ID con formato #DDMM-NN (en hora Peru)
+    const today = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Lima" }));
+    const day   = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const year  = today.getFullYear().toString();
 
     // Leer pedidos UNA SOLA VEZ — este array se reutiliza en saveOrder
     // para evitar una segunda lectura a Redis (que podría devolver dato desactualizado)
@@ -228,11 +227,7 @@ export async function POST(request: Request) {
     });
 
     // Crear nuevo pedido con ID único
-    // FECHA VALOR OVERRIDE: createdAt en hora actual pero con fecha 06-09-2026
-    const _peruActual = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-    const _h = _peruActual.getHours(), _m = _peruActual.getMinutes(), _s = _peruActual.getSeconds();
-    const peruNow = new Date(Date.UTC(2026, 8, 6, _h + 5, _m, _s)).toISOString();
-    // FIN FECHA VALOR OVERRIDE
+    const peruNow = getPeruTimestamp();
     const newOrder = {
       id: orderId,
       name,
