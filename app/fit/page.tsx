@@ -1118,12 +1118,31 @@ export default function FitPage() {
         })()}
 
 
-        {completedOrders.length > 0 && (
+        {(completedOrders.length > 0 || preservedComboItems.length > 0) && (
           <div id="tu-orden-section" className="container mx-auto px-3 md:px-4 -mt-2 md:mt-0 lg:mt-2">
             <h3 className="text-base md:text-lg lg:text-xl font-black text-cyan-400 mb-2 md:mb-3 neon-glow-fit">
               Tu orden
             </h3>
             <div className="space-y-2 md:space-y-3">
+              {/* Combos agregados desde /combos */}
+              {(() => {
+                const seen = new Set<string>();
+                return preservedComboItems.map((item: any) => {
+                  if (!item.comboGroupId || seen.has(item.comboGroupId)) return null;
+                  seen.add(item.comboGroupId);
+                  return (
+                    <div key={`combo-${item.comboGroupId}`} className="bg-gray-900 rounded-lg border-2 border-amber-400/30 p-2 md:p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
+                          <p className="text-sm md:text-base font-black text-white">{item.comboName}</p>
+                        </div>
+                        <p className="text-amber-400 font-black text-base">S/ {item.comboPrice?.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
               {completedOrders.map((order, index) => {
                 // ── Individual item ───────────────────────────────────────
                 // Buscar producto en fit products

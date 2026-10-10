@@ -320,7 +320,7 @@ export default function TacosPage() {
     crossCategoryOrders.reduce((sum, o) => sum + (o.finalPrice ?? o.originalPrice ?? 0) * o.quantity, 0);
   const total = baseTotal;
   const duoCount = completedOrders.length;
-  const hasAnyOrder = completedOrders.length > 0 || crossCategoryOrders.length > 0 || bebidasTotal > 0;
+  const hasAnyOrder = completedOrders.length > 0 || crossCategoryOrders.length > 0 || bebidasTotal > 0 || preservedComboItems.length > 0;
 
   // ── Step indicator for modal ──────────────────────────────────────────────
   const step1Done = taco1 !== null;
@@ -851,6 +851,25 @@ export default function TacosPage() {
             Tu orden
           </h3>
           <div className="space-y-2 md:space-y-3">
+            {/* Combos agregados desde /combos */}
+            {(() => {
+              const seen = new Set<string>();
+              return preservedComboItems.map((item: any) => {
+                if (!item.comboGroupId || seen.has(item.comboGroupId)) return null;
+                seen.add(item.comboGroupId);
+                return (
+                  <div key={`combo-${item.comboGroupId}`} className="bg-gray-900 rounded-lg border-2 border-amber-400/30 p-2 md:p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
+                        <p className="text-sm md:text-base font-black text-white">{item.comboName}</p>
+                      </div>
+                      <p className="text-amber-400 font-black text-base">S/ {item.comboPrice?.toFixed(2)}</p>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
             {/* Órdenes de otras páginas (alitas / ensaladas) */}
             {crossCategoryOrders.map((order, index) => {
                 // ── Individual cross-category order ───────────────────────
