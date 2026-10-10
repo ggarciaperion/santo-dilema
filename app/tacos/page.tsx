@@ -130,6 +130,9 @@ export default function TacosPage() {
   const [crossCategoryOrders, setCrossCategoryOrders] = useState<CompletedOrder[]>([]);
   // Taco orders managed on this page
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  // Combo items (comboGroupId) — preserved unchanged, never modified here
+  const [preservedComboItems, setPreservedComboItems] = useState<any[]>([]);
+  const [initialized, setInitialized] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Bebidas
@@ -172,14 +175,19 @@ export default function TacosPage() {
       const raw = sessionStorage.getItem(SESSION_KEY);
       if (raw) {
         const all: CompletedOrder[] = JSON.parse(raw);
-        const cross = all.filter((o) => o.category !== "taco");
-        const tacos = all.filter((o) => o.category === "taco");
+        // Preserve combo items (comboGroupId) unchanged — never treat them as owned orders
+        const comboItems = all.filter((o: any) => o.comboGroupId);
+        const individual = all.filter((o: any) => !o.comboGroupId);
+        const cross = individual.filter((o) => o.category !== "taco");
+        const tacos = individual.filter((o) => o.category === "taco");
+        setPreservedComboItems(comboItems);
         setCrossCategoryOrders(cross);
         setCompletedOrders(tacos);
       }
     } catch {
       // ignore parse errors
     }
+    setInitialized(true);
   }, []);
 
   useEffect(() => {
@@ -197,13 +205,14 @@ export default function TacosPage() {
 
   // ── Persist orders to sessionStorage when they change ────────────────────
   useEffect(() => {
+    if (!initialized) return;
     try {
-      const all = [...crossCategoryOrders, ...completedOrders];
+      const all = [...preservedComboItems, ...crossCategoryOrders, ...completedOrders];
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(all));
     } catch {
       // ignore
     }
-  }, [crossCategoryOrders, completedOrders]);
+  }, [crossCategoryOrders, completedOrders, preservedComboItems, initialized]);
 
   // ── Modal helpers ─────────────────────────────────────────────────────────
   const openModal = useCallback((flavorId?: string) => {

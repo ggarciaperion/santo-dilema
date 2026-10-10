@@ -279,6 +279,8 @@ export default function FatPage() {
   const [complementsInCart, setComplementsInCart] = useState<Record<string, string[]>>({});
   const [orderQuantity, setOrderQuantity] = useState<Record<string, number>>({});
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
+  const [preservedComboItems, setPreservedComboItems] = useState<any[]>([]);
+  const [initialized, setInitialized] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
@@ -385,13 +387,17 @@ export default function FatPage() {
     if (savedOrders) {
       try {
         const allOrders = JSON.parse(savedOrders);
-        // Mantener solo las órdenes que NO son "fat"
-        const otherOrders = allOrders.filter((order: CompletedOrder) => order.category !== "fat");
+        // Preservar ítems de combo (tienen comboGroupId) sin modificarlos
+        const comboItems = allOrders.filter((order: any) => order.comboGroupId);
+        // Mantener solo las órdenes individuales que NO son "fat"
+        const otherOrders = allOrders.filter((order: any) => !order.comboGroupId && order.category !== "fat");
+        setPreservedComboItems(comboItems);
         setCompletedOrders(otherOrders);
 
         // Si había órdenes fat, las limpiamos del sessionStorage
-        if (otherOrders.length !== allOrders.length) {
-          sessionStorage.setItem("santo-dilema-orders", JSON.stringify(otherOrders));
+        const cleaned = [...comboItems, ...otherOrders];
+        if (cleaned.length !== allOrders.length) {
+          sessionStorage.setItem("santo-dilema-orders", JSON.stringify(cleaned));
         }
       } catch (error) {
         console.error("Error loading orders:", error);
@@ -400,17 +406,19 @@ export default function FatPage() {
     // Limpiar el carrito siempre
     sessionStorage.removeItem("santo-dilema-cart");
     clearCart();
-
+    setInitialized(true);
   }, []);
 
   // Guardar órdenes completadas en sessionStorage cuando cambien
   useEffect(() => {
-    if (completedOrders.length > 0) {
-      sessionStorage.setItem("santo-dilema-orders", JSON.stringify(completedOrders));
+    if (!initialized) return;
+    const allOrders = [...preservedComboItems, ...completedOrders];
+    if (allOrders.length > 0) {
+      sessionStorage.setItem("santo-dilema-orders", JSON.stringify(allOrders));
     } else {
       sessionStorage.removeItem("santo-dilema-orders");
     }
-  }, [completedOrders]);
+  }, [completedOrders, preservedComboItems, initialized]);
 
   // Detectar si se debe auto-editar una orden al cargar la página
   useEffect(() => {
