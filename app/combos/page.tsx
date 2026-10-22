@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import PageMotionWrapper from "../components/PageMotionWrapper";
-import HalloweenAtmosphere from "../components/HalloweenAtmosphere";
 
 // ──────────────────────────────────────────────────────────────────
 //  DATA
@@ -564,8 +563,6 @@ export default function CombosPage() {
         {/* Bottom ambient glow */}
         <div className="absolute bottom-0 left-0 right-0 h-64" style={{ background: "linear-gradient(to top, rgba(120,53,15,0.30), transparent)" }} />
       </div>
-
-      <HalloweenAtmosphere accent="amber" />
 
       {/* ── ICONOS DECORATIVOS DE FONDO ── */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: 0.35 }}>

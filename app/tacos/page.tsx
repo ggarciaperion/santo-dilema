@@ -9,7 +9,6 @@ import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import WhatsAppButton from "../components/WhatsAppButton";
 import BannerCarousel from "../components/BannerCarousel";
 import PageMotionWrapper from "../components/PageMotionWrapper";
-import HalloweenAtmosphere from "../components/HalloweenAtmosphere";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -378,8 +377,6 @@ export default function TacosPage() {
           </div>
         </div>
       )}
-
-      <HalloweenAtmosphere accent="green" />
 
       {/* ── Iconos decorativos de fondo - México/Tacos ──────────────────────── */}
       <div className="fixed inset-0 overflow-hidden opacity-15 pointer-events-none z-0">

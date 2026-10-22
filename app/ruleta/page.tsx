@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import HalloweenAtmosphere from "../components/HalloweenAtmosphere";
 
 // ─── PRIZE CONFIG ─────────────────────────────────────────────────────────────
 const BASE_PRIZES = [
@@ -561,7 +560,6 @@ export default function RuletaPage() {
       userSelect: "none",
       WebkitUserSelect: "none",
     }}>
-      <HalloweenAtmosphere accent="purple" />
 
       {/* Ambient glow */}
       <div style={{

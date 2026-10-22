@@ -63,6 +63,20 @@ const SECTIONS = [
   },
 ];
 
+const BURGER_SECTION = {
+  id: "burgers",
+  href: "/burgers",
+  label: "MINI BURGERS",
+  sub: "Smash Burgers · 6 Tentaciones",
+  images: ["/burger-hero.jpeg"],
+  emoji: "🍔",
+  textColor: "#fb923c",
+  borderColor: "rgba(251,146,60,0.7)",
+  glowRgb: "251,146,60",
+  gradientColor: "rgba(251,146,60,0.2)",
+  badge: "NUEVO",
+};
+
 export default function Home() {
   const [showIntro, setShowIntro]         = useState(true);
   const [introExiting, setIntroExiting]   = useState(false);
@@ -84,6 +98,7 @@ export default function Home() {
     fat: "/jh.jpeg",
     taco: "/bl.jpeg",
     combos: "/yy.jpeg",
+    burgers: "/burger-hero.jpeg",
   };
 
   // Intro timing: fade out at 2.1s, unmount at 2.6s
@@ -132,6 +147,14 @@ export default function Home() {
         @keyframes cardReveal {
           from { opacity: 0; transform: scale(0.97); }
           to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes burgerCardReveal {
+          from { opacity: 0; transform: scale(0.78); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes burgerGlow {
+          0%, 100% { box-shadow: 0 0 18px rgba(251,146,60,0.35), inset 0 0 10px rgba(251,146,60,0.08); }
+          50%       { box-shadow: 0 0 34px rgba(251,146,60,0.65), inset 0 0 16px rgba(251,146,60,0.18); }
         }
       `}</style>
 
@@ -212,173 +235,322 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── GRID 2×2 ── */}
-      <div className="h-full w-full grid grid-cols-2 grid-rows-2">
-        {SECTIONS.map((sec, i) => (
+      {/* ── LAYOUT: 5-card composition (4 corners + center burger) ── */}
+      <div className="relative h-full w-full">
+
+        {/* Corner cards: 2×2 grid */}
+        <div className="grid grid-cols-2 grid-rows-2 h-full w-full">
+          {SECTIONS.map((sec, i) => {
+            const isRight  = sec.id === "fat"   || sec.id === "combos";
+            const isBottom = sec.id === "taco"  || sec.id === "combos";
+            return (
+              <Link
+                key={sec.id}
+                href={sec.href}
+                className="relative overflow-hidden group"
+                onMouseEnter={() => setHoveredCard(sec.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+                onTouchStart={() => setHoveredCard(sec.id)}
+                onTouchEnd={() => setTimeout(() => setHoveredCard(null), 200)}
+                style={{
+                  opacity: cardsVisible ? 1 : 0,
+                  animation: cardsVisible
+                    ? `cardReveal 0.55s cubic-bezier(0.22,1,0.36,1) ${i * 0.08}s both`
+                    : "none",
+                  filter:
+                    hoveredCard && hoveredCard !== sec.id
+                      ? "brightness(0.45)"
+                      : "brightness(1)",
+                  transition: "filter 0.3s ease",
+                }}
+              >
+                {/* Background image */}
+                {sec.images.length > 1 ? (
+                  <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                    {sec.images.map((src, idx) => (
+                      <div key={idx} className="relative overflow-hidden">
+                        <Image
+                          src={src}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          style={{
+                            filter: "brightness(0.38)",
+                            transition: "transform 0.6s ease",
+                            transform: hoveredCard === sec.id ? "scale(1.08)" : "scale(1)",
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Image
+                    src={isMobile && MOBILE_IMAGES[sec.id] ? MOBILE_IMAGES[sec.id] : sec.images[0]}
+                    alt={sec.label}
+                    fill
+                    className="object-cover"
+                    style={{
+                      filter: "brightness(0.35)",
+                      transition: "transform 0.6s ease",
+                      transform: hoveredCard === sec.id ? "scale(1.08)" : "scale(1)",
+                      objectPosition: sec.id === "fit" ? "65% center" : sec.id === "combos" ? "65% center" : "center",
+                    }}
+                  />
+                )}
+
+                {/* Color gradient overlay */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${sec.gradientColor} 0%, rgba(0,0,0,0.55) 100%)`,
+                    opacity: hoveredCard === sec.id ? 1 : 0.6,
+                    transition: "opacity 0.4s ease",
+                  }}
+                />
+
+                {/* Neon border */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    border: `2px solid ${sec.borderColor}`,
+                    boxShadow: hoveredCard === sec.id
+                      ? `inset 0 0 40px rgba(${sec.glowRgb},0.25)`
+                      : `inset 0 0 20px rgba(${sec.glowRgb},0.08)`,
+                    opacity: hoveredCard === sec.id ? 1 : 0.45,
+                    transition: "opacity 0.3s ease, box-shadow 0.3s ease",
+                  }}
+                />
+
+                {/* Content — pushed to outer corner */}
+                <div
+                  className={`absolute inset-0 flex flex-col p-4 sm:p-5 ${
+                    isRight ? "items-end" : "items-start"
+                  } ${isBottom ? "justify-end" : "justify-start"}`}
+                >
+                  <span
+                    className="select-none mb-1"
+                    style={{
+                      fontSize: "clamp(1.6rem, 3.8vw, 2.4rem)",
+                      filter: hoveredCard === sec.id
+                        ? `drop-shadow(0 0 12px rgba(${sec.glowRgb},0.8))`
+                        : "none",
+                      transform: hoveredCard === sec.id ? "scale(1.15)" : "scale(1)",
+                      transition: "transform 0.3s ease, filter 0.3s ease",
+                      display: "block",
+                      transformOrigin: isRight ? "right center" : "left center",
+                    }}
+                  >
+                    {sec.emoji}
+                  </span>
+
+                  <h2
+                    className="font-black leading-none tracking-widest"
+                    style={{
+                      fontFamily: "var(--font-graffiti)",
+                      fontSize: "clamp(1.6rem, 4vw, 2.8rem)",
+                      color: sec.textColor,
+                      textShadow: hoveredCard === sec.id
+                        ? `0 0 15px rgba(${sec.glowRgb},0.9), 0 0 35px rgba(${sec.glowRgb},0.5), 0 0 60px rgba(${sec.glowRgb},0.25)`
+                        : `0 0 10px rgba(${sec.glowRgb},0.5)`,
+                      transition: "text-shadow 0.3s ease",
+                    }}
+                  >
+                    {sec.label}
+                  </h2>
+
+                  <p
+                    className={`font-bold uppercase tracking-widest mt-1 ${isRight ? "text-right" : ""}`}
+                    style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.5)", letterSpacing: "0.18em" }}
+                  >
+                    {sec.sub}
+                  </p>
+
+                  <div
+                    style={{
+                      marginTop: 8,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      padding: "5px 14px",
+                      border: `1.5px solid ${sec.borderColor}`,
+                      borderRadius: 999,
+                      opacity: hoveredCard === sec.id ? 1 : 0.65,
+                      transform: hoveredCard === sec.id ? "scale(1.04)" : "scale(1)",
+                      transition: "opacity 0.3s ease, transform 0.3s ease",
+                      boxShadow: hoveredCard === sec.id ? `0 0 14px rgba(${sec.glowRgb},0.4)` : "none",
+                    }}
+                  >
+                    <span
+                      className="font-black"
+                      style={{ color: sec.textColor, fontSize: "0.6rem", letterSpacing: "0.15em" }}
+                    >
+                      VER MENÚ →
+                    </span>
+                  </div>
+                </div>
+
+                {/* Neon accent line — outer edge */}
+                <div
+                  className={`absolute ${isBottom ? "bottom-0" : "top-0"} left-0 right-0 h-px pointer-events-none`}
+                  style={{
+                    background: `linear-gradient(90deg, transparent, rgba(${sec.glowRgb},0.8), transparent)`,
+                    opacity: hoveredCard === sec.id ? 1 : 0,
+                    transition: "opacity 0.3s ease",
+                  }}
+                />
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* ── CENTER CARD: Mini Burgers ── */}
+        <div
+          className="absolute z-20"
+          style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)", pointerEvents: "none" }}
+        >
           <Link
-            key={sec.id}
-            href={sec.href}
-            className="relative overflow-hidden group"
-            onMouseEnter={() => setHoveredCard(sec.id)}
+            href={BURGER_SECTION.href}
+            className="relative block overflow-hidden active:opacity-75"
+            onMouseEnter={() => setHoveredCard(BURGER_SECTION.id)}
             onMouseLeave={() => setHoveredCard(null)}
-            onTouchStart={() => setHoveredCard(sec.id)}
+            onTouchStart={() => setHoveredCard(BURGER_SECTION.id)}
             onTouchEnd={() => setTimeout(() => setHoveredCard(null), 200)}
             style={{
-              opacity: cardsVisible ? 1 : 0,
+              pointerEvents: "auto",
+              width: "clamp(180px, 52vw, 320px)",
+              aspectRatio: "1 / 1",
+              borderRadius: "16px",
+              display: "block",
+              ...(cardsVisible ? {} : { opacity: 0 }),
               animation: cardsVisible
-                ? `cardReveal 0.55s cubic-bezier(0.22,1,0.36,1) ${i * 0.08}s both`
+                ? "burgerCardReveal 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.35s both"
                 : "none",
               filter:
-                hoveredCard && hoveredCard !== sec.id
+                hoveredCard && hoveredCard !== BURGER_SECTION.id
                   ? "brightness(0.45)"
                   : "brightness(1)",
               transition: "filter 0.3s ease",
             }}
           >
-            {/* Background: collage 2x2 or single image */}
-            {sec.images.length > 1 ? (
-              <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-                {sec.images.map((src, idx) => (
-                  <div key={idx} className="relative overflow-hidden">
-                    <Image
-                      src={src}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      style={{
-                        filter: "brightness(0.38)",
-                        transition: "transform 0.6s ease",
-                        transform: hoveredCard === sec.id ? "scale(1.08)" : "scale(1)",
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <Image
-                src={isMobile && MOBILE_IMAGES[sec.id] ? MOBILE_IMAGES[sec.id] : sec.images[0]}
-                alt={sec.label}
-                fill
-                className="object-cover"
-                style={{
-                  filter: "brightness(0.35)",
-                  transition: "transform 0.6s ease",
-                  transform: hoveredCard === sec.id ? "scale(1.08)" : "scale(1)",
-                  objectPosition: sec.id === "fit" ? "65% center" : sec.id === "combos" ? "65% center" : "center",
-                }}
-              />
-            )}
-
-            {/* Color gradient overlay */}
-            <div
-              className="absolute inset-0 transition-opacity duration-400"
+            {/* Background image */}
+            <Image
+              src={BURGER_SECTION.images[0]}
+              alt="Mini Burgers"
+              fill
+              className="object-cover"
               style={{
-                background: `linear-gradient(135deg, ${sec.gradientColor} 0%, rgba(0,0,0,0.55) 100%)`,
-                opacity: hoveredCard === sec.id ? 1 : 0.6,
+                filter: "brightness(0.32)",
+                objectPosition: "center 35%",
+                transition: "transform 0.6s ease",
+                transform: hoveredCard === BURGER_SECTION.id ? "scale(1.1)" : "scale(1)",
+              }}
+            />
+
+            {/* Radial gradient overlay */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `radial-gradient(ellipse at center, ${BURGER_SECTION.gradientColor} 0%, rgba(0,0,0,0.65) 100%)`,
+                opacity: hoveredCard === BURGER_SECTION.id ? 1 : 0.75,
                 transition: "opacity 0.4s ease",
               }}
             />
 
-            {/* Neon border — siempre visible, intensifica al hover/touch */}
+            {/* Animated glow border */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                border: `2px solid ${sec.borderColor}`,
-                boxShadow: hoveredCard === sec.id
-                  ? `inset 0 0 40px rgba(${sec.glowRgb},0.25)`
-                  : `inset 0 0 20px rgba(${sec.glowRgb},0.08)`,
-                opacity: hoveredCard === sec.id ? 1 : 0.45,
-                transition: "opacity 0.3s ease, box-shadow 0.3s ease",
+                borderRadius: "16px",
+                border: `2px solid ${BURGER_SECTION.borderColor}`,
+                opacity: hoveredCard === BURGER_SECTION.id ? 1 : 0.75,
+                transition: "opacity 0.4s ease",
+                ...(hoveredCard === BURGER_SECTION.id
+                  ? { boxShadow: `0 0 30px rgba(${BURGER_SECTION.glowRgb},0.8), inset 0 0 20px rgba(${BURGER_SECTION.glowRgb},0.2)`, animation: "none" }
+                  : { animation: "burgerGlow 2.8s ease-in-out infinite" }
+                ),
               }}
             />
 
             {/* Content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-3">
-              {/* Emoji icon */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2 py-3">
+              {/* NUEVO badge */}
               <span
-                className="mb-2 select-none"
+                className="font-black text-black uppercase mb-1.5"
                 style={{
-                  fontSize: "clamp(1.8rem, 5vw, 3rem)",
-                  filter: hoveredCard === sec.id
-                    ? `drop-shadow(0 0 12px rgba(${sec.glowRgb},0.8))`
-                    : "none",
-                  transform: hoveredCard === sec.id ? "scale(1.15)" : "scale(1)",
+                  fontSize: "0.42rem",
+                  background: BURGER_SECTION.textColor,
+                  padding: "2px 7px",
+                  borderRadius: 999,
+                  letterSpacing: "0.14em",
+                  boxShadow: `0 0 8px rgba(${BURGER_SECTION.glowRgb},0.6)`,
+                }}
+              >
+                NUEVO
+              </span>
+
+              <span
+                className="select-none mb-0.5"
+                style={{
+                  fontSize: "clamp(1.4rem, 3.5vw, 2rem)",
+                  filter: hoveredCard === BURGER_SECTION.id
+                    ? `drop-shadow(0 0 12px rgba(${BURGER_SECTION.glowRgb},0.9))`
+                    : `drop-shadow(0 0 6px rgba(${BURGER_SECTION.glowRgb},0.5))`,
+                  transform: hoveredCard === BURGER_SECTION.id ? "scale(1.2)" : "scale(1)",
                   transition: "transform 0.3s ease, filter 0.3s ease",
                   display: "block",
                 }}
               >
-                {sec.emoji}
+                {BURGER_SECTION.emoji}
               </span>
 
-              {/* Section title */}
               <h2
-                className={`font-black leading-none tracking-widest`}
+                className="font-black leading-none tracking-widest"
                 style={{
                   fontFamily: "var(--font-graffiti)",
-                  fontSize: "clamp(1.8rem, 5.5vw, 3.8rem)",
-                  color: sec.textColor,
-                  textShadow:
-                    hoveredCard === sec.id
-                      ? `0 0 15px rgba(${sec.glowRgb},0.9), 0 0 35px rgba(${sec.glowRgb},0.5), 0 0 60px rgba(${sec.glowRgb},0.25)`
-                      : `0 0 10px rgba(${sec.glowRgb},0.5)`,
+                  fontSize: "clamp(1rem, 3.2vw, 1.8rem)",
+                  color: BURGER_SECTION.textColor,
+                  textShadow: hoveredCard === BURGER_SECTION.id
+                    ? `0 0 15px rgba(${BURGER_SECTION.glowRgb},0.9), 0 0 35px rgba(${BURGER_SECTION.glowRgb},0.5)`
+                    : `0 0 10px rgba(${BURGER_SECTION.glowRgb},0.5)`,
                   transition: "text-shadow 0.3s ease",
                 }}
               >
-                {sec.label}
+                {BURGER_SECTION.label}
               </h2>
 
-              {/* Subtitle */}
               <p
-                className="font-bold uppercase tracking-widest mt-1"
-                style={{
-                  fontSize: "0.65rem",
-                  color: "rgba(255,255,255,0.5)",
-                  letterSpacing: "0.2em",
-                }}
+                className="font-bold uppercase tracking-widest mt-0.5"
+                style={{ fontSize: "0.46rem", color: "rgba(255,255,255,0.5)", letterSpacing: "0.14em", lineHeight: 1.5 }}
               >
-                {sec.sub}
+                Smash Burgers
               </p>
 
-              {/* VER MENÚ pill — always visible */}
               <div
                 style={{
-                  marginTop: 10,
+                  marginTop: 7,
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 6,
-                  padding: "6px 16px",
-                  border: `1.5px solid ${sec.borderColor}`,
+                  padding: "4px 12px",
+                  border: `1.5px solid ${BURGER_SECTION.borderColor}`,
                   borderRadius: 999,
-                  opacity: hoveredCard === sec.id ? 1 : 0.65,
-                  transform: hoveredCard === sec.id ? "translateY(0) scale(1.04)" : "translateY(0)",
-                  transition: "opacity 0.3s ease, transform 0.3s ease",
-                  boxShadow: hoveredCard === sec.id ? `0 0 14px rgba(${sec.glowRgb},0.4)` : "none",
+                  opacity: hoveredCard === BURGER_SECTION.id ? 1 : 0.7,
+                  transition: "opacity 0.3s ease, box-shadow 0.3s ease",
+                  boxShadow: hoveredCard === BURGER_SECTION.id
+                    ? `0 0 16px rgba(${BURGER_SECTION.glowRgb},0.6)`
+                    : "none",
                 }}
               >
                 <span
                   className="font-black"
-                  style={{
-                    color: sec.textColor,
-                    fontSize: "0.65rem",
-                    letterSpacing: "0.15em",
-                  }}
+                  style={{ color: BURGER_SECTION.textColor, fontSize: "0.55rem", letterSpacing: "0.12em" }}
                 >
-                  VER MENÚ →
+                  VER →
                 </span>
               </div>
             </div>
-
-            {/* Bottom neon accent line */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
-              style={{
-                background: `linear-gradient(90deg, transparent, rgba(${sec.glowRgb},0.8), transparent)`,
-                opacity: hoveredCard === sec.id ? 1 : 0,
-                transition: "opacity 0.3s ease",
-              }}
-            />
           </Link>
-        ))}
+        </div>
+
       </div>
 
       {/* ── LOGO + WHATSAPP (top center) ── */}

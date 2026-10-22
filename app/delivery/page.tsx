@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import HalloweenAtmosphere from "../components/HalloweenAtmosphere";
 import Image from "next/image";
 
 // Definiciones de salsas y complementos (igual que en admin)
@@ -332,7 +331,6 @@ export default function DeliveryPage() {
   // Pantalla principal - Lista de pedidos
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
-      <HalloweenAtmosphere accent="purple" />
       {/* Header */}
       <header className="bg-black/40 backdrop-blur-sm border-b border-blue-500/30 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">

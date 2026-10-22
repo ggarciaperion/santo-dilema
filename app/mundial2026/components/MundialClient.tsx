@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import HalloweenAtmosphere from '../../components/HalloweenAtmosphere'
 import type { MatchWithTeams, Phase, ApiFixturesResponse } from '@/lib/mundial2026/types'
 import MatchCard from './MatchCard'
 
@@ -160,7 +159,6 @@ export default function MundialClient({ initialData }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#05070F', color: '#f1f5f9' }}>
-      <HalloweenAtmosphere accent="amber" />
 
       {/* ── CSS animations ── */}
       <style>{`
