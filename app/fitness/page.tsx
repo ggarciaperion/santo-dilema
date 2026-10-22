@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import HalloweenAtmosphere from '../components/HalloweenAtmosphere';
 
 // ─── KEYFRAME ANIMATIONS ──────────────────────────────────────────────────────
 const STYLES = `
@@ -1580,6 +1581,7 @@ export default function FitnessPage() {
   return (
     <>
       <style>{STYLES}</style>
+      <HalloweenAtmosphere accent="green" />
       <ToastContainer toasts={toasts} remove={id => setToasts(t => t.filter(x => x.id !== id))} />
 
       <div className="min-h-screen text-white overflow-x-hidden" style={{ background: '#080b0f' }}>

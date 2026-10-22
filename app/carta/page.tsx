@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import HalloweenAtmosphere from "../components/HalloweenAtmosphere";
 
 const WA_LINK = "https://wa.me/51910677186?text=Hola%20%F0%9F%91%8B%20quiero%20hacer%20un%20pedido";
 
@@ -74,6 +75,7 @@ export default function CartaPage() {
 
   return (
     <main style={{ background: "#0a0a0a", minHeight: "100vh", overflowX: "hidden" }}>
+      <HalloweenAtmosphere accent="purple" />
 
       {/* HEADER */}
       <header

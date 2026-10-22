@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { isBusinessOpen, getNextOpenMessage } from "../utils/businessHours";
 import MpCardModal from "../components/MpCardModal";
+import HalloweenAtmosphere from "../components/HalloweenAtmosphere";
 
 // Función para reproducir sonido de éxito similar a Apple Pay/VISA
 const playSuccessSound = () => {
@@ -629,6 +630,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex flex-col">
+      <HalloweenAtmosphere accent="purple" />
       {/* Header mejorado */}
       <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-fuchsia-500/30 shadow-lg shadow-fuchsia-500/10">
         <div className="container mx-auto px-4 py-3 md:py-4">
