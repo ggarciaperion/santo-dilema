@@ -8,6 +8,12 @@ import Image from "next/image";
 import SorteoMundialAdmin from "./components/SorteoMundialAdmin";
 
 // Definiciones de salsas y complementos (igual que en checkout)
+const tacoFlavorNames: Record<string, string> = {
+  "santo-crujiente": "Crunch Supreme",
+  "tex-dilema":      "Tex Supreme",
+  "santo-bacon":     "Bacon Deluxe",
+};
+
 const salsas: { id: string; name: string }[] = [
   { id: "barbecue", name: "BBQ ahumada" },
   { id: "buffalo-picante", name: "Santo Picante" },
@@ -2858,8 +2864,14 @@ export default function AdminPage() {
                     seen.add(item.comboGroupId);
                     const grp = src.filter((i: any) => i.comboGroupId === item.comboGroupId);
                     const parts = grp.map((gi: any) => {
-                      const s = (gi.salsas || []).map((sid: string) => salsas.find((x: any) => x.id === sid)?.name || sid);
-                      return `${gi.name}${s.length ? ` (${s.join(', ')})` : ''}`;
+                      const isTacoItem = gi.productId === "taco-duo";
+                      const displayName = gi.name ?? gi.productId;
+                      const s = (gi.salsas || []).map((sid: string) =>
+                        isTacoItem
+                          ? (tacoFlavorNames[sid] ?? sid)
+                          : (salsas.find((x: any) => x.id === sid)?.name ?? sid)
+                      );
+                      return `${displayName}${s.length ? ` (${s.join(', ')})` : ''}`;
                     });
                     items.push(`🔥 ${item.comboName || 'Combo'}: ${parts.join(' + ')}`);
                     return;
@@ -2897,8 +2909,14 @@ export default function AdminPage() {
                           seen.add(item.comboGroupId);
                           const grp = src.filter((i: any) => i.comboGroupId === item.comboGroupId);
                           const comboLabel = grp.map((gi: any) => {
-                            const sl = (gi.salsas || []).map((sid: string) => salsas.find((x: any) => x.id === sid)?.name || sid);
-                            return `${gi.quantity > 1 ? `${gi.quantity}× ` : ''}${gi.name}${sl.length ? ` (${sl.join(', ')})` : ''}`;
+                            const isTacoItem = gi.productId === "taco-duo";
+                            const displayName = gi.name ?? gi.productId;
+                            const sl = (gi.salsas || []).map((sid: string) =>
+                              isTacoItem
+                                ? (tacoFlavorNames[sid] ?? sid)
+                                : (salsas.find((x: any) => x.id === sid)?.name ?? sid)
+                            );
+                            return `${gi.quantity > 1 ? `${gi.quantity}× ` : ''}${displayName}${sl.length ? ` (${sl.join(', ')})` : ''}`;
                           }).join(' + ');
                           return (
                             <div key={`c-${item.comboGroupId}`} className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-md px-2 py-1">

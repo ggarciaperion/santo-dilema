@@ -286,6 +286,7 @@ const ALL_PRODUCTS: Record<string, { name: string; image: string }> = {
 
 interface SavedOrder {
   productId: string;
+  name?: string;
   quantity: number;
   salsas: string[];
   complementIds: string[];
@@ -445,7 +446,7 @@ export default function CombosPage() {
     const items: any[] = [];
     for (const step of activeCombo.steps) {
       if (step.type === "sauces") {
-        items.push({ productId: step.productId, quantity: 1, salsas: selections.sauces[step.productId] ?? [], complementIds: [], originalPrice: REF_PRICES[step.productId] ?? 0, finalPrice: REF_PRICES[step.productId] ?? 0, ...comboMeta });
+        items.push({ productId: step.productId, name: step.productName, quantity: 1, salsas: selections.sauces[step.productId] ?? [], complementIds: [], originalPrice: REF_PRICES[step.productId] ?? 0, finalPrice: REF_PRICES[step.productId] ?? 0, ...comboMeta });
       } else if (step.type === "salad") {
         const salad = FIT_OPTIONS.find(p => p.id === selections.salad);
         if (salad) items.push({ productId: salad.id, quantity: 1, salsas: [], complementIds: [], originalPrice: salad.price, finalPrice: salad.price, ...comboMeta });
@@ -743,8 +744,7 @@ export default function CombosPage() {
                       <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
                       <div className="flex items-start justify-between mb-2.5">
                         <div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
-                          <h4 className="text-sm font-black text-white mt-0.5">{order.comboName}</h4>
+                          <h4 className="text-sm font-black text-white">🔥 {order.comboName}</h4>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="text-right">
@@ -779,15 +779,17 @@ export default function CombosPage() {
                       <div className="space-y-1.5 border-t border-white/5 pt-2">
                         {gi.map((item, j) => {
                           const prod = ALL_PRODUCTS[item.productId];
-                          if (!prod) return null;
+                          const displayName = item.name ?? prod?.name ?? item.productId;
                           const isTaco = item.productId === "taco-duo";
                           return (
                             <div key={j} className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40 relative">
-                                <Image src={prod.image} alt={prod.name} fill className="object-cover" />
-                              </div>
+                              {prod && (
+                                <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40 relative">
+                                  <Image src={prod.image} alt={displayName} fill className="object-cover" />
+                                </div>
+                              )}
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs text-white font-semibold truncate">{prod.name}</p>
+                                <p className="text-xs text-white font-semibold truncate">{displayName}</p>
                                 {!isTaco && item.salsas && item.salsas.length > 0 && (
                                   <p className="text-[10px] text-amber-300/70 truncate">
                                     🌶️ {item.salsas.map(s => SALSAS.find(sa => sa.id === s)?.name ?? s).join(", ")}
@@ -975,8 +977,7 @@ function PreCheckoutModal({
                   <div key={`pc-cg-${order.comboGroupId}`} className="bg-white/3 rounded-xl border border-amber-400/25 p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70 mb-0.5">🔥 Combo especial</p>
-                        <p className="text-sm font-black text-white">{order.comboName}</p>
+                        <p className="text-sm font-black text-white">🔥 {order.comboName}</p>
                       </div>
                       <div className="text-right">
                         {order.comboOriginalTotal && (
@@ -990,15 +991,17 @@ function PreCheckoutModal({
                     <div className="space-y-2 border-t border-white/5 pt-3">
                       {gi.map((item, j) => {
                         const prod = ALL_PRODUCTS[item.productId];
-                        if (!prod) return null;
+                        const displayName = item.name ?? prod?.name ?? item.productId;
                         const isTaco = item.productId === "taco-duo";
                         return (
                           <div key={j} className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-black/40 relative">
-                              <Image src={prod.image} alt={prod.name} fill className="object-contain p-1" />
-                            </div>
+                            {prod && (
+                              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-black/40 relative">
+                                <Image src={prod.image} alt={displayName} fill className="object-contain p-1" />
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-white font-semibold">{prod.name}</p>
+                              <p className="text-xs text-white font-semibold">{displayName}</p>
                               {!isTaco && item.salsas && item.salsas.length > 0 && (
                                 <p className="text-[10px] text-amber-300/70 mt-0.5">
                                   🌶️ {item.salsas.map(s => SALSAS.find(sa => sa.id === s)?.name ?? s).join(", ")}

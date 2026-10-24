@@ -1213,12 +1213,11 @@ export default function FitPage() {
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
+                            <p className="text-sm md:text-base font-black text-white">🔥 {item.comboName}</p>
                             {qty > 1 && (
                               <span className="bg-amber-400/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-amber-400/30">×{qty}</span>
                             )}
                           </div>
-                          <p className="text-sm md:text-base font-black text-white mt-0.5">{item.comboName}</p>
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
                           {item.comboOriginalTotal && (
