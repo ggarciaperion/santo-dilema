@@ -301,7 +301,6 @@ export default function FatPage() {
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const [preservedComboItems, setPreservedComboItems] = useState<any[]>([]);
   const [initialized, setInitialized] = useState(false);
-  const comboItemsLoadedRef = useRef(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
@@ -446,13 +445,30 @@ export default function FatPage() {
     // Limpiar el carrito siempre
     sessionStorage.removeItem("santo-dilema-cart");
     clearCart();
-    comboItemsLoadedRef.current = true;
     setInitialized(true);
   }, []);
 
   // Guardar órdenes completadas en sessionStorage cuando cambien
   useEffect(() => {
-    if (!initialized || !comboItemsLoadedRef.current) return;
+    if (!initialized) return;
+
+    // Auto-recuperación: si sessionStorage tiene combos que no están en el estado
+    // (ocurre cuando Next.js sirve la página desde caché sin remontar el componente),
+    // los cargamos al estado antes de escribir — evita borrar un combo válido.
+    const raw = sessionStorage.getItem("santo-dilema-orders");
+    const storageOrders: any[] = raw
+      ? (() => { try { return JSON.parse(raw); } catch { return []; } })()
+      : [];
+    const unloadedCombos = storageOrders.filter(
+      (o: any) =>
+        o.comboGroupId &&
+        !preservedComboItems.some((p: any) => p.comboGroupId === o.comboGroupId)
+    );
+    if (unloadedCombos.length > 0) {
+      setPreservedComboItems(prev => [...prev, ...unloadedCombos]);
+      return; // el efecto re-corre tras el update de estado con los combos incluidos
+    }
+
     const allOrders = [...preservedComboItems, ...completedOrders];
     if (allOrders.length > 0) {
       sessionStorage.setItem("santo-dilema-orders", JSON.stringify(allOrders));
