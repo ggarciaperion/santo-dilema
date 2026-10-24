@@ -160,6 +160,26 @@ const tacoProducts: Product[] = [
   },
 ];
 
+// Productos de BURGERS / WRAPS / SANDWICHES para visualización de órdenes cruzadas
+const burgerProducts: Product[] = [
+  { id: "mini-burger-clasica", name: "Mini Burger Clásica",       description: "", price: 18.00, image: "🍔", category: "taco" },
+  { id: "mini-burger-bbq",     name: "Mini Burger BBQ",           description: "", price: 20.00, image: "🍔", category: "taco" },
+  { id: "mini-burger-doble",   name: "Mini Burger Doble",         description: "", price: 22.00, image: "🍔", category: "taco" },
+  { id: "mini-burger-bacon",   name: "Mini Burger Bacon & Cheese",description: "", price: 24.00, image: "🍔", category: "taco" },
+];
+const wrapProducts: Product[] = [
+  { id: "wrap-pollo-crispy",     name: "Wrap Pollo Crispy",     description: "", price: 18.00, image: "🌯", category: "taco" },
+  { id: "wrap-bbq-deshilachado", name: "Wrap BBQ Deshilachado", description: "", price: 20.00, image: "🌯", category: "taco" },
+  { id: "wrap-pollo-grill",      name: "Wrap Pollo Grill",      description: "", price: 19.00, image: "🌯", category: "taco" },
+  { id: "wrap-bacon-cheese",     name: "Wrap Bacon & Cheese",   description: "", price: 22.00, image: "🌯", category: "taco" },
+];
+const sandwichProducts: Product[] = [
+  { id: "panini-pollo-queso",   name: "Panini Pollo & Queso",  description: "", price: 18.00, image: "🥪", category: "taco" },
+  { id: "panini-bbq-bacon",     name: "Panini BBQ Bacon",      description: "", price: 22.00, image: "🥪", category: "taco" },
+  { id: "club-de-pollo",        name: "Club de Pollo",         description: "", price: 20.00, image: "🥪", category: "taco" },
+  { id: "sandwich-pollo-fresh", name: "Sándwich Pollo Fresh",  description: "", price: 16.00, image: "🥪", category: "taco" },
+];
+
 const salsas: { id: string; name: string }[] = [
   { id: "barbecue", name: "Barbecue" },
   { id: "anticuchos", name: "Anticuchos" },
@@ -232,6 +252,9 @@ export default function FitPage() {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fatProducts.find(p => p.id === order.productId);
       if (!product) product = tacoProducts.find(p => p.id === order.productId);
+      if (!product) product = burgerProducts.find(p => p.id === order.productId);
+      if (!product) product = wrapProducts.find(p => p.id === order.productId);
+      if (!product) product = sandwichProducts.find(p => p.id === order.productId);
       return product ? (menuPrices[product.id] || product.price) : 0;
     })();
     let orderTotal = basePrice * order.quantity;
@@ -242,12 +265,28 @@ export default function FitPage() {
     return total + orderTotal;
   }, 0);
 
+  // Total de combos preservados (precio por grupo × cantidad)
+  const comboItemsTotal = useMemo(() => {
+    const seen = new Set<string>();
+    return preservedComboItems.reduce((sum: number, o: any) => {
+      if (!o.comboGroupId || seen.has(o.comboGroupId)) return sum;
+      seen.add(o.comboGroupId);
+      return sum + (o.comboPrice ?? 0) * (o.comboQuantity ?? 1);
+    }, 0);
+  }, [preservedComboItems]);
+
+  const grandTotal = completedTotal + comboItemsTotal;
+  const hasItems = completedOrders.length > 0 || preservedComboItems.length > 0;
+
   const navigateToCheckout = () => {
     clearCart();
     completedOrders.forEach(order => {
       let product = products.find(p => p.id === order.productId);
       if (!product) product = fatProducts.find(p => p.id === order.productId);
       if (!product) product = tacoProducts.find(p => p.id === order.productId);
+      if (!product) product = burgerProducts.find(p => p.id === order.productId);
+      if (!product) product = wrapProducts.find(p => p.id === order.productId);
+      if (!product) product = sandwichProducts.find(p => p.id === order.productId);
       if (product) {
         const basePrice = menuPrices[product.id] || product.price;
         const finalUnitPrice = order.finalPrice ?? basePrice;
@@ -436,9 +475,12 @@ export default function FitPage() {
     const order = completedOrders[orderIndex];
     if (!order) return;
 
-    // Verificar si la orden pertenece al menú fat o tacos
+    // Verificar si la orden pertenece a otro menú
     const isFatOrder = fatProducts.some(p => p.id === order.productId);
     const isTacoOrderEdit = tacoProducts.some(p => p.id === order.productId);
+    const isBurgerOrder = burgerProducts.some(p => p.id === order.productId);
+    const isWrapOrder = wrapProducts.some(p => p.id === order.productId);
+    const isSandwichOrder = sandwichProducts.some(p => p.id === order.productId);
 
     if (isFatOrder) {
       router.push(`/fat?editOrder=${orderIndex}`);
@@ -446,6 +488,18 @@ export default function FitPage() {
     }
     if (isTacoOrderEdit) {
       router.push(`/tacos?editOrder=${orderIndex}`);
+      return;
+    }
+    if (isBurgerOrder) {
+      router.push(`/burgers?editOrder=${orderIndex}`);
+      return;
+    }
+    if (isWrapOrder) {
+      router.push(`/wraps?editOrder=${orderIndex}`);
+      return;
+    }
+    if (isSandwichOrder) {
+      router.push(`/sandwiches?editOrder=${orderIndex}`);
       return;
     }
 
@@ -826,7 +880,7 @@ export default function FitPage() {
       )}
 
 
-      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${completedOrders.length > 0 ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
+      <section className={`container mx-auto px-2 md:px-4 py-3 md:py-5 transition-all duration-300 overflow-visible ${hasItems ? 'pb-20 md:pb-16' : 'pb-3 md:pb-3'}`}>
 
         {/* Page title */}
         <div className="px-3 pt-4 pb-2 text-center">
@@ -1153,14 +1207,17 @@ export default function FitPage() {
                 // Si no se encuentra, buscar en fat products
                 if (!product) {
                   product = fatProducts.find((p) => p.id === order.productId);
-                  isFatOrder = true;
+                  isFatOrder = !!product;
                 }
                 // Si no se encuentra, buscar en taco products
                 if (!product) {
                   product = tacoProducts.find((p) => p.id === order.productId);
-                  isFatOrder = false;
-                  isTacoOrder = true;
+                  isTacoOrder = !!product;
                 }
+                // Si no se encuentra, buscar en burger/wrap/sandwich products
+                if (!product) product = burgerProducts.find((p) => p.id === order.productId);
+                if (!product) product = wrapProducts.find((p) => p.id === order.productId);
+                if (!product) product = sandwichProducts.find((p) => p.id === order.productId);
 
                 if (!product) return null;
 
@@ -1267,7 +1324,7 @@ export default function FitPage() {
           </div>
         )}
 
-        {completedOrders.length > 0 && (
+        {hasItems && (
           <div className="container mx-auto px-3 md:px-4 mt-4 mb-2">
             <p className="text-center text-xs text-cyan-200/70 italic">
               💡 Puedes agregar más órdenes a tu pedido antes de continuar
@@ -1276,19 +1333,19 @@ export default function FitPage() {
         )}
 
         {/* Espaciador para que la barra fija no tape el contenido */}
-        {completedOrders.length > 0 && (
+        {hasItems && (
           <div className="h-24 md:h-28"></div>
         )}
       </section>
 
-      {completedOrders.length > 0 && (
+      {hasItems && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t-4 border-cyan-500/50 shadow-2xl shadow-cyan-500/30 z-50">
           <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 lg:py-5">
             <div className="flex justify-between items-center gap-3 md:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-sm md:text-lg">Total</span>
                 <span className="text-amber-400 font-black text-xl md:text-3xl gold-glow">
-                  S/ {completedTotal.toFixed(2)}
+                  S/ {grandTotal.toFixed(2)}
                 </span>
               </div>
               {isOpen ? (
@@ -1319,13 +1376,15 @@ export default function FitPage() {
         let isTacoOrder = false;
         if (!product) {
           product = fatProducts.find((p) => p.id === order.productId);
-          isFatOrder = true;
+          isFatOrder = !!product;
         }
         if (!product) {
           product = tacoProducts.find((p) => p.id === order.productId);
-          isFatOrder = false;
-          isTacoOrder = true;
+          isTacoOrder = !!product;
         }
+        if (!product) product = burgerProducts.find((p) => p.id === order.productId);
+        if (!product) product = wrapProducts.find((p) => p.id === order.productId);
+        if (!product) product = sandwichProducts.find((p) => p.id === order.productId);
 
         return (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">

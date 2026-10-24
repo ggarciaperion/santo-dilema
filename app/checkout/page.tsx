@@ -81,6 +81,7 @@ interface CompletedOrder {
   comboName?: string;
   comboPrice?: number;
   comboOriginalTotal?: number;
+  comboQuantity?: number;
 }
 
 const salsas: { id: string; name: string }[] = [
@@ -219,6 +220,32 @@ const tacoProducts = [
   { id: "mega-taco-combo", name: "Mega Taco Combo", price: 42.90, image: "/tacoinicio.png" },
 ];
 
+// Productos burgers para referencia
+const burgerProducts = [
+  { id: "santo-smash",         name: "Santo Smash",         price: 18.00, image: "🍔" },
+  { id: "bacon-pecado",        name: "Bacon Pecado",        price: 20.00, image: "🍔" },
+  { id: "chicken-grill",       name: "Chicken Grill",       price: 18.00, image: "🍔" },
+  { id: "dilema-veggie",       name: "Dilema Veggie",       price: 17.00, image: "🍔" },
+  { id: "marina-crunch",       name: "Marina Crunch",       price: 20.00, image: "🍔" },
+  { id: "tentacion-tropical",  name: "Tentación Tropical",  price: 22.00, image: "🍔" },
+];
+
+// Productos wraps para referencia
+const wrapProducts = [
+  { id: "wrap-pollo-crispy",     name: "Wrap Pollo Crispy",     price: 18.00, image: "🌯" },
+  { id: "wrap-bbq-deshilachado", name: "Wrap BBQ Deshilachado", price: 20.00, image: "🌯" },
+  { id: "wrap-pollo-grill",      name: "Wrap Pollo Grill",      price: 19.00, image: "🌯" },
+  { id: "wrap-bacon-cheese",     name: "Wrap Bacon & Cheese",   price: 22.00, image: "🌯" },
+];
+
+// Productos sándwiches para referencia
+const sandwichProducts = [
+  { id: "panini-pollo-queso",   name: "Panini Pollo & Queso",  price: 18.00, image: "🥪" },
+  { id: "panini-bbq-bacon",     name: "Panini BBQ Bacon",      price: 22.00, image: "🥪" },
+  { id: "club-de-pollo",        name: "Club de Pollo",         price: 20.00, image: "🥪" },
+  { id: "sandwich-pollo-fresh", name: "Sándwich Pollo Fresh",  price: 16.00, image: "🥪" },
+];
+
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -284,21 +311,31 @@ export default function CheckoutPage() {
   const hasIndividualDiscount = completedOrders.some(o => o.discountApplied === true);
   const hasComboDiscount = completedOrders.some(o => o.comboGroupId && o.comboOriginalTotal);
 
-  // Calcular subtotal respetando precios de combo y descuentos individuales
+  // Calcular subtotal respetando precios de combo, trío y descuentos individuales
   const subtotalWithPromos = (() => {
     const seenCombos = new Set<string>();
+    const seenTrios  = new Set<string>();
     return completedOrders.reduce((total, order) => {
-      // Items de combo: contar el precio del combo UNA VEZ por grupo
+      // Items de combo: contar UNA VEZ por grupo
       if (order.comboGroupId) {
         if (seenCombos.has(order.comboGroupId)) return total;
         seenCombos.add(order.comboGroupId);
-        return total + (order.comboPrice ?? 0);
+        return total + (order.comboPrice ?? 0) * (order.comboQuantity ?? 1);
+      }
+      // Items de trío de burgers: contar UNA VEZ por grupo
+      if (order.trioGroupId) {
+        if (seenTrios.has(order.trioGroupId)) return total;
+        seenTrios.add(order.trioGroupId);
+        return total + (order.trioPrice ?? 0) * (order.trioQuantity ?? 1);
       }
       // Item regular
       const fatProduct = fatProducts.find((p) => p.id === order.productId);
       const fitProduct = fitProducts.find((p) => p.id === order.productId);
       const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
-      const product = fatProduct || fitProduct || tacoProduct;
+      const burgerProduct = burgerProducts.find((p) => p.id === order.productId);
+      const wrapProduct = wrapProducts.find((p) => p.id === order.productId);
+      const sandwichProduct = sandwichProducts.find((p) => p.id === order.productId);
+      const product = fatProduct || fitProduct || tacoProduct || burgerProduct || wrapProduct || sandwichProduct;
       if (!product) return total;
       const effectivePrice = order.finalPrice ?? order.originalPrice ?? product.price;
       const complementsTotal = order.complementIds.reduce((sum, compId) => {
@@ -701,7 +738,33 @@ export default function CheckoutPage() {
               <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto custom-scrollbar">
                 {(() => {
                   const seenCombos = new Set<string>();
+                  const seenTrios  = new Set<string>();
                   return completedOrders.map((order, index) => {
+                    // ── Trío de Mini Burgers ──
+                    if (order.trioGroupId) {
+                      if (seenTrios.has(order.trioGroupId)) return null;
+                      seenTrios.add(order.trioGroupId);
+                      const qty = order.trioQuantity ?? 1;
+                      return (
+                        <div key={`trio-${order.trioGroupId}`} className="bg-black/30 rounded-xl p-3 border border-orange-400/25 hover:border-orange-400/40 transition-all">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <span className="text-[10px] bg-orange-400/20 text-orange-300 px-2 py-0.5 rounded-full font-bold tracking-wide">🍔 Trío de Mini Burgers</span>
+                            <span className="font-black text-sm font-mono text-amber-400">S/ {((order.trioPrice ?? 0) * qty).toFixed(2)}</span>
+                          </div>
+                          <div className="space-y-1 border-t border-orange-400/15 pt-2">
+                            {(order.trioFlavors ?? []).map((f: any, fi: number) => (
+                              <div key={fi} className="flex items-center gap-2 text-xs text-gray-300">
+                                <span className="text-orange-400 font-bold w-5">{f.qty}×</span>
+                                <span>{f.name}</span>
+                              </div>
+                            ))}
+                            <div className="flex items-center gap-2 text-xs text-orange-300/60 pt-1">
+                              <span>🍟</span><span>Papas fritas incluidas</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
                     // ── Combo: renderizar una sola vez por grupo ──
                     if (order.comboGroupId) {
                       if (seenCombos.has(order.comboGroupId)) return null;
@@ -720,7 +783,7 @@ export default function CheckoutPage() {
                           </div>
                           <div className="space-y-2 border-t border-amber-400/15 pt-2">
                             {groupItems.map((gi, gi_idx) => {
-                              const p = fatProducts.find(x => x.id === gi.productId) || fitProducts.find(x => x.id === gi.productId) || tacoProducts.find(x => x.id === gi.productId);
+                              const p = fatProducts.find(x => x.id === gi.productId) || fitProducts.find(x => x.id === gi.productId) || tacoProducts.find(x => x.id === gi.productId) || burgerProducts.find(x => x.id === gi.productId) || wrapProducts.find(x => x.id === gi.productId) || sandwichProducts.find(x => x.id === gi.productId);
                               if (!p) return null;
                               return (
                                 <div key={gi_idx} className="flex items-center gap-2">
@@ -750,7 +813,7 @@ export default function CheckoutPage() {
                     }
 
                     // ── Item regular (lógica existente) ──
-                    const product = fatProducts.find((p) => p.id === order.productId) || fitProducts.find((p) => p.id === order.productId) || tacoProducts.find((p) => p.id === order.productId);
+                    const product = fatProducts.find((p) => p.id === order.productId) || fitProducts.find((p) => p.id === order.productId) || tacoProducts.find((p) => p.id === order.productId) || burgerProducts.find((p) => p.id === order.productId) || wrapProducts.find((p) => p.id === order.productId) || sandwichProducts.find((p) => p.id === order.productId);
                     if (!product) return null;
 
                     const basePrice = order.finalPrice ?? order.originalPrice ?? product.price;
@@ -825,14 +888,19 @@ export default function CheckoutPage() {
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-400">Subtotal sin descuento:</span>
                     <span className="text-gray-400 line-through font-mono text-xs">S/ {(() => {
-                      const seenC = new Set<string>();
+                      const seenC = new Set<string>(); const seenT = new Set<string>();
                       return completedOrders.reduce((t, o) => {
                         if (o.comboGroupId) {
                           if (seenC.has(o.comboGroupId)) return t;
                           seenC.add(o.comboGroupId);
                           return t + (o.comboOriginalTotal ?? o.comboPrice ?? 0);
                         }
-                        const p = fatProducts.find(x => x.id === o.productId) || fitProducts.find(x => x.id === o.productId) || tacoProducts.find(x => x.id === o.productId);
+                        if (o.trioGroupId) {
+                          if (seenT.has(o.trioGroupId)) return t;
+                          seenT.add(o.trioGroupId);
+                          return t + (o.trioPrice ?? 0) * (o.trioQuantity ?? 1);
+                        }
+                        const p = fatProducts.find(x => x.id === o.productId) || fitProducts.find(x => x.id === o.productId) || tacoProducts.find(x => x.id === o.productId) || burgerProducts.find(x => x.id === o.productId) || wrapProducts.find(x => x.id === o.productId) || sandwichProducts.find(x => x.id === o.productId);
                         return t + (o.originalPrice ?? p?.price ?? 0) * o.quantity + o.complementIds.reduce((s, c) => s + (availableComplements[c]?.price || 0), 0);
                       }, 0);
                     })().toFixed(2)}</span>

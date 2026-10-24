@@ -115,8 +115,8 @@ const COMBOS: ComboConfig[] = [
     id: "combo-chiguan",
     name: "Combo Chiguan",
     emoji: "🔥",
-    tagline: "Alitas, taco y punto",
-    description: "El combo que no necesita justificación. 4 alitas con tu salsa, un Crunch Supreme Taco con nachos. Todo en uno, sin complicaciones.",
+    tagline: "Combo Chiguan",
+    description: "4 alitas de pollo con salsa a elección + 1 Crunch Supreme Taco con nachos incluidos. Ideal para comer solo o compartir a medias.",
     price: 20,
     maxSavings: 0,
     includes: [
@@ -159,8 +159,8 @@ const COMBOS: ComboConfig[] = [
     id: "combo-perfecto",
     name: "Combo Perfecto",
     emoji: "🥗",
-    tagline: "Balance que no miente",
-    description: "Lo justo para cuando el cuerpo pide alitas pero la cabeza dice ensalada. Spoiler: las dos cosas.",
+    tagline: "Combo Perfecto",
+    description: "Pequeño Dilema: 8 alitas de pollo + papas fritas con salsa a elección. Más una ensalada FIT a tu gusto del menú completo.",
     price: 40,
     maxSavings: 5.50,
     includes: ["Pequeño Dilema · 8 alitas + papas", "Ensalada FIT a elección"],
@@ -183,8 +183,8 @@ const COMBOS: ComboConfig[] = [
     id: "combo-especial",
     name: "Combo Especial",
     emoji: "🌮",
-    tagline: "Alitas meets street food",
-    description: "La combinación que nadie esperaba pero todos necesitaban. Crujiente, sabroso, sin complicaciones.",
+    tagline: "Combo Especial",
+    description: "Pequeño Dilema: 8 alitas de pollo + papas fritas con salsa a elección. Más un Dúo de Tacos con 2 sabores a elegir: Crunch Supreme, Tex Supreme o Bacon Deluxe.",
     price: 42,
     maxSavings: 4.90,
     includes: ["Pequeño Dilema · 8 alitas + papas", "Dúo de Tacos · 2 sabores"],
@@ -207,8 +207,8 @@ const COMBOS: ComboConfig[] = [
     id: "combo-alitas",
     name: "Combo Alitas",
     emoji: "🍗",
-    tagline: "Doble dosis de pecado",
-    description: "Para los que entienden que una porción nunca fue suficiente. El doble de alitas, el doble de crisis.",
+    tagline: "Combo Alitas",
+    description: "Pequeño Dilema (8 alitas + papas) + Dúo Dilema (14 alitas + papas). Papas fritas incluidas en ambas órdenes. Hasta 3 salsas a elegir.",
     price: 52,
     maxSavings: 4.00,
     includes: ["Pequeño Dilema · 8 alitas + papas", "Dúo Dilema · 14 alitas + papas"],
@@ -231,8 +231,8 @@ const COMBOS: ComboConfig[] = [
     id: "combo-santo-dilema",
     name: "Combo Santo Dilema",
     emoji: "🔥",
-    tagline: "El combo sin excusas",
-    description: "Cuando no puedes decidir entre alitas, ensalada y tacos, la respuesta correcta siempre es las tres.",
+    tagline: "Combo Santo Dilema",
+    description: "Dúo Dilema (14 alitas + papas · 2 salsas a elegir) + ensalada FIT a elección + Dúo de Tacos con 2 sabores. El combo completo de la carta.",
     price: 76,
     maxSavings: 6.40,
     includes: ["Dúo Dilema · 14 alitas + papas", "Ensalada FIT a elección", "Dúo de Tacos · 2 sabores"],
@@ -294,6 +294,7 @@ interface SavedOrder {
   comboName?: string;
   comboPrice?: number;
   comboOriginalTotal?: number;
+  comboQuantity?: number;
   category?: string;
 }
 
@@ -342,6 +343,7 @@ export default function CombosPage() {
   const [showTuOrden, setShowTuOrden] = useState(false);
   const [savedOrders, setSavedOrders] = useState<SavedOrder[]>([]);
   const [preCheckoutVisible, setPreCheckoutVisible] = useState(false);
+  const [comboQty, setComboQty] = useState(1);
   const tuOrdenRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -380,6 +382,7 @@ export default function CombosPage() {
     setActiveCombo(combo);
     setCurrentStep(0);
     setSelections(emptySelections());
+    setComboQty(1);
     setModalPhase("selecting");
     setTimeout(() => setSheetVisible(true), 10);
   };
@@ -428,7 +431,7 @@ export default function CombosPage() {
   const selectTacoComplement = (id: string) => setSelections(prev => ({ ...prev, tacoComplement: id }));
 
   // ── Guardar en sessionStorage ──────────────────────────────────
-  const saveToCart = () => {
+  const saveToCart = (qty: number = 1) => {
     if (!activeCombo) return;
     const comboGroupId = `cg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
     const basePrice = menuPrices[activeCombo.id] ?? activeCombo.price;
@@ -438,7 +441,7 @@ export default function CombosPage() {
       : activeCombo.maxSavings > 0
         ? parseFloat((activePrice + activeCombo.maxSavings).toFixed(2))
         : undefined;
-    const comboMeta = { comboGroupId, comboName: activeCombo.name, comboPrice: activePrice, comboOriginalTotal };
+    const comboMeta = { comboGroupId, comboName: activeCombo.name, comboPrice: activePrice, comboOriginalTotal, comboQuantity: qty };
     const items: any[] = [];
     for (const step of activeCombo.steps) {
       if (step.type === "sauces") {
@@ -464,8 +467,7 @@ export default function CombosPage() {
   const handleNext = () => {
     if (!isStepValid()) return;
     if (isLastStep) {
-      // Guardar y mostrar confirmación
-      saveToCart();
+      // Mostrar confirmación para elegir cantidad antes de guardar
       setModalPhase("confirming");
     } else {
       setCurrentStep(prev => prev + 1);
@@ -504,13 +506,27 @@ export default function CombosPage() {
     if (updated.length === 0) setShowTuOrden(false);
   };
 
+  const handleUpdateComboGroupQuantity = (groupId: string, delta: number) => {
+    setSavedOrders(prev => {
+      const firstItem = prev.find(o => o.comboGroupId === groupId);
+      if (!firstItem) return prev;
+      const current = firstItem.comboQuantity ?? 1;
+      const next = Math.max(1, current + delta);
+      const updated = prev.map(o =>
+        o.comboGroupId === groupId ? { ...o, comboQuantity: next } : o
+      );
+      try { sessionStorage.setItem("santo-dilema-orders", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
   const tuOrdenTotal = useMemo(() => {
     const seen = new Set<string>();
     return savedOrders.reduce((sum, o) => {
       if (o.comboGroupId) {
         if (seen.has(o.comboGroupId)) return sum;
         seen.add(o.comboGroupId);
-        return sum + (o.comboPrice ?? 0);
+        return sum + (o.comboPrice ?? 0) * (o.comboQuantity ?? 1);
       }
       return sum + ((o.originalPrice ?? 0) * o.quantity);
     }, 0);
@@ -736,8 +752,23 @@ export default function CombosPage() {
                               <div className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</div>
                             )}
                             <div className="text-amber-400 font-black text-lg" style={{ textShadow: "0 0 8px rgba(251,191,36,0.5)" }}>
-                              S/ {order.comboPrice?.toFixed(2)}
+                              S/ {((order.comboPrice ?? 0) * (order.comboQuantity ?? 1)).toFixed(2)}
                             </div>
+                          </div>
+                          {/* Controles de cantidad */}
+                          <div className="flex items-center gap-1 bg-black/40 rounded-lg border border-white/10 px-1 py-0.5">
+                            <button
+                              onClick={() => handleUpdateComboGroupQuantity(order.comboGroupId!, -1)}
+                              className="w-6 h-6 rounded flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all text-base font-bold leading-none disabled:opacity-30"
+                              disabled={(order.comboQuantity ?? 1) <= 1}
+                              aria-label="Quitar uno"
+                            >−</button>
+                            <span className="text-xs font-bold text-white w-4 text-center">{order.comboQuantity ?? 1}</span>
+                            <button
+                              onClick={() => handleUpdateComboGroupQuantity(order.comboGroupId!, 1)}
+                              className="w-6 h-6 rounded flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-white/10 transition-all text-base font-bold leading-none"
+                              aria-label="Agregar uno"
+                            >+</button>
                           </div>
                           <button
                             onClick={() => handleDeleteComboGroupInPage(order.comboGroupId!)}
@@ -850,8 +881,10 @@ export default function CombosPage() {
           summary={buildSummary(activeCombo, selections)}
           visible={sheetVisible}
           effectivePrice={menuDiscounts[activeCombo.id] ?? menuPrices[activeCombo.id] ?? activeCombo.price}
-          onKeepShopping={handleKeepShopping}
-          onCheckout={handleGoToCheckout}
+          quantity={comboQty}
+          onQuantityChange={setComboQty}
+          onKeepShopping={() => { saveToCart(comboQty); handleKeepShopping(); }}
+          onCheckout={() => { saveToCart(comboQty); handleGoToCheckout(); }}
         />
       )}
 
@@ -1326,12 +1359,14 @@ function SelectionModal({
 // ──────────────────────────────────────────────────────────────────
 
 function ConfirmationModal({
-  combo, summary, visible, effectivePrice, onKeepShopping, onCheckout,
+  combo, summary, visible, effectivePrice, quantity, onQuantityChange, onKeepShopping, onCheckout,
 }: {
   combo: ComboConfig;
   summary: SummaryItem[];
   visible: boolean;
   effectivePrice: number;
+  quantity: number;
+  onQuantityChange: (n: number) => void;
   onKeepShopping: () => void;
   onCheckout: () => void;
 }) {
@@ -1399,10 +1434,29 @@ function ConfirmationModal({
             </div>
           ))}
 
-          {/* Total */}
-          <div className="flex items-center justify-between pt-2 border-t border-white/5 mt-2">
-            <span className="text-sm text-gray-400">Total combo</span>
-            <span className="text-xl font-bold text-white">S/ {effectivePrice.toFixed(2)}</span>
+          {/* Selector de cantidad */}
+          <div className="pt-3 border-t border-white/5 mt-2">
+            <p className="text-xs text-gray-400 mb-2 font-semibold">¿Cuántas órdenes iguales deseas?</p>
+            <p className="text-[11px] text-gray-500 mb-3 italic">Se repetirá esta selección en cada orden</p>
+            <div className="flex items-center justify-between bg-black/30 rounded-xl px-4 py-3 border border-white/8">
+              <button
+                onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+                className="w-9 h-9 rounded-full border border-white/15 text-white text-xl font-bold flex items-center justify-center active:scale-90 transition-all hover:bg-white/8 disabled:opacity-30"
+                disabled={quantity <= 1}
+                aria-label="Reducir cantidad"
+              >−</button>
+              <span className="text-2xl font-black text-white w-8 text-center">{quantity}</span>
+              <button
+                onClick={() => onQuantityChange(quantity + 1)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-xl font-bold active:scale-90 transition-all text-white hover:opacity-80"
+                style={{ background: `rgba(${rgb},0.25)`, border: `1px solid rgba(${rgb},0.5)` }}
+                aria-label="Aumentar cantidad"
+              >+</button>
+            </div>
+            <div className="flex items-center justify-between pt-3">
+              <span className="text-sm text-gray-400">{quantity > 1 ? `Total · ${quantity} órdenes` : 'Total combo'}</span>
+              <span className="text-xl font-bold text-white">S/ {(effectivePrice * quantity).toFixed(2)}</span>
+            </div>
           </div>
 
           {/* Navegación seguir comprando */}
@@ -1435,13 +1489,13 @@ function ConfirmationModal({
             className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${combo.colors.btn}`}
             style={{ boxShadow: `0 0 16px rgba(${rgb},0.35)` }}
           >
-            Confirmar e ir a pagar →
+            {quantity > 1 ? `Agregar ${quantity} órdenes · S/ ${(effectivePrice * quantity).toFixed(2)} →` : `Agregar al pedido · S/ ${effectivePrice.toFixed(2)} →`}
           </button>
           <button
             onClick={onKeepShopping}
             className="w-full py-3 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-all"
           >
-            Continuar agregando órdenes
+            Seguir explorando el menú
           </button>
         </div>
       </div>
