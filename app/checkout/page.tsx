@@ -336,8 +336,11 @@ export default function CheckoutPage() {
       const wrapProduct = wrapProducts.find((p) => p.id === order.productId);
       const sandwichProduct = sandwichProducts.find((p) => p.id === order.productId);
       const product = fatProduct || fitProduct || tacoProduct || burgerProduct || wrapProduct || sandwichProduct;
-      if (!product) return total;
-      const effectivePrice = order.finalPrice ?? order.originalPrice ?? product.price;
+      // Usar precio almacenado aunque el producto no esté en el catálogo local.
+      // Si no hay precio de ningún origen, omitir del total pero el ítem quedará
+      // visible con aviso (ver unresolvableItems abajo).
+      const effectivePrice = order.finalPrice ?? order.originalPrice ?? product?.price;
+      if (effectivePrice === undefined) return total;
       const complementsTotal = order.complementIds.reduce((sum, compId) => {
         return sum + (availableComplements[compId]?.price || 0);
       }, 0);
@@ -347,6 +350,15 @@ export default function CheckoutPage() {
 
   const deliveryZoneCost = deliveryZone === 'alrededores' ? 4.00 : 0;
   const realTotal = subtotalWithPromos + deliveryZoneCost;
+
+  // Ítems que no tienen catálogo local NI precio almacenado — se muestran con
+  // aviso y bloquean la confirmación hasta que se retiren.
+  const allLocalProducts = [...fatProducts, ...fitProducts, ...tacoProducts, ...burgerProducts, ...wrapProducts, ...sandwichProducts];
+  const unresolvableItems = completedOrders.filter(order => {
+    if (order.comboGroupId || (order as any).trioGroupId) return false;
+    const found = allLocalProducts.find(p => p.id === order.productId);
+    return !found && order.finalPrice == null && order.originalPrice == null;
+  });
 
   // Validar si el formulario está completo
   // ── PROGRAMAR COMPRA ─────────────────────────────────────────────
@@ -915,6 +927,22 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
+                {unresolvableItems.length > 0 && (
+                  <div className="bg-red-900/30 border border-red-500/50 rounded-xl px-4 py-3 mt-2">
+                    <p className="text-red-400 font-bold text-sm">⚠️ Artículo no identificado</p>
+                    <p className="text-red-300/80 text-xs mt-1">
+                      {unresolvableItems.length === 1
+                        ? 'Un artículo de tu orden no pudo valorarse.'
+                        : `${unresolvableItems.length} artículos de tu orden no pudieron valorarse.`}{' '}
+                      Regresa al menú para retirarlo o vuelve a agregarlo.
+                    </p>
+                    <ul className="mt-1 space-y-0.5">
+                      {unresolvableItems.map((o, i) => (
+                        <li key={i} className="text-red-300 text-xs font-mono">· {o.productId ?? 'ID desconocido'}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="flex justify-between items-center pt-2 border-t border-gray-700">
                   <span className="text-white font-black text-lg">Total:</span>
                   <span className="text-amber-400 font-black text-2xl font-mono">
@@ -977,7 +1005,7 @@ export default function CheckoutPage() {
                 </Link>
                 <button
                   type="button"
-                  disabled={isSubmitting || !isFormValid()}
+                  disabled={isSubmitting || !isFormValid() || unresolvableItems.length > 0}
                   onClick={() => {
                     const baseValid = formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "" && deliveryZone !== "";
                     if (!baseValid) {

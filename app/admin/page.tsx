@@ -2802,7 +2802,7 @@ export default function AdminPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             {filteredOrders.map((order) => {
               const isOvertime = overtimeOrderIds.has(order.id) && order.status !== 'delivered' && order.status !== 'cancelled';
               const cardRing = isOvertime
@@ -2836,7 +2836,7 @@ export default function AdminPage() {
                   if (it.comboGroupId) {
                     if (seen.has(it.comboGroupId)) return s;
                     seen.add(it.comboGroupId);
-                    return s + (it.comboPrice || 0);
+                    return s + (it.comboPrice || 0) * (it.comboQuantity ?? 1);
                   }
                   return s + (it.finalPrice ?? it.originalPrice ?? 0) * (it.quantity || 1);
                 }, 0);
@@ -2847,445 +2847,201 @@ export default function AdminPage() {
                 fit:  {dot:'bg-green-400',  bg:'bg-green-50',   text:'text-green-700',  label:'FIT'},
                 taco: {dot:'bg-yellow-400', bg:'bg-yellow-50',  text:'text-yellow-700', label:'TACO'},
               };
+              // ── Resumen compacto de productos (texto inline) ──
+              const productSummary = (() => {
+                const items: string[] = [];
+                const seen = new Set<string>();
+                const src: any[] = allItems.length > 0 ? allItems : (order.cart || []);
+                src.forEach((item: any) => {
+                  if (item.comboGroupId) {
+                    if (seen.has(item.comboGroupId)) return;
+                    seen.add(item.comboGroupId);
+                    const grp = src.filter((i: any) => i.comboGroupId === item.comboGroupId);
+                    const parts = grp.map((gi: any) => {
+                      const s = (gi.salsas || []).map((sid: string) => salsas.find((x: any) => x.id === sid)?.name || sid);
+                      return `${gi.name}${s.length ? ` (${s.join(', ')})` : ''}`;
+                    });
+                    items.push(`🔥 ${item.comboName || 'Combo'}: ${parts.join(' + ')}`);
+                    return;
+                  }
+                  const name = item.name || item.product?.name || '?';
+                  const qty = item.quantity || 1;
+                  const sl = (item.salsas || []).map((sid: string) => salsas.find((x: any) => x.id === sid)?.name || sid);
+                  const comps = (item.complementIds || []).map((cid: string) => availableComplements[cid]?.name || cid);
+                  const extras = [...sl, ...comps];
+                  items.push(`${qty > 1 ? `${qty}× ` : ''}${name}${extras.length ? ` (${extras.join(', ')})` : ''}`);
+                });
+                return items.join(' · ');
+              })();
+
               return (
               <div
                 key={order.id}
-                className={`bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-200 ${cardRing}`}
+                className={`bg-white rounded-xl overflow-hidden flex items-stretch transition-all duration-200 min-h-[72px] ${cardRing}`}
               >
-                {/* ── FRANJA DE COLOR ── */}
-                <div className={`h-1.5 w-full flex-shrink-0 ${stripeColor}`} />
+                {/* ── FRANJA IZQUIERDA ── */}
+                <div className={`w-1.5 flex-shrink-0 ${stripeColor}`} />
 
-                {/* ── CABECERA: ID · ESTADO · HORA · TIMER · ELIMINAR ── */}
-                <div className="px-4 pt-3 pb-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-base font-black text-gray-900 tracking-tight">{order.id}</span>
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider ${statusColors[order.status]}`}>
-                          {statusLabels[order.status]}
-                        </span>
-                        {isOvertime && <span className="text-[9px] font-black text-red-500 uppercase animate-pulse">⚠ TARDE</span>}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[11px] text-gray-400 tabular-nums">
-                          {new Date(order.createdAt).toLocaleString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        <span className="text-gray-200">·</span>
-                        <TimeCounter
-                          createdAt={order.createdAt}
-                          orderId={order.id}
-                          status={order.status}
-                          audioCtx={audioContext}
-                          onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))}
-                        />
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        if (!confirm(`¿Eliminar pedido ${order.id}?`)) return;
-                        await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
-                        setOrders(prev => prev.filter(o => o.id !== order.id));
-                      }}
-                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all text-xs mt-0.5"
-                    >✕</button>
-                  </div>
-                  {/* Pedido programado */}
-                  {(order as any).scheduledTime && (
-                    <div className="mt-2 inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1">
-                      <span className="text-indigo-500 text-xs">🗓</span>
-                      <span className="text-xs font-bold text-indigo-700">
-                        {(() => {
-                          const [hh, mm] = ((order as any).scheduledTime as string).split(':');
-                          const h = parseInt(hh);
-                          const schedDate = (order as any).scheduledDate as string | undefined;
-                          let day = 'Hoy';
-                          if (schedDate) {
-                            const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-                            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-                            if (schedDate !== todayStr) {
-                              const d = new Date(schedDate + 'T12:00:00');
-                              const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-                              day = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
-                            }
-                          }
-                          return `${day} ${h > 12 ? h-12 : h}:${mm} ${h >= 12 ? 'PM' : 'AM'}`;
-                        })()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── PRODUCTOS ── */}
-                <div className="mx-4 mb-0">
-                  <div className="h-px bg-gray-100" />
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest pt-2.5 pb-1.5">Productos</p>
-                </div>
-                <div className="px-4 pb-3 flex-1 space-y-2.5">
-                  {allItems.length > 0 ? (() => {
-                    const seen = new Set<string>();
-                    return allItems.map((item: any, idx: number) => {
-                      // ── COMBO ──
-                      if (item.comboGroupId) {
-                        if (seen.has(item.comboGroupId)) return null;
-                        seen.add(item.comboGroupId);
-                        const grp = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
-                        const cp = item.comboPrice || 0;
-                        const sv = +((item.comboOriginalTotal || cp) - cp).toFixed(2);
-                        return (
-                          <div key={`c-${item.comboGroupId}`} className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-2.5">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs">🔥</span>
-                                <span className="text-xs font-black text-amber-800">{item.comboName || 'Combo'}</span>
-                                {sv > 0 && <span className="text-[9px] bg-amber-200 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">-S/{sv.toFixed(0)}</span>}
-                              </div>
-                              <span className="text-sm font-black text-amber-800">S/{cp.toFixed(2)}</span>
+                {/* ── PRODUCTOS (protagonista) ── */}
+                <div className="flex-1 min-w-0 overflow-hidden border-r border-gray-100 px-4 flex flex-col justify-center gap-1.5 py-2.5">
+                  {/* Items del pedido — en fila, wrap si no caben */}
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {(() => {
+                      const src: any[] = allItems.length > 0 ? allItems : (order.cart || []);
+                      if (src.length === 0) return <span className="text-[11px] text-gray-400 italic">Sin productos</span>;
+                      const seen = new Set<string>();
+                      return src.map((item: any, idx: number) => {
+                        // ── COMBO ──
+                        if (item.comboGroupId) {
+                          if (seen.has(item.comboGroupId)) return null;
+                          seen.add(item.comboGroupId);
+                          const grp = src.filter((i: any) => i.comboGroupId === item.comboGroupId);
+                          const comboLabel = grp.map((gi: any) => {
+                            const sl = (gi.salsas || []).map((sid: string) => salsas.find((x: any) => x.id === sid)?.name || sid);
+                            return `${gi.quantity > 1 ? `${gi.quantity}× ` : ''}${gi.name}${sl.length ? ` (${sl.join(', ')})` : ''}`;
+                          }).join(' + ');
+                          return (
+                            <div key={`c-${item.comboGroupId}`} className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-md px-2 py-1">
+                              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black flex items-center justify-center leading-none">{item.comboQuantity ?? 1}</span>
+                              <span className="text-sm font-bold text-gray-900 leading-tight">{item.comboName || 'Combo'}</span>
+                              <span className="text-xs text-gray-400 leading-tight truncate">{comboLabel}</span>
                             </div>
-                            {grp.map((gi: any, gi_i: number) => {
-                              const salsas_ = gi.salsas || [];
-                              const comps = gi.complementIds || [];
-                              const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
-                              const sides = comps.filter((c: string) => SIDE_IDS.has(c));
-                              const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
-                              return (
-                                <div key={gi_i} className="mb-1.5">
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-amber-400 text-white text-[10px] font-black flex items-center justify-center flex-shrink-0">{gi.quantity}</span>
-                                    <span className="text-xs font-bold text-gray-800 flex-1">{gi.name}</span>
-                                  </div>
-                                  <div className="mt-1 flex flex-wrap gap-1 pl-7">
-                                    {salsas_.map((sId: string, i: number) => (
-                                      <span key={i} className="inline-flex items-center bg-red-50 border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        🌶 {gi.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (salsas.find((s: any) => s.id === sId)?.name || sId)}
-                                      </span>
-                                    ))}
-                                    {drinks.map((c: string, i: number) => (
-                                      <span key={i} className="inline-flex items-center bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        🥤 {availableComplements[c]?.name || c}
-                                      </span>
-                                    ))}
-                                    {sides.map((c: string, i: number) => (
-                                      <span key={i} className="inline-flex items-center bg-yellow-50 border border-yellow-200 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        🍟 {availableComplements[c]?.name || c}
-                                      </span>
-                                    ))}
-                                    {extras.length > 0 && (() => {
-                                      const counts: Record<string, number> = {};
-                                      extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
-                                      return Object.entries(counts).map(([cId, n], i) => (
-                                        <span key={i} className="inline-flex items-center bg-gray-100 border border-gray-200 text-gray-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                          + {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}
-                                        </span>
-                                      ));
-                                    })()}
-                                    {comps.length === 0 && salsas_.length === 0 && gi.category === 'fat' && (
-                                      <span className="text-[9px] text-gray-400 italic">sin salsa · sin bebida</span>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
+                          );
+                        }
+                        // ── ITEM NORMAL ──
+                        const qty = item.quantity || 1;
+                        const name = item.name || item.product?.name || '?';
+                        const sl = (item.salsas || []).map((sid: string) => salsas.find((x: any) => x.id === sid)?.name || sid);
+                        const comps = (item.complementIds || []).map((cid: string) => availableComplements[cid]?.name || cid);
+                        const extras = [...sl, ...comps];
+                        return (
+                          <div key={idx} className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-md px-2 py-1">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black flex items-center justify-center leading-none">{qty}</span>
+                            <span className="text-sm font-bold text-gray-900 leading-tight">{name}</span>
+                            {extras.length > 0 && (
+                              <span className="text-xs text-gray-400 leading-tight truncate">{extras.join(' · ')}</span>
+                            )}
                           </div>
                         );
-                      }
-
-                      // ── PRODUCTO NORMAL ──
-                      const qty = item.quantity || 0;
-                      const cf = 1 - ((order as any).couponDiscount || 0) / 100;
-                      const amt = (item.price || 0) * cf * qty;
-                      const cat = item.category as string;
-                      const cfg = CAT[cat] || { dot: 'bg-gray-300', bg: 'bg-gray-50', text: 'text-gray-600', label: '' };
-                      const salsas_: string[] = item.salsas || [];
-                      const comps: string[] = item.complementIds || [];
-                      const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
-                      const sides = comps.filter((c: string) => SIDE_IDS.has(c));
-                      const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
-                      return (
-                        <div key={idx} className={`rounded-xl p-2.5 ${cfg.bg} border border-gray-100`}>
-                          <div className="flex items-start gap-2.5">
-                            <div className={`w-6 h-6 rounded-full ${cfg.dot} text-white text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5`}>{qty}</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-1">
-                                <span className="text-[13px] font-bold text-gray-900 leading-tight">{item.name}</span>
-                                <span className={`text-[13px] font-black flex-shrink-0 ${cfg.text}`}>S/{amt.toFixed(2)}</span>
-                              </div>
-                              {cfg.label && <span className={`text-[9px] font-black uppercase tracking-wider ${cfg.text} opacity-60`}>{cfg.label}</span>}
-                              {/* Tags de salsas / bebidas / acompañamientos */}
-                              {(salsas_.length > 0 || drinks.length > 0 || sides.length > 0 || extras.length > 0) && (
-                                <div className="mt-1.5 flex flex-wrap gap-1">
-                                  {salsas_.map((sId: string, i: number) => (
-                                    <span key={i} className="inline-flex items-center bg-white border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                      🌶 {item.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (salsas.find((s: any) => s.id === sId)?.name || sId)}
-                                    </span>
-                                  ))}
-                                  {drinks.map((c: string, i: number) => (
-                                    <span key={i} className="inline-flex items-center bg-white border border-blue-200 text-blue-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                      🥤 {availableComplements[c]?.name || c}
-                                    </span>
-                                  ))}
-                                  {sides.map((c: string, i: number) => (
-                                    <span key={i} className="inline-flex items-center bg-white border border-yellow-200 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                      🍟 {availableComplements[c]?.name || c}
-                                    </span>
-                                  ))}
-                                  {extras.length > 0 && (() => {
-                                    const counts: Record<string, number> = {};
-                                    extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
-                                    return Object.entries(counts).map(([cId, n], i) => (
-                                      <span key={i} className="inline-flex items-center bg-white border border-gray-200 text-gray-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        + {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}
-                                      </span>
-                                    ));
-                                  })()}
-                                </div>
-                              )}
-                              {comps.length === 0 && salsas_.length === 0 && cat === 'fat' && (
-                                <p className="text-[9px] text-gray-400 italic mt-1">sin salsa · sin bebida</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    });
-                  })() : order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
-                    order.cart.map((item: any, idx: number) => (
-                      <div key={idx} className="rounded-xl bg-gray-50 border border-gray-100 p-2.5 flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-400 text-white text-[10px] font-black flex items-center justify-center flex-shrink-0">{item.quantity || 1}</div>
-                        <span className="flex-1 text-[13px] font-bold text-gray-900 truncate">{item.product?.name || item.name}</span>
-                        <span className="text-[13px] font-black text-gray-700">S/{((item.product?.price || item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
-                      </div>
-                    ))
-                  ) : <p className="text-xs text-gray-400 italic">Sin productos</p>}
-                </div>
-
-                {/* ── NOTA DEL PEDIDO ── */}
-                {order.notes && (
-                  <div className="mx-4 mb-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
-                    <span className="text-amber-500 text-sm flex-shrink-0 mt-0.5">⚠️</span>
-                    <p className="text-xs font-semibold text-amber-800 leading-snug">{order.notes}</p>
+                      });
+                    })()}
                   </div>
-                )}
-
-                {/* ── CLIENTE ── */}
-                <div className="mx-4 mb-3">
-                  <div className="h-px bg-gray-100 mb-2" />
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Cliente</p>
-                  <div className="space-y-1.5">
-                    <p className="text-sm font-black text-gray-900">{order.name}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400 text-xs">📱</span>
-                      <span className="text-xs text-gray-600 font-mono">{order.phone}</span>
-                    </div>
+                  {/* Info cliente sutil */}
+                  <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                    <span className="text-[10px] text-gray-400">{order.name} · {order.phone}</span>
                     {((order as any).deliveryOption === 'centro' || (order as any).deliveryOption === 'alrededores') ? (
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs">🛵</span>
-                        <div>
-                          <span className="text-xs font-bold text-sky-600">
-                            Delivery{(order as any).deliveryCost > 0 ? ` · +S/${((order as any).deliveryCost || 0).toFixed(2)}` : ' · Gratis'}
-                          </span>
-                          {order.address && order.address !== 'Recojo en tienda' && (
-                            <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{order.address}</p>
-                          )}
-                          {(order as any).deliveryCustomLocation && (
-                            <p className="text-[10px] text-sky-400 italic leading-tight">{(order as any).deliveryCustomLocation}</p>
-                          )}
-                        </div>
-                      </div>
+                      <span className="text-[10px] text-gray-400 truncate">🛵 {order.address}</span>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">🏪</span>
-                        <span className="text-xs font-bold text-emerald-600">Recojo en tienda</span>
-                      </div>
+                      <span className="text-[10px] text-emerald-400">🏪 Recojo</span>
+                    )}
+                    {order.notes && (
+                      <span className="text-[10px] text-amber-500 font-semibold truncate">⚠️ {order.notes}</span>
                     )}
                   </div>
                 </div>
 
-                {/* ── RASTRO DE TIEMPOS ── */}
-                {(() => {
-                  const steps = [
-                    { label: 'Ingresó',   time: order.createdAt,   color: 'text-gray-400' },
-                    { label: 'Confirmó',  time: order.confirmedAt, color: 'text-sky-500' },
-                    { label: 'Salió',     time: order.enCaminoAt,  color: 'text-blue-500' },
-                    { label: 'Entregado', time: order.deliveredAt, color: 'text-emerald-500' },
-                  ];
-                  const filled = steps.filter(s => s.time);
-                  if (filled.length < 2) return null;
-                  return (
-                    <div className="mx-4 mb-3 bg-gray-50 rounded-xl px-3 py-2 flex flex-wrap gap-x-4 gap-y-1">
-                      {filled.map((step, i) => {
-                        const prev = filled[i - 1];
-                        const elapsed = prev ? Math.round((new Date(step.time!).getTime() - new Date(prev.time!).getTime()) / 60000) : null;
-                        return (
-                          <div key={i} className="flex items-center gap-1">
-                            <span className={`text-[10px] font-mono font-bold ${step.color}`}>
-                              {new Date(step.time!).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                            <span className={`text-[9px] ${step.color}`}>{step.label}</span>
-                            {elapsed !== null && <span className="text-[9px] text-amber-400 font-bold">+{elapsed}m</span>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-
-                {/* ── TOTAL + PAGO ── */}
-                <div className="mx-4 mb-3">
-                  <div className="h-px bg-gray-100 mb-2" />
-                  <div className="flex items-end justify-between gap-2">
-                    <div>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">
-                        Total{(order as any).deliveryCost > 0 ? ' · incl. delivery' : ''}
-                      </p>
-                      <p className="text-2xl font-black text-gray-900 tabular-nums leading-none">
-                        S/{effectiveTotal.toFixed(2)}
-                      </p>
-                      {(order as any).couponDiscount > 0 && (
-                        <p className="text-[9px] text-purple-500 font-semibold mt-0.5">cupón -{(order as any).couponDiscount}%</p>
-                      )}
-                      {(() => {
-                        const items = (order as any).completedOrders;
-                        if (!items) return null;
-                        const seen2 = new Set<string>(); let s = 0;
-                        items.forEach((it: any) => { if (it.comboGroupId && !seen2.has(it.comboGroupId)) { seen2.add(it.comboGroupId); s += (it.comboOriginalTotal || 0) - (it.comboPrice || 0); } });
-                        return s > 0 ? <p className="text-[9px] text-amber-500 font-semibold mt-0.5">🔥 ahorro S/{s.toFixed(2)}</p> : null;
-                      })()}
-                    </div>
-                    {/* ── PAGO ── */}
-                    {(() => {
-                      const pm = order.paymentMethod;
-                      const isYapeAnticipado = pm === 'anticipado' || pm === 'yape' || pm === 'plin';
-                      const isYapeEntrega    = pm === 'contraentrega-yape-plin';
-                      const hasProof         = !!order.paymentProofPath;
-                      const openVoucher = () => {
-                        setSelectedVoucherPath(order.paymentProofPath || '');
-                        setSelectedVoucherOrder(order);
-                        setShowVoucherModal(true);
-                      };
-
-                      // Solo anticipado = pago adelantado → puede tener comprobante
-                      if (isYapeAnticipado) {
-                        return (
-                          <div className="flex flex-col gap-1 min-w-[88px]">
-                            <div className="rounded-xl px-3 py-2 text-center text-xs font-black bg-emerald-100 text-emerald-700 border border-emerald-200">
-                              <p className="text-[10px]">✓ PAGADO</p>
-                              <p className="text-[9px] font-medium opacity-70">Yape / Plin</p>
-                            </div>
-                            {hasProof ? (
-                              <button
-                                onClick={openVoucher}
-                                className="rounded-xl px-2 py-1.5 text-center text-[10px] font-black bg-purple-100 text-purple-700 border border-purple-300 hover:bg-purple-200 transition-all flex items-center justify-center gap-1"
-                              >
-                                🟣 Ver comprobante
-                              </button>
-                            ) : (
-                              <div className="rounded-xl px-2 py-1.5 text-center text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-300">
-                                ⚠ Sin comprobante
-                              </div>
-                            )}
-                          </div>
-                        );
-                      }
-
-                      // Yape/Plin al recibir
-                      if (isYapeEntrega) {
-                        return (
-                          <div className="rounded-xl px-3 py-2 text-center text-xs font-black bg-amber-100 text-amber-700 border border-amber-200 min-w-[80px]">
-                            <p>YAPE</p><p className="text-[9px] font-medium opacity-70">al recibir</p>
-                          </div>
-                        );
-                      }
-
-                      // Otros métodos de pago
+                {/* ── TOTAL + PAGO + ACCIÓN (columna unificada) ── */}
+                <div className="w-36 flex-shrink-0 flex flex-col">
+                  {/* Total + Pago */}
+                  <div className="flex-1 border-b border-gray-100 px-2.5 py-2 flex flex-col gap-0.5 justify-center">
+                  <div>
+                    <p className="text-base font-black text-gray-900 tabular-nums leading-none">
+                      S/{effectiveTotal.toFixed(2)}
+                    </p>
+                    {(order as any).deliveryCost > 0 && (
+                      <p className="text-[9px] text-gray-400">+S/{(order as any).deliveryCost} delivery</p>
+                    )}
+                    {(order as any).couponDiscount > 0 && (
+                      <p className="text-[9px] text-purple-500">-{(order as any).couponDiscount}% cupón</p>
+                    )}
+                  </div>
+                  {/* Pago */}
+                  {(() => {
+                    const pm = order.paymentMethod;
+                    const isYapeAnticipado = pm === 'anticipado' || pm === 'yape' || pm === 'plin';
+                    const isYapeEntrega    = pm === 'contraentrega-yape-plin';
+                    const hasProof         = !!order.paymentProofPath;
+                    const openVoucher = () => {
+                      setSelectedVoucherPath(order.paymentProofPath || '');
+                      setSelectedVoucherOrder(order);
+                      setShowVoucherModal(true);
+                    };
+                    if (isYapeAnticipado) {
                       return (
-                        <div className={`rounded-xl px-3 py-2 text-center text-xs font-black min-w-[80px] ${
-                          pm === 'tarjeta-mp'                    ? 'bg-blue-100    text-blue-700    border border-blue-200'   :
-                          pm === 'contraentrega-efectivo-exacto' ? 'bg-orange-100  text-orange-700  border border-orange-200' :
-                          pm === 'contraentrega-efectivo-cambio' ? 'bg-orange-100  text-orange-700  border border-orange-200' :
-                          'bg-gray-100 text-gray-600 border border-gray-200'
-                        }`}>
-                          {pm === 'tarjeta-mp' ? (
-                            <><p className="text-[10px]">✓ PAGADO</p><p className="text-[9px] font-medium opacity-70">Mercado Pago</p></>
-                          ) : pm === 'contraentrega-efectivo-exacto' ? (
-                            <><p>EFECTIVO</p><p className="text-[9px] font-medium opacity-70">exacto</p></>
-                          ) : pm === 'contraentrega-efectivo-cambio' ? (
-                            <><p>EFECTIVO</p>
-                              {(order as any).cantoCancelo && (
-                                <p className="text-[9px] font-medium opacity-70">
-                                  vuelto S/{(parseFloat((order as any).cantoCancelo) - effectiveTotal).toFixed(2)}
-                                </p>
-                              )}
-                            </>
-                          ) : pm === 'efectivo' ? (
-                            <p>EFECTIVO</p>
-                          ) : <p className="text-[10px]">{pm}</p>}
-                          {hasProof && (
-                            <button
-                              onClick={openVoucher}
-                              className="mt-1 text-[9px] underline opacity-60 block w-full"
-                            >ver comprobante</button>
+                        <div className="flex flex-col gap-0.5 mt-1">
+                          <span className="text-[9px] font-bold text-emerald-600">✓ Pagado · Yape/Plin</span>
+                          {hasProof ? (
+                            <button onClick={openVoucher} className="text-[9px] text-purple-500 hover:text-purple-700 text-left transition-all">🟣 Ver comprobante</button>
+                          ) : (
+                            <span className="text-[9px] text-amber-500">⚠ Sin comprobante</span>
                           )}
                         </div>
                       );
-                    })()}
+                    }
+                    if (isYapeEntrega) {
+                      return <span className="text-[9px] text-amber-600 mt-1">Yape al recibir</span>;
+                    }
+                    return (
+                      <div className="mt-1">
+                        {pm === 'tarjeta-mp' ? (
+                          <span className="text-[9px] text-blue-600 font-bold">✓ Pagado · MP</span>
+                        ) : pm === 'contraentrega-efectivo-exacto' ? (
+                          <span className="text-[9px] text-orange-600">Efectivo exacto</span>
+                        ) : pm === 'contraentrega-efectivo-cambio' ? (
+                          <span className="text-[9px] text-orange-600">
+                            Efectivo{(order as any).cantoCancelo ? ` · vuelto S/${(parseFloat((order as any).cantoCancelo) - effectiveTotal).toFixed(2)}` : ''}
+                          </span>
+                        ) : (
+                          <span className="text-[9px] text-gray-400">{pm}</span>
+                        )}
+                        {hasProof && (
+                          <button onClick={openVoucher} className="block text-[9px] text-purple-500 hover:text-purple-700 transition-all">🟣 Ver comprobante</button>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  </div>
+                  {/* Botones */}
+                  <div className="px-2.5 py-2 flex flex-col gap-1.5 border-t border-gray-100">
+                    {/* Botones acción */}
+                    {order.status === 'pending' && (
+                      <div className="flex gap-1">
+                        <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-600 text-[10px] font-semibold py-1 transition-all text-center">✓ Confirmar</button>
+                        <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="rounded bg-gray-50 hover:bg-red-50 text-gray-300 hover:text-red-400 text-[10px] py-1 px-1.5 transition-all">✕</button>
+                      </div>
+                    )}
+                    {order.status === 'pendiente-verificacion' && (
+                      <div className="flex gap-1">
+                        <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 rounded bg-purple-50 hover:bg-purple-100 text-purple-600 text-[10px] font-semibold py-1 transition-all text-center">✓ Verificar</button>
+                        <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="rounded bg-gray-50 hover:bg-red-50 text-gray-300 hover:text-red-400 text-[10px] py-1 px-1.5 transition-all">✕</button>
+                      </div>
+                    )}
+                    {order.status === 'programado' && (
+                      <div className="flex gap-1">
+                        <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[10px] font-semibold py-1 transition-all text-center">✓ Aceptar</button>
+                        <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="rounded bg-gray-50 hover:bg-red-50 text-gray-300 hover:text-red-400 text-[10px] py-1 px-1.5 transition-all">✕</button>
+                      </div>
+                    )}
+                    {order.status === 'confirmed' && (
+                      <div className="flex gap-1">
+                        <button onClick={() => updateOrderStatus(order.id, 'en-camino')} className="flex-1 rounded bg-sky-50 hover:bg-sky-100 text-sky-600 text-[10px] font-semibold py-1 transition-all text-center">🛵 En camino</button>
+                        <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="rounded bg-gray-50 hover:bg-red-50 text-gray-300 hover:text-red-400 text-[10px] py-1 px-1.5 transition-all">✕</button>
+                      </div>
+                    )}
+                    {order.status === 'en-camino' && (
+                      <div className="flex gap-1">
+                        <button onClick={() => updateOrderStatus(order.id, 'delivered')} className="flex-1 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[10px] font-semibold py-1 transition-all text-center">✓ Entregado</button>
+                        <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="rounded bg-gray-50 hover:bg-red-50 text-gray-300 hover:text-red-400 text-[10px] py-1 px-1.5 transition-all">✕</button>
+                      </div>
+                    )}
+                    {order.status === 'delivered' && (
+                      <button onClick={async () => { if (!confirm('¿Eliminar?')) return; await fetch(`/api/orders?id=${order.id}`,{method:'DELETE'}); setOrders(prev=>prev.filter(o=>o.id!==order.id)); }} className="w-full rounded bg-gray-50 hover:bg-red-50 text-gray-300 hover:text-red-400 text-[10px] py-1 transition-all text-center">🗑 Eliminar</button>
+                    )}
+                    {order.status === 'cancelled' && (
+                      <button onClick={async () => { if (!confirm('¿Eliminar?')) return; await fetch(`/api/orders?id=${order.id}`,{method:'DELETE'}); setOrders(prev=>prev.filter(o=>o.id!==order.id)); }} className="w-full rounded bg-gray-50 hover:bg-red-50 text-gray-300 hover:text-red-400 text-[10px] py-1 transition-all text-center">🗑 Eliminar</button>
+                    )}
                   </div>
                 </div>
-
-                {/* ── BOTÓN DE ACCIÓN ── */}
-                {order.status === 'pending' && (
-                  <div className="flex mt-auto">
-                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
-                      ✓ Confirmar pedido
-                    </button>
-                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-amber-600 hover:bg-red-600 text-white/70 hover:text-white border-l border-amber-700 text-sm font-bold transition-all rounded-br-2xl">✕</button>
-                  </div>
-                )}
-                {order.status === 'pendiente-verificacion' && (
-                  <div className="flex mt-auto">
-                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
-                      ✓ Verificar y confirmar
-                    </button>
-                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-purple-700 hover:bg-red-600 text-white/70 hover:text-white border-l border-purple-800 text-sm font-bold transition-all rounded-br-2xl">✕</button>
-                  </div>
-                )}
-                {order.status === 'programado' && (
-                  <div className="flex mt-auto">
-                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
-                      ✓ Aceptar programado
-                    </button>
-                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-indigo-700 hover:bg-red-600 text-white/70 hover:text-white border-l border-indigo-800 text-sm font-bold transition-all rounded-br-2xl">✕</button>
-                  </div>
-                )}
-                {order.status === 'confirmed' && (
-                  <div className="flex mt-auto">
-                    <button onClick={() => updateOrderStatus(order.id, 'en-camino')} className="flex-1 bg-sky-500 hover:bg-sky-600 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
-                      🛵 Enviar en camino
-                    </button>
-                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-sky-600 hover:bg-red-600 text-white/70 hover:text-white border-l border-sky-700 text-sm font-bold transition-all rounded-br-2xl">✕</button>
-                  </div>
-                )}
-                {order.status === 'en-camino' && (
-                  <div className="flex mt-auto">
-                    <button onClick={() => updateOrderStatus(order.id, 'delivered')} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
-                      ✓ Marcar entregado
-                    </button>
-                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-emerald-600 hover:bg-red-600 text-white/70 hover:text-white border-l border-emerald-700 text-sm font-bold transition-all rounded-br-2xl">✕</button>
-                  </div>
-                )}
-                {order.status === 'delivered' && (
-                  <div className="flex mt-auto">
-                    <div className="flex-1 bg-emerald-50 text-emerald-600 py-2.5 text-xs font-black text-center uppercase tracking-wide rounded-bl-2xl">✓ Entregado</div>
-                    <button onClick={async () => { if (!confirm('¿Eliminar?')) return; await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' }); setOrders(prev => prev.filter(o => o.id !== order.id)); }}
-                      className="px-4 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-400 border-l border-gray-100 text-xs transition-all rounded-br-2xl">🗑</button>
-                  </div>
-                )}
-                {order.status === 'cancelled' && (
-                  <div className="flex mt-auto">
-                    <div className="flex-1 bg-red-50 text-red-400 py-2.5 text-xs font-black text-center uppercase tracking-wide rounded-bl-2xl">✕ Cancelado</div>
-                    <button onClick={async () => { if (!confirm('¿Eliminar?')) return; await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' }); setOrders(prev => prev.filter(o => o.id !== order.id)); }}
-                      className="px-4 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-400 border-l border-gray-100 text-xs transition-all rounded-br-2xl">🗑</button>
-                  </div>
-                )}
               </div>
               );
             })}
