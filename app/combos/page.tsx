@@ -529,7 +529,8 @@ export default function CombosPage() {
         seen.add(o.comboGroupId);
         return sum + (o.comboPrice ?? 0) * (o.comboQuantity ?? 1);
       }
-      return sum + ((o.originalPrice ?? 0) * o.quantity);
+      // Only count non-combo items that are visible in ALL_PRODUCTS
+      return sum + (ALL_PRODUCTS[o.productId] ? (o.originalPrice ?? 0) * o.quantity : 0);
     }, 0);
   }, [savedOrders]);
 
@@ -897,6 +898,8 @@ export default function CombosPage() {
           total={tuOrdenTotal}
           onBack={() => setPreCheckoutVisible(false)}
           onConfirm={() => { setPreCheckoutVisible(false); router.push("/checkout"); }}
+          onDeleteCombo={(groupId) => handleDeleteComboGroupInPage(groupId)}
+          onNavigate={(path) => { setPreCheckoutVisible(false); router.push(path); }}
         />
       )}
     </PageMotionWrapper>
@@ -936,13 +939,21 @@ function PlusSeparator({ colors }: { colors: ComboColors }) {
 //  PRE-CHECKOUT REVIEW MODAL
 // ──────────────────────────────────────────────────────────────────
 
+const CATEGORY_LINKS = [
+  { label: "Alitas", path: "/fat" },
+  { label: "Ensaladas", path: "/fit" },
+  { label: "Combos", path: "/combos" },
+] as const;
+
 function PreCheckoutModal({
-  orders, total, onBack, onConfirm,
+  orders, total, onBack, onConfirm, onDeleteCombo, onNavigate,
 }: {
   orders: SavedOrder[];
   total: number;
   onBack: () => void;
   onConfirm: () => void;
+  onDeleteCombo: (groupId: string) => void;
+  onNavigate: (path: string) => void;
 }) {
   return (
     <div className="fixed inset-0 z-[60] flex flex-col justify-end">
@@ -959,9 +970,9 @@ function PreCheckoutModal({
         {/* Header */}
         <div className="px-5 pt-3 pb-4 border-b border-white/5 shrink-0">
           <p className="text-white font-black text-lg leading-tight" style={{ fontFamily: "var(--font-graffiti)" }}>
-            Confirma tu pedido
+            Tu pedido
           </p>
-          <p className="text-xs text-gray-500 mt-1">Revisa todo antes de continuar al pago</p>
+          <p className="text-xs text-gray-500 mt-1">Agrega algo más o revisa tu pedido antes de continuar.</p>
         </div>
 
         {/* Scrollable content */}
@@ -973,19 +984,32 @@ function PreCheckoutModal({
                 if (seen.has(order.comboGroupId)) return null;
                 seen.add(order.comboGroupId);
                 const gi = orders.filter(o => o.comboGroupId === order.comboGroupId);
+                const qty = order.comboQuantity ?? 1;
                 return (
                   <div key={`pc-cg-${order.comboGroupId}`} className="bg-white/3 rounded-xl border border-amber-400/25 p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-sm font-black text-white">🔥 {order.comboName}</p>
-                      </div>
-                      <div className="text-right">
-                        {order.comboOriginalTotal && (
-                          <p className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</p>
-                        )}
-                        <p className="text-amber-400 font-black text-base" style={{ textShadow: "0 0 6px rgba(251,191,36,0.4)" }}>
-                          S/ {order.comboPrice?.toFixed(2)}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black text-white">
+                          🔥 {order.comboName}
+                          {qty > 1 && (
+                            <span className="ml-1.5 bg-amber-400/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-amber-400/30">×{qty}</span>
+                          )}
                         </p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-2 shrink-0">
+                        <div className="text-right">
+                          {order.comboOriginalTotal && (
+                            <p className="text-[11px] text-gray-500 line-through">S/ {order.comboOriginalTotal.toFixed(2)}</p>
+                          )}
+                          <p className="text-amber-400 font-black text-base" style={{ textShadow: "0 0 6px rgba(251,191,36,0.4)" }}>
+                            S/ {((order.comboPrice ?? 0) * qty).toFixed(2)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => onDeleteCombo(order.comboGroupId!)}
+                          className="text-gray-500 hover:text-red-400 text-lg font-bold transition-all opacity-60 hover:opacity-100 leading-none"
+                          aria-label="Eliminar combo"
+                        >✕</button>
                       </div>
                     </div>
                     <div className="space-y-2 border-t border-white/5 pt-3">
@@ -1030,7 +1054,7 @@ function PreCheckoutModal({
                   </div>
                 );
               }
-              // Individual
+              // Individual — only show if product is known
               const prod = ALL_PRODUCTS[order.productId];
               if (!prod) return null;
               return (
@@ -1059,20 +1083,30 @@ function PreCheckoutModal({
         </div>
 
         {/* Actions */}
-        <div className="shrink-0 px-5 py-4 border-t border-white/5 flex flex-col gap-2.5">
+        <div className="shrink-0 px-5 pt-3 pb-5 border-t border-white/5 flex flex-col gap-2.5">
           <button
             onClick={onConfirm}
             className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95"
             style={{ boxShadow: "0 0 16px rgba(16,185,129,0.35)" }}
           >
-            Confirmar pedido e ir a pagar →
+            Continuar con mi pedido →
           </button>
-          <button
-            onClick={onBack}
-            className="w-full py-3 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-all"
-          >
-            Volver y editar pedido
-          </button>
+
+          {/* Agregar más productos */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-gray-500 shrink-0">Agregar más:</span>
+            <div className="flex gap-1.5 flex-wrap">
+              {CATEGORY_LINKS.map(cat => (
+                <button
+                  key={cat.path}
+                  onClick={() => onNavigate(cat.path)}
+                  className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-medium hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1498,7 +1532,7 @@ function ConfirmationModal({
             onClick={onKeepShopping}
             className="w-full py-3 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-all"
           >
-            Seguir explorando el menú
+            Agregar más productos
           </button>
         </div>
       </div>
