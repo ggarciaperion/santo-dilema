@@ -301,6 +301,7 @@ export default function FatPage() {
   const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
   const [preservedComboItems, setPreservedComboItems] = useState<any[]>([]);
   const [initialized, setInitialized] = useState(false);
+  const comboItemsLoadedRef = useRef(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteOrderIndex, setDeleteOrderIndex] = useState<number | null>(null);
   const [isEditingOrder, setIsEditingOrder] = useState<boolean>(false);
@@ -445,12 +446,13 @@ export default function FatPage() {
     // Limpiar el carrito siempre
     sessionStorage.removeItem("santo-dilema-cart");
     clearCart();
+    comboItemsLoadedRef.current = true;
     setInitialized(true);
   }, []);
 
   // Guardar órdenes completadas en sessionStorage cuando cambien
   useEffect(() => {
-    if (!initialized) return;
+    if (!initialized || !comboItemsLoadedRef.current) return;
     const allOrders = [...preservedComboItems, ...completedOrders];
     if (allOrders.length > 0) {
       sessionStorage.setItem("santo-dilema-orders", JSON.stringify(allOrders));
@@ -1528,17 +1530,62 @@ export default function FatPage() {
               {/* Combos agregados desde /combos */}
               {(() => {
                 const seen = new Set<string>();
+                const allProds = [...products, ...fitProducts, ...tacoProducts, ...burgerProducts, ...wrapProducts, ...sandwichProducts];
                 return preservedComboItems.map((item: any) => {
                   if (!item.comboGroupId || seen.has(item.comboGroupId)) return null;
                   seen.add(item.comboGroupId);
+                  const groupItems = preservedComboItems.filter((o: any) => o.comboGroupId === item.comboGroupId);
+                  const qty = item.comboQuantity ?? 1;
                   return (
-                    <div key={`combo-${item.comboGroupId}`} className="bg-gray-900 rounded-lg border-2 border-amber-400/30 p-2 md:p-4">
-                      <div className="flex items-center justify-between">
+                    <div key={`combo-${item.comboGroupId}`} className="bg-gray-900 rounded-lg border-2 border-amber-400/30 p-2 md:p-4 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+                      {/* Encabezado del combo */}
+                      <div className="flex items-start justify-between mb-2">
                         <div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
-                          <p className="text-sm md:text-base font-black text-white">{item.comboName}</p>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">🔥 Combo especial</span>
+                            {qty > 1 && (
+                              <span className="bg-amber-400/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-amber-400/30">×{qty}</span>
+                            )}
+                          </div>
+                          <p className="text-sm md:text-base font-black text-white mt-0.5">{item.comboName}</p>
                         </div>
-                        <p className="text-amber-400 font-black text-base md:text-lg">S/ {item.comboPrice?.toFixed(2)}</p>
+                        <div className="text-right flex-shrink-0 ml-2">
+                          {item.comboOriginalTotal && (
+                            <div className="text-[10px] text-gray-500 line-through">S/ {item.comboOriginalTotal.toFixed(2)}</div>
+                          )}
+                          <p className="text-amber-400 font-black text-base md:text-lg">S/ {((item.comboPrice ?? 0) * qty).toFixed(2)}</p>
+                        </div>
+                      </div>
+                      {/* Componentes del combo */}
+                      <div className="space-y-1 border-t border-white/5 pt-1.5">
+                        {groupItems.map((gi: any, j: number) => {
+                          const prod = allProds.find(p => p.id === gi.productId);
+                          const prodName = gi.name ?? prod?.name ?? gi.productId;
+                          const isTaco = gi.productId === "taco-duo";
+                          return (
+                            <div key={j} className="flex items-center gap-2">
+                              {prod?.image && prod.image.startsWith('/') && (
+                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-md overflow-hidden flex-shrink-0 bg-black/40">
+                                  <img src={prod.image} alt={prodName} className="w-full h-full object-cover" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-white font-semibold truncate">{prodName}</p>
+                                {isTaco && gi.salsas && gi.salsas.length > 0 && (
+                                  <p className="text-[10px] text-emerald-300/70 truncate">
+                                    🌮 {gi.salsas.map((id: string) => tacoFlavorNames[id] ?? id).join(" + ")}
+                                  </p>
+                                )}
+                                {!isTaco && gi.salsas && gi.salsas.length > 0 && (
+                                  <p className="text-[10px] text-amber-300/70 truncate">
+                                    🌶️ {gi.salsas.map((id: string) => salsas.find(s => s.id === id)?.name ?? id).join(", ")}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
