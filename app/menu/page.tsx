@@ -278,6 +278,7 @@ export default function MenuPage() {
   const [tacoIdx,    setTacoIdx]    = useState(0);
   const [combosIdx,  setCombosIdx]  = useState(0);
   const carouselPausedRef = useRef(false);
+  const navScrollRef = useRef<HTMLDivElement>(null);
 
   // Centra exactamente el card en índice i dentro del carrusel
   const scrollToCard = useCallback((ref: React.RefObject<HTMLDivElement | null>, index: number) => {
@@ -320,6 +321,14 @@ export default function MenuPage() {
   useEffect(() => { scrollToCard(fitCarouselRef, fitIdx); }, [fitIdx, scrollToCard]);
   useEffect(() => { scrollToCard(tacoCarouselRef, tacoIdx); }, [tacoIdx, scrollToCard]);
   useEffect(() => { scrollToCard(combosCarouselRef, combosIdx); }, [combosIdx, scrollToCard]);
+
+  // Auto-scroll the active nav tab into view on mobile
+  useEffect(() => {
+    const nav = navScrollRef.current;
+    if (!nav) return;
+    const btn = nav.querySelector(`[data-section="${activeSection}"]`) as HTMLElement | null;
+    if (btn) btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeSection]);
 
   // API data
   const [menuStock,     setMenuStock]     = useState<Record<string, boolean>>({});
@@ -864,15 +873,22 @@ export default function MenuPage() {
           <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
             <Image src="/logoprincipal.png" alt="Santo Dilema" width={300} height={75} className="h-9 w-auto" priority />
           </Link>
-          <div className="flex-1 flex justify-end overflow-x-auto scrollbar-hide">
-            {SECTIONS.map(({ id, label, emoji }) => (
-              <button key={id} onClick={() => scrollToSection(id)}
-                className={`flex-shrink-0 px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap border-b-2 ${
-                  activeSection === id ? "border-red-400 text-red-400" : "border-transparent text-gray-500 hover:text-gray-300"
-                }`}>
-                {emoji} {label}
-              </button>
-            ))}
+          <div className="flex-1 relative overflow-hidden">
+            {/* right fade hint — mobile only */}
+            <div className="md:hidden absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
+              style={{ background: "linear-gradient(to left, rgba(0,0,0,.95), transparent)" }} />
+            <div ref={navScrollRef} className="flex overflow-x-auto scrollbar-hide">
+              {SECTIONS.map(({ id, label, emoji }) => (
+                <button key={id} data-section={id} onClick={() => scrollToSection(id)}
+                  className={`flex-shrink-0 px-2.5 sm:px-3 py-2.5 text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap border-b-2 ${
+                    activeSection === id
+                      ? "border-red-400 text-red-400"
+                      : "border-transparent text-gray-500 hover:text-gray-300"
+                  }`}>
+                  {emoji} {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
@@ -954,6 +970,12 @@ export default function MenuPage() {
                   {ALITAS_PRODUCTS.map(p => renderAlitasCard(p, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                 </div>
+                <div className="md:hidden flex justify-center items-center gap-1.5 mt-2 mb-1">
+                  {ALITAS_PRODUCTS.map((_, i) => (
+                    <div key={i} onClick={() => { setAlitasIdx(i); pauseCarousel(); }}
+                      className={`rounded-full transition-all cursor-pointer ${i === alitasIdx ? "w-4 h-1.5 bg-red-400" : "w-1.5 h-1.5 bg-gray-600"}`} />
+                  ))}
+                </div>
                 {/* Desktop: grid 3 columnas */}
                 <div className="hidden md:grid md:grid-cols-3 gap-5">
                   {ALITAS_PRODUCTS.map(p => renderAlitasCard(p, false))}
@@ -1010,7 +1032,7 @@ export default function MenuPage() {
         </section>
 
         {/* ═══ ENSALADAS ════════════════════════════════════════════════════ */}
-        <section id="ensaladas" ref={el => { sectionRefs.current.ensaladas = el; }} className="pt-8 pb-10 border-t border-white/5">
+        <section id="ensaladas" ref={el => { sectionRefs.current.ensaladas = el; }} className="pt-8 pb-10 border-t border-white/10 md:border-white/5">
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-black text-cyan-400 uppercase tracking-tight"
               style={{ textShadow: "0 0 12px rgba(6,182,212,.5)" }}>
@@ -1058,6 +1080,12 @@ export default function MenuPage() {
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                   {FIT_PRODUCTS.map(p => renderFitCard(p, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
+                </div>
+                <div className="md:hidden flex justify-center items-center gap-1.5 mt-2 mb-1">
+                  {FIT_PRODUCTS.map((_, i) => (
+                    <div key={i} onClick={() => { setFitIdx(i); pauseCarousel(); }}
+                      className={`rounded-full transition-all cursor-pointer ${i === fitIdx ? "w-4 h-1.5 bg-cyan-400" : "w-1.5 h-1.5 bg-gray-600"}`} />
+                  ))}
                 </div>
                 {/* Desktop: breakout con filas de w-56 */}
                 <div className="hidden md:block" style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}>
@@ -1112,7 +1140,7 @@ export default function MenuPage() {
         </section>
 
         {/* ═══ TACOS ════════════════════════════════════════════════════════ */}
-        <section id="tacos" ref={el => { sectionRefs.current.tacos = el; }} className="pt-8 pb-10 border-t border-white/5">
+        <section id="tacos" ref={el => { sectionRefs.current.tacos = el; }} className="pt-8 pb-10 border-t border-white/10 md:border-white/5">
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-black text-emerald-400 uppercase tracking-tight"
               style={{ textShadow: "0 0 12px rgba(52,211,153,.5)" }}>🌮 Tacos</h2>
@@ -1166,6 +1194,12 @@ export default function MenuPage() {
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                   {TACO_FLAVORS.map(f => renderTacoCard(f, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
+                </div>
+                <div className="md:hidden flex justify-center items-center gap-1.5 mt-2 mb-1">
+                  {TACO_FLAVORS.map((_, i) => (
+                    <div key={i} onClick={() => { setTacoIdx(i); pauseCarousel(); }}
+                      className={`rounded-full transition-all cursor-pointer ${i === tacoIdx ? "w-4 h-1.5 bg-emerald-400" : "w-1.5 h-1.5 bg-gray-600"}`} />
+                  ))}
                 </div>
                 {/* Desktop: grid 3 columnas */}
                 <div className="hidden md:grid md:grid-cols-3 gap-5">
@@ -1228,7 +1262,7 @@ export default function MenuPage() {
         </section>
 
         {/* ═══ MINI BURGERS ════════════════════════════════════════════════ */}
-        <section id="burgers" ref={el => { sectionRefs.current.burgers = el; }} className="pt-8 pb-10 border-t border-white/5">
+        <section id="burgers" ref={el => { sectionRefs.current.burgers = el; }} className="pt-8 pb-10 border-t border-white/10 md:border-white/5">
           <div className="mb-4 text-center">
             <h2 className="text-2xl font-black text-orange-400 uppercase tracking-tight"
               style={{ textShadow: "0 0 12px rgba(251,146,60,.5)" }}>🍔 Mini Burgers</h2>
@@ -1282,22 +1316,22 @@ export default function MenuPage() {
                   {qty > 0 && (
                     <div className="absolute top-2 left-2 z-10 w-5 h-5 sm:w-6 sm:h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-black">{qty}</div>
                   )}
-                  <div className="relative h-28 sm:h-44 bg-black overflow-hidden">
+                  <div className="relative h-32 sm:h-44 bg-black overflow-hidden">
                     <Image src={flavor.image} alt={flavor.name} fill className="object-contain" sizes="200px" />
                   </div>
-                  <div className="p-2 sm:p-2.5">
-                    <p className="text-white text-[11px] sm:text-xs font-bold mb-1 leading-tight">{flavor.name}</p>
-                    <p className="text-gray-400 text-[10px] leading-relaxed mb-2 line-clamp-2 hidden sm:block">{flavor.description}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-amber-400 font-black text-[11px] sm:text-sm">{activeSize}×S/{activeBurgerPrice.toFixed(2)}</span>
+                  <div className="p-2.5 sm:p-2.5">
+                    <p className="text-white text-xs font-bold mb-0.5 leading-tight">{flavor.name}</p>
+                    <p className="text-gray-400 text-[10px] leading-snug mb-2 line-clamp-2">{flavor.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-amber-400 font-black text-xs sm:text-sm">{activeSize}×S/{activeBurgerPrice.toFixed(2)}</span>
                       <div className="flex items-center gap-1">
                         {qty > 0 && (
                           <button onClick={() => removeBurgerFlavor(flavor.id)}
-                            className="w-7 h-7 sm:w-9 sm:h-9 bg-red-600/80 hover:bg-red-500 text-white font-bold text-lg flex items-center justify-center rounded-full transition-all active:scale-95">−</button>
+                            className="w-8 h-8 sm:w-9 sm:h-9 bg-red-600/80 hover:bg-red-500 text-white font-bold text-lg flex items-center justify-center rounded-full transition-all active:scale-95">−</button>
                         )}
                         <button onClick={() => { if (!soldOut) addBurgerFlavor(flavor.id); }}
                           disabled={soldOut || (!burgerCanAdd && qty === 0)}
-                          className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full font-bold text-lg flex items-center justify-center transition-all active:scale-95
+                          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full font-bold text-lg flex items-center justify-center transition-all active:scale-95
                             ${soldOut || (!burgerCanAdd && qty === 0) ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-500 text-white"}`}>+</button>
                       </div>
                     </div>
@@ -1363,7 +1397,7 @@ export default function MenuPage() {
         </section>
 
         {/* ═══ COMBOS ══════════════════════════════════════════════════════ */}
-        <section id="combos" ref={el => { sectionRefs.current.combos = el; }} className="pt-8 pb-10 border-t border-white/5">
+        <section id="combos" ref={el => { sectionRefs.current.combos = el; }} className="pt-8 pb-10 border-t border-white/10 md:border-white/5">
           <div className="mb-6 text-center">
             <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[11px] font-black uppercase tracking-widest rounded-full px-4 py-1.5 mb-4">
               🔥 Precio especial · Descuento automático
@@ -1418,7 +1452,7 @@ export default function MenuPage() {
                         <span className="text-xl font-black text-white">S/ {eff.toFixed(2)}</span>
                       </div>
                       <button
-                        className={`px-4 py-2.5 rounded-xl text-sm font-black transition-all active:scale-95 ${combo.colors.btn}`}
+                        className={`px-4 py-3 rounded-xl text-sm font-black transition-all active:scale-95 min-h-[44px] ${combo.colors.btn}`}
                         style={{ boxShadow: `0 0 12px rgba(${rgb},.3)` }}>
                         Elegir →
                       </button>
@@ -1434,6 +1468,12 @@ export default function MenuPage() {
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                   {COMBOS.map(c => renderCard(c, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
+                </div>
+                <div className="md:hidden flex justify-center items-center gap-1.5 mt-2 mb-1">
+                  {COMBOS.map((_, i) => (
+                    <div key={i} onClick={() => { setCombosIdx(i); pauseCarousel(); }}
+                      className={`rounded-full transition-all cursor-pointer ${i === combosIdx ? "w-4 h-1.5 bg-amber-400" : "w-1.5 h-1.5 bg-gray-600"}`} />
+                  ))}
                 </div>
                 {/* Desktop: dos filas centradas */}
                 <div className="hidden md:block -mx-4">
@@ -1533,13 +1573,13 @@ export default function MenuPage() {
         const totalCount = alitasOrders.reduce((s,o) => s + o.quantity, 0) + fitOrders.reduce((s,o) => s + o.quantity, 0) + tacoOrders.length + trioOrders.length + comboSeen.size + BEBIDAS.reduce((s,b) => s + (bebidaQty[b.id] || 0), 0);
         return (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-950 border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,.6)]">
-          <div className="max-w-3xl mx-auto px-4 py-2.5 flex items-center gap-3">
+          <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center text-white text-[10px] font-black flex-shrink-0">{totalCount}</span>
-                <p className="text-[10px] sm:text-[11px] text-gray-400 truncate">{parts.join(" · ")}</p>
+                <p className="text-[11px] text-gray-400 truncate">{parts.join(" · ")}</p>
               </div>
-              <p className="text-lg sm:text-xl font-black text-amber-400">S/ {grandTotal.toFixed(2)}</p>
+              <p className="text-xl font-black text-amber-400">S/ {grandTotal.toFixed(2)}</p>
             </div>
             <button
               onClick={() => {
@@ -1596,9 +1636,9 @@ export default function MenuPage() {
                 sessionStorage.setItem("santo-dilema-orders", JSON.stringify([...existingComboOrders, ...regularOrders]));
                 router.push("/checkout");
               }}
-              className="flex-shrink-0 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95"
+              className="flex-shrink-0 px-5 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95 min-h-[48px]"
               style={{ boxShadow: "0 0 20px rgba(16,185,129,.55)" }}>
-              Ir a pagar →
+              Pagar →
             </button>
           </div>
         </div>
