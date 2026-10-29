@@ -854,17 +854,52 @@ export default function MenuPage() {
           80% {opacity:1;transform:translateX(-50%) translateY(0)}
           100%{opacity:0;transform:translateX(-50%) translateY(-8px)}
         }
+        @keyframes bgFloat {
+          0%,100%{transform:translateY(0) rotate(-4deg) scale(1)}
+          50%{transform:translateY(-22px) rotate(4deg) scale(1.06)}
+        }
+        @keyframes bgFloatAlt {
+          0%,100%{transform:translateY(0) rotate(6deg) scale(1)}
+          50%{transform:translateY(18px) rotate(-3deg) scale(.94)}
+        }
+        @keyframes bgFloatSlow {
+          0%,100%{transform:translateY(0) rotate(0deg)}
+          33%{transform:translateY(-12px) rotate(5deg)}
+          66%{transform:translateY(8px) rotate(-4deg)}
+        }
+        @keyframes blobPulse {
+          0%,100%{opacity:.07;transform:scale(1)}
+          50%{opacity:.13;transform:scale(1.08)}
+        }
+        @keyframes blobPulseAlt {
+          0%,100%{opacity:.06;transform:scale(1)}
+          50%{opacity:.10;transform:scale(.93)}
+        }
       `}</style>
 
-      {/* Background grid */}
+      {/* ── Background layers ──────────────────────────────────────────────── */}
+      {/* Red radial top */}
       <div className="fixed inset-0 pointer-events-none z-0"
         style={{ background: "radial-gradient(ellipse 120% 55% at 50% 0%,rgba(140,20,20,.45) 0%,transparent 60%)" }} />
+      {/* Grid pulse */}
       <div className="fixed inset-0 pointer-events-none z-0"
         style={{
           backgroundImage: "linear-gradient(rgba(239,68,68,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(239,68,68,.08) 1px,transparent 1px)",
           backgroundSize: "48px 48px",
           animation: "menuGridPulse 4s ease-in-out infinite",
         }} />
+      {/* Ambient color blobs */}
+      <div className="fixed pointer-events-none z-0" style={{ top:"30%", left:"-12%", width:420, height:420, borderRadius:"50%", background:"radial-gradient(circle,rgba(6,182,212,.11) 0%,transparent 70%)", filter:"blur(60px)", animation:"blobPulse 8s ease-in-out infinite" }} />
+      <div className="fixed pointer-events-none z-0" style={{ top:"55%", right:"-10%", width:380, height:380, borderRadius:"50%", background:"radial-gradient(circle,rgba(251,146,60,.10) 0%,transparent 70%)", filter:"blur(55px)", animation:"blobPulseAlt 10s ease-in-out infinite" }} />
+      <div className="fixed pointer-events-none z-0" style={{ top:"75%", left:"15%", width:320, height:320, borderRadius:"50%", background:"radial-gradient(circle,rgba(16,185,129,.09) 0%,transparent 70%)", filter:"blur(50px)", animation:"blobPulse 12s ease-in-out 3s infinite" }} />
+      <div className="fixed pointer-events-none z-0" style={{ top:"10%", right:"5%", width:280, height:280, borderRadius:"50%", background:"radial-gradient(circle,rgba(217,70,239,.07) 0%,transparent 70%)", filter:"blur(50px)", animation:"blobPulseAlt 9s ease-in-out 1s infinite" }} />
+      {/* Floating food icons */}
+      <div className="fixed pointer-events-none z-0 select-none" style={{ top:"8%",  right:"6%",  fontSize:72, opacity:.055, animation:"bgFloat 7s ease-in-out infinite" }}>🍗</div>
+      <div className="fixed pointer-events-none z-0 select-none" style={{ top:"22%", left:"3%",  fontSize:56, opacity:.05,  animation:"bgFloatAlt 9s ease-in-out 1.5s infinite" }}>🌮</div>
+      <div className="fixed pointer-events-none z-0 select-none" style={{ top:"40%", right:"4%", fontSize:64, opacity:.05,  animation:"bgFloatSlow 11s ease-in-out 0.5s infinite" }}>🥗</div>
+      <div className="fixed pointer-events-none z-0 select-none" style={{ top:"58%", left:"5%",  fontSize:60, opacity:.055, animation:"bgFloat 8s ease-in-out 2s infinite" }}>🍔</div>
+      <div className="fixed pointer-events-none z-0 select-none" style={{ top:"72%", right:"7%", fontSize:50, opacity:.045, animation:"bgFloatAlt 10s ease-in-out 3s infinite" }}>🔥</div>
+      <div className="fixed pointer-events-none z-0 select-none" style={{ top:"85%", left:"8%",  fontSize:54, opacity:.045, animation:"bgFloatSlow 13s ease-in-out 4s infinite" }}>🌶️</div>
 
       {/* ── Header + nav en una sola fila ────────────────────────────────── */}
       <header className="fixed top-0 left-0 right-0 z-30 backdrop-blur-md"
