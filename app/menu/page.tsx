@@ -338,6 +338,7 @@ export default function MenuPage() {
 
   // ── Initialise ──────────────────────────────────────────────────────────
   useEffect(() => {
+    setIsOpen(isBusinessOpen());
     const iv = setInterval(() => setIsOpen(isBusinessOpen()), 60000);
     return () => clearInterval(iv);
   }, []);
@@ -1546,9 +1547,8 @@ export default function MenuPage() {
                 sessionStorage.setItem("santo-dilema-orders", JSON.stringify([...existingComboOrders, ...regularOrders]));
                 router.push("/checkout");
               }}
-              disabled={!isOpen}
-              className="flex-1 max-w-[220px] py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95 disabled:opacity-40"
-              style={{ boxShadow: "0 0 14px rgba(16,185,129,.35)" }}>
+              className="flex-1 max-w-[220px] py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95"
+              style={{ boxShadow: "0 0 20px rgba(16,185,129,.55)" }}>
               Ir a pagar →
             </button>
           </div>
