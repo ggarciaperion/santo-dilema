@@ -1796,10 +1796,9 @@ export default function MenuPage() {
                             </div>
                           );
                         })()}
-                        {/* Extra salsa por cada salsa elegida */}
-                        {Array.from(new Set(chosen)).map(sId => {
-                          const salsa = SALSAS.find(s => s.id === sId)!;
-                          const bid = `extra-salsa-${sId}`; const c = COMPLEMENTS[bid];
+                        {/* Extra salsa — todas las salsas disponibles */}
+                        {effectiveSalsas.filter(s => !s.soldOut).map(salsa => {
+                          const bid = `extra-salsa-${salsa.id}`; const c = COMPLEMENTS[bid];
                           if (!c) return null;
                           const cnt = comps.filter(x => x === bid).length;
                           const recent = alitasRecentComp === `${alitasModal}-${bid}`;
