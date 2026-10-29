@@ -1,4 +1,4 @@
-// Horario de atención: Jueves a Domingo, 6:00 PM - 11:00 PM (hora Perú, UTC-5)
+// Horario de atención: Miércoles a Domingo, 6:00 PM - 11:00 PM (hora Perú, UTC-5)
 // Dominio de pruebas: siempre abierto
 const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app", "localhost", "127.0.0.1"];
 
@@ -25,7 +25,7 @@ export function isBusinessOpen(): boolean {
   const day = peruDate.getDay();   // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
   const hour = peruDate.getHours();
 
-  const isOpenDay = [0, 4, 5, 6].includes(day); // Dom, Jue, Vie, Sáb
+  const isOpenDay = [0, 3, 4, 5, 6].includes(day); // Dom, Mié, Jue, Vie, Sáb
   const isOpenHour = hour >= 18 && hour < 23;    // 6pm a 11pm
 
   return isOpenDay && isOpenHour;
@@ -43,7 +43,7 @@ export function getNextOpenMessage(): string {
   const day = peruDate.getDay();
   const hour = peruDate.getHours();
 
-  const openDays = [0, 4, 5, 6];
+  const openDays = [0, 3, 4, 5, 6];
   const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
   // Si es día de apertura pero todavía no son las 6pm
