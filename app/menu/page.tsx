@@ -2498,6 +2498,7 @@ export default function MenuPage() {
                     <h5 className="text-sm font-bold text-white mb-2">Extras</h5>
                     {[
                       { id: "extra-aderezo", name: "Extra aderezo", emoji: "🥗", price: 3 },
+                      { id: "extra-papas",   name: "Extra papas",   emoji: "🍟", price: 5 },
                       ...(fitModal === "ensalada-clasica" ? [{ id: "pollo-grillado", name: "Pollo grillado", emoji: "🍗", price: 5 }] : []),
                     ].map(extra => {
                       const cnt = comps.filter(x => x === extra.id).length;
