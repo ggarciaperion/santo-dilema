@@ -407,14 +407,11 @@ export default function CheckoutPage() {
   // ─────────────────────────────────────────────────────────────────
 
   const isFormValid = () => {
-    const scheduleRequired = !isBusinessOpen();
-    const scheduleValid = !scheduleRequired || (!!scheduledDate && !!scheduledTime);
     return (
       formData.name.trim() !== "" &&
       formData.phone.length === 9 &&
       formData.address.trim() !== "" &&
-      deliveryZone !== "" &&
-      scheduleValid
+      deliveryZone !== ""
     );
   };
   // Redirect if no completed orders (solo después de cargar)
@@ -941,14 +938,6 @@ export default function CheckoutPage() {
                     const baseValid = formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "" && deliveryZone !== "";
                     if (!baseValid) {
                       setShowMobileFormModal(true);
-                      return;
-                    }
-                    if (!isBusinessOpen() && (!scheduledDate || !scheduledTime)) {
-                      const days = getScheduleDays();
-                      setScheduleError('');
-                      setScheduledDate(days[0]?.dateStr || '');
-                      setScheduledTime('');
-                      setShowScheduleModal(true);
                       return;
                     }
                     if (isPreLaunch()) {
