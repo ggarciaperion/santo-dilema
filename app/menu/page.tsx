@@ -268,6 +268,59 @@ export default function MenuPage() {
     ref.current.scrollBy({ left: dir === "right" ? 304 : -304, behavior: "smooth" });
   };
 
+  // ── Carruseles móvil con auto-play ────────────────────────────────────────
+  const alitasCarouselRef  = useRef<HTMLDivElement>(null);
+  const fitCarouselRef     = useRef<HTMLDivElement>(null);
+  const tacoCarouselRef    = useRef<HTMLDivElement>(null);
+  const combosCarouselRef  = useRef<HTMLDivElement>(null);
+  const [alitasIdx,  setAlitasIdx]  = useState(0);
+  const [fitIdx,     setFitIdx]     = useState(0);
+  const [tacoIdx,    setTacoIdx]    = useState(0);
+  const [combosIdx,  setCombosIdx]  = useState(0);
+  const carouselPausedRef = useRef(false);
+
+  // Centra exactamente el card en índice i dentro del carrusel
+  const scrollToCard = useCallback((ref: React.RefObject<HTMLDivElement | null>, index: number) => {
+    const el = ref.current;
+    if (!el || window.innerWidth >= 768) return;
+    const gap = 16; // gap-4
+    const cardWidth = 0.76 * window.innerWidth;
+    el.scrollTo({ left: gap + index * (cardWidth + gap), behavior: 'smooth' });
+  }, []);
+
+  // Pausa el auto-play 5 s cuando el usuario interactúa
+  const pauseCarousel = useCallback(() => {
+    carouselPausedRef.current = true;
+    setTimeout(() => { carouselPausedRef.current = false; }, 5000);
+  }, []);
+
+  // Centrar en card 0 al montar
+  useEffect(() => {
+    scrollToCard(alitasCarouselRef, 0);
+    scrollToCard(fitCarouselRef, 0);
+    scrollToCard(tacoCarouselRef, 0);
+    scrollToCard(combosCarouselRef, 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-play: avanza cada 3 s
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (carouselPausedRef.current) return;
+      setAlitasIdx(i => (i + 1) % ALITAS_PRODUCTS.length);
+      setFitIdx(i => (i + 1) % FIT_PRODUCTS.length);
+      setTacoIdx(i => (i + 1) % TACO_FLAVORS.length);
+      setCombosIdx(i => (i + 1) % COMBOS.length);
+    }, 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Scroll al índice cuando cambia
+  useEffect(() => { scrollToCard(alitasCarouselRef, alitasIdx); }, [alitasIdx, scrollToCard]);
+  useEffect(() => { scrollToCard(fitCarouselRef, fitIdx); }, [fitIdx, scrollToCard]);
+  useEffect(() => { scrollToCard(tacoCarouselRef, tacoIdx); }, [tacoIdx, scrollToCard]);
+  useEffect(() => { scrollToCard(combosCarouselRef, combosIdx); }, [combosIdx, scrollToCard]);
+
   // API data
   const [menuStock,     setMenuStock]     = useState<Record<string, boolean>>({});
   const [menuPrices,    setMenuPrices]    = useState<Record<string, number>>({});
@@ -896,7 +949,7 @@ export default function MenuPage() {
             return (
               <>
                 {/* Mobile: carrusel peek */}
-                <div className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div ref={alitasCarouselRef} onTouchStart={pauseCarousel} className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                   {ALITAS_PRODUCTS.map(p => renderAlitasCard(p, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
@@ -1001,7 +1054,7 @@ export default function MenuPage() {
             return (
               <>
                 {/* Mobile: carrusel peek */}
-                <div className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div ref={fitCarouselRef} onTouchStart={pauseCarousel} className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                   {FIT_PRODUCTS.map(p => renderFitCard(p, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
@@ -1109,7 +1162,7 @@ export default function MenuPage() {
             return (
               <>
                 {/* Mobile: carrusel peek */}
-                <div className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div ref={tacoCarouselRef} onTouchStart={pauseCarousel} className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                   {TACO_FLAVORS.map(f => renderTacoCard(f, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
@@ -1323,7 +1376,7 @@ export default function MenuPage() {
           </div>
 
           {(() => {
-            const renderCard = (combo: (typeof COMBOS)[0]) => {
+            const renderCard = (combo: (typeof COMBOS)[0], carousel = false) => {
               const baseP = menuPrices[combo.id] ?? combo.price;
               const discP = menuDiscounts[combo.id];
               const eff   = discP ?? baseP;
@@ -1331,7 +1384,7 @@ export default function MenuPage() {
               return (
                 <div key={combo.id}
                   onClick={() => { openCombo(combo); }}
-                  className={`relative flex-shrink-0 w-[200px] sm:w-[240px] snap-start bg-gray-900/90 rounded-2xl border overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${combo.colors.border}`}
+                  className={`relative flex-shrink-0 ${carousel ? 'w-[76vw] snap-center' : 'w-[200px] sm:w-[240px] snap-start'} bg-gray-900/90 rounded-2xl border overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${combo.colors.border}`}
                   style={{ boxShadow: `0 0 20px rgba(${rgb},.08)` }}>
                   <div className="h-0.5" style={{ background: `linear-gradient(90deg,transparent,rgba(${rgb},.8),transparent)` }} />
                   <div className="relative h-40 bg-black overflow-hidden">
@@ -1377,15 +1430,15 @@ export default function MenuPage() {
             return (
               <>
                 {/* Mobile: carrusel peek */}
-                <div className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div ref={combosCarouselRef} onTouchStart={pauseCarousel} className="md:hidden -mx-4 overflow-x-auto snap-x snap-mandatory flex gap-4 scrollbar-hide pb-3" style={{ WebkitOverflowScrolling: 'touch' }}>
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
-                  {COMBOS.map(renderCard)}
+                  {COMBOS.map(c => renderCard(c, true))}
                   <div className="flex-shrink-0 w-[12vw]" aria-hidden="true" />
                 </div>
                 {/* Desktop: dos filas centradas */}
                 <div className="hidden md:block -mx-4">
-                  <div className="flex justify-center gap-4 mb-4">{COMBOS.slice(0, 3).map(renderCard)}</div>
-                  <div className="flex justify-center gap-4">{COMBOS.slice(3).map(renderCard)}</div>
+                  <div className="flex justify-center gap-4 mb-4">{COMBOS.slice(0, 3).map(c => renderCard(c, false))}</div>
+                  <div className="flex justify-center gap-4">{COMBOS.slice(3).map(c => renderCard(c, false))}</div>
                 </div>
               </>
             );
