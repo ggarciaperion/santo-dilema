@@ -814,7 +814,7 @@ export default function MenuPage() {
           <div className="flex-1 flex justify-end overflow-x-auto scrollbar-hide">
             {SECTIONS.map(({ id, label, emoji }) => (
               <button key={id} onClick={() => scrollToSection(id)}
-                className={`flex-shrink-0 px-3 py-2 text-xs font-bold transition-all whitespace-nowrap border-b-2 ${
+                className={`flex-shrink-0 px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap border-b-2 ${
                   activeSection === id ? "border-red-400 text-red-400" : "border-transparent text-gray-500 hover:text-gray-300"
                 }`}>
                 {emoji} {label}
@@ -861,7 +861,7 @@ export default function MenuPage() {
             <p className="text-gray-400 text-sm mt-1">Selecciona tus salsas y arma tu orden</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
             {ALITAS_PRODUCTS.map(product => {
               const soldOut   = !!menuStock[product.id];
               const basePrice = menuPrices[product.id]    || product.price;
@@ -878,33 +878,33 @@ export default function MenuPage() {
 
                   {soldOut && (
                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
-                      <span className="border-4 border-red-500 text-red-500 font-black text-lg px-3 py-1 rotate-[-15deg]">AGOTADO</span>
+                      <span className="border-4 border-red-500 text-red-500 font-black text-sm sm:text-lg px-2 py-0.5 rotate-[-15deg]">AGOTADO</span>
                     </div>
                   )}
                   {inOrder && (
                     <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ En orden</div>
                   )}
 
-                  <div className="relative h-44 bg-black overflow-hidden">
+                  <div className="relative h-32 sm:h-44 bg-black overflow-hidden">
                     <Image src={product.image} alt={product.name} fill className="object-cover" sizes="340px" />
                     {discount && <div className="absolute top-2 left-2 bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded-full">OFERTA</div>}
                   </div>
 
-                  <div className="p-3">
-                    <h3 className="font-bold text-white text-sm mb-1">{product.name}</h3>
-                    <p className="text-gray-400 text-xs mb-3 line-clamp-2">{product.description}</p>
-                    <div className="flex items-center justify-between">
+                  <div className="p-2.5 sm:p-3">
+                    <h3 className="font-bold text-white text-xs sm:text-sm mb-1 leading-tight">{product.name}</h3>
+                    <p className="text-gray-400 text-[11px] sm:text-xs mb-2 line-clamp-2 hidden sm:block">{product.description}</p>
+                    <div className="flex items-center justify-between mt-1">
                       {discount ? (
                         <div>
-                          <span className="text-xs text-gray-500 line-through block">S/ {basePrice.toFixed(2)}</span>
-                          <span className="text-lg font-black text-amber-400">S/ {discount.toFixed(2)}</span>
+                          <span className="text-[10px] text-gray-500 line-through block">S/ {basePrice.toFixed(2)}</span>
+                          <span className="text-base sm:text-lg font-black text-amber-400">S/ {discount.toFixed(2)}</span>
                         </div>
                       ) : (
-                        <span className="text-lg font-black text-amber-400">S/ {basePrice.toFixed(2)}</span>
+                        <span className="text-base sm:text-lg font-black text-amber-400">S/ {basePrice.toFixed(2)}</span>
                       )}
                       {!soldOut && (
                         <button onClick={e => { e.stopPropagation(); openAlitasModal(product.id); }}
-                          className="w-9 h-9 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95">
+                          className="w-8 h-8 sm:w-9 sm:h-9 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95">
                           +
                         </button>
                       )}
@@ -972,66 +972,55 @@ export default function MenuPage() {
             <p className="text-gray-400 text-sm mt-1">Fresco, nutritivo y sin culpa</p>
           </div>
 
-          {/* Breakout para acomodar 4 cards de w-56 (944px) sin encogerlas */}
-          <div style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}>
-            <div className="max-w-[1000px] mx-auto px-4">
-              {(() => {
-                const renderCard = (product: typeof FIT_PRODUCTS[0]) => {
-                  const soldOut   = !!menuStock[product.id];
-                  const basePrice = menuPrices[product.id] || product.price;
-                  const discount  = menuDiscounts[product.id];
-                  const inOrder   = fitOrders.some(o => o.productId === product.id);
-                  return (
-                    <div key={product.id}
-                      onClick={() => { if (!soldOut) openFitModal(product.id); }}
-                      className={`relative w-56 flex-shrink-0 bg-gray-900 rounded-2xl border-2 overflow-hidden transition-all
-                        ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:border-cyan-400/60 hover:-translate-y-1"}
-                        ${discount ? "border-amber-400/70" : "border-cyan-400/30"}`}
-                      style={{ boxShadow: discount ? "0 0 16px rgba(251,191,36,.2)" : "0 0 12px rgba(6,182,212,.1)" }}>
-                      {soldOut && (
-                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
-                          <span className="border-4 border-red-500 text-red-500 font-black text-lg px-3 py-1 rotate-[-15deg]">AGOTADO</span>
-                        </div>
-                      )}
-                      {inOrder && (
-                        <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ En orden</div>
-                      )}
-                      <div className="relative h-44 bg-black overflow-hidden">
-                        <Image src={product.image} alt={product.name} fill className="object-cover" sizes="224px" />
-                        {discount && <div className="absolute top-2 left-2 bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded-full">OFERTA</div>}
-                      </div>
-                      <div className="p-3">
-                        <h3 className="font-bold text-white text-sm mb-1">{product.name}</h3>
-                        <p className="text-gray-400 text-xs mb-3 line-clamp-2">{product.description}</p>
-                        <div className="flex items-center justify-between">
-                          {discount ? (
-                            <div>
-                              <span className="text-xs text-gray-500 line-through block">S/ {basePrice.toFixed(2)}</span>
-                              <span className="text-lg font-black text-amber-400">S/ {discount.toFixed(2)}</span>
-                            </div>
-                          ) : (
-                            <span className="text-lg font-black text-amber-400">S/ {basePrice.toFixed(2)}</span>
-                          )}
-                          {!soldOut && (
-                            <button onClick={e => { e.stopPropagation(); openFitModal(product.id); }}
-                              className="w-9 h-9 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95">+</button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                };
+          {/* Carrusel horizontal snap */}
+          <div className="-mx-4">
+            <p className="text-center text-[10px] text-gray-600 mb-2 sm:hidden">← desliza para ver más →</p>
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 px-4 scrollbar-hide">
+              {FIT_PRODUCTS.map(product => {
+                const soldOut   = !!menuStock[product.id];
+                const basePrice = menuPrices[product.id] || product.price;
+                const discount  = menuDiscounts[product.id];
+                const inOrder   = fitOrders.some(o => o.productId === product.id);
                 return (
-                  <>
-                    <div className="flex justify-center gap-4 mb-4">
-                      {FIT_PRODUCTS.slice(0, 4).map(renderCard)}
+                  <div key={product.id}
+                    onClick={() => { if (!soldOut) openFitModal(product.id); }}
+                    className={`relative flex-shrink-0 w-[160px] sm:w-[200px] snap-start bg-gray-900 rounded-2xl border-2 overflow-hidden transition-all
+                      ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:border-cyan-400/60"}
+                      ${discount ? "border-amber-400/70" : "border-cyan-400/30"}`}
+                    style={{ boxShadow: discount ? "0 0 16px rgba(251,191,36,.2)" : "0 0 12px rgba(6,182,212,.1)" }}>
+                    {soldOut && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+                        <span className="border-2 border-red-500 text-red-500 font-black text-xs px-2 py-0.5 rotate-[-15deg]">AGOTADO</span>
+                      </div>
+                    )}
+                    {inOrder && (
+                      <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">✓</div>
+                    )}
+                    <div className="relative h-36 sm:h-44 bg-black overflow-hidden">
+                      <Image src={product.image} alt={product.name} fill className="object-cover" sizes="200px" />
+                      {discount && <div className="absolute top-2 left-2 bg-amber-400 text-black text-[10px] font-black px-1.5 py-0.5 rounded-full">OFERTA</div>}
                     </div>
-                    <div className="flex justify-center gap-4">
-                      {FIT_PRODUCTS.slice(4).map(renderCard)}
+                    <div className="p-2.5">
+                      <h3 className="font-bold text-white text-xs leading-tight mb-1">{product.name}</h3>
+                      <p className="text-gray-400 text-[10px] mb-2 line-clamp-2">{product.description}</p>
+                      <div className="flex items-center justify-between">
+                        {discount ? (
+                          <div>
+                            <span className="text-[10px] text-gray-500 line-through block">S/ {basePrice.toFixed(2)}</span>
+                            <span className="text-sm font-black text-amber-400">S/ {discount.toFixed(2)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm font-black text-amber-400">S/ {basePrice.toFixed(2)}</span>
+                        )}
+                        {!soldOut && (
+                          <button onClick={e => { e.stopPropagation(); openFitModal(product.id); }}
+                            className="w-8 h-8 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-bold text-lg flex items-center justify-center transition-all active:scale-95">+</button>
+                        )}
+                      </div>
                     </div>
-                  </>
+                  </div>
                 );
-              })()}
+              })}
             </div>
           </div>
 
@@ -1095,7 +1084,7 @@ export default function MenuPage() {
           </div>
 
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
             {TACO_FLAVORS.map(flavor => {
               const soldOut = !!menuStock[flavor.id];
               const chosen  = tacoOrders.some(o => o.salsas.includes(flavor.id));
@@ -1107,21 +1096,21 @@ export default function MenuPage() {
                   style={{ boxShadow: "0 0 12px rgba(52,211,153,.08)" }}>
                   {soldOut && (
                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
-                      <span className="border-4 border-red-500 text-red-500 font-black text-lg px-3 py-1 rotate-[-15deg]">AGOTADO</span>
+                      <span className="border-2 border-red-500 text-red-500 font-black text-xs sm:text-lg px-2 py-0.5 rotate-[-15deg]">AGOTADO</span>
                     </div>
                   )}
-                  {chosen && <div className="absolute top-2 right-2 z-10 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ Elegido</div>}
-                  <div className="relative h-44 bg-black overflow-hidden">
+                  {chosen && <div className="absolute top-2 right-2 z-10 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">✓</div>}
+                  <div className="relative h-32 sm:h-44 bg-black overflow-hidden">
                     <Image src={flavor.image} alt={flavor.name} fill className="object-cover" sizes="340px" />
                   </div>
-                  <div className="p-3">
-                    <h3 className="font-bold text-white text-sm mb-1">{flavor.name}</h3>
-                    <p className="text-gray-400 text-xs line-clamp-2">{flavor.description}</p>
+                  <div className="p-2.5 sm:p-3">
+                    <h3 className="font-bold text-white text-xs sm:text-sm mb-1 leading-tight">{flavor.name}</h3>
+                    <p className="text-gray-400 text-[10px] sm:text-xs line-clamp-2 hidden sm:block">{flavor.description}</p>
                     {!soldOut && (
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-amber-400 font-black text-sm">2 x S/ {(menuPrices["taco-duo"] || 24.90).toFixed(2)}</span>
+                        <span className="text-amber-400 font-black text-xs sm:text-sm">2×S/{(menuPrices["taco-duo"] || 24.90).toFixed(2)}</span>
                         <button onClick={e => { e.stopPropagation(); openTacoModal(flavor.id); }}
-                          className="w-9 h-9 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95">+</button>
+                          className="w-8 h-8 sm:w-9 sm:h-9 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95">+</button>
                       </div>
                     )}
                   </div>
@@ -1220,7 +1209,7 @@ export default function MenuPage() {
                 : burgerMode === "duo" ? "¡Dúo listo!" : "¡Trío listo!"}
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {BURGER_FLAVORS.map(flavor => {
               const soldOut = !!menuStock[flavor.id];
               const qty = burgerSelections[flavor.id] || 0;
@@ -1231,28 +1220,28 @@ export default function MenuPage() {
                   style={{ boxShadow: qty > 0 ? `0 0 16px ${BURGER_HALO[flavor.id] || "rgba(251,146,60,.2)"}` : undefined }}>
                   {soldOut && (
                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
-                      <span className="text-red-500 font-black text-sm border-2 border-red-500 px-2 py-0.5 rotate-[-12deg]">AGOTADO</span>
+                      <span className="text-red-500 font-black text-xs border-2 border-red-500 px-2 py-0.5 rotate-[-12deg]">AGOTADO</span>
                     </div>
                   )}
                   {qty > 0 && (
-                    <div className="absolute top-2 left-2 z-10 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-black">{qty}</div>
+                    <div className="absolute top-2 left-2 z-10 w-5 h-5 sm:w-6 sm:h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-black">{qty}</div>
                   )}
-                  <div className="relative h-44 bg-black overflow-hidden">
-                    <Image src={flavor.image} alt={flavor.name} fill className="object-contain" sizes="340px" />
+                  <div className="relative h-28 sm:h-44 bg-black overflow-hidden">
+                    <Image src={flavor.image} alt={flavor.name} fill className="object-contain" sizes="200px" />
                   </div>
-                  <div className="p-2.5">
-                    <p className="text-white text-xs font-bold mb-1 leading-tight">{flavor.name}</p>
-                    <p className="text-gray-400 text-[11px] leading-relaxed mb-2 line-clamp-2">{flavor.description}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-amber-400 font-black text-sm">{activeSize} x S/ {activeBurgerPrice.toFixed(2)}</span>
-                      <div className="flex items-center gap-1.5">
+                  <div className="p-2 sm:p-2.5">
+                    <p className="text-white text-[11px] sm:text-xs font-bold mb-1 leading-tight">{flavor.name}</p>
+                    <p className="text-gray-400 text-[10px] leading-relaxed mb-2 line-clamp-2 hidden sm:block">{flavor.description}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-amber-400 font-black text-[11px] sm:text-sm">{activeSize}×S/{activeBurgerPrice.toFixed(2)}</span>
+                      <div className="flex items-center gap-1">
                         {qty > 0 && (
                           <button onClick={() => removeBurgerFlavor(flavor.id)}
-                            className="w-9 h-9 bg-red-600/80 hover:bg-red-500 text-white font-bold text-xl flex items-center justify-center rounded-full transition-all active:scale-95">−</button>
+                            className="w-7 h-7 sm:w-9 sm:h-9 bg-red-600/80 hover:bg-red-500 text-white font-bold text-lg flex items-center justify-center rounded-full transition-all active:scale-95">−</button>
                         )}
                         <button onClick={() => { if (!soldOut) addBurgerFlavor(flavor.id); }}
                           disabled={soldOut || (!burgerCanAdd && qty === 0)}
-                          className={`w-9 h-9 rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95
+                          className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full font-bold text-lg flex items-center justify-center transition-all active:scale-95
                             ${soldOut || (!burgerCanAdd && qty === 0) ? "bg-gray-700 text-gray-500 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-500 text-white"}`}>+</button>
                       </div>
                     </div>
@@ -1339,7 +1328,7 @@ export default function MenuPage() {
               return (
                 <div key={combo.id}
                   onClick={() => { openCombo(combo); }}
-                  className={`relative w-[240px] bg-gray-900/90 rounded-2xl border overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${combo.colors.border}`}
+                  className={`relative flex-shrink-0 w-[200px] sm:w-[240px] snap-start bg-gray-900/90 rounded-2xl border overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${combo.colors.border}`}
                   style={{ boxShadow: `0 0 20px rgba(${rgb},.08)` }}>
                   <div className="h-0.5" style={{ background: `linear-gradient(90deg,transparent,rgba(${rgb},.8),transparent)` }} />
                   <div className="relative h-40 bg-black overflow-hidden">
@@ -1384,11 +1373,9 @@ export default function MenuPage() {
             };
             return (
               <div className="-mx-4">
-                <div className="flex justify-center gap-4 mb-4">
-                  {COMBOS.slice(0, 3).map(renderCard)}
-                </div>
-                <div className="flex justify-center gap-4">
-                  {COMBOS.slice(3).map(renderCard)}
+                <p className="text-center text-[10px] text-gray-600 mb-2 sm:hidden">← desliza para ver más →</p>
+                <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 px-4 scrollbar-hide sm:flex-wrap sm:justify-center sm:gap-4">
+                  {COMBOS.map(renderCard)}
                 </div>
               </div>
             );
@@ -1483,13 +1470,13 @@ export default function MenuPage() {
         const totalCount = alitasOrders.reduce((s,o) => s + o.quantity, 0) + fitOrders.reduce((s,o) => s + o.quantity, 0) + tacoOrders.length + trioOrders.length + comboSeen.size + BEBIDAS.reduce((s,b) => s + (bebidaQty[b.id] || 0), 0);
         return (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-950 border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,.6)]">
-          <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+          <div className="max-w-3xl mx-auto px-4 py-2.5 flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center text-white text-[10px] font-black flex-shrink-0">{totalCount}</span>
-                <p className="text-[11px] text-gray-400 truncate">{parts.join(" · ")}</p>
+                <p className="text-[10px] sm:text-[11px] text-gray-400 truncate">{parts.join(" · ")}</p>
               </div>
-              <p className="text-xl font-black text-amber-400">S/ {grandTotal.toFixed(2)}</p>
+              <p className="text-lg sm:text-xl font-black text-amber-400">S/ {grandTotal.toFixed(2)}</p>
             </div>
             <button
               onClick={() => {
@@ -1546,7 +1533,7 @@ export default function MenuPage() {
                 sessionStorage.setItem("santo-dilema-orders", JSON.stringify([...existingComboOrders, ...regularOrders]));
                 router.push("/checkout");
               }}
-              className="flex-1 max-w-[220px] py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95"
+              className="flex-shrink-0 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95"
               style={{ boxShadow: "0 0 20px rgba(16,185,129,.55)" }}>
               Ir a pagar →
             </button>
