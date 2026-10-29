@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 
-const isProduction = process.env.VERCEL === "1";
-
-// Admin credentials
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "dilema2026";
-
-// Operator credentials (solo pedidos)
-const OPERATOR_USERNAME = process.env.OPERATOR_USERNAME || "pedidos";
-const OPERATOR_PASSWORD = process.env.OPERATOR_PASSWORD || "santo2026";
+// Credentials
+const ADMIN_USERNAME = "admin";
+const ADMIN_PASSWORD = "dilema2026";
+const OPERATOR_USERNAME = "pedidos";
+const OPERATOR_PASSWORD = "santo2026";
 
 type Role = "admin" | "operator";
 
