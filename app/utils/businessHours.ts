@@ -1,6 +1,6 @@
 // Horario de atención: Jueves a Domingo, 6:00 PM - 11:00 PM (hora Perú, UTC-5)
 // Dominio de pruebas: siempre abierto
-const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app"];
+const ALWAYS_OPEN_DOMAINS = ["santo-dilema-iota.vercel.app", "localhost", "127.0.0.1"];
 
 // Apertura temporal — carga de pedidos del domingo 6 sept (hasta medianoche Lima hora)
 const TEMP_OPEN_UNTIL = new Date("2026-09-11T05:00:00Z"); // = medianoche 10 sept Lima
