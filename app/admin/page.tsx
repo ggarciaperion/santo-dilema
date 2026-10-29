@@ -2348,6 +2348,29 @@ export default function AdminPage() {
     });
     const beveragesSoldToday = Array.from(beverageSalesToday.values()).sort((a, b) => b.quantity - a.quantity);
 
+    // 4c. Sabores de mini burgers vendidos hoy (parsea strings "2× Santo Smash" → qty + nombre)
+    const burgerFlavorMap = new Map<string, { name: string; quantity: number }>();
+    todayOrders.forEach((order: any) => {
+      const orderItems = order.completedOrders || order.cart || [];
+      orderItems.forEach((item: any) => {
+        if (item.productId !== 'burger-duo' && item.productId !== 'burger-trio') return;
+        const salsasArr: string[] = item.salsas || [];
+        const orderQty = item.quantity || 1;
+        salsasArr.forEach((s: string) => {
+          const match = s.match(/^(\d+)×\s*(.+)$/);
+          const flavorName = match ? match[2].trim() : s.trim();
+          const flavorQty = match ? parseInt(match[1]) * orderQty : orderQty;
+          if (!flavorName) return;
+          if (burgerFlavorMap.has(flavorName)) {
+            burgerFlavorMap.get(flavorName)!.quantity += flavorQty;
+          } else {
+            burgerFlavorMap.set(flavorName, { name: flavorName, quantity: flavorQty });
+          }
+        });
+      });
+    });
+    const burgerFlavorsSoldToday = Array.from(burgerFlavorMap.values()).sort((a, b) => b.quantity - a.quantity);
+
     // 5. Tasa de conversión (pedidos confirmados vs totales)
     const confirmedOrders = orders.filter((o: any) =>
       o.status === "confirmed" ||
@@ -2389,6 +2412,7 @@ export default function AdminPage() {
       conversionRate,
       menusSoldToday,
       beveragesSoldToday,
+      burgerFlavorsSoldToday,
       ...canjeStats
     };
   };
@@ -2427,6 +2451,7 @@ export default function AdminPage() {
     conversionRate: 0,
     menusSoldToday: [],
     beveragesSoldToday: [],
+    burgerFlavorsSoldToday: [],
     dailyCanjeCount: 0,
     dailyCanjeValue: 0,
     monthlyCanjeCount: 0,
@@ -2825,6 +2850,7 @@ export default function AdminPage() {
               const DRINK_IDS = new Set(['agua-mineral','coca-cola','inka-cola','sprite','fanta']);
               const SIDE_IDS  = new Set(['papas-fritas','nachos','chifles']);
               const tacoNames: Record<string,string> = {'santo-crujiente':'Crunch Supreme','tex-dilema':'Tex Supreme','santo-bacon':'Bacon Deluxe'};
+              const burgerNames: Record<string,string> = {'santo-smash':'Santo Smash','bacon-pecado':'Bacon Pecado','chicken-grill':'Chicken Grill','dilema-veggie':'Dilema Veggie','marina-crunch':'Marina Crunch','tentacion-tropical':'Tentación Tropical'};
               const allItems: any[] = (order as any).completedOrders || [];
               // Calcular total correcto respetando precios de combo
               const effectiveTotal = (() => {
@@ -2843,9 +2869,11 @@ export default function AdminPage() {
                 return sub + ((order as any).deliveryCost || 0);
               })();
               const CAT: Record<string,{dot:string;bg:string;text:string;label:string}> = {
-                fat:  {dot:'bg-orange-400', bg:'bg-orange-50',  text:'text-orange-700', label:'FAT'},
-                fit:  {dot:'bg-green-400',  bg:'bg-green-50',   text:'text-green-700',  label:'FIT'},
-                taco: {dot:'bg-yellow-400', bg:'bg-yellow-50',  text:'text-yellow-700', label:'TACO'},
+                fat:    {dot:'bg-orange-400', bg:'bg-orange-50',  text:'text-orange-700', label:'FAT'},
+                fit:    {dot:'bg-green-400',  bg:'bg-green-50',   text:'text-green-700',  label:'FIT'},
+                taco:   {dot:'bg-yellow-400', bg:'bg-yellow-50',  text:'text-yellow-700', label:'TACO'},
+                burger: {dot:'bg-pink-400',   bg:'bg-pink-50',    text:'text-pink-700',   label:'BURGER'},
+                bebida: {dot:'bg-blue-400',   bg:'bg-blue-50',    text:'text-blue-700',   label:'BEBIDA'},
               };
               return (
               <div
@@ -2956,7 +2984,8 @@ export default function AdminPage() {
                                   <div className="mt-1 flex flex-wrap gap-1 pl-7">
                                     {salsas_.map((sId: string, i: number) => (
                                       <span key={i} className="inline-flex items-center bg-red-50 border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        🌶 {gi.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (salsas.find((s: any) => s.id === sId)?.name || sId)}
+                                        {gi.productId === 'burger-duo' || gi.productId === 'burger-trio' ? '🍔' : '🌶'}{' '}
+                                        {gi.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (gi.productId === 'burger-duo' || gi.productId === 'burger-trio') ? sId : (salsas.find((s: any) => s.id === sId)?.name || sId)}
                                       </span>
                                     ))}
                                     {drinks.map((c: string, i: number) => (
@@ -3015,7 +3044,8 @@ export default function AdminPage() {
                                 <div className="mt-1.5 flex flex-wrap gap-1">
                                   {salsas_.map((sId: string, i: number) => (
                                     <span key={i} className="inline-flex items-center bg-white border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                      🌶 {item.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (salsas.find((s: any) => s.id === sId)?.name || sId)}
+                                      {item.productId === 'burger-duo' || item.productId === 'burger-trio' ? '🍔' : '🌶'}{' '}
+                                      {item.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (item.productId === 'burger-duo' || item.productId === 'burger-trio') ? sId : (salsas.find((s: any) => s.id === sId)?.name || sId)}
                                     </span>
                                   ))}
                                   {drinks.map((c: string, i: number) => (
@@ -4580,6 +4610,22 @@ export default function AdminPage() {
                 );
               })()}
             </div>
+
+            {/* SECCIÓN: SABORES DE MINI BURGERS DEL DÍA */}
+            {analytics.burgerFlavorsSoldToday.length > 0 && (
+              <div className="bg-white rounded-xl border-2 border-pink-200 p-6 mb-8">
+                <h3 className="text-lg font-black text-pink-500 mb-1">🍔 Sabores de Mini Burgers {isAnalyticsDateFiltered ? "del Período" : "de Hoy"}</h3>
+                <p className="text-gray-400 text-xs mb-4">Unidades individuales vendidas por sabor (un dúo con 2× Santo Smash = 2 unidades)</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {analytics.burgerFlavorsSoldToday.map((flavor: any) => (
+                    <div key={flavor.name} className="bg-pink-50 rounded-lg p-3 border border-pink-100 text-center">
+                      <p className="text-2xl font-black text-pink-500">{flavor.quantity}</p>
+                      <p className="text-xs font-bold text-gray-700 mt-1 leading-tight">{flavor.name}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* SECCIÓN: INSIGHTS DEL NEGOCIO */}
             <div className="mb-8">
@@ -7505,6 +7551,103 @@ export default function AdminPage() {
                     </div>
                     <button
                       onClick={() => toggleMenuStock(item.id, isSoldOut)}
+                      disabled={isSaving}
+                      className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"} ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {isSaving ? "..." : isSoldOut ? "Disponible" : "Agotar"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* MINI BURGERS */}
+          <div className="mt-10">
+            <h3 className="text-xl font-black text-pink-400 mb-4 flex items-center gap-2">
+              🍔 Mini Burgers
+            </h3>
+
+            {/* Precios Dúo y Trío */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {[
+                { id: "burger-duo",  name: "DÚO MINI BURGERS",  defaultPrice: 19.90 },
+                { id: "burger-trio", name: "TRÍO MINI BURGERS", defaultPrice: 23.50 },
+              ].map((item) => {
+                const hasDiscount = !!menuDiscounts[item.id];
+                const isSavingDiscount = discountSaving === item.id;
+                const isSavingPrice = priceSaving === item.id;
+                const effectivePrice = menuPrices[item.id] || item.defaultPrice;
+                return (
+                  <div key={item.id} className={`bg-white rounded-xl border-2 p-5 transition-all ${hasDiscount ? "border-pink-500/50" : "border-gray-200"}`}>
+                    <p className="text-gray-900 font-bold text-base mb-1">{item.name}</p>
+                    {hasDiscount ? (
+                      <p className="text-sm mb-3">
+                        <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
+                        <span className="text-pink-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
+                        <span className="text-gray-500 text-xs ml-2">(precio en oferta)</span>
+                      </p>
+                    ) : (
+                      <p className="text-pink-400 text-sm font-bold mb-3">S/ {effectivePrice.toFixed(2)}</p>
+                    )}
+                    <div className="flex gap-2 pt-3 border-t border-gray-200">
+                      <input
+                        type="number" step="0.50" min="0.50"
+                        placeholder={`Nuevo precio (actual: S/ ${effectivePrice.toFixed(2)})`}
+                        value={priceInputs[item.id] || ''}
+                        onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-pink-400 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => savePrice(item.id, item.defaultPrice)}
+                        disabled={isSavingPrice}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs bg-pink-700 hover:bg-pink-600 text-white transition-all ${isSavingPrice ? 'opacity-50' : ''}`}
+                      >
+                        {isSavingPrice ? '...' : '💰 Guardar precio'}
+                      </button>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <input
+                        type="number" step="0.50" min="0" max={effectivePrice - 0.5}
+                        placeholder="Precio oferta (menor al actual)"
+                        value={discountInputs[item.id] || ''}
+                        onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-pink-500 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => saveDiscount(item.id, effectivePrice)}
+                        disabled={isSavingDiscount}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-pink-600 hover:bg-pink-500' : 'bg-gray-200 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
+                      >
+                        {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar oferta' : '🏷️ Poner oferta'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Disponibilidad por sabor */}
+            <p className="text-gray-400 text-xs mb-3 uppercase tracking-wide font-bold">Disponibilidad de sabores</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { id: "santo-smash",         name: "SANTO SMASH" },
+                { id: "bacon-pecado",         name: "BACON PECADO" },
+                { id: "chicken-grill",        name: "CHICKEN GRILL" },
+                { id: "dilema-veggie",        name: "DILEMA VEGGIE" },
+                { id: "marina-crunch",        name: "MARINA CRUNCH" },
+                { id: "tentacion-tropical",   name: "TENTACIÓN TROPICAL" },
+              ].map((flavor) => {
+                const isSoldOut = !!menuStock[flavor.id];
+                const isSaving = menuStockSaving === flavor.id;
+                return (
+                  <div key={flavor.id} className={`bg-white rounded-xl border-2 p-4 flex items-center justify-between transition-all ${isSoldOut ? "border-red-600/60 opacity-70" : "border-pink-700/40"}`}>
+                    <div>
+                      <p className="text-gray-800 font-bold text-sm">{flavor.name}</p>
+                      {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
+                    </div>
+                    <button
+                      onClick={() => toggleMenuStock(flavor.id, isSoldOut)}
                       disabled={isSaving}
                       className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 ${isSoldOut ? "bg-green-700 hover:bg-green-600 text-white" : "bg-red-700 hover:bg-red-600 text-white"} ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
