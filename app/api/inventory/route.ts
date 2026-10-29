@@ -36,8 +36,14 @@ export async function POST(request: Request) {
       items: body.items, // Array de { productName, quantity, unit, unitCost, total }
       totalAmount: body.totalAmount,
       notes: body.notes || "",
+      observaciones: body.observaciones || "",
+      comprobanteType: body.comprobanteType || "sin_comprobante",
+      comprobanteNum: body.comprobanteNum || "",
+      receiptUrl: body.receiptUrl || "",
       purchaseDate: purchaseDate,
       createdAt: new Date().toISOString(),
+      liquidado: body.liquidado ?? false,
+      liquidadoAt: body.liquidadoAt || undefined,
     };
 
     console.log("🔥 Compra a guardar:", newPurchase);
@@ -77,8 +83,14 @@ export async function PUT(request: Request) {
       items: body.items,
       totalAmount: body.totalAmount,
       notes: body.notes || "",
+      observaciones: body.observaciones || "",
+      comprobanteType: body.comprobanteType || "sin_comprobante",
+      comprobanteNum: body.comprobanteNum || "",
+      receiptUrl: body.receiptUrl || "",
       purchaseDate: purchaseDate,
       createdAt: body.createdAt,
+      liquidado: body.liquidado ?? false,
+      liquidadoAt: body.liquidadoAt || undefined,
       updatedAt: new Date().toISOString(),
     };
 

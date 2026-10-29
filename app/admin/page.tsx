@@ -5,7 +5,10 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import SorteoMundialAdmin from "./components/SorteoMundialAdmin";
+const CostosMargenesAdmin = dynamic(() => import("./components/CostosMargenesAdmin"), { ssr: false });
+const ClientesAdmin = dynamic(() => import("./components/ClientesAdmin"), { ssr: false });
 
 // Definiciones de salsas y complementos (igual que en checkout)
 const salsas: { id: string; name: string }[] = [
@@ -153,39 +156,30 @@ function TimeCounter({ createdAt, status, onOvertime, audioCtx }: { createdAt: s
 
 export default function AdminPage() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  // DEV BYPASS: activo solo cuando NODE_ENV === 'development'
+  const DEV_BYPASS = process.env.NODE_ENV === 'development';
+  const [isAuthenticated, setIsAuthenticated] = useState(DEV_BYPASS);
+  const [checkingAuth, setCheckingAuth] = useState(!DEV_BYPASS);
 
-  // Verificar autenticación
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("admin_token");
-
-      if (!token) {
-        router.push("/admin/login");
-        return;
+    if (DEV_BYPASS) return; // Skip auth in development
+    const token = localStorage.getItem('admin_token');
+    if (!token) { setCheckingAuth(false); router.push('/admin/login'); return; }
+    try {
+      const parts = atob(token).split(':');
+      if (parts.length === 3 && parts[1] === 'admin') {
+        setIsAuthenticated(true);
+      } else {
+        localStorage.removeItem('admin_token');
+        router.push('/admin/login');
       }
-
-      try {
-        const response = await fetch(`/api/auth?token=${token}`);
-        const data = await response.json();
-
-        if (data.authenticated) {
-          setIsAuthenticated(true);
-          setCheckingAuth(false);
-        } else {
-          localStorage.removeItem("admin_token");
-          router.push("/admin/login");
-        }
-      } catch (error) {
-        console.error("Error verificando autenticación:", error);
-        localStorage.removeItem("admin_token");
-        router.push("/admin/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    } catch {
+      localStorage.removeItem('admin_token');
+      router.push('/admin/login');
+    }
+    setCheckingAuth(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Función para cerrar sesión
   const handleLogout = () => {
@@ -248,7 +242,7 @@ export default function AdminPage() {
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
   const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
   const [priceSaving, setPriceSaving] = useState<string | null>(null);
-  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock" | "canjes">("dashboard");
+  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock" | "canjes" | "costos">("dashboard");
   const [canjeModal, setCanjeModal] = useState<{ orderId: string } | null>(null);
   const [canjeNoteInput, setCanjeNoteInput] = useState("");
   const [canjeSaving, setCanjeSaving] = useState(false);
@@ -2642,14 +2636,12 @@ export default function AdminPage() {
               // para que nunca queden vacíos si hay pedidos sin procesar de días anteriores
               const lanes = [
                 { key: "all" as const,       label: isOrdersDateFiltered ? "Total Filtrado" : "Total Hoy", icon: "📋", accent: "border-gray-400",    stripe: "bg-gray-400",    dotColor: "bg-gray-400",    headerText: "text-gray-500",   countText: "text-gray-900",   orders: dateFilteredOrders },
-                { key: "pending" as const,    label: "Pendientes",     icon: "⏳", accent: "border-amber-400",   stripe: "bg-amber-400",   dotColor: "bg-amber-400",   headerText: "text-amber-600",  countText: "text-amber-600",  orders: dateFilteredOrders.filter((o: any) => o.status === "pending" || o.status === "pendiente-verificacion") },
                 { key: "confirmed" as const,  label: "Confirmados",    icon: "✅", accent: "border-sky-400",     stripe: "bg-sky-400",     dotColor: "bg-sky-400",     headerText: "text-sky-600",    countText: "text-sky-600",    orders: dateFilteredOrders.filter((o: any) => o.status === "confirmed") },
                 { key: "en-camino" as const,  label: "En Camino",      icon: "🛵", accent: "border-blue-400",    stripe: "bg-blue-500",    dotColor: "bg-blue-500",    headerText: "text-blue-600",   countText: "text-blue-600",   orders: dateFilteredOrders.filter((o: any) => o.status === "en-camino") },
                 { key: "delivered" as const,  label: "Entregados Hoy", icon: "📦", accent: "border-emerald-400", stripe: "bg-emerald-400", dotColor: "bg-emerald-400", headerText: "text-emerald-600",countText: "text-emerald-600",orders: dateFilteredOrders.filter((o: any) => o.status === "delivered") },
-                { key: "programado" as const, label: "Programados",    icon: "🗓", accent: "border-indigo-400",  stripe: "bg-indigo-400",  dotColor: "bg-indigo-400",  headerText: "text-indigo-600", countText: "text-indigo-600", orders: dateFilteredOrders.filter((o: any) => o.status === "programado") },
               ];
               return (
-                <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {lanes.map((lane) => {
                     const isActive = filter === lane.key;
                     return (
@@ -2880,33 +2872,16 @@ export default function AdminPage() {
                 key={order.id}
                 className={`bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-200 ${cardRing}`}
               >
-                {/* ── FRANJA DE COLOR ── */}
-                <div className={`h-1.5 w-full flex-shrink-0 ${stripeColor}`} />
+                {/* Franja */}
+                <div className={`h-1 w-full flex-shrink-0 ${stripeColor}`} />
 
-                {/* ── CABECERA: ID · ESTADO · HORA · TIMER · ELIMINAR ── */}
-                <div className="px-4 pt-3 pb-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-base font-black text-gray-900 tracking-tight">{order.id}</span>
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider ${statusColors[order.status]}`}>
-                          {statusLabels[order.status]}
-                        </span>
-                        {isOvertime && <span className="text-[9px] font-black text-red-500 uppercase animate-pulse">⚠ TARDE</span>}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[11px] text-gray-400 tabular-nums">
-                          {new Date(order.createdAt).toLocaleString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        <span className="text-gray-200">·</span>
-                        <TimeCounter
-                          createdAt={order.createdAt}
-                          orderId={order.id}
-                          status={order.status}
-                          audioCtx={audioContext}
-                          onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))}
-                        />
-                      </div>
+                {/* Cabecera compacta */}
+                <div className="px-4 pt-2.5 pb-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
+                      <span className="font-mono text-sm font-black text-gray-900 tracking-tight">{order.id}</span>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider ${statusColors[order.status]}`}>{statusLabels[order.status]}</span>
+                      {isOvertime && <span className="text-[9px] font-black text-red-500 uppercase animate-pulse">⚠ TARDE</span>}
                     </div>
                     <button
                       onClick={async () => {
@@ -2914,12 +2889,24 @@ export default function AdminPage() {
                         await fetch(`/api/orders?id=${order.id}`, { method: 'DELETE' });
                         setOrders(prev => prev.filter(o => o.id !== order.id));
                       }}
-                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all text-xs mt-0.5"
+                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all text-xs"
                     >✕</button>
                   </div>
-                  {/* Pedido programado */}
+                  <div className="flex items-center justify-between mt-0.5 gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-sm font-black text-gray-900 truncate">{order.name}</span>
+                      <span className="text-[11px] text-gray-400 font-mono flex-shrink-0">{order.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className="text-[10px] text-gray-400 tabular-nums">
+                        {new Date(order.createdAt).toLocaleString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <span className="text-gray-200">·</span>
+                      <TimeCounter createdAt={order.createdAt} orderId={order.id} status={order.status} audioCtx={audioContext} onOvertime={() => setOvertimeOrderIds(prev => new Set(prev).add(order.id))} />
+                    </div>
+                  </div>
                   {(order as any).scheduledTime && (
-                    <div className="mt-2 inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1">
+                    <div className="mt-1.5 inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1">
                       <span className="text-indigo-500 text-xs">🗓</span>
                       <span className="text-xs font-bold text-indigo-700">
                         {(() => {
@@ -2943,221 +2930,118 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                {/* ── PRODUCTOS ── */}
+                {/* Productos */}
                 <div className="mx-4 mb-0">
                   <div className="h-px bg-gray-100" />
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest pt-2.5 pb-1.5">Productos</p>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest pt-2 pb-1">Productos</p>
                 </div>
-                <div className="px-4 pb-3 flex-1 space-y-2.5">
+                <div className="px-4 pb-2.5 flex-1 space-y-0.5">
                   {allItems.length > 0 ? (() => {
                     const seen = new Set<string>();
-                    return allItems.map((item: any, idx: number) => {
-                      // ── COMBO ──
+                    const lines: React.ReactNode[] = [];
+                    allItems.forEach((item: any, idx: number) => {
                       if (item.comboGroupId) {
-                        if (seen.has(item.comboGroupId)) return null;
+                        if (seen.has(item.comboGroupId)) return;
                         seen.add(item.comboGroupId);
                         const grp = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
-                        const cp = item.comboPrice || 0;
-                        const sv = +((item.comboOriginalTotal || cp) - cp).toFixed(2);
-                        return (
-                          <div key={`c-${item.comboGroupId}`} className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-2.5">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs">🔥</span>
-                                <span className="text-xs font-black text-amber-800">{item.comboName || 'Combo'}</span>
-                                {sv > 0 && <span className="text-[9px] bg-amber-200 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">-S/{sv.toFixed(0)}</span>}
-                              </div>
-                              <span className="text-sm font-black text-amber-800">S/{cp.toFixed(2)}</span>
-                            </div>
-                            {grp.map((gi: any, gi_i: number) => {
-                              const salsas_ = gi.salsas || [];
-                              const comps = gi.complementIds || [];
-                              const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
-                              const sides = comps.filter((c: string) => SIDE_IDS.has(c));
-                              const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
-                              return (
-                                <div key={gi_i} className="mb-1.5">
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-amber-400 text-white text-[10px] font-black flex items-center justify-center flex-shrink-0">{gi.quantity}</span>
-                                    <span className="text-xs font-bold text-gray-800 flex-1">{gi.name}</span>
-                                  </div>
-                                  <div className="mt-1 flex flex-wrap gap-1 pl-7">
-                                    {salsas_.map((sId: string, i: number) => (
-                                      <span key={i} className="inline-flex items-center bg-red-50 border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        {gi.productId === 'burger-duo' || gi.productId === 'burger-trio' ? '🍔' : '🌶'}{' '}
-                                        {gi.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (gi.productId === 'burger-duo' || gi.productId === 'burger-trio') ? sId : (salsas.find((s: any) => s.id === sId)?.name || sId)}
-                                      </span>
-                                    ))}
-                                    {drinks.map((c: string, i: number) => (
-                                      <span key={i} className="inline-flex items-center bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        🥤 {availableComplements[c]?.name || c}
-                                      </span>
-                                    ))}
-                                    {sides.map((c: string, i: number) => (
-                                      <span key={i} className="inline-flex items-center bg-yellow-50 border border-yellow-200 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        🍟 {availableComplements[c]?.name || c}
-                                      </span>
-                                    ))}
-                                    {extras.length > 0 && (() => {
-                                      const counts: Record<string, number> = {};
-                                      extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
-                                      return Object.entries(counts).map(([cId, n], i) => (
-                                        <span key={i} className="inline-flex items-center bg-gray-100 border border-gray-200 text-gray-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                          + {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}
-                                        </span>
-                                      ));
-                                    })()}
-                                    {comps.length === 0 && salsas_.length === 0 && gi.category === 'fat' && (
-                                      <span className="text-[9px] text-gray-400 italic">sin salsa · sin bebida</span>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                        lines.push(
+                          <p key={`ch-${item.comboGroupId}`} className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mt-1">
+                            {item.comboName || 'Combo'}
+                          </p>
                         );
+                        grp.forEach((gi: any, gi_i: number) => {
+                          const salsas_ = gi.salsas || [];
+                          const comps: string[] = gi.complementIds || [];
+                          const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
+                          const sides = comps.filter((c: string) => SIDE_IDS.has(c));
+                          const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
+                          const isTaco = gi.productId === 'taco-duo';
+                          const isBurger = gi.productId === 'burger-duo' || gi.productId === 'burger-trio';
+                          const sc: Record<string,number> = {};
+                          salsas_.forEach((sId: string) => { sc[sId] = (sc[sId] || 0) + 1; });
+                          const varNames = [...new Set<string>(salsas_)].map((sId: string) => {
+                            const name = isTaco ? (tacoNames[sId] || sId) : isBurger ? sId : (salsas.find((s: any) => s.id === sId)?.name || sId);
+                            return sc[sId] > 1 ? `${name} ×${sc[sId]}` : name;
+                          });
+                          const varStr = varNames.length === 0 ? '' : isTaco || isBurger ? ` ${varNames.join(' y ')}` : ` x ${varNames.join(' y ')}`;
+                          const q = String(gi.quantity || 1).padStart(2, '0');
+                          lines.push(<p key={`ci-${item.comboGroupId}-${gi_i}`} className="text-sm font-semibold text-gray-800 pl-3">{q} {gi.name}{varStr}</p>);
+                          drinks.forEach((c: string, i: number) => {
+                            lines.push(<p key={`cd-${item.comboGroupId}-${gi_i}-d${i}`} className="text-sm text-gray-700 pl-3">{q} {availableComplements[c]?.name || c}</p>);
+                          });
+                          sides.forEach((c: string, i: number) => {
+                            lines.push(<p key={`cs-${item.comboGroupId}-${gi_i}-s${i}`} className="text-sm text-gray-700 pl-3">{q} {availableComplements[c]?.name || c}</p>);
+                          });
+                          if (extras.length > 0) {
+                            const counts: Record<string, number> = {};
+                            extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
+                            Object.entries(counts).forEach(([cId, n], i) => {
+                              lines.push(<p key={`ce-${item.comboGroupId}-${gi_i}-e${i}`} className="text-xs text-gray-500 pl-3">+ {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}</p>);
+                            });
+                          }
+                        });
+                      } else {
+                        const q = String(item.quantity || 1).padStart(2, '0');
+                        const salsas_: string[] = item.salsas || [];
+                        const comps: string[] = item.complementIds || [];
+                        const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
+                        const sides = comps.filter((c: string) => SIDE_IDS.has(c));
+                        const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
+                        const isTaco = item.productId === 'taco-duo';
+                        const isBurger = item.productId === 'burger-duo' || item.productId === 'burger-trio';
+                        const sc: Record<string,number> = {};
+                        salsas_.forEach((sId: string) => { sc[sId] = (sc[sId] || 0) + 1; });
+                        const varNames = [...new Set<string>(salsas_)].map((sId: string) => {
+                          const name = isTaco ? (tacoNames[sId] || sId) : isBurger ? sId : (salsas.find((s: any) => s.id === sId)?.name || sId);
+                          return sc[sId] > 1 ? `${name} ×${sc[sId]}` : name;
+                        });
+                        const varStr = varNames.length === 0 ? '' : isTaco || isBurger ? ` ${varNames.join(' y ')}` : ` x ${varNames.join(' y ')}`;
+                        lines.push(<p key={`i-${idx}`} className="text-sm font-semibold text-gray-900">{q} {item.name}{varStr}</p>);
+                        drinks.forEach((c: string, i: number) => {
+                          lines.push(<p key={`d-${idx}-${i}`} className="text-sm text-gray-700">{q} {availableComplements[c]?.name || c}</p>);
+                        });
+                        sides.forEach((c: string, i: number) => {
+                          lines.push(<p key={`s-${idx}-${i}`} className="text-sm text-gray-700">{q} {availableComplements[c]?.name || c}</p>);
+                        });
+                        if (extras.length > 0) {
+                          const counts: Record<string, number> = {};
+                          extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
+                          Object.entries(counts).forEach(([cId, n], i) => {
+                            lines.push(<p key={`e-${idx}-${i}`} className="text-xs text-gray-500">+ {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}</p>);
+                          });
+                        }
                       }
-
-                      // ── PRODUCTO NORMAL ──
-                      const qty = item.quantity || 0;
-                      const cf = 1 - ((order as any).couponDiscount || 0) / 100;
-                      const amt = (item.price || 0) * cf * qty;
-                      const cat = item.category as string;
-                      const cfg = CAT[cat] || { dot: 'bg-gray-300', bg: 'bg-gray-50', text: 'text-gray-600', label: '' };
-                      const salsas_: string[] = item.salsas || [];
-                      const comps: string[] = item.complementIds || [];
-                      const drinks = comps.filter((c: string) => DRINK_IDS.has(c));
-                      const sides = comps.filter((c: string) => SIDE_IDS.has(c));
-                      const extras = comps.filter((c: string) => !DRINK_IDS.has(c) && !SIDE_IDS.has(c));
-                      return (
-                        <div key={idx} className={`rounded-xl p-2.5 ${cfg.bg} border border-gray-100`}>
-                          <div className="flex items-start gap-2.5">
-                            <div className={`w-6 h-6 rounded-full ${cfg.dot} text-white text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5`}>{qty}</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-1">
-                                <span className="text-[13px] font-bold text-gray-900 leading-tight">{item.name}</span>
-                                <span className={`text-[13px] font-black flex-shrink-0 ${cfg.text}`}>S/{amt.toFixed(2)}</span>
-                              </div>
-                              {cfg.label && <span className={`text-[9px] font-black uppercase tracking-wider ${cfg.text} opacity-60`}>{cfg.label}</span>}
-                              {/* Tags de salsas / bebidas / acompañamientos */}
-                              {(salsas_.length > 0 || drinks.length > 0 || sides.length > 0 || extras.length > 0) && (
-                                <div className="mt-1.5 flex flex-wrap gap-1">
-                                  {salsas_.map((sId: string, i: number) => (
-                                    <span key={i} className="inline-flex items-center bg-white border border-red-200 text-red-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                      {item.productId === 'burger-duo' || item.productId === 'burger-trio' ? '🍔' : '🌶'}{' '}
-                                      {item.productId === 'taco-duo' ? (tacoNames[sId] || sId) : (item.productId === 'burger-duo' || item.productId === 'burger-trio') ? sId : (salsas.find((s: any) => s.id === sId)?.name || sId)}
-                                    </span>
-                                  ))}
-                                  {drinks.map((c: string, i: number) => (
-                                    <span key={i} className="inline-flex items-center bg-white border border-blue-200 text-blue-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                      🥤 {availableComplements[c]?.name || c}
-                                    </span>
-                                  ))}
-                                  {sides.map((c: string, i: number) => (
-                                    <span key={i} className="inline-flex items-center bg-white border border-yellow-200 text-yellow-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                      🍟 {availableComplements[c]?.name || c}
-                                    </span>
-                                  ))}
-                                  {extras.length > 0 && (() => {
-                                    const counts: Record<string, number> = {};
-                                    extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
-                                    return Object.entries(counts).map(([cId, n], i) => (
-                                      <span key={i} className="inline-flex items-center bg-white border border-gray-200 text-gray-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                                        + {n > 1 ? `${n}× ` : ''}{availableComplements[cId]?.name || cId}
-                                      </span>
-                                    ));
-                                  })()}
-                                </div>
-                              )}
-                              {comps.length === 0 && salsas_.length === 0 && cat === 'fat' && (
-                                <p className="text-[9px] text-gray-400 italic mt-1">sin salsa · sin bebida</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
                     });
+                    return lines;
                   })() : order.cart && Array.isArray(order.cart) && order.cart.length > 0 ? (
                     order.cart.map((item: any, idx: number) => (
-                      <div key={idx} className="rounded-xl bg-gray-50 border border-gray-100 p-2.5 flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-400 text-white text-[10px] font-black flex items-center justify-center flex-shrink-0">{item.quantity || 1}</div>
-                        <span className="flex-1 text-[13px] font-bold text-gray-900 truncate">{item.product?.name || item.name}</span>
-                        <span className="text-[13px] font-black text-gray-700">S/{((item.product?.price || item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
-                      </div>
+                      <p key={idx} className="text-sm font-semibold text-gray-900">
+                        {String(item.quantity || 1).padStart(2, '0')} {item.product?.name || item.name}
+                      </p>
                     ))
                   ) : <p className="text-xs text-gray-400 italic">Sin productos</p>}
                 </div>
 
-                {/* ── NOTA DEL PEDIDO ── */}
+                {/* Nota */}
                 {order.notes && (
-                  <div className="mx-4 mb-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                  <div className="mx-4 mb-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                     <span className="text-amber-500 text-sm flex-shrink-0 mt-0.5">⚠️</span>
                     <p className="text-xs font-semibold text-amber-800 leading-snug">{order.notes}</p>
                   </div>
                 )}
 
-                {/* ── CLIENTE ── */}
-                <div className="mx-4 mb-3">
-                  <div className="h-px bg-gray-100 mb-2" />
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Cliente</p>
-                  <div className="space-y-1.5">
-                    <p className="text-sm font-black text-gray-900">{order.name}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400 text-xs">📱</span>
-                      <span className="text-xs text-gray-600 font-mono">{order.phone}</span>
-                    </div>
-                    {((order as any).deliveryOption === 'centro' || (order as any).deliveryOption === 'alrededores') ? (
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs">🛵</span>
-                        <div>
-                          <span className="text-xs font-bold text-sky-600">
-                            Delivery{(order as any).deliveryCost > 0 ? ` · +S/${((order as any).deliveryCost || 0).toFixed(2)}` : ' · Gratis'}
-                          </span>
-                          {order.address && order.address !== 'Recojo en tienda' && (
-                            <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{order.address}</p>
-                          )}
-                          {(order as any).deliveryCustomLocation && (
-                            <p className="text-[10px] text-sky-400 italic leading-tight">{(order as any).deliveryCustomLocation}</p>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">🏪</span>
-                        <span className="text-xs font-bold text-emerald-600">Recojo en tienda</span>
-                      </div>
-                    )}
-                  </div>
+                {/* Dirección */}
+                <div className="mx-4 mb-2 space-y-0.5">
+                  {order.address && order.address !== 'Recojo en tienda' && (
+                    <p className="text-xs text-gray-500">{order.address}</p>
+                  )}
+                  {(order as any).deliveryCustomLocation && (
+                    <p className="text-xs text-gray-400 italic">{(order as any).deliveryCustomLocation}</p>
+                  )}
+                  {(order as any).deliveryCost > 0 && (
+                    <p className="text-xs text-gray-400">Delivery +S/{((order as any).deliveryCost || 0).toFixed(2)}</p>
+                  )}
                 </div>
-
-                {/* ── RASTRO DE TIEMPOS ── */}
-                {(() => {
-                  const steps = [
-                    { label: 'Ingresó',   time: order.createdAt,   color: 'text-gray-400' },
-                    { label: 'Confirmó',  time: order.confirmedAt, color: 'text-sky-500' },
-                    { label: 'Salió',     time: order.enCaminoAt,  color: 'text-blue-500' },
-                    { label: 'Entregado', time: order.deliveredAt, color: 'text-emerald-500' },
-                  ];
-                  const filled = steps.filter(s => s.time);
-                  if (filled.length < 2) return null;
-                  return (
-                    <div className="mx-4 mb-3 bg-gray-50 rounded-xl px-3 py-2 flex flex-wrap gap-x-4 gap-y-1">
-                      {filled.map((step, i) => {
-                        const prev = filled[i - 1];
-                        const elapsed = prev ? Math.round((new Date(step.time!).getTime() - new Date(prev.time!).getTime()) / 60000) : null;
-                        return (
-                          <div key={i} className="flex items-center gap-1">
-                            <span className={`text-[10px] font-mono font-bold ${step.color}`}>
-                              {new Date(step.time!).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                            <span className={`text-[9px] ${step.color}`}>{step.label}</span>
-                            {elapsed !== null && <span className="text-[9px] text-amber-400 font-bold">+{elapsed}m</span>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
 
                 {/* ── TOTAL + PAGO ── */}
                 <div className="mx-4 mb-3">
@@ -3525,777 +3409,26 @@ export default function AdminPage() {
                 </div>
               )}
 
-            <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={() => setCustomerSegment("all")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "all"
-                      ? "bg-fuchsia-600 text-white "
-                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
-                  }`}
-                >
-                  Todos ({customerSegments.all.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("vip")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "vip"
-                      ? "bg-amber-600 text-white"
-                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
-                  }`}
-                >
-                  👑 VIP ({customerSegments.vip.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("new")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "new"
-                      ? "bg-cyan-600 text-white"
-                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
-                  }`}
-                >
-                  ✨ Nuevos ({customerSegments.new.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("active")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "active"
-                      ? "bg-green-600 text-white"
-                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
-                  }`}
-                >
-                  🟢 Activos ({customerSegments.active.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("recurrent")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "recurrent"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
-                  }`}
-                >
-                  🔁 Recurrentes ({customerSegments.recurrent.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("inactive")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "inactive"
-                      ? "bg-red-600 text-white"
-                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
-                  }`}
-                >
-                  💤 Inactivos ({customerSegments.inactive.length})
-                </button>
-                <button
-                  onClick={() => setCustomerSegment("birthday")}
-                  className={`px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 text-sm ${
-                    customerSegment === "birthday"
-                      ? "bg-pink-600 text-white"
-                      : "bg-white text-gray-400 hover:bg-gray-100 border-2 border-gray-200"
-                  }`}
-                >
-                  🎂 Cumpleaños ({allCustomers.filter((c: any) => !!c.birthday).length})
-                </button>
-              </div>
             </div>
           </section>
 
           {/* Customers Table */}
           <section className="px-6 pb-12">
-            {/* CRM Ficha completa del cliente */}
-            {selectedCustomer && (() => {
-              // ── Métricas del cliente ──────────────────────────────────
-              const productCount: Record<string, { name: string; qty: number; revenue: number }> = {};
-              selectedCustomer.orders.forEach((order: any) => {
-                const items = order.completedOrders || order.cart || [];
-                const couponFactor = 1 - (order.couponDiscount || 0) / 100;
-                items.forEach((item: any) => {
-                  const name = item.name || item.product?.name || 'Sin nombre';
-                  const qty = item.quantity || 0;
-                  const price = (item.finalPrice ?? item.price ?? item.product?.price ?? 0) * couponFactor;
-                  if (!productCount[name]) productCount[name] = { name, qty: 0, revenue: 0 };
-                  productCount[name].qty += qty;
-                  productCount[name].revenue += price * qty;
-                });
-              });
-              const topProducts = Object.values(productCount).sort((a, b) => b.qty - a.qty).slice(0, 5);
-              const topProduct = topProducts[0];
-              const daysSince = Math.floor((new Date().getTime() - new Date(selectedCustomer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
-              const sortedOrders = [...selectedCustomer.orders].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-              // Frecuencia: días promedio entre pedidos
-              let freqLabel = '—';
-              if (sortedOrders.length >= 2) {
-                const oldest = new Date(sortedOrders[sortedOrders.length - 1].createdAt).getTime();
-                const newest = new Date(sortedOrders[0].createdAt).getTime();
-                const avgDays = Math.round((newest - oldest) / (1000 * 60 * 60 * 24) / (sortedOrders.length - 1));
-                freqLabel = avgDays <= 7 ? 'Semanal' : avgDays <= 15 ? 'Quincenal' : avgDays <= 35 ? 'Mensual' : `c/${avgDays}d`;
-              }
-
-              const segmentInfo = selectedCustomer.totalOrders > 3
-                ? { label: 'VIP', bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300', dot: 'bg-amber-500' }
-                : selectedCustomer.totalOrders > 1
-                  ? { label: 'Recurrente', bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', dot: 'bg-blue-500' }
-                  : daysSince > 30
-                    ? { label: 'Inactivo', bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300', dot: 'bg-red-500' }
-                    : { label: 'Nuevo', bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', dot: 'bg-emerald-500' };
-
-              const addressHistory: string[] = selectedCustomer.addressHistory || (selectedCustomer.address ? [selectedCustomer.address] : []);
-              const currentPrimary = primaryAddressMap[selectedCustomer.phone] || addressHistory[0] || selectedCustomer.address || '';
-
-              const closeModal = () => {
-                setSelectedCustomer(null);
-                setCustomerModalTab('overview');
-                setExpandedOrderId(null);
-                setEditingCustomer(false);
-              };
-
-              return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={closeModal}>
-                  <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
-
-                    {/* ── HEADER ──────────────────────────────────────── */}
-                    <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-t-2xl px-6 py-5">
-                      <button onClick={closeModal} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all text-sm">✕</button>
-
-                      {editingCustomer ? (
-                        /* ── MODO EDICIÓN ── */
-                        <div>
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Editar datos del cliente</p>
-                          <div className="space-y-2">
-                            <div>
-                              <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Nombre</label>
-                              <input
-                                value={editCustomerForm.name}
-                                onChange={e => setEditCustomerForm(f => ({ ...f, name: e.target.value }))}
-                                className="w-full mt-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-white/40"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Teléfono <span className="text-gray-600 normal-case">(no editable)</span></label>
-                              <input
-                                value={editCustomerForm.phone}
-                                readOnly
-                                className="w-full mt-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-400 font-mono cursor-not-allowed"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Dirección principal</label>
-                              <input
-                                value={editCustomerForm.address}
-                                onChange={e => setEditCustomerForm(f => ({ ...f, address: e.target.value }))}
-                                className="w-full mt-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-white/40"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex gap-2 mt-3">
-                            <button
-                              onClick={async () => {
-                                setEditCustomerSaving(true);
-                                try {
-                                  await fetch('/api/customer-profiles', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      action: 'upsert',
-                                      phone: selectedCustomer.phone,
-                                      name: editCustomerForm.name,
-                                      address: editCustomerForm.address,
-                                      birthday: selectedCustomer.birthday || '',
-                                      tags: selectedCustomer.tags || [],
-                                      notes: selectedCustomer.notes || '',
-                                    }),
-                                  });
-                                  // Actualizar el cliente seleccionado localmente
-                                  setSelectedCustomer((prev: any) => ({
-                                    ...prev,
-                                    name: editCustomerForm.name,
-                                    phone: editCustomerForm.phone,
-                                    address: editCustomerForm.address,
-                                  }));
-                                  setEditingCustomer(false);
-                                } catch (err) {
-                                  console.error(err);
-                                } finally {
-                                  setEditCustomerSaving(false);
-                                }
-                              }}
-                              disabled={editCustomerSaving}
-                              className="flex-1 bg-white text-gray-900 font-bold text-sm py-2 rounded-lg hover:bg-gray-100 transition-all disabled:opacity-50"
-                            >
-                              {editCustomerSaving ? 'Guardando...' : '✓ Guardar cambios'}
-                            </button>
-                            <button onClick={() => setEditingCustomer(false)} className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm font-bold hover:bg-white/20 transition-all">
-                              Cancelar
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        /* ── VISTA NORMAL ── */
-                        <div className="flex items-start gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl font-black text-white flex-shrink-0">
-                            {selectedCustomer.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h2 className="text-xl font-black text-white">{selectedCustomer.name}</h2>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${segmentInfo.bg} ${segmentInfo.text}`}>{segmentInfo.label}</span>
-                            </div>
-                            <p className="text-gray-300 text-sm font-mono mt-1">{selectedCustomer.phone}</p>
-                            {currentPrimary && <p className="text-gray-400 text-xs mt-0.5 truncate">📍 {currentPrimary}</p>}
-                            {selectedCustomer.birthday && <p className="text-gray-400 text-xs mt-0.5">🎂 {selectedCustomer.birthday.split('-')[1]}/{selectedCustomer.birthday.split('-')[0]}</p>}
-                          </div>
-                          <button
-                            onClick={() => {
-                              setEditCustomerForm({ name: selectedCustomer.name, phone: selectedCustomer.phone, address: currentPrimary });
-                              setEditingCustomer(true);
-                            }}
-                            className="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-white/20 transition-all"
-                          >
-                            ✏️ Editar
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* ── TABS ────────────────────────────────────────── */}
-                    <div className="flex border-b border-gray-100 bg-white px-4">
-                      {(['overview', 'orders', 'addresses'] as const).map(tab => (
-                        <button
-                          key={tab}
-                          onClick={() => setCustomerModalTab(tab)}
-                          className={`px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${customerModalTab === tab ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
-                        >
-                          {tab === 'overview' ? '📊 Resumen' : tab === 'orders' ? `📦 Pedidos (${sortedOrders.length})` : `📍 Direcciones (${addressHistory.length})`}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* ── CONTENIDO ───────────────────────────────────── */}
-                    <div className="flex-1 overflow-y-auto">
-
-                      {/* TAB: RESUMEN ───────────────────────────────── */}
-                      {customerModalTab === 'overview' && (
-                        <div className="p-5 space-y-5">
-                          {/* KPIs principales */}
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
-                              <p className="text-2xl font-black text-gray-900">{selectedCustomer.totalOrders}</p>
-                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Pedidos</p>
-                            </div>
-                            <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
-                              <p className="text-2xl font-black text-amber-600">S/{selectedCustomer.totalSpent.toFixed(0)}</p>
-                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Total gastado</p>
-                            </div>
-                            <div className="bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
-                              <p className="text-2xl font-black text-blue-600">S/{(selectedCustomer.avgTicket||0).toFixed(0)}</p>
-                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Ticket prom.</p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
-                              <p className="text-2xl font-black text-gray-500">{daysSince}d</p>
-                              <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Última compra</p>
-                            </div>
-                          </div>
-
-                          {/* Resumen comercial */}
-                          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Resumen comercial</p>
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <p className="text-[10px] text-gray-400 uppercase">Última compra</p>
-                                <p className="font-bold text-gray-800">{new Date(selectedCustomer.lastOrderDate).toLocaleDateString("es-PE", { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-gray-400 uppercase">Frecuencia</p>
-                                <p className="font-bold text-gray-800">{freqLabel}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-gray-400 uppercase">Producto favorito</p>
-                                <p className="font-bold text-gray-800 truncate">{topProduct ? `${topProduct.name} (×${topProduct.qty})` : '—'}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-gray-400 uppercase">Registrado</p>
-                                <p className="font-bold text-gray-800">{(() => {
-                                  const oldest = [...selectedCustomer.orders].sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0];
-                                  return oldest ? new Date(oldest.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—';
-                                })()}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-gray-400 uppercase">Estado</p>
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${segmentInfo.bg} ${segmentInfo.text}`}>{segmentInfo.label}</span>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-gray-400 uppercase">Dirección activa</p>
-                                <p className="font-bold text-gray-800 text-xs truncate">{currentPrimary || '—'}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-gray-400 uppercase">Cumpleaños</p>
-                                <p className="font-bold text-gray-800">
-                                  {selectedCustomer.birthday
-                                    ? (() => { const [mm, dd] = selectedCustomer.birthday.split('-'); return `${dd}/${mm}`; })()
-                                    : <span className="text-gray-400 font-normal text-xs">No registrado</span>}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Productos más comprados */}
-                          {topProducts.length > 0 && (
-                            <div>
-                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Productos favoritos</p>
-                              <div className="space-y-1.5">
-                                {topProducts.map((p, i) => (
-                                  <div key={i} className="flex items-center gap-3 bg-white rounded-xl px-3 py-2.5 border border-gray-100">
-                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white ${i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-gray-400' : 'bg-gray-300'}`}>{i + 1}</span>
-                                    <span className="flex-1 text-sm text-gray-800 font-medium truncate">{p.name}</span>
-                                    <span className="text-xs font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{p.qty}×</span>
-                                    <span className="text-xs text-amber-600 font-black w-16 text-right">S/{p.revenue.toFixed(0)}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Sección cumpleaños — accionable */}
-                          {(() => {
-                            const bdBadge = getBirthdayBadge(selectedCustomer.birthday);
-                            const waMsg = (birthdayAlerts?.settings?.waTemplate || '🎉 ¡Hola {{nombre}}!\n\nTodo el equipo de Santo Dilema te desea un muy feliz cumpleaños. 🥳🎂\n\nGracias por elegirnos y ser parte de nuestra comunidad.\n\nQueremos celebrarlo contigo — ¡tenemos una sorpresa especial para ti!\n\n¡Esperamos verte pronto!\n\nEquipo Santo Dilema ❤️')
-                              .replace(/{{nombre}}/g, selectedCustomer.name.split(' ')[0]);
-                            return (
-                              <div className={`rounded-xl p-4 border ${bdBadge === 'today' ? 'bg-pink-50 border-pink-200' : bdBadge === 'tomorrow' ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-100'}`}>
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-lg">🎂</span>
-                                    <div>
-                                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Cumpleaños</p>
-                                      <p className="text-sm font-bold text-gray-900">
-                                        {selectedCustomer.birthday
-                                          ? (() => {
-                                              const [mm, dd] = selectedCustomer.birthday.split('-');
-                                              return `${dd}/${mm}`;
-                                            })()
-                                          : 'No registrado'}
-                                        {bdBadge === 'today' && <span className="ml-2 bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full animate-pulse">HOY</span>}
-                                        {bdBadge === 'tomorrow' && <span className="ml-2 bg-orange-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">MAÑANA</span>}
-                                        {bdBadge === 'week' && <span className="ml-2 bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full">esta semana</span>}
-                                        {bdBadge === 'month' && <span className="ml-2 bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">este mes</span>}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => {
-                                      setCrmEditPhone(selectedCustomer.phone);
-                                      setCrmForm({ birthday: selectedCustomer.birthday ? `${selectedCustomer.birthday.split('-')[1]}/${selectedCustomer.birthday.split('-')[0]}` : '', tags: selectedCustomer.tags || [], notes: selectedCustomer.notes || '' });
-                                      setShowCrmModal(true);
-                                    }}
-                                    className="text-[10px] font-bold text-gray-500 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 px-2 py-1 rounded-lg transition-all"
-                                  >
-                                    {selectedCustomer.birthday ? 'Cambiar' : '+ Agregar'}
-                                  </button>
-                                </div>
-                                {selectedCustomer.birthday && (
-                                  <div className="space-y-2">
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Mensaje de felicitación</p>
-                                    <div className="bg-white rounded-lg p-3 border border-gray-100">
-                                      <p className="text-xs text-gray-700 whitespace-pre-line leading-relaxed">{waMsg}</p>
-                                    </div>
-                                    <a
-                                      href={buildWhatsApp(selectedCustomer.phone, waMsg)}
-                                      target="_blank" rel="noopener noreferrer"
-                                      className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
-                                        bdBadge === 'today'
-                                          ? 'bg-pink-600 hover:bg-pink-700 text-white'
-                                          : bdBadge === 'tomorrow'
-                                            ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                                            : 'bg-green-600 hover:bg-green-700 text-white'
-                                      }`}
-                                    >
-                                      💬 {bdBadge === 'today' ? 'Felicitar AHORA por WhatsApp' : bdBadge === 'tomorrow' ? 'Preparar felicitación (cumple mañana)' : 'Enviar felicitación por WhatsApp'}
-                                    </a>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })()}
-
-                          {/* Notas y etiquetas */}
-                          {(selectedCustomer.notes || (selectedCustomer.tags || []).length > 0) && (
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                              {(selectedCustomer.tags || []).length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mb-2">
-                                  {(selectedCustomer.tags || []).map((t: string) => (
-                                    <span key={t} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">{t}</span>
-                                  ))}
-                                </div>
-                              )}
-                              {selectedCustomer.notes && <p className="text-xs text-gray-500 italic">&quot;{selectedCustomer.notes}&quot;</p>}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* TAB: PEDIDOS ───────────────────────────────── */}
-                      {customerModalTab === 'orders' && (
-                        <div className="p-5 space-y-3">
-                          {sortedOrders.map((order: any) => {
-                            const isExpanded = expandedOrderId === order.id;
-                            const orderItems = order.completedOrders || order.cart || [];
-                            const subtotal = orderItems.reduce((acc: number, it: any) => acc + ((it.finalPrice ?? it.price ?? 0) * (it.quantity || 0)), 0);
-                            const couponDiscount = order.couponDiscount || 0;
-                            const comboDiscount = order.comboDiscount || 0;
-                            const deliveryCost = order.deliveryCost || 0;
-                            const payMethodLabels: Record<string, string> = {
-                              yape: 'Yape', plin: 'Plin', efectivo: 'Efectivo', transferencia: 'Transferencia',
-                              anticipado: 'Anticipado', tarjeta: 'Tarjeta', otro: 'Otro'
-                            };
-                            const orderStatus = statusLabels[order.status as keyof typeof statusLabels] || order.status;
-                            const orderStatusColor = statusColors[order.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-600 border-gray-200';
-                            const orderAddr = order.address || order.deliveryCustomLocation || '';
-
-                            return (
-                              <div key={order.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                {/* Fila principal del pedido */}
-                                <button
-                                  className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors"
-                                  onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                      <span className="font-mono text-sm font-black text-gray-900">{order.id}</span>
-                                      <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${orderStatusColor}`}>{orderStatus}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                      <span className="font-black text-amber-600 text-sm">S/ {(order.totalPrice || 0).toFixed(2)}</span>
-                                      <span className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-4 mt-1">
-                                    <span className="text-[11px] text-gray-400">
-                                      {new Date(order.createdAt).toLocaleDateString("es-PE", { day: '2-digit', month: '2-digit', year: '2-digit' })}{' '}
-                                      {new Date(order.createdAt).toLocaleTimeString("es-PE", { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                    {order.paymentMethod && (
-                                      <span className="text-[11px] text-gray-400">{payMethodLabels[order.paymentMethod] || order.paymentMethod}</span>
-                                    )}
-                                    {orderAddr && <span className="text-[11px] text-gray-400 truncate max-w-[200px]">📍 {orderAddr}</span>}
-                                  </div>
-                                </button>
-
-                                {/* Detalle expandible */}
-                                {isExpanded && (
-                                  <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 space-y-3">
-                                    {/* Productos */}
-                                    {orderItems.length > 0 && (
-                                      <div>
-                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Productos</p>
-                                        <div className="space-y-1.5">
-                                          {orderItems.map((it: any, idx2: number) => {
-                                            const itemName = it.name || it.product?.name || 'Producto';
-                                            const itemQty = it.quantity || 1;
-                                            const itemPrice = it.finalPrice ?? it.price ?? it.product?.price ?? 0;
-                                            const salsas = it.salsaIds || it.salsas || [];
-                                            const complements = it.complementIds || [];
-                                            return (
-                                              <div key={idx2} className="flex items-start gap-2 bg-white rounded-lg px-3 py-2 border border-gray-100">
-                                                <span className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">{itemQty}</span>
-                                                <div className="flex-1 min-w-0">
-                                                  <p className="text-sm font-bold text-gray-900 truncate">{itemName}</p>
-                                                  {salsas.length > 0 && <p className="text-[10px] text-red-500 mt-0.5">🌶 {salsas.join(', ')}</p>}
-                                                  {complements.length > 0 && <p className="text-[10px] text-gray-400 mt-0.5">+ {complements.join(', ')}</p>}
-                                                </div>
-                                                <span className="text-sm font-black text-gray-700 flex-shrink-0">S/{(itemPrice * itemQty).toFixed(2)}</span>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                    )}
-
-                                    {/* Subtotales y descuentos */}
-                                    <div className="bg-white rounded-xl border border-gray-100 px-4 py-3 space-y-1.5">
-                                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Desglose de pago</p>
-                                      <div className="flex justify-between text-sm text-gray-600">
-                                        <span>Subtotal</span>
-                                        <span className="font-bold">S/{subtotal.toFixed(2)}</span>
-                                      </div>
-                                      {couponDiscount > 0 && (
-                                        <div className="flex justify-between text-sm text-purple-600">
-                                          <span>Cupón {order.couponCode ? `(${order.couponCode})` : ''} -{couponDiscount}%</span>
-                                          <span className="font-bold">-S/{(subtotal * couponDiscount / 100).toFixed(2)}</span>
-                                        </div>
-                                      )}
-                                      {comboDiscount > 0 && (
-                                        <div className="flex justify-between text-sm text-emerald-600">
-                                          <span>Descuento combo</span>
-                                          <span className="font-bold">-S/{comboDiscount.toFixed(2)}</span>
-                                        </div>
-                                      )}
-                                      {deliveryCost > 0 && (
-                                        <div className="flex justify-between text-sm text-gray-600">
-                                          <span>Delivery</span>
-                                          <span className="font-bold">+S/{deliveryCost.toFixed(2)}</span>
-                                        </div>
-                                      )}
-                                      <div className="flex justify-between text-sm font-black text-gray-900 border-t border-gray-100 pt-1.5 mt-1">
-                                        <span>Total pagado</span>
-                                        <span className="text-amber-600">S/{(order.totalPrice || 0).toFixed(2)}</span>
-                                      </div>
-                                    </div>
-
-                                    {/* Info logística */}
-                                    <div className="grid grid-cols-2 gap-2 text-xs">
-                                      {orderAddr && (
-                                        <div className="bg-white rounded-lg px-3 py-2 border border-gray-100">
-                                          <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Dirección de entrega</p>
-                                          <p className="text-gray-700 font-medium">{orderAddr}</p>
-                                        </div>
-                                      )}
-                                      {order.paymentMethod && (
-                                        <div className="bg-white rounded-lg px-3 py-2 border border-gray-100">
-                                          <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Método de pago</p>
-                                          <p className="text-gray-700 font-medium capitalize">{payMethodLabels[order.paymentMethod] || order.paymentMethod}</p>
-                                        </div>
-                                      )}
-                                      {order.deliveredAt && (
-                                        <div className="bg-white rounded-lg px-3 py-2 border border-gray-100">
-                                          <p className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Hora de entrega</p>
-                                          <p className="text-gray-700 font-medium">{new Date(order.deliveredAt).toLocaleTimeString("es-PE", { hour: '2-digit', minute: '2-digit' })}</p>
-                                        </div>
-                                      )}
-                                      {order.notes && (
-                                        <div className="bg-amber-50 rounded-lg px-3 py-2 border border-amber-100 col-span-2">
-                                          <p className="text-[9px] text-amber-600 uppercase font-bold mb-0.5">Nota del cliente</p>
-                                          <p className="text-gray-700 font-medium">{order.notes}</p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {/* TAB: DIRECCIONES ───────────────────────────── */}
-                      {customerModalTab === 'addresses' && (
-                        <div className="p-5">
-                          {addressHistory.length === 0 ? (
-                            <div className="text-center py-10">
-                              <p className="text-4xl mb-2">📍</p>
-                              <p className="text-gray-400 text-sm">Sin direcciones registradas</p>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
-                                {addressHistory.length} {addressHistory.length === 1 ? 'dirección registrada' : 'direcciones registradas'}
-                              </p>
-                              {addressHistory.map((addr, i) => {
-                                const isPrimary = addr === currentPrimary;
-                                return (
-                                  <div key={i} className={`flex items-start gap-3 rounded-xl px-4 py-3 border transition-all ${isPrimary ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
-                                    <span className={`text-lg flex-shrink-0 mt-0.5 ${isPrimary ? '' : 'opacity-40'}`}>📍</span>
-                                    <div className="flex-1 min-w-0">
-                                      <p className={`text-sm font-medium ${isPrimary ? 'text-white' : 'text-gray-800'}`}>{addr}</p>
-                                      {isPrimary && <p className="text-[10px] text-gray-400 mt-0.5 font-bold uppercase tracking-wider">Dirección principal</p>}
-                                    </div>
-                                    {!isPrimary && (
-                                      <button
-                                        onClick={() => setPrimaryAddressMap(prev => ({ ...prev, [selectedCustomer.phone]: addr }))}
-                                        className="flex-shrink-0 text-[10px] font-bold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-lg transition-all"
-                                      >
-                                        Marcar principal
-                                      </button>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* ── FOOTER ──────────────────────────────────────── */}
-                    <div className="border-t border-gray-100 px-5 py-3 bg-gray-50 rounded-b-2xl flex items-center justify-between">
-                      <p className="text-[10px] text-gray-400">{selectedCustomer.phone} · {selectedCustomer.totalOrders} pedido{selectedCustomer.totalOrders !== 1 ? 's' : ''}</p>
-                      <button onClick={closeModal} className="text-xs font-bold text-gray-500 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 px-4 py-1.5 rounded-lg transition-all">
-                        Cerrar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {loading ? (
-              <div className="text-center py-12">
-                <p className="text-2xl text-gray-700 ">Cargando clientes...</p>
-              </div>
-            ) : customers.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
-                <p className="text-2xl text-gray-400">No hay clientes registrados</p>
-              </div>
-            ) : (
-              <>
-                {/* Buscador de clientes */}
-                <div className="mb-4">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={customerSearchTerm}
-                      onChange={(e) => setCustomerSearchTerm(e.target.value)}
-                      placeholder="Buscar cliente por nombre, teléfono o dirección..."
-                      className="w-full px-4 py-3 pl-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-all"
-                    />
-                    <svg
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    {customerSearchTerm && (
-                      <button
-                        onClick={() => setCustomerSearchTerm("")}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {(() => {
-                  const handleSort = (key: string) => {
-                    if (customerSortKey === key) {
-                      setCustomerSortDir(d => d === "asc" ? "desc" : "asc");
-                    } else {
-                      setCustomerSortKey(key);
-                      setCustomerSortDir(key === "name" || key === "phone" ? "asc" : "desc");
-                    }
-                  };
-                  const SortIcon = ({ col }: { col: string }) => {
-                    if (customerSortKey !== col) return <span className="text-gray-600 ml-1">↕</span>;
-                    return <span className="text-gray-600 ml-1">{customerSortDir === "asc" ? "↑" : "↓"}</span>;
-                  };
-                  const sortedCustomers = [...customers].sort((a: any, b: any) => {
-                    let aVal: any, bVal: any;
-                    if (customerSortKey === "phone") { aVal = a.phone || ""; bVal = b.phone || ""; }
-                    else if (customerSortKey === "name") { aVal = a.name || ""; bVal = b.name || ""; }
-                    else if (customerSortKey === "address") { aVal = a.address || ""; bVal = b.address || ""; }
-                    else if (customerSortKey === "totalOrders") { aVal = a.totalOrders; bVal = b.totalOrders; }
-                    else if (customerSortKey === "totalSpent") { aVal = a.totalSpent; bVal = b.totalSpent; }
-                    else if (customerSortKey === "lastOrderDate") { aVal = new Date(a.lastOrderDate).getTime(); bVal = new Date(b.lastOrderDate).getTime(); }
-                    else { aVal = 0; bVal = 0; }
-                    if (typeof aVal === "string") {
-                      return customerSortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                    }
-                    return customerSortDir === "asc" ? aVal - bVal : bVal - aVal;
-                  });
-
-                  return (
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xl">
-                      <table className="w-full">
-                        <thead className="bg-white border-b border-gray-200">
-                          <tr>
-                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Estado</th>
-                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none" onClick={() => handleSort("name")}>
-                              Nombre <SortIcon col="name" />
-                            </th>
-                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none hidden md:table-cell" onClick={() => handleSort("phone")}>
-                              Teléfono <SortIcon col="phone" />
-                            </th>
-                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none" onClick={() => handleSort("totalOrders")}>
-                              Pedidos <SortIcon col="totalOrders" />
-                            </th>
-                            <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none" onClick={() => handleSort("totalSpent")}>
-                              Total <SortIcon col="totalSpent" />
-                            </th>
-                            <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none hidden xl:table-cell" onClick={() => handleSort("address")}>
-                              Dirección <SortIcon col="address" />
-                            </th>
-                            <th className="text-center px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-600 select-none hidden lg:table-cell" onClick={() => handleSort("lastOrderDate")}>
-                              Última Compra <SortIcon col="lastOrderDate" />
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sortedCustomers.map((customer: any, idx: number) => {
-                            const daysSinceLastOrder = Math.floor((new Date().getTime() - new Date(customer.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24));
-                            const segBadge = customer.totalOrders > 3
-                              ? { label: "VIP", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" }
-                              : customer.totalOrders > 1
-                                ? { label: "Recurrente", cls: "bg-blue-500/20 text-blue-300 border-blue-500/40" }
-                                : daysSinceLastOrder > 30
-                                  ? { label: "Inactivo", cls: "bg-red-500/20 text-red-300 border-red-500/40" }
-                                  : { label: "Nuevo", cls: "bg-green-500/20 text-green-300 border-green-500/40" };
-                            const bdBadge = getBirthdayBadge(customer.birthday);
-                            const rowHighlight = bdBadge === 'today'
-                              ? 'bg-pink-50 hover:bg-pink-100/70'
-                              : bdBadge === 'tomorrow'
-                                ? 'bg-orange-50 hover:bg-orange-100/70'
-                                : `hover:bg-fuchsia-500/5 ${idx % 2 === 0 ? "bg-black/10" : ""}`;
-                            return (
-                              <tr
-                                key={customer.phone}
-                                onClick={() => setSelectedCustomer(customer)}
-                                className={`border-b border-gray-200/60 cursor-pointer transition-colors ${rowHighlight}`}
-                              >
-                                <td className="px-4 py-3 hidden sm:table-cell">
-                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${segBadge.cls}`}>{segBadge.label}</span>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <div className="flex items-center gap-1.5">
-                                    <p className="text-sm font-semibold text-gray-800">{customer.name}</p>
-                                    {bdBadge === 'today' && <span className="bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full animate-pulse">🎂 HOY</span>}
-                                    {bdBadge === 'tomorrow' && <span className="bg-orange-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">🎁 MAÑANA</span>}
-                                    {bdBadge === 'week' && <span className="bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full">🎂 esta semana</span>}
-                                    {bdBadge === 'month' && <span className="bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">🗓 este mes</span>}
-                                  </div>
-                                  <p className="text-xs text-gray-500 sm:hidden">{customer.phone}</p>
-                                </td>
-                                <td className="px-4 py-3 text-sm text-gray-700 font-mono hidden md:table-cell">{customer.phone}</td>
-                                <td className="px-4 py-3 text-center">
-                                  <span className="inline-block w-8 h-8 leading-8 rounded-full bg-fuchsia-500/15 text-gray-700 font-black text-sm text-center">
-                                    {customer.totalOrders}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3 text-right text-amber-400 font-black text-sm">
-                                  S/ {customer.totalSpent.toFixed(0)}
-                                </td>
-                                <td className="px-4 py-3 hidden xl:table-cell">
-                                  {customer.address ? (
-                                    <p className="text-xs text-gray-600 max-w-[180px] truncate" title={customer.address}>{customer.address}</p>
-                                  ) : (
-                                    <span className="text-xs text-gray-300">—</span>
-                                  )}
-                                  {(customer.addressHistory?.length || 0) > 1 && (
-                                    <span className="text-[10px] text-indigo-400">{customer.addressHistory.length} direcciones</span>
-                                  )}
-                                </td>
-                                <td className="px-4 py-3 text-center text-gray-400 text-xs hidden lg:table-cell">
-                                  {new Date(customer.lastOrderDate).toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "2-digit" })}
-                                  {daysSinceLastOrder <= 7 && <span className="block text-green-400 text-[10px]">hace {daysSinceLastOrder}d</span>}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  );
-                })()}
-              </>
-            )}
+            <ClientesAdmin
+              customers={customers}
+              allCustomers={allCustomers}
+              customerSegment={customerSegment}
+              setCustomerSegment={setCustomerSegment}
+              customerSegments={customerSegments}
+              customerSearchTerm={customerSearchTerm}
+              setCustomerSearchTerm={setCustomerSearchTerm}
+              onSelectCustomer={setSelectedCustomer}
+              loading={loading}
+              getBirthdayBadge={getBirthdayBadge}
+              buildWhatsApp={buildWhatsApp}
+              birthdayAlerts={birthdayAlerts}
+            />
           </section>
           {/* Dashboard CRM - integrado en tab Inicio */}
           {false && crmDashboard && (
@@ -4721,6 +3854,16 @@ export default function AdminPage() {
               >
                 🛒 Compras y Gastos
               </button>
+              <button
+                onClick={() => setFinancialSection("costos")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  financialSection === "costos"
+                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    : "text-gray-400 hover:text-gray-700"
+                }`}
+              >
+                📐 Costos y Márgenes
+              </button>
               {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
             </div>
 
@@ -4842,734 +3985,524 @@ export default function AdminPage() {
               const recuperacionCapital = totalCompras > 0 ? (totalVentas / totalCompras) * 100 : 0; // Cuánto recuperaste de lo invertido
               const roi = totalCompras > 0 ? (cajaUtilidad / totalCompras) * 100 : 0; // Retorno sobre inversión
 
+
+              // ── Ventas por día ──
+              const dailySalesMap: Record<string, { count: number; revenue: number }> = {};
+              deliveredOrders.forEach((o: any) => {
+                const d = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+                if (!dailySalesMap[d]) dailySalesMap[d] = { count: 0, revenue: 0 };
+                dailySalesMap[d].count++;
+                dailySalesMap[d].revenue += o.totalPrice || 0;
+              });
+              const dailySalesArr = Object.entries(dailySalesMap)
+                .map(([date, v]) => ({ date, ...v }))
+                .sort((a, b) => b.date.localeCompare(a.date))
+                .slice(0, 14);
+              const maxDayRev = Math.max(...dailySalesArr.map(d => d.revenue), 1);
+
+              // ── Período anterior (para comparar tendencia) ──
+              let prevVentas = 0, prevCompras = 0;
+              if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
+                const from  = new Date(dashboardDateFrom + "T00:00:00-05:00").getTime();
+                const to    = new Date(dashboardDateTo   + "T23:59:59-05:00").getTime();
+                const span  = to - from;
+                const pFrom = new Date(from - span - 86400000).toLocaleDateString("en-CA");
+                const pTo   = new Date(from - 86400000).toLocaleDateString("en-CA");
+                prevVentas = orders
+                  .filter((o: any) => !o.isCanje && ["delivered","Entregado"].includes(o.status || ""))
+                  .filter((o: any) => { const d = new Date(o.createdAt).toLocaleDateString("en-CA",{timeZone:"America/Lima"}); return d>=pFrom && d<=pTo; })
+                  .reduce((s: number, o: any) => s + (o.totalPrice || 0), 0);
+                prevCompras = inventory
+                  .filter((p: any) => { const d = (p.purchaseDate || "").slice(0,10); return d>=pFrom && d<=pTo; })
+                  .reduce((s: number, p: any) => s + (p.totalAmount || 0), 0);
+              }
+              const dVentas  = prevVentas  > 0 ? ((totalVentas - prevVentas) / prevVentas) * 100 : null;
+              const dCompras = prevCompras > 0 ? ((totalCompras - prevCompras) / prevCompras) * 100 : null;
+              const dUtil    = prevVentas  > 0 || prevCompras > 0
+                ? ((cajaUtilidad - (prevVentas - prevCompras)) / Math.max(Math.abs(prevVentas - prevCompras), 1)) * 100 : null;
+
+              // ── Por pagar ──
+              const porPagar   = inventory.filter((p: any) => !p.liquidado).reduce((s: number, p: any) => s + (p.totalAmount || 0), 0);
+              const nPorPagar  = inventory.filter((p: any) => !p.liquidado).length;
+              const ticket     = deliveredOrders.length > 0 ? totalVentas / deliveredOrders.length : 0;
+
+              // ── Clientes únicos (por teléfono) ──
+              const phoneCount: Record<string, number> = {};
+              deliveredOrders.forEach((o: any) => {
+                if (o.phone) phoneCount[o.phone] = (phoneCount[o.phone] || 0) + 1;
+              });
+              const totalClientes   = Object.keys(phoneCount).length;
+              const clientesRepeat  = Object.values(phoneCount).filter((n: any) => n > 1).length;
+              const clientesNuevos  = totalClientes - clientesRepeat;
+
+              // ── Métodos de pago ──
+              const paymentMap: Record<string, { count: number; amount: number }> = {};
+              deliveredOrders.forEach((o: any) => {
+                const pm = o.paymentMethod || "otro";
+                if (!paymentMap[pm]) paymentMap[pm] = { count: 0, amount: 0 };
+                paymentMap[pm].count++;
+                paymentMap[pm].amount += o.totalPrice || 0;
+              });
+
+              // ── Top 5 productos más vendidos ──
+              const prodQty: Record<string, number> = {};
+              deliveredOrders.forEach((o: any) => {
+                const items = o.completedOrders || o.cart || [];
+                items.forEach((item: any) => {
+                  const name = item.name || "";
+                  if (!name) return;
+                  prodQty[name] = (prodQty[name] || 0) + (item.quantity || 1);
+                });
+              });
+              const topProds = Object.entries(prodQty)
+                .sort((a: any, b: any) => b[1] - a[1])
+                .slice(0, 5);
+
               return (
-                <div>
-                  {/* Header con filtros */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">Dashboard Financiero</h3>
-                      {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo ? (
-                        <p className="text-sm text-gray-500 mt-0.5">
-                          {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} — {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                <div className="space-y-4">
+
+                  {/* ══ PERÍODO ══ */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex gap-0.5 bg-gray-100 rounded-lg p-0.5">
+                      {([
+                        { key:"today", label:"Hoy" },
+                        { key:"month", label:"Este mes" },
+                        { key:"all",   label:"Histórico" },
+                      ] as const).map(p => {
+                        const today = new Date().toLocaleDateString("en-CA",{timeZone:"America/Lima"});
+                        const [y,m] = today.split("-").map(Number);
+                        const firstDay = `${y}-${String(m).padStart(2,"0")}-01`;
+                        const isActive =
+                          p.key === "all"   ? !isDashboardDateFiltered :
+                          p.key === "today" ? isDashboardDateFiltered && dashboardDateFrom === today && dashboardDateTo === today :
+                          isDashboardDateFiltered && dashboardDateFrom === firstDay && dashboardDateTo === today;
+                        return (
+                          <button key={p.key}
+                            onClick={() => {
+                              if (p.key === "today") { setDashboardDateFrom(today); setDashboardDateTo(today); setIsDashboardDateFiltered(true); }
+                              if (p.key === "month") { setDashboardDateFrom(firstDay); setDashboardDateTo(today); setIsDashboardDateFiltered(true); }
+                              if (p.key === "all")   { setDashboardDateFrom(""); setDashboardDateTo(""); setIsDashboardDateFiltered(false); }
+                            }}
+                            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${isActive ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                            {p.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <input type="date" value={dashboardDateFrom}
+                      onChange={e => { setDashboardDateFrom(e.target.value); if (e.target.value && dashboardDateTo) setIsDashboardDateFiltered(true); }}
+                      className="px-2 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none bg-white" />
+                    <span className="text-gray-300 text-xs">—</span>
+                    <input type="date" value={dashboardDateTo}
+                      onChange={e => { setDashboardDateTo(e.target.value); if (dashboardDateFrom && e.target.value) setIsDashboardDateFiltered(true); }}
+                      className="px-2 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none bg-white" />
+                    {isDashboardDateFiltered && (
+                      <button onClick={() => { setDashboardDateFrom(""); setDashboardDateTo(""); setIsDashboardDateFiltered(false); }}
+                        className="text-xs text-gray-400 hover:text-gray-600 ml-1">✕ limpiar</button>
+                    )}
+                  </div>
+
+                  {/* ══ ROW 1: 4 KPI CARDS ══ */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+                    {/* Ingresos */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ingresos netos</p>
+                      <p className="text-2xl font-black text-gray-900 tabular-nums leading-tight">S/ {totalVentas.toFixed(2)}</p>
+                      <p className="text-xs text-gray-400 mt-1">{deliveredOrders.length} pedido{deliveredOrders.length !== 1 ? "s" : ""} entregado{deliveredOrders.length !== 1 ? "s" : ""}</p>
+                      {dVentas !== null && (
+                        <p className={`text-xs font-semibold mt-1 ${dVentas >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                          {dVentas >= 0 ? "▲" : "▼"} {Math.abs(dVentas).toFixed(1)}% vs anterior
                         </p>
-                      ) : (
-                        <p className="text-sm text-gray-400 mt-0.5">Histórico completo</p>
                       )}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
-                            setDashboardDateFrom(today);
-                            setDashboardDateTo(today);
-                            setIsDashboardDateFiltered(true);
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isDashboardDateFiltered && dashboardDateFrom === new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }) && dashboardDateTo === new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
-                        >
-                          Hoy
-                        </button>
-                        <button
-                          onClick={() => {
-                            const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
-                            const [y, m] = today.split("-").map(Number);
-                            const firstDay = `${y}-${String(m).padStart(2, "0")}-01`;
-                            setDashboardDateFrom(firstDay);
-                            setDashboardDateTo(today);
-                            setIsDashboardDateFiltered(true);
-                          }}
-                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-white text-gray-600 border-gray-200 hover:border-gray-400"
-                        >
-                          Este mes
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDashboardDateFrom("");
-                            setDashboardDateTo("");
-                            setIsDashboardDateFiltered(false);
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${!isDashboardDateFiltered ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
-                        >
-                          Histórico
-                        </button>
-                      </div>
-
-                      <div className="flex gap-2 items-center text-xs">
-                        <input
-                          type="date"
-                          value={dashboardDateFrom}
-                          onChange={(e) => {
-                            setDashboardDateFrom(e.target.value);
-                            if (e.target.value && dashboardDateTo) setIsDashboardDateFiltered(true);
-                          }}
-                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-800 text-xs focus:outline-none focus:border-gray-400"
-                        />
-                        <span className="text-gray-300">—</span>
-                        <input
-                          type="date"
-                          value={dashboardDateTo}
-                          onChange={(e) => {
-                            setDashboardDateTo(e.target.value);
-                            if (dashboardDateFrom && e.target.value) setIsDashboardDateFiltered(true);
-                          }}
-                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-800 text-xs focus:outline-none focus:border-gray-400"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ===== NIVEL 1: KPIs PRINCIPALES ===== */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {/* Ventas */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-5">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ventas</p>
-                      <p className="text-3xl font-black text-gray-900">S/ {totalVentas.toFixed(2)}</p>
-                      <p className="text-xs text-gray-400 mt-2">{deliveredOrders.length} pedidos entregados</p>
-                    </div>
-
                     {/* Gastos */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-5">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Gastos</p>
-                      <p className="text-3xl font-black text-gray-900">S/ {totalCompras.toFixed(2)}</p>
-                      <p className="text-xs text-gray-400 mt-2">{filteredPurchases.length} compras registradas</p>
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Gastos totales</p>
+                      <p className="text-2xl font-black text-gray-700 tabular-nums leading-tight">S/ {totalCompras.toFixed(2)}</p>
+                      <p className="text-xs text-gray-400 mt-1">{filteredPurchases.length} registro{filteredPurchases.length !== 1 ? "s" : ""}</p>
+                      {dCompras !== null && (
+                        <p className={`text-xs font-semibold mt-1 ${dCompras <= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                          {dCompras >= 0 ? "▲" : "▼"} {Math.abs(dCompras).toFixed(1)}% vs anterior
+                        </p>
+                      )}
                     </div>
 
-                    {/* Utilidad */}
-                    <div className={`bg-white border rounded-xl p-5 ${cajaUtilidad >= 0 ? 'border-emerald-100' : 'border-red-100'}`}>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Utilidad</p>
-                      <p className={`text-3xl font-black ${cajaUtilidad >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                        S/ {cajaUtilidad.toFixed(2)}
+                    {/* Resultado */}
+                    <div className={`rounded-xl p-4 border ${cajaUtilidad >= 0 ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"}`}>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${cajaUtilidad >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                        Resultado
                       </p>
-                      <p className={`text-xs mt-2 font-medium ${cajaUtilidad >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                        {margenCaja.toFixed(1)}% margen sobre ventas
+                      <p className={`text-2xl font-black tabular-nums leading-tight ${cajaUtilidad >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                        {cajaUtilidad >= 0 ? "+" : ""}S/ {cajaUtilidad.toFixed(2)}
                       </p>
+                      <p className="text-xs text-gray-500 mt-1">Margen {margenCaja.toFixed(1)}%</p>
+                      {totalCompras > 0 && <p className="text-xs text-gray-400">ROI {roi.toFixed(0)}%</p>}
                     </div>
 
-                    {/* Ticket promedio */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-5">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket promedio</p>
-                      <p className="text-3xl font-black text-gray-900">
-                        S/ {deliveredOrders.length > 0 ? (totalVentas / deliveredOrders.length).toFixed(2) : '0.00'}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-2">por pedido</p>
-                    </div>
-                  </div>
-
-                  {/* ===== NIVEL 2: CAJA + DESGLOSE EGRESOS ===== */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-
-                    {/* CAJA CORRIENTE */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Caja actual</p>
-                          <p className={`text-4xl font-black ${cajaActual >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                            S/ {cajaActual.toFixed(2)}
-                          </p>
-                          {cajaData ? (
-                            <div className="mt-3 space-y-1">
-                              <div className="flex justify-between text-xs text-gray-500">
-                                <span>Base ({new Date(cajaData.snapshotDate + "T12:00:00").toLocaleDateString("es-PE")})</span>
-                                <span className="font-semibold text-gray-700">S/ {cajaSnapshot.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between text-xs text-gray-500">
-                                <span>+ Ventas posteriores</span>
-                                <span className="font-semibold text-emerald-600">S/ {ventasDesdeSnapshot.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between text-xs text-gray-500">
-                                <span>− Pagos realizados</span>
-                                <span className="font-semibold text-red-500">S/ {pagosDesdeSnapshot.toFixed(2)}</span>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-xs text-gray-400 mt-3">Configura el saldo inicial para llevar la caja.</p>
-                          )}
-                        </div>
-                        <div className="flex-shrink-0">
-                          {!cajaEditMode ? (
-                            <button
-                              onClick={() => {
-                                setCajaEditBalance(cajaData ? String(cajaData.snapshotBalance) : "");
-                                setCajaEditDate(cajaData?.snapshotDate || new Date().toLocaleDateString("en-CA"));
-                                setCajaEditMode(true);
-                              }}
-                              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-all"
-                            >
-                              {cajaData ? "Ajustar" : "Configurar"}
-                            </button>
-                          ) : (
-                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 min-w-[220px]">
-                              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Establecer base</p>
-                              <div>
-                                <label className="text-xs text-gray-500 mb-1 block">Saldo en caja (S/)</label>
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  value={cajaEditBalance}
-                                  onChange={(e) => setCajaEditBalance(e.target.value)}
-                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white border border-gray-300 text-gray-900 focus:border-gray-500 focus:outline-none"
-                                  placeholder="521.80"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-xs text-gray-500 mb-1 block">Fecha de corte</label>
-                                <input
-                                  type="date"
-                                  value={cajaEditDate}
-                                  onChange={(e) => setCajaEditDate(e.target.value)}
-                                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-white border border-gray-300 text-gray-900 focus:border-gray-500 focus:outline-none [color-scheme:light]"
-                                />
-                              </div>
-                              <div className="flex gap-2 pt-1">
-                                <button
-                                  onClick={saveCajaSnapshot}
-                                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-1.5 rounded-lg text-sm font-bold"
-                                >
-                                  Guardar
-                                </button>
-                                <button
-                                  onClick={() => setCajaEditMode(false)}
-                                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                              <p className="text-xs text-gray-400">Las ventas y pagos posteriores se suman/restan automáticamente.</p>
-                            </div>
-                          )}
-                        </div>
+                    {/* Pedidos & Clientes */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Pedidos · Clientes</p>
+                      <div className="flex items-end gap-3">
+                        <p className="text-2xl font-black text-gray-900 leading-tight">{deliveredOrders.length}</p>
+                        <p className="text-xs text-gray-400 mb-0.5">pedidos</p>
                       </div>
-                    </div>
-
-                    {/* DESGLOSE EGRESOS */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-5">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Desglose de gastos</p>
-                      <div className="space-y-2">
-                        {[
-                          { label: "Insumos operativos", value: comprasInsumos },
-                          { label: "Gastos fijos", value: gastosFijos },
-                          { label: "Personal", value: gastosPersonal },
-                          { label: "Marketing", value: gastosMarketing },
-                        ].map(({ label, value }) => (
-                          <div key={label} className="flex items-center gap-3">
-                            <span className="text-xs text-gray-500 flex-1">{label}</span>
-                            <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                              <div
-                                className="h-full bg-gray-400 rounded-full"
-                                style={{ width: totalCompras > 0 ? `${(value / totalCompras) * 100}%` : '0%' }}
-                              />
-                            </div>
-                            <span className="text-xs font-semibold text-gray-700 w-20 text-right">S/ {value.toFixed(0)}</span>
-                          </div>
-                        ))}
-                        <div className="pt-2 mt-1 border-t border-gray-100 flex justify-between items-center">
-                          <span className="text-xs font-bold text-gray-700">Total gastos</span>
-                          <span className="text-sm font-black text-gray-900">S/ {totalCompras.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  {/* Aviso */}
-                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                    <p className="text-xs font-bold text-amber-700 mb-1">Registra todas tus compras para ver datos reales</p>
-                    <p className="text-xs text-amber-600">
-                      Si no has registrado compras de ingredientes (pollo, lechuga, pan, salsas, gas, etc.), tu utilidad estará inflada.
-                      Ve a <strong>Compras y Gastos</strong> y registra cada gasto.
-                    </p>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* COMPRAS Y GASTOS */}
-            {financialSection === "purchases" && (
-              <>
-                {(() => {
-                  // Filtrar inventario usando LOS MISMOS FILTROS del Dashboard
-                  let filteredInventory = inventory;
-
-                  // Aplicar el mismo filtro de fechas que usa el Dashboard
-                  if (isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo) {
-                    const fromDate = new Date(dashboardDateFrom + "T00:00:00-05:00");
-                    const toDate = new Date(dashboardDateTo + "T23:59:59-05:00");
-                    filteredInventory = filteredInventory.filter((purchase: any) => {
-                      const purchaseDate = getPeruDate(purchase.purchaseDate);
-                      return purchaseDate >= fromDate && purchaseDate <= toDate;
-                    });
-                  }
-
-                  // Filtro por categoría
-                  if (inventoryCategoryFilter !== "all") {
-                    const purchaseCategory = (purchase: any) => purchase.category || "operativos";
-                    filteredInventory = filteredInventory.filter((purchase: any) => {
-                      return purchaseCategory(purchase) === inventoryCategoryFilter;
-                    });
-                  }
-
-                  // Filtro por búsqueda en tiempo real (nombre, proveedor, método de pago)
-                  if (inventorySearchTerm) {
-                    const searchLower = inventorySearchTerm.toLowerCase();
-                    filteredInventory = filteredInventory.filter((purchase: any) => {
-                      const hasMatchingProduct = purchase.items.some((item: any) =>
-                        item.productName.toLowerCase().includes(searchLower)
-                      );
-                      const hasMatchingSupplier = purchase.supplier?.toLowerCase().includes(searchLower);
-                      const hasMatchingPhone = purchase.supplierPhone?.includes(inventorySearchTerm);
-                      const hasMatchingPayment = purchase.paymentMethod?.toLowerCase().includes(searchLower);
-
-                      return hasMatchingProduct || hasMatchingSupplier || hasMatchingPhone || hasMatchingPayment;
-                    });
-                  }
-
-                  // Filtro por estado de liquidación
-                  if (liquidadoFilter !== 'all') {
-                    filteredInventory = filteredInventory.filter((purchase: any) =>
-                      liquidadoFilter === 'liquidado' ? !!purchase.liquidado : !purchase.liquidado
-                    );
-                  }
-
-                  return (
-                    <>
-                <div className="mb-6">
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
-                    <h3 className="text-2xl font-bold text-gray-900">💰 Compras y Gastos</h3>
-
-                    {/* Indicador de filtro sincronizado */}
-                    {isDashboardDateFiltered && dashboardDateFrom && dashboardDateTo && (
-                      <div className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-2 text-xs text-gray-500">
-                        Filtrado: {new Date(dashboardDateFrom + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} — {new Date(dashboardDateTo + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Header con botón Nueva Compra */}
-                  <div className="flex justify-end items-center mb-4">
-                    <button
-                      onClick={() => {
-                        setShowInventoryModal(true);
-                        setProductSearchTerms([""]);
-                      }}
-                      className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-bold transition-all"
-                    >
-                      + Nueva Compra
-                    </button>
-                  </div>
-                </div>
-
-                {/* ========== HISTORIAL DE COMPRAS ========== */}
-                  <>
-                    {/* Resumen por categoría + estado de liquidación */}
-                    {(() => {
-                      const operativos = filteredInventory.filter(p => (p.category || "operativos") === "operativos").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const fijos = filteredInventory.filter(p => (p.category || "operativos") === "fijos").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const personal = filteredInventory.filter(p => (p.category || "operativos") === "personal").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const marketing = filteredInventory.filter(p => (p.category || "operativos") === "marketing").reduce((sum, p) => sum + p.totalAmount, 0);
-                      const total = filteredInventory.reduce((sum, p) => sum + p.totalAmount, 0);
-                      const pendiente = filteredInventory.filter((p: any) => !p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
-                      const liquidadoTotal = filteredInventory.filter((p: any) => !!p.liquidado).reduce((s: number, p: any) => s + p.totalAmount, 0);
-                      const nPendiente = filteredInventory.filter((p: any) => !p.liquidado).length;
-                      const nLiquidado = filteredInventory.filter((p: any) => !!p.liquidado).length;
-
-                      return (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                          {/* Categorías */}
-                          <div className="bg-white border border-gray-100 rounded-xl p-4 col-span-2 lg:col-span-2">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Gastos por categoría</p>
-                            <div className="space-y-2">
-                              {[
-                                { label: "Operativos", value: operativos },
-                                { label: "Fijos", value: fijos },
-                                { label: "Personal", value: personal },
-                                { label: "Marketing", value: marketing },
-                              ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-2">
-                                  <span className="text-xs text-gray-500 w-24">{label}</span>
-                                  <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                                    <div
-                                      className="h-full bg-gray-400 rounded-full"
-                                      style={{ width: total > 0 ? `${(value / total) * 100}%` : '0%' }}
-                                    />
-                                  </div>
-                                  <span className="text-xs font-semibold text-gray-700 w-20 text-right">S/ {value.toFixed(0)}</span>
-                                </div>
-                              ))}
-                              <div className="pt-2 border-t border-gray-100 flex justify-between">
-                                <span className="text-xs font-bold text-gray-700">Total</span>
-                                <span className="text-sm font-black text-gray-900">S/ {total.toFixed(2)}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Pendiente reembolso */}
-                          <div className="bg-white border border-amber-100 rounded-xl p-4">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Pendiente</p>
-                            <p className="text-2xl font-black text-amber-600">S/ {pendiente.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-2">{nPendiente} gasto{nPendiente !== 1 ? 's' : ''} sin liquidar</p>
-                          </div>
-
-                          {/* Liquidado */}
-                          <div className="bg-white border border-emerald-100 rounded-xl p-4">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Liquidado</p>
-                            <p className="text-2xl font-black text-emerald-600">S/ {liquidadoTotal.toFixed(2)}</p>
-                            <p className="text-xs text-gray-400 mt-2">{nLiquidado} gasto{nLiquidado !== 1 ? 's' : ''} reembolsado{nLiquidado !== 1 ? 's' : ''}</p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Filtros */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <button
-                        onClick={() => setInventoryCategoryFilter("all")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "all"
-                            ? "bg-fuchsia-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        Todos
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("operativos")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "operativos"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        🍖 Operativos
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("fijos")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "fijos"
-                            ? "bg-purple-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        🏢 Fijos
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("personal")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "personal"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        👥 Personal
-                      </button>
-                      <button
-                        onClick={() => setInventoryCategoryFilter("marketing")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          inventoryCategoryFilter === "marketing"
-                            ? "bg-orange-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        📢 Marketing
-                      </button>
-                      {/* Separador visual */}
-                      <span className="w-px bg-gray-200 self-stretch mx-1" />
-                      <button
-                        onClick={() => setLiquidadoFilter('all')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          liquidadoFilter === 'all'
-                            ? "bg-gray-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        Todos los estados
-                      </button>
-                      <button
-                        onClick={() => setLiquidadoFilter('pendiente')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          liquidadoFilter === 'pendiente'
-                            ? "bg-amber-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        ⏳ Pendientes
-                      </button>
-                      <button
-                        onClick={() => setLiquidadoFilter('liquidado')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                          liquidadoFilter === 'liquidado'
-                            ? "bg-emerald-600 text-white"
-                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                        }`}
-                      >
-                        ✅ Liquidados
-                      </button>
-                    </div>
-
-                {/* Buscador en tiempo real */}
-                <div className="mb-4">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="🔍 Buscar por producto, proveedor, teléfono o método de pago..."
-                      value={inventorySearchTerm}
-                      onChange={(e) => setInventorySearchTerm(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none text-sm"
-                    />
-                    {inventorySearchTerm && (
-                      <button
-                        onClick={() => setInventorySearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-lg font-bold"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                  {inventorySearchTerm && (
-                    <p className="text-xs text-gray-700 mt-2">
-                      📊 Mostrando {filteredInventory.length} resultado{filteredInventory.length !== 1 ? 's' : ''}
-                    </p>
-                  )}
-                </div>
-
-                {/* Inventory List - Formato Tabla Excel */}
-                <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
-                  {filteredInventory.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-xl text-gray-400">
-                        {inventorySearchTerm ? `No se encontraron resultados para "${inventorySearchTerm}"` : 'No hay compras en este mes'}
+                      <p className="text-xs text-gray-500 mt-1">Ticket <strong className="text-gray-800 tabular-nums">S/ {ticket.toFixed(2)}</strong></p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {totalClientes} cliente{totalClientes !== 1 ? "s" : ""}
+                        {clientesRepeat > 0 && <span className="text-emerald-600 ml-1">· {clientesRepeat} repiten</span>}
                       </p>
                     </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-gray-100">
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-left">FECHA</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-left">PROVEEDOR</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">CATEGORÍA</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-left">PRODUCTO</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">CANTIDAD</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">UND</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">PAGO</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-right">TOTAL</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-right">COSTO UNITARIO</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">ESTADO</th>
-                            <th className="border border-gray-200 px-3 py-2 text-xs font-bold text-gray-400 text-center">ACCIONES</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredInventory.map((purchase) =>
-                            purchase.items.map((item: any, itemIdx: number) => (
-                              <tr key={`${purchase.id}-${itemIdx}`} className="hover:bg-gray-50 transition-all">
-                                <td className="border border-gray-200 px-3 py-2 text-xs text-gray-500">
-                                  {new Date(purchase.purchaseDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                                </td>
-                                <td className="border border-gray-200 px-3 py-2">
-                                  <p className="text-xs font-bold text-gray-600">{purchase.supplier}</p>
-                                  {purchase.supplierPhone && <p className="text-xs text-gray-500">{purchase.supplierPhone}</p>}
-                                </td>
-                                <td className="border border-gray-200 px-3 py-2 text-center">
-                                  {(() => {
-                                    const category = purchase.category || "operativos";
-                                    const categoryConfig: Record<string, {icon: string, color: string, label: string}> = {
-                                      operativos: { icon: "🍖", color: "text-blue-400", label: "Operativos" },
-                                      fijos: { icon: "🏢", color: "text-purple-400", label: "Fijos" },
-                                      personal: { icon: "👥", color: "text-green-400", label: "Personal" },
-                                      marketing: { icon: "📢", color: "text-orange-400", label: "Marketing" }
-                                    };
-                                    const config = categoryConfig[category] || categoryConfig.operativos;
-                                    return (
-                                      <span className={`text-xs font-bold ${config.color}`}>
-                                        {config.icon} {config.label}
-                                      </span>
-                                    );
-                                  })()}
-                                </td>
-                                <td className="border border-gray-200 px-3 py-2 text-xs text-gray-800 font-bold">
-                                  {item.productName || '-'}
-                                </td>
-                                <td className="border border-gray-200 px-3 py-2 text-center text-xs text-gray-700">
-                                  {item.originalQuantity || item.quantity}
-                                </td>
-                                <td className="border border-gray-200 px-3 py-2 text-center text-xs text-gray-500">
-                                  {item.unit}
-                                </td>
-                                <td className="border border-gray-200 px-3 py-2 text-center text-xs text-gray-500 font-medium">
-                                  {purchase.paymentMethod === 'plin-yape' && 'PLIN-YAPE'}
-                                  {purchase.paymentMethod === 'efectivo' && 'EFECTIVO'}
-                                  {purchase.paymentMethod === 'transferencia' && 'TRANSFERENCIA'}
-                                  {purchase.paymentMethod === 'tarjeta' && 'TARJETA'}
-                                </td>
-                                {(() => {
-                                  // Operativos: unitCost=total pagado, total=costo/unidad (fórmula inversa)
-                                  // Marketing/Personal/Fijos: unitCost=costo/unidad, total=total pagado
-                                  const isOperativos = (purchase.category || "operativos") === "operativos";
-                                  const displayTotal = isOperativos ? item.unitCost : item.total;
-                                  const displayUnit  = isOperativos ? item.total    : item.unitCost;
-                                  return (
-                                    <>
-                                      <td className="border border-gray-200 px-3 py-2 text-right">
-                                        <p className="text-xs font-bold text-gray-700">S/ {displayTotal.toFixed(2)}</p>
-                                      </td>
-                                      <td className="border border-gray-200 px-3 py-2 text-right">
-                                        <p className="text-xs font-semibold text-gray-500">S/ {displayUnit.toFixed(2)}</p>
-                                      </td>
-                                    </>
-                                  );
-                                })()}
-                                {itemIdx === 0 ? (
-                                  <td
-                                    className="border border-gray-200 px-2 py-2 text-center"
-                                    rowSpan={purchase.items.length}
-                                  >
-                                    <button
-                                      onClick={() => toggleLiquidado(purchase.id, !!(purchase as any).liquidado)}
-                                      title={(purchase as any).liquidado ? 'Marcar como pendiente' : 'Marcar como liquidado'}
-                                      className={`flex flex-col items-center gap-0.5 mx-auto px-2 py-1.5 rounded-lg border transition-all active:scale-95 min-w-[80px] ${
-                                        (purchase as any).liquidado
-                                          ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
-                                          : 'border-amber-200 bg-amber-50 hover:bg-amber-100'
-                                      }`}
-                                    >
-                                      <span className="text-base leading-none">
-                                        {(purchase as any).liquidado ? '✅' : '⏳'}
-                                      </span>
-                                      <span className={`text-[10px] font-black uppercase leading-none mt-0.5 ${
-                                        (purchase as any).liquidado ? 'text-emerald-600' : 'text-amber-600'
-                                      }`}>
-                                        {(purchase as any).liquidado ? 'Liquidado' : 'Pendiente'}
-                                      </span>
-                                    </button>
-                                  </td>
-                                ) : null}
-                                <td className="border border-gray-200 px-3 py-2 text-center">
-                                  {itemIdx === 0 && (
-                                    <div className="flex items-center justify-center gap-2">
-                                      <button
-                                        onClick={() => {
-                                          setEditingPurchase(purchase);
-                                          setShowInventoryEditModal(true);
-                                        }}
-                                        className="text-amber-400 hover:text-amber-300 text-sm"
-                                        title="Editar"
-                                      >
-                                        ✏️
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteInventory(purchase.id)}
-                                        className="text-red-400 hover:text-red-300 text-sm font-bold"
-                                        title="Eliminar"
-                                      >
-                                        ✕
-                                      </button>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
+                  </div>
 
-                {/* Modal de Detalles */}
-                {showInventoryDetailModal && selectedPurchaseDetail && (
-                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-2xl font-black text-gray-700">Detalle de Compra</h3>
-                        <button
-                          onClick={() => setShowInventoryDetailModal(false)}
-                          className="text-gray-400 hover:text-gray-600 text-2xl"
-                        >
-                          ✕
-                        </button>
+                  {/* ══ ROW 2: VENTAS POR DÍA + CLIENTES & PAGOS ══ */}
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+
+                    {/* Ventas por día */}
+                    <div className="lg:col-span-3 bg-white border border-gray-200 rounded-xl p-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Ventas por día</p>
+                        {dailySalesArr.length > 1 && (
+                          <span className="text-xs text-gray-400">
+                            Promedio diario <strong className="text-gray-700 tabular-nums">S/ {(totalVentas / dailySalesArr.length).toFixed(0)}</strong>
+                          </span>
+                        )}
                       </div>
-
-                      {/* Información del Proveedor */}
-                      <div className="bg-gray-100 rounded-lg p-4 mb-4 border border-gray-200">
-                        <h4 className="text-sm font-bold text-gray-700 mb-3">📋 Información del Proveedor</h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-gray-400">Proveedor:</p>
-                            <p className="text-gray-800 font-bold">{selectedPurchaseDetail.supplier}</p>
-                          </div>
-                          {selectedPurchaseDetail.supplierRuc && (
-                            <div>
-                              <p className="text-gray-400">RUC:</p>
-                              <p className="text-gray-800 font-bold">{selectedPurchaseDetail.supplierRuc}</p>
-                            </div>
-                          )}
-                          {selectedPurchaseDetail.supplierPhone && (
-                            <div>
-                              <p className="text-gray-400">Teléfono:</p>
-                              <p className="text-gray-800 font-bold">{selectedPurchaseDetail.supplierPhone}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-gray-400">Fecha de Compra:</p>
-                            <p className="text-gray-800 font-bold">
-                              {new Date(selectedPurchaseDetail.purchaseDate).toLocaleDateString('es-PE', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-400">Método de Pago:</p>
-                            <p className="text-cyan-400 font-bold uppercase">{selectedPurchaseDetail.paymentMethod.replace('-', ' ')}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Productos Comprados */}
-                      <div className="bg-gray-100 rounded-lg p-4 mb-4 border border-cyan-500/30">
-                        <h4 className="text-sm font-bold text-cyan-400 mb-3">🛒 Productos Comprados</h4>
+                      {dailySalesArr.length === 0 ? (
+                        <p className="text-sm text-gray-400 py-8 text-center">Sin ventas en este período</p>
+                      ) : (
                         <div className="space-y-2">
-                          {selectedPurchaseDetail.items.map((item: any, idx: number) => {
-                            const isOperativos = (selectedPurchaseDetail.category || "operativos") === "operativos";
-                            const displayTotal = isOperativos ? item.unitCost : item.total;
-                            const displayUnit  = isOperativos ? item.total    : item.unitCost;
+                          {dailySalesArr.map((day: any) => {
+                            const barPct = (day.revenue / maxDayRev) * 100;
+                            const dateLabel = new Date(day.date + "T12:00:00").toLocaleDateString("es-PE", { weekday:"short", day:"2-digit", month:"short" });
                             return (
-                              <div key={idx} className="flex justify-between items-center bg-white rounded px-3 py-2">
-                                <div className="flex-1">
-                                  <p className="text-gray-800 font-bold text-sm">{item.productName}</p>
-                                  <p className="text-xs text-gray-400">
-                                    {item.originalQuantity || item.quantity} {item.unit} x S/ {displayUnit.toFixed(2)}
-                                  </p>
+                              <div key={day.date} className="flex items-center gap-3">
+                                <span className="text-xs text-gray-400 w-24 shrink-0 capitalize">{dateLabel}</span>
+                                <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
+                                  <div className="h-full bg-emerald-400 rounded transition-all duration-500 flex items-center"
+                                    style={{ width: `${Math.max(barPct, 1)}%`, paddingLeft: barPct > 12 ? "8px" : undefined }}>
+                                    {barPct > 12 && <span className="text-[10px] font-bold text-white whitespace-nowrap tabular-nums">S/ {day.revenue.toFixed(0)}</span>}
+                                  </div>
                                 </div>
-                                <p className="text-gray-700 font-bold">S/ {displayTotal.toFixed(2)}</p>
+                                {barPct <= 12 && <span className="text-xs font-bold text-gray-700 shrink-0 tabular-nums">S/ {day.revenue.toFixed(0)}</span>}
+                                <span className="text-[10px] text-gray-400 w-12 text-right shrink-0">{day.count} ped.</span>
                               </div>
                             );
                           })}
                         </div>
+                      )}
+                    </div>
+
+                    {/* Clientes + Pagos */}
+                    <div className="lg:col-span-2 flex flex-col gap-3">
+
+                      {/* Clientes */}
+                      <div className="bg-white border border-gray-200 rounded-xl p-4">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Clientes</p>
+                        <div className="grid grid-cols-3 gap-1 text-center mb-3">
+                          <div>
+                            <p className="text-xl font-black text-gray-900 tabular-nums">{totalClientes}</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Total únicos</p>
+                          </div>
+                          <div>
+                            <p className="text-xl font-black text-emerald-600 tabular-nums">{clientesRepeat}</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Vuelven</p>
+                          </div>
+                          <div>
+                            <p className="text-xl font-black text-blue-500 tabular-nums">{clientesNuevos}</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Nuevos</p>
+                          </div>
+                        </div>
+                        {totalClientes > 0 && (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                                style={{ width: `${(clientesRepeat / totalClientes) * 100}%` }} />
+                            </div>
+                            <span className="text-xs font-bold text-emerald-600 shrink-0">
+                              {totalClientes > 0 ? ((clientesRepeat / totalClientes) * 100).toFixed(0) : 0}% retención
+                            </span>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Total y Notas */}
-                      <div className="bg-gray-100 rounded-lg p-4 border border-amber-500/30">
-                        <div className="flex justify-between items-center mb-3">
-                          <p className="text-gray-400">Total de la Compra:</p>
-                          <p className="text-2xl font-black text-amber-400">S/ {selectedPurchaseDetail.totalAmount.toFixed(2)}</p>
-                        </div>
-                        {selectedPurchaseDetail.notes && (
-                          <div className="border-t border-gray-200 pt-3 mt-3">
-                            <p className="text-gray-400 text-xs mb-1">Notas:</p>
-                            <p className="text-gray-700 text-sm">{selectedPurchaseDetail.notes}</p>
+                      {/* Métodos de pago */}
+                      <div className="bg-white border border-gray-200 rounded-xl p-4 flex-1">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Métodos de pago</p>
+                        {Object.keys(paymentMap).length === 0 ? (
+                          <p className="text-xs text-gray-400 text-center py-3">Sin datos</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {Object.entries(paymentMap)
+                              .sort((a: any, b: any) => b[1].amount - a[1].amount)
+                              .map(([pm, data]: any) => {
+                                const pct = totalVentas > 0 ? (data.amount / totalVentas) * 100 : 0;
+                                const label =
+                                  pm === "anticipado"    ? "Transf. / Yape" :
+                                  pm === "contraentrega" ? "Contraentrega" :
+                                  pm === "efectivo"      ? "Efectivo" : pm;
+                                return (
+                                  <div key={pm} className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 w-28 shrink-0 truncate">{label}</span>
+                                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                      <div className="h-full bg-blue-400 rounded-full transition-all duration-500"
+                                        style={{ width: `${pct}%` }} />
+                                    </div>
+                                    <span className="text-[10px] text-gray-400 w-8 text-right shrink-0">{pct.toFixed(0)}%</span>
+                                    <span className="text-xs font-bold text-gray-700 w-16 text-right shrink-0 tabular-nums">S/ {data.amount.toFixed(0)}</span>
+                                  </div>
+                                );
+                              })}
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
-                )}
-                  </>
-                </>
-                  );
-                })()}
-              </>
+
+                  {/* ══ ROW 3: GASTOS + TOP PRODUCTOS + CAJA ══ */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+                    {/* Desglose gastos */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Desglose de gastos</p>
+                      {totalCompras === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-6">Sin gastos en este período</p>
+                      ) : (
+                        <div className="space-y-2.5">
+                          {[
+                            { label:"Insumos / Op.",  value:comprasInsumos, bar:"bg-blue-400"   },
+                            { label:"Fijos",           value:gastosFijos,    bar:"bg-violet-400" },
+                            { label:"Personal",        value:gastosPersonal, bar:"bg-green-400"  },
+                            { label:"Marketing",       value:gastosMarketing,bar:"bg-orange-400" },
+                          ].filter(c => c.value > 0).map(c => {
+                            const pct = (c.value / totalCompras) * 100;
+                            return (
+                              <div key={c.label} className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500 w-24 shrink-0">{c.label}</span>
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className={`h-full ${c.bar} rounded-full transition-all duration-500`}
+                                    style={{ width: `${pct}%` }} />
+                                </div>
+                                <span className="text-[10px] text-gray-400 w-7 text-right shrink-0">{pct.toFixed(0)}%</span>
+                                <span className="text-xs font-bold text-gray-800 w-20 text-right shrink-0 tabular-nums">S/ {c.value.toFixed(2)}</span>
+                              </div>
+                            );
+                          })}
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
+                            <span className="text-xs font-bold text-gray-500">Total</span>
+                            <span className="text-sm font-black text-gray-900 tabular-nums">S/ {totalCompras.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Top 5 productos */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Top productos vendidos</p>
+                      {topProds.length === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-6">Sin ventas en este período</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {topProds.map(([name, qty]: any, i: number) => {
+                            const maxQty = (topProds[0] as any)[1];
+                            return (
+                              <div key={name} className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-gray-300 w-4 shrink-0 text-right">{i + 1}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-semibold text-gray-700 truncate pr-2">{name}</span>
+                                    <span className="text-xs font-bold text-gray-500 shrink-0 tabular-nums">{qty} und.</span>
+                                  </div>
+                                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                                      style={{ width: `${(qty / maxQty) * 100}%` }} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Caja corriente */}
+                    <div className={`border rounded-xl p-4 ${cajaActual >= 0 ? "bg-emerald-50 border-emerald-100" : "bg-red-50 border-red-100"}`}>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Caja corriente</p>
+                      <p className={`text-2xl font-black tabular-nums mb-3 ${cajaActual >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                        S/ {cajaActual.toFixed(2)}
+                      </p>
+                      {cajaData ? (
+                        <div className="space-y-1.5 text-xs text-gray-500 mb-3">
+                          <div className="flex justify-between">
+                            <span>Base · {cajaData.snapshotDate}</span>
+                            <span className="font-medium text-gray-700 tabular-nums">S/ {cajaSnapshot.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>+ Ventas</span>
+                            <span className="text-emerald-600 font-medium tabular-nums">+S/ {ventasDesdeSnapshot.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>− Pagos</span>
+                            <span className="text-red-500 font-medium tabular-nums">−S/ {pagosDesdeSnapshot.toFixed(2)}</span>
+                          </div>
+                          {nPorPagar > 0 && (
+                            <div className="flex justify-between pt-1 border-t border-gray-200/70">
+                              <span className="text-amber-600">Por pagar ({nPorPagar})</span>
+                              <span className="text-amber-600 font-medium tabular-nums">S/ {porPagar.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 mb-3">Configura el saldo inicial para llevar la caja.</p>
+                      )}
+                      {!cajaEditMode ? (
+                        <button
+                          onClick={() => { setCajaEditBalance(cajaData ? String(cajaData.snapshotBalance) : ""); setCajaEditDate(cajaData?.snapshotDate || new Date().toLocaleDateString("en-CA")); setCajaEditMode(true); }}
+                          className="w-full py-1.5 border border-gray-200 bg-white rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-800 transition-all">
+                          {cajaData ? "Ajustar base" : "Configurar caja"}
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <input type="number" step="0.01" value={cajaEditBalance} onChange={e => setCajaEditBalance(e.target.value)}
+                            placeholder="Saldo base S/" className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none" />
+                          <input type="date" value={cajaEditDate} onChange={e => setCajaEditDate(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none" />
+                          <div className="flex gap-2">
+                            <button onClick={saveCajaSnapshot} className="flex-1 bg-gray-900 text-white py-1.5 rounded-lg text-xs font-bold">Guardar</button>
+                            <button onClick={() => setCajaEditMode(false)} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-500 rounded-lg text-xs">✕</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })()}
+
+            {/* COMPRAS Y GASTOS */}
+            {/* COMPRAS Y GASTOS */}
+            {financialSection === "purchases" && (() => {
+              const catLabel: Record<string, string> = {
+                operativos:"Costos", fijos:"Gastos", marketing:"Gastos", personal:"Personal", gastos:"Gastos",
+              };
+              const catColor: Record<string, string> = {
+                operativos:"bg-blue-100 text-blue-700", fijos:"bg-violet-100 text-violet-700",
+                marketing:"bg-orange-100 text-orange-700", personal:"bg-green-100 text-green-700", gastos:"bg-violet-100 text-violet-700",
+              };
+              const pmLabel: Record<string, string> = {
+                "plin-yape":"Yape/Plin", efectivo:"Efectivo", transferencia:"Transferencia", tarjeta:"Tarjeta",
+              };
+
+              // Filtro por tab activo
+              let filtered = [...inventory].sort((a: any, b: any) =>
+                (b.purchaseDate || "").localeCompare(a.purchaseDate || "")
+              );
+              if (inventoryCategoryFilter === "operativos") {
+                filtered = filtered.filter((p: any) => (p.category || "operativos") === "operativos");
+              } else if (inventoryCategoryFilter === "fijos") {
+                filtered = filtered.filter((p: any) => ["fijos","marketing","gastos"].includes(p.category || "operativos"));
+              } else if (inventoryCategoryFilter === "personal") {
+                filtered = filtered.filter((p: any) => (p.category || "operativos") === "personal");
+              }
+
+              const total = filtered.reduce((s: number, p: any) => s + (p.totalAmount || 0), 0);
+              const tabs = [
+                { key:"all",        label:"Todos"    },
+                { key:"operativos", label:"Costos"   },
+                { key:"fijos",      label:"Gastos"   },
+                { key:"personal",   label:"Personal" },
+              ];
+
+              return (
+                <div className="space-y-4">
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-0.5 bg-gray-100 rounded-lg p-0.5">
+                      {tabs.map(tab => (
+                        <button key={tab.key}
+                          onClick={() => setInventoryCategoryFilter(tab.key)}
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                            inventoryCategoryFilter === tab.key
+                              ? "bg-white text-gray-900 shadow-sm"
+                              : "text-gray-500 hover:text-gray-700"
+                          }`}>
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-black text-gray-700 tabular-nums">S/ {total.toFixed(2)}</span>
+                      <button
+                        onClick={() => { setShowInventoryModal(true); setProductSearchTerms([""]); }}
+                        className="bg-gray-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-800 transition-all">
+                        + Nuevo registro
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Lista */}
+                  {filtered.length === 0 ? (
+                    <div className="py-16 text-center text-sm text-gray-400">
+                      Sin registros en esta categoría
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {filtered.map((purchase: any) => {
+                        const cat   = purchase.category || "operativos";
+                        const desc  = purchase.items?.[0]?.productName || purchase.supplier || "—";
+                        const extra = purchase.items?.length > 1 ? ` +${purchase.items.length - 1}` : "";
+                        const date  = (() => {
+                          try { return new Date(purchase.purchaseDate + "T12:00:00").toLocaleDateString("es-PE", { day:"2-digit", month:"short" }); }
+                          catch { return purchase.purchaseDate || "—"; }
+                        })();
+                        const pm = pmLabel[purchase.paymentMethod as string] || purchase.paymentMethod || "—";
+                        return (
+                          <div key={purchase.id}
+                            className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-100 rounded-xl hover:border-gray-200 transition-all group">
+                            <span className="text-xs text-gray-400 w-14 shrink-0 tabular-nums">{date}</span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 ${catColor[cat] || "bg-gray-100 text-gray-500"}`}>
+                              {catLabel[cat] || cat}
+                            </span>
+                            <span className="flex-1 text-sm font-medium text-gray-800 truncate">
+                              {desc}{extra && <span className="text-gray-400 text-xs ml-1">{extra} más</span>}
+                            </span>
+                            {purchase.supplier && purchase.items?.[0]?.productName && purchase.items[0].productName !== purchase.supplier && (
+                              <span className="text-xs text-gray-400 hidden md:inline truncate max-w-[120px] shrink-0">{purchase.supplier}</span>
+                            )}
+                            <span className="text-xs text-gray-400 w-24 text-right shrink-0 hidden sm:inline">{pm}</span>
+                            <span className={`text-sm font-black w-20 text-right shrink-0 tabular-nums ${(purchase as any).liquidado ? "text-gray-400 line-through" : "text-gray-900"}`}>
+                              S/ {(purchase.totalAmount || 0).toFixed(2)}
+                            </span>
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                              <button
+                                onClick={() => { setEditingPurchase(purchase); setShowInventoryEditModal(true); }}
+                                title="Editar"
+                                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-300 hover:text-gray-600 transition-all text-xs">
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => handleDeleteInventory(purchase.id)}
+                                title="Eliminar"
+                                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 font-bold transition-all text-xs">
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+
+            {/* COSTOS Y MÁRGENES */}
+            {financialSection === "costos" && (
+              <CostosMargenesAdmin orders={orders} />
             )}
 
             {/* PRODUCTOS DE VENTA */}

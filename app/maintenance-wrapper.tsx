@@ -14,6 +14,11 @@ export default function MaintenanceWrapper({ children }: { children: React.React
     setIsChecking(false);
   }, []);
 
+  // Rutas de panel: siempre accesibles, sin pantalla de carga ni mantenimiento
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/pedidos") || pathname?.startsWith("/ruleta") || pathname?.startsWith("/mundial2026")) {
+    return <>{children}</>;
+  }
+
   // Mientras se verifica el dominio, mostrar pantalla vacía
   if (isChecking) {
     return (
@@ -21,11 +26,6 @@ export default function MaintenanceWrapper({ children }: { children: React.React
         <div className="text-yellow-400 text-xl font-bold animate-pulse">Cargando...</div>
       </div>
     );
-  }
-
-  // /admin, /ruleta y /mundial2026 siempre accesibles aunque haya mantenimiento
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/ruleta") || pathname?.startsWith("/mundial2026")) {
-    return <>{children}</>;
   }
 
   // Si estamos en modo mantenimiento, mostrar el modal

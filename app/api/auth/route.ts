@@ -1,12 +1,46 @@
 import { NextResponse } from "next/server";
 
 const isProduction = process.env.VERCEL === "1";
+
+// Admin credentials
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-// En producción ADMIN_PASSWORD debe estar en Vercel → Environment Variables.
-// En dev local se permite el fallback. Si no está configurado en producción, el login queda bloqueado intencionalmente.
 const ADMIN_PASSWORD = isProduction
   ? (process.env.ADMIN_PASSWORD ?? "")
-  : (process.env.ADMIN_PASSWORD || "santo2024");
+  : (process.env.ADMIN_PASSWORD || "dilema2026");
+
+// Operator credentials (solo pedidos)
+const OPERATOR_USERNAME = process.env.OPERATOR_USERNAME || "pedidos";
+const OPERATOR_PASSWORD = isProduction
+  ? (process.env.OPERATOR_PASSWORD ?? "")
+  : (process.env.OPERATOR_PASSWORD || "santo2026");
+
+type Role = "admin" | "operator";
+
+// Token format: base64(username:role:timestamp)
+// Backwards compat: base64(username:timestamp) → role = "admin"
+function decodeToken(token: string): { username: string; role: Role } | null {
+  try {
+    const decoded = Buffer.from(token, "base64").toString();
+    const parts = decoded.split(":");
+    if (parts.length === 3) {
+      const [username, role] = parts;
+      if (role !== "admin" && role !== "operator") return null;
+      return { username, role: role as Role };
+    }
+    // Backwards compat: old tokens have 2 parts
+    if (parts.length === 2) {
+      const [username] = parts;
+      if (username === ADMIN_USERNAME) return { username, role: "admin" };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function makeToken(username: string, role: Role): string {
+  return Buffer.from(`${username}:${role}:${Date.now()}`).toString("base64");
+}
 
 // POST - Login
 export async function POST(request: Request) {
@@ -18,20 +52,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Usuario y contraseña son requeridos" }, { status: 400 });
     }
 
-    // Verificar credenciales
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // En una aplicación real, aquí se crearía un JWT o session token
-      // Por simplicidad, retornamos un token simple
-      const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
-
       return NextResponse.json({
         success: true,
-        token,
-        message: "Login exitoso"
+        token: makeToken(username, "admin"),
+        role: "admin",
+        message: "Login exitoso",
       });
-    } else {
-      return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
+
+    if (username === OPERATOR_USERNAME && password === OPERATOR_PASSWORD) {
+      return NextResponse.json({
+        success: true,
+        token: makeToken(username, "operator"),
+        role: "operator",
+        message: "Login exitoso",
+      });
+    }
+
+    return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
   } catch (error) {
     console.error("Error en login:", error);
     return NextResponse.json({ error: "Error en el servidor" }, { status: 500 });
@@ -48,17 +87,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    // Verificación simple del token
-    // En producción, aquí verificarías un JWT
-    try {
-      const decoded = Buffer.from(token, 'base64').toString();
-      const [username] = decoded.split(':');
-
-      if (username === ADMIN_USERNAME) {
-        return NextResponse.json({ authenticated: true, username });
-      }
-    } catch {
+    const decoded = decodeToken(token);
+    if (!decoded) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    // Verify username matches known accounts
+    if (
+      decoded.username === ADMIN_USERNAME ||
+      decoded.username === OPERATOR_USERNAME
+    ) {
+      return NextResponse.json({
+        authenticated: true,
+        username: decoded.username,
+        role: decoded.role,
+      });
     }
 
     return NextResponse.json({ authenticated: false }, { status: 401 });

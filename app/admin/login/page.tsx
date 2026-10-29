@@ -125,7 +125,7 @@ export default function LoginPage() {
         {process.env.NODE_ENV === "development" && (
           <div className="mt-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
             <p className="text-yellow-400 text-xs text-center font-medium">
-              DEV: Usuario: admin / Contraseña: santo2024
+              DEV: Usuario: admin / Contraseña: dilema2026
             </p>
           </div>
         )}

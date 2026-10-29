@@ -265,6 +265,17 @@ export async function POST(request: Request) {
     await storage.saveOrder(newOrder, existingOrders);
     console.log("💾 Pedido guardado. ID:", newOrder.id, "| Total órdenes:", existingOrders.length + 1);
 
+    // Registrar la última dirección usada — solo después de saveOrder exitoso.
+    // Así checkouts abandonados o pedidos fallidos no sobreescriben la dirección.
+    if (phone && address) {
+      try {
+        await storage.updateCustomerLastAddress(phone, address);
+      } catch (addrErr) {
+        // No fatal — el pedido ya fue guardado
+        console.error("⚠️ No se pudo actualizar lastUsedAddress:", addrErr);
+      }
+    }
+
     return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {
     console.error("❌ Error al crear pedido:", error);

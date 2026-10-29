@@ -33,6 +33,7 @@ let customerProfilesFilePath: string = '';
 let menuPricesFilePath: string = '';
 let cajaFilePath: string = '';
 let birthdaySettingsFilePath: string = '';
+let productCostsFilePath: string = '';
 let sorteoMundialParticipantesFilePath: string = '';
 let sorteoMundialConfigFilePath: string = '';
 let sorteoMundialMetricasFilePath: string = '';
@@ -63,6 +64,7 @@ if (!isProduction) {
   sorteoMundialParticipantesFilePath = path.join(dataDir, 'sorteo-mundial-participantes.json');
   sorteoMundialConfigFilePath = path.join(dataDir, 'sorteo-mundial-config.json');
   sorteoMundialMetricasFilePath = path.join(dataDir, 'sorteo-mundial-metricas.json');
+  productCostsFilePath = path.join(dataDir, 'product-costs.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -128,6 +130,9 @@ function ensureDataDirectory() {
     if (!fs.existsSync(sorteoMundialMetricasFilePath)) {
       fs.writeFileSync(sorteoMundialMetricasFilePath, JSON.stringify({ impresiones: 0, participaciones: 0, porDia: {} }, null, 2));
     }
+    if (!fs.existsSync(productCostsFilePath)) {
+      fs.writeFileSync(productCostsFilePath, JSON.stringify([], null, 2));
+    }
   }
 }
 
@@ -176,6 +181,7 @@ interface InventoryPurchase {
   supplierRuc?: string;
   supplierPhone?: string;
   paymentMethod: string;
+  category?: string; // dark kitchen: insumos|bebidas|empaques|delivery|personal|alquiler|servicios|publicidad|mantenimiento|otros + legacy: operativos|fijos|marketing
   items: Array<{
     productName: string;
     quantity: number;
@@ -187,6 +193,10 @@ interface InventoryPurchase {
   }>;
   totalAmount: number;
   notes?: string;
+  observaciones?: string;
+  comprobanteType?: string; // factura|boleta|recibo|sin_comprobante
+  comprobanteNum?: string;
+  receiptUrl?: string;
   purchaseDate: string;
   createdAt: string;
   liquidado?: boolean;
@@ -337,7 +347,8 @@ export const storage = {
 
   // Buscar cliente por teléfono — devuelve nombre (más frecuente) y historial de direcciones
   async findCustomerByPhone(phone: string): Promise<{ found: boolean; name?: string; addresses?: string[] }> {
-    const orders = await this.getOrders();
+    const [orders, profiles] = await Promise.all([this.getOrders(), this.getCustomerProfiles()]);
+
     const customerOrders = orders
       .filter((o: any) => o.phone === phone && o.name && o.address)
       .sort((a: any, b: any) => {
@@ -357,20 +368,36 @@ export const storage = {
       nameCounts[n] = (nameCounts[n] || 0) + 1;
     }
     const topName = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0][0];
-    // Buscar la forma original (con capitalización) del nombre más frecuente
     const canonicalName = customerOrders.find(
       (o: any) => o.name.trim().toUpperCase() === topName
     )!.name;
 
-    // Deduplicar direcciones manteniendo orden cronológico inverso (más reciente primero)
+    // Deduplicar historial de direcciones (orden cronológico inverso)
     const seen = new Set<string>();
-    const addresses: string[] = [];
+    const historicalAddresses: string[] = [];
     for (const o of customerOrders) {
       const addr = o.address.trim();
       if (addr && !seen.has(addr)) {
         seen.add(addr);
-        addresses.push(addr);
+        historicalAddresses.push(addr);
       }
+    }
+
+    // La última dirección usada en un pedido confirmado tiene prioridad absoluta.
+    // Se guarda en el perfil del cliente solo después de saveOrder exitoso.
+    const profile = profiles.find((p: any) => p.phone === phone);
+    const lastUsedAddress: string | undefined = profile?.lastUsedAddress?.trim();
+
+    let addresses: string[];
+    if (lastUsedAddress && lastUsedAddress !== '') {
+      // Poner lastUsedAddress primero; agregar el resto del historial sin duplicarla
+      addresses = [
+        lastUsedAddress,
+        ...historicalAddresses.filter(a => a !== lastUsedAddress),
+      ];
+    } else {
+      // Sin perfil o sin lastUsedAddress → caer al historial (compatibilidad con clientes antiguos)
+      addresses = historicalAddresses;
     }
 
     return {
@@ -378,6 +405,26 @@ export const storage = {
       name: canonicalName,
       addresses,
     };
+  },
+
+  // Actualizar la última dirección utilizada en un pedido confirmado
+  async updateCustomerLastAddress(phone: string, address: string): Promise<void> {
+    if (!phone || !address?.trim()) return;
+    const profiles = await this.getCustomerProfiles();
+    const idx = profiles.findIndex((p: any) => p.phone === phone);
+    const now = new Date().toISOString();
+    if (idx >= 0) {
+      profiles[idx] = { ...profiles[idx], lastUsedAddress: address.trim(), updatedAt: now };
+    } else {
+      profiles.unshift({ phone, lastUsedAddress: address.trim(), tags: [], updatedAt: now });
+    }
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('customerProfiles', profiles);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(customerProfilesFilePath, JSON.stringify(profiles, null, 2));
+    }
   },
 
   // Buscar cliente por DNI
@@ -1265,4 +1312,60 @@ export const storage = {
       fs.writeFileSync(sorteoMundialMetricasFilePath, JSON.stringify(data, null, 2));
     }
   },
+  // ========== COSTOS DE PRODUCTOS ==========
+
+  async getProductCosts(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      const data = await redis.get<any[]>('product-costs');
+      return data || [];
+    } else {
+      ensureDataDirectory();
+      const raw = fs.readFileSync(productCostsFilePath, 'utf-8');
+      return JSON.parse(raw);
+    }
+  },
+
+  async saveProductCost(record: any): Promise<any> {
+    const records = await this.getProductCosts();
+    records.unshift(record);
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('product-costs', records);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(productCostsFilePath, JSON.stringify(records, null, 2));
+    }
+    return record;
+  },
+
+  async updateProductCost(id: string, updates: any): Promise<any | null> {
+    const records = await this.getProductCosts();
+    const idx = records.findIndex((r: any) => r.id === id);
+    if (idx === -1) return null;
+    records[idx] = { ...records[idx], ...updates };
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('product-costs', records);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(productCostsFilePath, JSON.stringify(records, null, 2));
+    }
+    return records[idx];
+  },
+
+  async deleteProductCost(id: string): Promise<boolean> {
+    const records = await this.getProductCosts();
+    const filtered = records.filter((r: any) => r.id !== id);
+    if (filtered.length === records.length) return false;
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      await redis.set('product-costs', filtered);
+    } else {
+      ensureDataDirectory();
+      fs.writeFileSync(productCostsFilePath, JSON.stringify(filtered, null, 2));
+    }
+    return true;
+  },
+
 };
