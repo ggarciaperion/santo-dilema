@@ -870,7 +870,7 @@ export default function MenuPage() {
 
               return (
                 <div key={product.id}
-                  onClick={() => { if (!soldOut && isOpen) openAlitasModal(product.id); }}
+                  onClick={() => { if (!soldOut) openAlitasModal(product.id); }}
                   className={`relative bg-gray-900 rounded-2xl border-2 overflow-hidden transition-all
                     ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:border-red-400/60 hover:-translate-y-1"}
                     ${discount ? "border-amber-400/70" : "border-red-400/30"}`}
@@ -902,7 +902,7 @@ export default function MenuPage() {
                       ) : (
                         <span className="text-lg font-black text-amber-400">S/ {basePrice.toFixed(2)}</span>
                       )}
-                      {!soldOut && isOpen && (
+                      {!soldOut && (
                         <button onClick={e => { e.stopPropagation(); openAlitasModal(product.id); }}
                           className="w-9 h-9 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95">
                           +
@@ -983,7 +983,7 @@ export default function MenuPage() {
                   const inOrder   = fitOrders.some(o => o.productId === product.id);
                   return (
                     <div key={product.id}
-                      onClick={() => { if (!soldOut && isOpen) openFitModal(product.id); }}
+                      onClick={() => { if (!soldOut) openFitModal(product.id); }}
                       className={`relative w-56 flex-shrink-0 bg-gray-900 rounded-2xl border-2 overflow-hidden transition-all
                         ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:border-cyan-400/60 hover:-translate-y-1"}
                         ${discount ? "border-amber-400/70" : "border-cyan-400/30"}`}
@@ -1012,7 +1012,7 @@ export default function MenuPage() {
                           ) : (
                             <span className="text-lg font-black text-amber-400">S/ {basePrice.toFixed(2)}</span>
                           )}
-                          {!soldOut && isOpen && (
+                          {!soldOut && (
                             <button onClick={e => { e.stopPropagation(); openFitModal(product.id); }}
                               className="w-9 h-9 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-bold text-xl flex items-center justify-center transition-all active:scale-95">+</button>
                           )}
@@ -1101,7 +1101,7 @@ export default function MenuPage() {
               const chosen  = tacoOrders.some(o => o.salsas.includes(flavor.id));
               return (
                 <div key={flavor.id}
-                  onClick={() => { if (!soldOut && isOpen) openTacoModal(flavor.id); }}
+                  onClick={() => { if (!soldOut) openTacoModal(flavor.id); }}
                   className={`relative bg-gray-900 rounded-2xl border-2 border-emerald-400/30 overflow-hidden transition-all
                     ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:border-emerald-400/60 hover:-translate-y-1"}`}
                   style={{ boxShadow: "0 0 12px rgba(52,211,153,.08)" }}>
@@ -1117,7 +1117,7 @@ export default function MenuPage() {
                   <div className="p-3">
                     <h3 className="font-bold text-white text-sm mb-1">{flavor.name}</h3>
                     <p className="text-gray-400 text-xs line-clamp-2">{flavor.description}</p>
-                    {!soldOut && isOpen && (
+                    {!soldOut && (
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-amber-400 font-black text-sm">2 x S/ {(menuPrices["taco-duo"] || 24.90).toFixed(2)}</span>
                         <button onClick={e => { e.stopPropagation(); openTacoModal(flavor.id); }}
@@ -1338,7 +1338,7 @@ export default function MenuPage() {
               const { rgb } = combo.colors;
               return (
                 <div key={combo.id}
-                  onClick={() => { if (isOpen) openCombo(combo); }}
+                  onClick={() => { openCombo(combo); }}
                   className={`relative w-[240px] bg-gray-900/90 rounded-2xl border overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${combo.colors.border}`}
                   style={{ boxShadow: `0 0 20px rgba(${rgb},.08)` }}>
                   <div className="h-0.5" style={{ background: `linear-gradient(90deg,transparent,rgba(${rgb},.8),transparent)` }} />
@@ -1373,8 +1373,7 @@ export default function MenuPage() {
                         <span className="text-xl font-black text-white">S/ {eff.toFixed(2)}</span>
                       </div>
                       <button
-                        disabled={!isOpen}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-black transition-all active:scale-95 disabled:opacity-40 ${combo.colors.btn}`}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-black transition-all active:scale-95 ${combo.colors.btn}`}
                         style={{ boxShadow: `0 0 12px rgba(${rgb},.3)` }}>
                         Elegir →
                       </button>
