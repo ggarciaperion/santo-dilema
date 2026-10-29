@@ -67,6 +67,7 @@ const COMPLEMENTS: Record<string, { name: string; price: number }> = {
   "chifles":      { name: "Chifles",         price: 0 },
   "papas-fritas": { name: "Papas fritas",    price: 0 },
   ...Object.fromEntries(SALSAS.map(s => [`extra-salsa-${s.id}`, { name: `Extra salsa — ${s.name}`, price: 3 }])),
+  ...Object.fromEntries(SALSAS.filter(s => s.id !== 'anticuchos').map(s => [`burger-salsa-${s.id}`, { name: s.name, price: 0 }])),
 };
 
 // ─── Tacos data ───────────────────────────────────────────────────────────────
@@ -385,6 +386,7 @@ export default function MenuPage() {
   const [burgerTrioComps,  setBurgerTrioComps]   = useState<string[]>([]);
   const [burgerShowBebidas,setBurgerShowBebidas] = useState(false);
   const [burgerRecentComp, setBurgerRecentComp]  = useState<string | null>(null);
+  const [burgerSalsa,      setBurgerSalsa]        = useState<string | null>(null);
 
   // ── Combos state ──────────────────────────────────────────────────────────
   const [activeCombo,      setActiveCombo]      = useState<ComboConfig | null>(null);
@@ -591,16 +593,18 @@ export default function MenuPage() {
     setBurgerTrioComps([]);
     setBurgerShowBebidas(false);
     setBurgerRecentComp(null);
+    setBurgerSalsa(null);
     setConfirmTrio(trio);
   }
 
   function confirmAndAddTrio() {
     if (!confirmTrio) return;
-    const trioWithComps = { ...confirmTrio, complementIds: burgerTrioComps };
+    const trioWithComps = { ...confirmTrio, complementIds: [...(burgerSalsa ? [`burger-salsa-${burgerSalsa}`] : []), ...burgerTrioComps] };
     setTrioOrders(p => [...p, trioWithComps]);
     setBurgerSelections({});
     setBurgerTrioComps([]);
     setBurgerShowBebidas(false);
+    setBurgerSalsa(null);
     setConfirmTrio(null);
     setBurgerToast(true);
     setTimeout(() => setBurgerToast(false), 3200);
@@ -2255,6 +2259,26 @@ export default function MenuPage() {
                   <p className="text-white text-sm font-semibold flex-1">{f.qty > 1 ? `${f.qty}× ` : ""}{f.name}</p>
                 </div>
               ))}
+
+              {/* Salsa gratis */}
+              <div className="mt-1">
+                <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">🧡 Elige tu salsa gratis</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {SALSAS.filter(s => s.id !== 'anticuchos').map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => setBurgerSalsa(prev => prev === s.id ? null : s.id)}
+                      className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+                        burgerSalsa === s.id
+                          ? 'bg-orange-600 border-orange-500 text-white'
+                          : 'bg-gray-800/50 border-gray-700 text-gray-300 hover:border-orange-500/50'
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Bebidas accordion */}
               <button onClick={() => setBurgerShowBebidas(p => !p)}
