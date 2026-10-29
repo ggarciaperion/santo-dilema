@@ -90,15 +90,20 @@ const fitProducts = [
 
 // Productos TACO para referencia
 const tacoProducts = [
-  {
-    id: "taco-duo",
-    name: "Dúo de Tacos",
-    price: 24.90,
-    category: "taco",
-  },
+  { id: "taco-duo",    name: "Dúo de Tacos",      price: 24.90, category: "taco" },
+  { id: "burger-duo",  name: "Dúo Mini Burgers",   price: 19.90, category: "burger" },
+  { id: "burger-trio", name: "Trío Mini Burgers",  price: 23.50, category: "burger" },
 ];
 
-const allProducts = [...fatProducts, ...fitProducts, ...tacoProducts];
+const beverageProducts = [
+  { id: "coca-cola",    name: "Coca Cola 500ml",  price: 4.00, category: "bebida" },
+  { id: "inka-cola",    name: "Inka Cola 500ml",  price: 4.00, category: "bebida" },
+  { id: "sprite",       name: "Sprite 500ml",     price: 4.00, category: "bebida" },
+  { id: "fanta",        name: "Fanta 500ml",      price: 4.00, category: "bebida" },
+  { id: "agua-mineral", name: "Agua mineral",     price: 4.00, category: "bebida" },
+];
+
+const allProducts = [...fatProducts, ...fitProducts, ...tacoProducts, ...beverageProducts];
 
 // Forzar ejecución dinámica — desactiva cualquier caché de Next.js en este módulo
 export const dynamic = "force-dynamic";

@@ -110,6 +110,7 @@ const generateAvailableComplements = () => {
     "sprite": { name: "Sprite 500ml", price: 4.00 },
     "fanta": { name: "Fanta 500ml", price: 4.00 },
     "extra-papas": { name: "Extra papas", price: 5.00 },
+    "extra-nachos": { name: "Extra nachos", price: 5.00 },
     "extra-salsa": { name: "Extra salsa", price: 3.00 },
     "extra-aderezo": { name: "Extra aderezo", price: 3.00 },
     "pollo-grillado": { name: "Pollo grillado", price: 5.00 },
@@ -213,10 +214,21 @@ const tacoProducts = [
     price: 24.90,
     image: "/tacoinicio.png",
   },
+  { id: "burger-duo",  name: "Dúo Mini Burgers",  price: 19.90, image: "/burgers/santo-smash.webp" },
+  { id: "burger-trio", name: "Trío Mini Burgers", price: 23.50, image: "/burgers/santo-smash.webp" },
   // legacy — por si hay órdenes antiguas en sessionStorage
   { id: "trio-taco-classico", name: "Trío Taco Clásico", price: 22.90, image: "/tacoinicio.png" },
   { id: "taco-fiesta-mix", name: "Taco Fiesta Mix", price: 32.90, image: "/tacoinicio.png" },
   { id: "mega-taco-combo", name: "Mega Taco Combo", price: 42.90, image: "/tacoinicio.png" },
+];
+
+// Bebidas independientes (selección en sección tacos o sticky bar)
+const beverageProducts = [
+  { id: "coca-cola",    name: "Coca Cola 500ml",  price: 4.00, image: "🥤" },
+  { id: "inka-cola",    name: "Inka Cola 500ml",  price: 4.00, image: "🥤" },
+  { id: "sprite",       name: "Sprite 500ml",     price: 4.00, image: "🥤" },
+  { id: "fanta",        name: "Fanta 500ml",      price: 4.00, image: "🥤" },
+  { id: "agua-mineral", name: "Agua mineral",     price: 4.00, image: "🥤" },
 ];
 
 
@@ -295,11 +307,18 @@ export default function CheckoutPage() {
         return total + (order.comboPrice ?? 0);
       }
       // Item regular
-      const fatProduct = fatProducts.find((p) => p.id === order.productId);
-      const fitProduct = fitProducts.find((p) => p.id === order.productId);
-      const tacoProduct = tacoProducts.find((p) => p.id === order.productId);
-      const product = fatProduct || fitProduct || tacoProduct;
-      if (!product) return total;
+      const product = fatProducts.find((p) => p.id === order.productId)
+        || fitProducts.find((p) => p.id === order.productId)
+        || tacoProducts.find((p) => p.id === order.productId)
+        || beverageProducts.find((p) => p.id === order.productId);
+      if (!product) {
+        // Fallback: use saved finalPrice for any unknown product
+        if (order.finalPrice != null) {
+          const complementsTotal = order.complementIds.reduce((sum: number, compId: string) => sum + (availableComplements[compId]?.price || 0), 0);
+          return total + order.finalPrice * order.quantity + complementsTotal;
+        }
+        return total;
+      }
       const effectivePrice = order.finalPrice ?? order.originalPrice ?? product.price;
       const complementsTotal = order.complementIds.reduce((sum, compId) => {
         return sum + (availableComplements[compId]?.price || 0);
@@ -720,7 +739,10 @@ export default function CheckoutPage() {
                           </div>
                           <div className="space-y-2 border-t border-amber-400/15 pt-2">
                             {groupItems.map((gi, gi_idx) => {
-                              const p = fatProducts.find(x => x.id === gi.productId) || fitProducts.find(x => x.id === gi.productId) || tacoProducts.find(x => x.id === gi.productId);
+                              const p = fatProducts.find(x => x.id === gi.productId)
+                                || fitProducts.find(x => x.id === gi.productId)
+                                || tacoProducts.find(x => x.id === gi.productId)
+                                || beverageProducts.find(x => x.id === gi.productId);
                               if (!p) return null;
                               return (
                                 <div key={gi_idx} className="flex items-center gap-2">
@@ -749,8 +771,11 @@ export default function CheckoutPage() {
                       );
                     }
 
-                    // ── Item regular (lógica existente) ──
-                    const product = fatProducts.find((p) => p.id === order.productId) || fitProducts.find((p) => p.id === order.productId) || tacoProducts.find((p) => p.id === order.productId);
+                    // ── Item regular ──
+                    const product = fatProducts.find((p) => p.id === order.productId)
+                      || fitProducts.find((p) => p.id === order.productId)
+                      || tacoProducts.find((p) => p.id === order.productId)
+                      || beverageProducts.find((p) => p.id === order.productId);
                     if (!product) return null;
 
                     const basePrice = order.finalPrice ?? order.originalPrice ?? product.price;
@@ -776,11 +801,13 @@ export default function CheckoutPage() {
                             </p>
                             {order.salsas && order.salsas.length > 0 && (
                               <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
-                                <span>{order.productId === "taco-duo" ? "🌮" : "🌶️"}</span>
+                                <span>{order.productId === "taco-duo" ? "🌮" : (order.productId === "burger-trio" || order.productId === "burger-duo") ? "🍔" : "🌶️"}</span>
                                 <span className="flex-1">
                                   {order.productId === "taco-duo"
                                     ? order.salsas.map((id) => tacoFlavors[id] || id).join(" + ")
-                                    : order.salsas.map((sId) => salsas.find((s) => s.id === sId)?.name).filter(Boolean).join(", ")}
+                                    : (order.productId === "burger-trio" || order.productId === "burger-duo")
+                                      ? order.salsas.join(" · ")
+                                      : order.salsas.map((sId) => salsas.find((s) => s.id === sId)?.name).filter(Boolean).join(", ")}
                                 </span>
                               </div>
                             )}
@@ -832,7 +859,7 @@ export default function CheckoutPage() {
                           seenC.add(o.comboGroupId);
                           return t + (o.comboOriginalTotal ?? o.comboPrice ?? 0);
                         }
-                        const p = fatProducts.find(x => x.id === o.productId) || fitProducts.find(x => x.id === o.productId) || tacoProducts.find(x => x.id === o.productId);
+                        const p = fatProducts.find(x => x.id === o.productId) || fitProducts.find(x => x.id === o.productId) || tacoProducts.find(x => x.id === o.productId) || beverageProducts.find(x => x.id === o.productId);
                         return t + (o.originalPrice ?? p?.price ?? 0) * o.quantity + o.complementIds.reduce((s, c) => s + (availableComplements[c]?.price || 0), 0);
                       }, 0);
                     })().toFixed(2)}</span>
