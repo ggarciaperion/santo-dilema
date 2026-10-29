@@ -461,6 +461,9 @@ export default function PedidosPage() {
       const s = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "America/Lima" });
       return s >= ordersDateFrom && s <= ordersDateTo;
     });
+  } else {
+    // Por defecto: solo pedidos de hoy (hora de Lima)
+    dateFilteredOrders = orders.filter((o) => isSameDayPeru(o.createdAt));
   }
 
   const filteredOrders = dateFilteredOrders.filter((o) => {
