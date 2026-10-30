@@ -541,20 +541,9 @@ export default function PedidosPage() {
         <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <Image src="/logoprincipal.png" alt="Santo Dilema" width={80} height={40} />
-            <div>
-              <p className="text-xs font-black text-gray-900 uppercase tracking-wide">Pedidos</p>
-              <p className="text-[10px] text-gray-400">Operador{userRole === "admin" ? " · Admin" : ""}</p>
-            </div>
+            <p className="text-xs font-black text-gray-900 uppercase tracking-wide">Pedidos</p>
           </div>
           <div className="flex items-center gap-2">
-            {userRole === "admin" && (
-              <Link
-                href="/admin"
-                className="px-3 py-1.5 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-gray-700 transition-all"
-              >
-                Panel completo
-              </Link>
-            )}
             <button
               onClick={handleLogout}
               className="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 transition-all"
