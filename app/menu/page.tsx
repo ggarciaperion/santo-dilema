@@ -1394,7 +1394,10 @@ export default function MenuPage() {
             <div className="mt-5 space-y-3">
               <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest">📋 Agregado a tu pedido</h4>
               {trioOrders.map((trio, idx) => {
-                const bebidas = trio.complementIds.filter(c => COMPLEMENTS[c]).map(c => COMPLEMENTS[c]);
+                const DRINK_IDS_SET = new Set(["coca-cola","inka-cola","sprite","fanta","agua-mineral"]);
+                const bebidas = trio.complementIds.filter(c => DRINK_IDS_SET.has(c)).map(c => COMPLEMENTS[c]);
+                const salsaLibre = trio.complementIds.find(c => c.startsWith("burger-salsa-"));
+                const salsaLibreNombre = salsaLibre ? COMPLEMENTS[salsaLibre]?.name : null;
                 const trioTotal = trio.trioPrice + trio.complementIds.reduce((s, c) => s + (COMPLEMENTS[c]?.price ?? 0), 0);
                 return (
                   <div key={trio.trioGroupId} className="bg-gray-900/80 rounded-2xl border border-white/8 overflow-hidden">
@@ -1414,6 +1417,12 @@ export default function MenuPage() {
                           <span className="text-[10px] text-gray-500 uppercase font-bold w-14 flex-shrink-0">Incluye</span>
                           <span className="text-xs text-orange-300/80 bg-orange-900/20 rounded-lg px-2 py-0.5">🍟 Papas francesas</span>
                         </div>
+                        {salsaLibreNombre && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 uppercase font-bold w-14 flex-shrink-0">Salsa</span>
+                            <span className="text-xs text-orange-300/80">🧡 {salsaLibreNombre}</span>
+                          </div>
+                        )}
                         {bebidas.length > 0 && (
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] text-gray-500 uppercase font-bold w-14 flex-shrink-0">Bebidas</span>
