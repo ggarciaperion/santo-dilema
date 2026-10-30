@@ -563,45 +563,28 @@ export default function PedidosPage() {
             </button>
           </div>
         </div>
+        {/* ── Filter pills ── */}
+        <div className="border-t border-gray-100 px-4 pb-2 max-w-7xl mx-auto flex gap-2 overflow-x-auto">
+          {([
+            { key: "all" as const,       label: isOrdersDateFiltered ? "Filtrado" : "Total Hoy", icon: "📋", active: "bg-gray-700 text-white",        inactive: "bg-gray-100 text-gray-700",        count: dateFilteredOrders.length },
+            { key: "confirmed" as const,  label: "Confirmados",  icon: "✅", active: "bg-sky-500 text-white",      inactive: "bg-sky-50 text-sky-700",         count: dateFilteredOrders.filter((o) => o.status === "confirmed").length },
+            { key: "en-camino" as const,  label: "En Camino",    icon: "🛵", active: "bg-blue-600 text-white",     inactive: "bg-blue-50 text-blue-700",       count: dateFilteredOrders.filter((o) => o.status === "en-camino").length },
+            { key: "delivered" as const,  label: "Entregados",   icon: "📦", active: "bg-emerald-500 text-white",  inactive: "bg-emerald-50 text-emerald-700", count: dateFilteredOrders.filter((o) => o.status === "delivered").length },
+          ] as const).map((lane) => {
+            const isActive = filter === lane.key;
+            return (
+              <button key={lane.key} onClick={() => setFilter(lane.key)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${isActive ? lane.active : lane.inactive}`}>
+                <span>{lane.icon}</span>
+                <span className="font-black">{lane.count}</span>
+                <span>{lane.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       <main className="max-w-7xl mx-auto">
-
-        {/* ── Carteles de estado ── */}
-        <section className="px-4 py-4">
-          {(() => {
-            const lanes = [
-              { key: "all" as const,       label: isOrdersDateFiltered ? "Total Filtrado" : "Total Hoy", icon: "📋", accent: "border-gray-400",    stripe: "bg-gray-400",    dotColor: "bg-gray-400",    headerText: "text-gray-500",   countText: "text-gray-900",   orders: dateFilteredOrders },
-              { key: "confirmed" as const,  label: "Confirmados",    icon: "✅", accent: "border-sky-400",     stripe: "bg-sky-400",     dotColor: "bg-sky-400",     headerText: "text-sky-600",    countText: "text-sky-600",    orders: dateFilteredOrders.filter((o) => o.status === "confirmed") },
-              { key: "en-camino" as const,  label: "En Camino",      icon: "🛵", accent: "border-blue-400",    stripe: "bg-blue-500",    dotColor: "bg-blue-500",    headerText: "text-blue-600",   countText: "text-blue-600",   orders: dateFilteredOrders.filter((o) => o.status === "en-camino") },
-              { key: "delivered" as const,  label: "Entregados Hoy", icon: "📦", accent: "border-emerald-400", stripe: "bg-emerald-400", dotColor: "bg-emerald-400", headerText: "text-emerald-600",countText: "text-emerald-600",orders: dateFilteredOrders.filter((o) => o.status === "delivered") },
-            ];
-            return (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {lanes.map((lane) => {
-                  const isActive = filter === lane.key;
-                  return (
-                    <button
-                      key={lane.key}
-                      onClick={() => setFilter(lane.key)}
-                      className={`bg-white rounded-2xl border-2 flex flex-col overflow-hidden text-left transition-all duration-150 cursor-pointer select-none active:scale-95 ${isActive ? `${lane.accent} shadow-lg` : "border-gray-100 hover:border-gray-200 hover:shadow-md"}`}
-                    >
-                      <div className={`h-1.5 w-full flex-shrink-0 ${lane.stripe}`} />
-                      <div className="px-4 py-3 flex flex-col gap-0.5">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-xl leading-none">{lane.icon}</span>
-                          {isActive && <span className={`w-2 h-2 rounded-full ${lane.dotColor}`} />}
-                        </div>
-                        <span className={`text-3xl font-black leading-none ${lane.countText}`}>{lane.orders.length}</span>
-                        <span className={`text-[10px] font-bold uppercase tracking-wide mt-1 ${isActive ? lane.headerText : "text-gray-400"}`}>{lane.label}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })()}
-        </section>
 
         {/* ── Barra de herramientas ── */}
         <section className="px-4 pb-4">
