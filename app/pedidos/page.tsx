@@ -855,7 +855,8 @@ export default function PedidosPage() {
                                 const counts: Record<string, number> = {};
                                 extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
                                 Object.entries(counts).forEach(([cId, n], i) => {
-                                  lines.push(<p key={`ce-${item.comboGroupId}-${gi_i}-e${i}`} className="text-xs text-gray-500 pl-3">+ {n > 1 ? `${n}× ` : ""}{availableComplements[cId]?.name || cId}</p>);
+                                  const label = cId.startsWith("burger-salsa-") ? `Salsa: ${availableComplements[cId]?.name || cId}` : `+ ${n > 1 ? `${n}× ` : ""}${availableComplements[cId]?.name || cId}`;
+                                  lines.push(<p key={`ce-${item.comboGroupId}-${gi_i}-e${i}`} className="text-xs text-gray-500 pl-3">{label}</p>);
                                 });
                               }
                             });
@@ -894,7 +895,8 @@ export default function PedidosPage() {
                               const counts: Record<string, number> = {};
                               extras.forEach((c: string) => { counts[c] = (counts[c] || 0) + 1; });
                               Object.entries(counts).forEach(([cId, n], i) => {
-                                lines.push(<p key={`e-${idx}-${i}`} className="text-xs text-gray-500">+ {n > 1 ? `${n}× ` : ""}{availableComplements[cId]?.name || cId}</p>);
+                                const label = cId.startsWith("burger-salsa-") ? `Salsa: ${availableComplements[cId]?.name || cId}` : `+ ${n > 1 ? `${n}× ` : ""}${availableComplements[cId]?.name || cId}`;
+                                lines.push(<p key={`e-${idx}-${i}`} className="text-xs text-gray-500">{label}</p>);
                               });
                             }
                           }
