@@ -1686,7 +1686,7 @@ export default function MenuPage() {
               }}
               className="flex-shrink-0 px-5 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all active:scale-95 min-h-[48px]"
               style={{ boxShadow: "0 0 20px rgba(16,185,129,.55)" }}>
-              Pagar →
+              Continuar →
             </button>
           </div>
         </div>
