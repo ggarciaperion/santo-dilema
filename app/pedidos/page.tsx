@@ -563,73 +563,65 @@ export default function PedidosPage() {
             </button>
           </div>
         </div>
-        {/* ── Filter pills ── */}
-        <div className="border-t border-gray-100 px-4 pb-2 max-w-7xl mx-auto flex gap-2 overflow-x-auto">
-          {([
-            { key: "all" as const,       label: isOrdersDateFiltered ? "Filtrado" : "Total Hoy", icon: "📋", active: "bg-gray-700 text-white",        inactive: "bg-gray-100 text-gray-700",        count: dateFilteredOrders.length },
-            { key: "confirmed" as const,  label: "Confirmados",  icon: "✅", active: "bg-sky-500 text-white",      inactive: "bg-sky-50 text-sky-700",         count: dateFilteredOrders.filter((o) => o.status === "confirmed").length },
-            { key: "en-camino" as const,  label: "En Camino",    icon: "🛵", active: "bg-blue-600 text-white",     inactive: "bg-blue-50 text-blue-700",       count: dateFilteredOrders.filter((o) => o.status === "en-camino").length },
-            { key: "delivered" as const,  label: "Entregados",   icon: "📦", active: "bg-emerald-500 text-white",  inactive: "bg-emerald-50 text-emerald-700", count: dateFilteredOrders.filter((o) => o.status === "delivered").length },
-          ] as const).map((lane) => {
-            const isActive = filter === lane.key;
-            return (
-              <button key={lane.key} onClick={() => setFilter(lane.key)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${isActive ? lane.active : lane.inactive}`}>
-                <span>{lane.icon}</span>
-                <span className="font-black">{lane.count}</span>
-                <span>{lane.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto">
-
-        {/* ── Barra de herramientas ── */}
-        <section className="px-4 pb-4">
-          <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-center justify-end">
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={exportOrdersToCSV}
-                className="px-3 py-3 bg-white border border-gray-200 rounded-lg text-green-600 hover:text-green-700 hover:border-green-300 transition-all"
-                title="Exportar a CSV"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setShowOrdersDateModal(true)}
-                className={`px-3 py-3 bg-white border rounded-lg transition-all ${isOrdersDateFiltered ? "border-blue-400 text-blue-600" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-400"}`}
-                title="Filtrar por fechas"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </button>
-            </div>
-            <div className="relative flex-1 md:flex-initial">
+        {/* ── Filter pills + toolbar ── */}
+        <div className="border-t border-gray-100 px-4 py-2 max-w-7xl mx-auto flex items-center gap-2">
+          {/* Pills */}
+          <div className="flex gap-2 overflow-x-auto flex-1 min-w-0">
+            {([
+              { key: "all" as const,       label: isOrdersDateFiltered ? "Filtrado" : "Total Hoy", icon: "📋", active: "bg-gray-700 text-white",        inactive: "bg-gray-100 text-gray-700",        count: dateFilteredOrders.length },
+              { key: "confirmed" as const,  label: "Confirmados",  icon: "✅", active: "bg-sky-500 text-white",      inactive: "bg-sky-50 text-sky-700",         count: dateFilteredOrders.filter((o) => o.status === "confirmed").length },
+              { key: "en-camino" as const,  label: "En Camino",    icon: "🛵", active: "bg-blue-600 text-white",     inactive: "bg-blue-50 text-blue-700",       count: dateFilteredOrders.filter((o) => o.status === "en-camino").length },
+              { key: "delivered" as const,  label: "Entregados",   icon: "📦", active: "bg-emerald-500 text-white",  inactive: "bg-emerald-50 text-emerald-700", count: dateFilteredOrders.filter((o) => o.status === "delivered").length },
+            ] as const).map((lane) => {
+              const isActive = filter === lane.key;
+              return (
+                <button key={lane.key} onClick={() => setFilter(lane.key)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${isActive ? lane.active : lane.inactive}`}>
+                  <span>{lane.icon}</span>
+                  <span className="font-black">{lane.count}</span>
+                  <span>{lane.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Toolbar */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="relative">
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar pedido, cliente, dirección, menú..."
-                className="w-full md:w-80 px-4 py-3 pl-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-all text-sm"
+                placeholder="Buscar..."
+                className="w-40 px-3 py-1.5 pl-8 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-all text-xs"
               />
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               {searchTerm && (
-                <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onClick={() => setSearchTerm("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               )}
             </div>
+            <button onClick={exportOrdersToCSV} title="Exportar a CSV"
+              className="p-1.5 bg-white border border-gray-200 rounded-lg text-green-600 hover:text-green-700 hover:border-green-300 transition-all">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </button>
+            <button onClick={() => setShowOrdersDateModal(true)} title="Filtrar por fechas"
+              className={`p-1.5 bg-white border rounded-lg transition-all ${isOrdersDateFiltered ? "border-blue-400 text-blue-600" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-400"}`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
           </div>
-        </section>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto">
 
         {/* ── Modal filtro de fechas ── */}
         {showOrdersDateModal && (
