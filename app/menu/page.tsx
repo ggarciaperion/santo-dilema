@@ -1885,7 +1885,7 @@ export default function MenuPage() {
                           );
                         })()}
                         {/* Extra salsa — todas las salsas disponibles */}
-                        {effectiveSalsas.filter(s => !s.soldOut).map(salsa => {
+                        {effectiveSalsas.filter(s => !s.soldOut && s.id !== 'anticuchos').map(salsa => {
                           const bid = `extra-salsa-${salsa.id}`; const c = COMPLEMENTS[bid];
                           if (!c) return null;
                           const cnt = comps.filter(x => x === bid).length;
