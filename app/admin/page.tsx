@@ -43,6 +43,12 @@ const generateAvailableComplements = () => {
       name: `Extra salsa - ${salsa.name}`,
       price: 3.00
     };
+    if (salsa.id !== 'anticuchos') {
+      complements[`burger-salsa-${salsa.id}`] = {
+        name: `Salsa gratis — ${salsa.name}`,
+        price: 0
+      };
+    }
   });
 
   return complements;
