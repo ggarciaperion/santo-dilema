@@ -1856,7 +1856,7 @@ export default function MenuPage() {
                   <div className="mb-4">
                     <button onClick={() => setAlitasShowExtras(p => ({ ...p, [alitasModal]: !p[alitasModal] }))}
                       className="w-full flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-xl p-3 transition-all hover:bg-gray-800 mb-1">
-                      <div className="flex items-center gap-2"><span>🍟</span><span className="text-white text-sm font-bold">Extras</span></div>
+                      <div className="flex items-center gap-2"><span>➕</span><span className="text-white text-sm font-bold">Extras</span></div>
                       <span className="text-gray-400 text-sm">{alitasShowExtras[alitasModal] ? "▼" : "▶"}</span>
                     </button>
                     {alitasShowExtras[alitasModal] && (
