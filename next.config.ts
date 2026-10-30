@@ -28,7 +28,12 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    return [];
+    return [
+      { source: "/fit",    destination: "/menu", permanent: true },
+      { source: "/fat",    destination: "/menu", permanent: true },
+      { source: "/tacos",  destination: "/menu", permanent: true },
+      { source: "/combos", destination: "/menu", permanent: true },
+    ];
   },
 };
 
