@@ -36,7 +36,7 @@ const generateAvailableComplements = () => {
   salsas.forEach(salsa => {
     complements[`extra-salsa-${salsa.id}`] = { name: `Extra salsa - ${salsa.name}`, price: 3.00 };
     if (salsa.id !== 'anticuchos') {
-      complements[`burger-salsa-${salsa.id}`] = { name: `Salsa gratis — ${salsa.name}`, price: 0 };
+      complements[`burger-salsa-${salsa.id}`] = { name: salsa.name, price: 0 };
     }
   });
   return complements;
@@ -835,12 +835,14 @@ export default function PedidosPage() {
                                 return salsaCounts_[sId] > 1 ? `${name} ×${salsaCounts_[sId]}` : name;
                               });
                               const varStr = varNames.length === 0 ? "" :
-                                isTaco || isBurger ? ` ${varNames.join(" y ")}` :
+                                isTaco ? ` ${varNames.join(" y ")}` :
                                 ` x ${varNames.join(" y ")}`;
                               const q = String(gi.quantity || 1).padStart(2, "0");
+                              const ciIcon = gi.productId === "burger-duo" || gi.productId === "burger-trio" ? "🍔" : gi.category === "fat" ? "🍗" : gi.category === "fit" ? "🥗" : gi.category === "taco" ? "🌮" : "";
                               lines.push(
-                                <p key={`ci-${item.comboGroupId}-${gi_i}`} className="text-sm font-semibold text-gray-800 pl-3">
-                                  {q} {gi.name}{varStr}
+                                <p key={`ci-${item.comboGroupId}-${gi_i}`} className="text-sm text-gray-800 pl-3">
+                                  <span className="font-bold">{q} {gi.name}{ciIcon ? ` ${ciIcon}` : ""}</span>
+                                  {varStr && <span className="font-normal text-gray-600">{varStr}</span>}
                                 </p>
                               );
                               drinks.forEach((c: string, i: number) => {
@@ -873,11 +875,13 @@ export default function PedidosPage() {
                               return salsaCounts[sId] > 1 ? `${name} ×${salsaCounts[sId]}` : name;
                             });
                             const varStr = varNames.length === 0 ? "" :
-                              isTaco || isBurger ? ` ${varNames.join(" y ")}` :
+                              isTaco ? ` ${varNames.join(" y ")}` :
                               ` x ${varNames.join(" y ")}`;
+                            const itemIcon = isBurger ? "🍔" : item.category === "fat" ? "🍗" : item.category === "fit" ? "🥗" : isTaco ? "🌮" : "";
                             lines.push(
-                              <p key={`i-${idx}`} className="text-sm font-semibold text-gray-900">
-                                {q} {item.name}{varStr}
+                              <p key={`i-${idx}`} className="text-sm text-gray-900">
+                                <span className="font-bold">{q} {item.name}{itemIcon ? ` ${itemIcon}` : ""}</span>
+                                {varStr && <span className="font-normal text-gray-600">{varStr}</span>}
                               </p>
                             );
                             drinks.forEach((c: string, i: number) => {
