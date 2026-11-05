@@ -1080,7 +1080,7 @@ export default function MenuPage() {
 
   const grandTotal = alitasTotal + fitTotal + tacoTotal + trioTotal + comboTotal;
   // Available outside the IIFE for MpCardModal amount
-  const ckDeliveryCostOuter = ckDeliveryZone === 'alrededores' ? 4.00 : 0;
+  const ckDeliveryCostOuter = ckDeliveryZone === 'alrededores' ? 5.00 : 0;
   const ckRealTotalOuter = grandTotal + ckDeliveryCostOuter;
 
   // True when the sticky cart bar is rendered at the bottom
@@ -1705,7 +1705,7 @@ export default function MenuPage() {
           setCheckoutStep('delivery');
           setCartOpen(true);
         };
-        const ckDeliveryCost = ckDeliveryZone === 'alrededores' ? 4.00 : 0;
+        const ckDeliveryCost = ckDeliveryZone === 'alrededores' ? 5.00 : 0;
         const ckRealTotal = grandTotal + ckDeliveryCost;
         const ckHandlePhone = (value: string) => {
           const nums = value.replace(/\D/g, '');
@@ -2051,43 +2051,46 @@ export default function MenuPage() {
                         placeholder="Av. Principal 123, Ref: frente al parque"
                         className="w-full px-4 py-3 rounded-xl border-2 text-black font-semibold text-base outline-none"
                         style={{ borderColor: ckForm.address.trim() ? '#F58424' : 'rgba(0,0,0,.12)', background: '#fff' }} />
-                      {ckCustomerAddresses.length > 1 && (
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          {ckCustomerAddresses.map((addr, i) => (
-                            <button key={i} onClick={() => setCkForm(prev => ({ ...prev, address: addr }))}
-                              className="text-xs px-2.5 py-1 rounded-lg border font-semibold"
-                              style={{ borderColor: '#F58424', color: '#F58424', background: 'rgba(245,132,36,.07)' }}>
-                              {addr.length > 30 ? addr.slice(0, 30) + '…' : addr}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-black/60 mb-1">¿A qué zona corresponde tu dirección? *</label>
-                      {!ckDeliveryZone && <p className="text-xs text-black/35 mb-2">Selecciona tu zona</p>}
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Zona de entrega">
                         {([
-                          { value: 'centro' as const, label: 'Chancay centro', sub: '', price: 'Gratis', priceClass: 'text-green-600' },
-                          { value: 'alrededores' as const, label: 'Chancay alrededores', sub: 'Puerto · Peralvillo · La Balanza', price: 'S/ 4.00', priceClass: 'text-sky-600' },
-                        ]).map(opt => (
-                          <button key={opt.value} onClick={() => setCkDeliveryZone(opt.value)}
-                            className="p-3 rounded-xl border-2 text-left transition-all"
-                            style={{ borderColor: ckDeliveryZone === opt.value ? '#F58424' : 'rgba(0,0,0,.12)', background: ckDeliveryZone === opt.value ? 'rgba(245,132,36,.07)' : '#fff' }}>
-                            <p className="text-sm font-black text-black leading-tight">{opt.label}</p>
-                            {opt.sub && <p className="text-[10px] text-black/40 mt-0.5">{opt.sub}</p>}
-                            <p className={`text-xs font-bold mt-1 ${opt.priceClass}`}>{opt.price}</p>
-                          </button>
-                        ))}
+                          { value: 'centro' as const, label: 'Chancay centro', sub: '', delivery: 'Delivery gratis', deliveryClass: 'text-green-600' },
+                          { value: 'alrededores' as const, label: 'Chancay alrededores', sub: 'Puerto, Peralvillo, La Balanza y otros', delivery: 'Delivery S/ 5.00', deliveryClass: 'text-sky-600' },
+                        ]).map(opt => {
+                          const selected = ckDeliveryZone === opt.value;
+                          return (
+                            <button key={opt.value}
+                              role="radio"
+                              aria-checked={selected}
+                              onClick={() => setCkDeliveryZone(opt.value)}
+                              className="p-3 rounded-xl border-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F58424] focus-visible:ring-offset-1"
+                              style={{ borderColor: selected ? '#F58424' : 'rgba(0,0,0,.12)', background: selected ? 'rgba(245,132,36,.07)' : '#fff' }}>
+                              <div className="flex items-start gap-2">
+                                <span className="mt-0.5 w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors"
+                                  style={{ borderColor: selected ? '#F58424' : 'rgba(0,0,0,.3)' }}>
+                                  {selected && <span className="w-2 h-2 rounded-full" style={{ background: '#F58424' }} />}
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-black text-black leading-tight">{opt.label}</p>
+                                  {opt.sub && <p className="text-[10px] text-black/40 mt-0.5 leading-snug">{opt.sub}</p>}
+                                  <p className={`text-xs font-bold mt-1 ${opt.deliveryClass}`}>{opt.delivery}</p>
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
+                      {!ckDeliveryZone && <p className="text-xs text-black/40 mt-1.5">Selecciona tu zona de entrega para continuar</p>}
                     </div>
 
                     <button disabled={!ckDeliveryValid}
                       onClick={() => { setCkCompletedOrders(buildCompletedOrders()); setCheckoutStep('review'); }}
                       className="w-full py-3.5 rounded-xl text-white font-black text-base transition-all active:scale-[.98] mb-2 disabled:opacity-40"
                       style={{ background: '#F58424', boxShadow: ckDeliveryValid ? '0 4px 16px rgba(245,132,36,.4)' : 'none' }}>
-                      Revisar pedido →
+                      Continuar →
                     </button>
                   </div>
                   )}
@@ -2102,7 +2105,7 @@ export default function MenuPage() {
                       <p className="text-sm font-black text-black">{ckForm.name}</p>
                       <p className="text-xs text-black/55">📱 {ckForm.phone}</p>
                       <p className="text-xs text-black/55">📍 {ckForm.address}</p>
-                      <p className="text-xs text-black/55">🛵 {ckDeliveryZone === 'centro' ? 'Chancay centro — Gratis' : 'Chancay alrededores — S/ 4.00'}</p>
+                      <p className="text-xs text-black/55">🛵 {ckDeliveryZone === 'centro' ? 'Chancay centro — Gratis' : 'Chancay alrededores — S/ 5.00'}</p>
                     </div>
 
                     <div className="space-y-2">
