@@ -409,6 +409,14 @@ export default function MenuPage() {
   // ── Cart state ────────────────────────────────────────────────────────────
   const [cartOpen,         setCartOpen]         = useState(false);
   const [cartClosing,      setCartClosing]       = useState(false);
+  const [removeConfirm,    setRemoveConfirm]    = useState<null | {
+    type: 'alitas' | 'fit' | 'taco' | 'trio' | 'bebida' | 'combo';
+    idx: number;
+    id?: string;
+    name: string;
+    qty: number;
+  }>(null);
+  const removeConfirmTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   // ── Inline checkout flow ───────────────────────────────────────────────────
   const [checkoutStep,     setCheckoutStep]     = useState<'cart'|'delivery'|'review'|'payment'|'yape'|'efectivo'>('cart');
@@ -1816,7 +1824,7 @@ export default function MenuPage() {
                               <p className="text-sm font-bold text-black leading-tight">{order.quantity > 1 ? `${order.quantity}× ` : ""}{p.name}</p>
                               <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-2">
                                 <p className="text-sm font-black text-[#F58424]">S/ {lineTotal.toFixed(2)}</p>
-                                <button onClick={(e) => { e.stopPropagation(); setAlitasOrders(prev => prev.filter((_,i) => i !== idx)); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
+                                <button ref={el => { if (el) removeConfirmTriggerRef.current = el; }} onClick={(e) => { e.stopPropagation(); setRemoveConfirm({ type: 'alitas', idx, name: p.name, qty: order.quantity }); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
                               </div>
                             </div>
                             {order.salsas.length > 0 && <p className="text-xs text-black/45 mt-0.5 leading-snug">{order.salsas.map(id => SALSAS.find(s => s.id === id)?.name ?? id).join(" · ")}</p>}
@@ -1847,7 +1855,7 @@ export default function MenuPage() {
                               <p className="text-sm font-bold text-black leading-tight">{order.quantity > 1 ? `${order.quantity}× ` : ""}{p.name}</p>
                               <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-2">
                                 <p className="text-sm font-black text-[#F58424]">S/ {lineTotal.toFixed(2)}</p>
-                                <button onClick={(e) => { e.stopPropagation(); setFitOrders(prev => prev.filter((_,i) => i !== idx)); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
+                                <button ref={el => { if (el) removeConfirmTriggerRef.current = el; }} onClick={(e) => { e.stopPropagation(); setRemoveConfirm({ type: 'fit', idx, name: p.name, qty: order.quantity }); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
                               </div>
                             </div>
                             {paidExtras.length > 0 && (
@@ -1881,7 +1889,7 @@ export default function MenuPage() {
                               <p className="text-sm font-bold text-black leading-tight">🌮 Dúo de Tacos</p>
                               <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-2">
                                 <p className="text-sm font-black text-[#F58424]">S/ {lineTotal.toFixed(2)}</p>
-                                <button onClick={(e) => { e.stopPropagation(); setTacoOrders(prev => prev.filter((_,i) => i !== idx)); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
+                                <button ref={el => { if (el) removeConfirmTriggerRef.current = el; }} onClick={(e) => { e.stopPropagation(); setRemoveConfirm({ type: 'taco', idx, name: 'Dúo de Tacos', qty: 1 }); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
                               </div>
                             </div>
                             <p className="text-xs text-black/45 mt-0.5">{tacoFlavGrps.map(g => g.qty > 1 ? `${g.qty} × ${g.name}` : g.name).join(" · ")}</p>
@@ -1908,7 +1916,7 @@ export default function MenuPage() {
                               <p className="text-sm font-bold text-black leading-tight">🍔 {trio.trioName}</p>
                               <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-2">
                                 <p className="text-sm font-black text-[#F58424]">S/ {lineTotal.toFixed(2)}</p>
-                                <button onClick={(e) => { e.stopPropagation(); setTrioOrders(prev => prev.filter((_,i) => i !== idx)); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
+                                <button ref={el => { if (el) removeConfirmTriggerRef.current = el; }} onClick={(e) => { e.stopPropagation(); setRemoveConfirm({ type: 'trio', idx, name: trio.trioName, qty: 1 }); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
                               </div>
                             </div>
                             <p className="text-xs text-black/45 mt-0.5">{trio.trioFlavors.map(f => `${f.qty > 1 ? f.qty + "× " : ""}${f.name}`).join(" · ")}</p>
@@ -1929,7 +1937,7 @@ export default function MenuPage() {
                             <p className="text-sm font-bold text-black">{bebidaQty[b.id] > 1 ? `${bebidaQty[b.id]}× ` : ""}🥤 {b.name}</p>
                             <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-2">
                               <p className="text-sm font-black text-[#F58424]">S/ {((bebidaQty[b.id] || 0) * b.price).toFixed(2)}</p>
-                              <button onClick={(e) => { e.stopPropagation(); setBebidaQty(prev => ({ ...prev, [b.id]: 0 })); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
+                              <button ref={el => { if (el) removeConfirmTriggerRef.current = el; }} onClick={(e) => { e.stopPropagation(); setRemoveConfirm({ type: 'bebida', idx: 0, id: b.id, name: b.name, qty: bebidaQty[b.id] || 0 }); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
                             </div>
                           </div>
                         </div>
@@ -1952,7 +1960,7 @@ export default function MenuPage() {
                               </div>
                               <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-2">
                                 <p className="text-sm font-black text-[#F58424]">S/ {meta.comboPrice?.toFixed(2)}</p>
-                                <button onClick={(e) => { e.stopPropagation(); deleteComboGroup(meta.comboGroupId); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
+                                <button ref={el => { if (el) removeConfirmTriggerRef.current = el; }} onClick={(e) => { e.stopPropagation(); setRemoveConfirm({ type: 'combo', idx: 0, id: meta.comboGroupId, name: meta.comboName, qty: 1 }); }} className="text-[11px] font-semibold text-black/40 hover:text-red-500 leading-none">Quitar</button>
                               </div>
                             </div>
                             <div className="mt-0.5 space-y-0.5">
@@ -2408,9 +2416,9 @@ export default function MenuPage() {
               </button>
 
               {checkoutStep === 'cart' && !ckOrderPlaced && (
-                <button type="button" onClick={toggleCart} aria-expanded={cartOpen}
-                  className="flex-shrink-0 text-xs font-semibold px-2 py-1 rounded-lg transition-colors whitespace-nowrap"
-                  style={{ color: '#F58424' }}>
+                <button type="button" onClick={(e) => { e.stopPropagation(); toggleCart(); }} aria-expanded={cartOpen}
+                  className="flex-shrink-0 text-xs font-semibold px-3 rounded-lg border-2 transition-colors whitespace-nowrap min-h-[44px]"
+                  style={{ color: '#F58424', borderColor: '#F58424', background: '#FFFFFF' }}>
                   {cartOpen ? 'Ocultar ▾' : 'Ver ▴'}
                 </button>
               )}
@@ -3538,6 +3546,74 @@ export default function MenuPage() {
                   {fitEditIdx !== null
                     ? `Confirmar cambios — S/ ${(final * qty + extrasPrice).toFixed(2)}`
                     : `Agregar orden — S/ ${(final * qty + extrasPrice).toFixed(2)}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Remove confirmation modal ─────────────────────────────────────── */}
+      {removeConfirm && (() => {
+        const closeModal = () => {
+          setRemoveConfirm(null);
+          setTimeout(() => removeConfirmTriggerRef.current?.focus(), 50);
+        };
+        const confirmRemove = () => {
+          const { type, idx, id } = removeConfirm;
+          if (type === 'alitas') setAlitasOrders(prev => prev.filter((_, i) => i !== idx));
+          else if (type === 'fit') setFitOrders(prev => prev.filter((_, i) => i !== idx));
+          else if (type === 'taco') setTacoOrders(prev => prev.filter((_, i) => i !== idx));
+          else if (type === 'trio') setTrioOrders(prev => prev.filter((_, i) => i !== idx));
+          else if (type === 'bebida' && id) setBebidaQty(prev => ({ ...prev, [id]: 0 }));
+          else if (type === 'combo' && id) deleteComboGroup(id);
+          setRemoveConfirm(null);
+        };
+        const handleKeyDown = (e: React.KeyboardEvent) => {
+          if (e.key === 'Escape') { closeModal(); return; }
+          if (e.key === 'Tab') {
+            const focusable = Array.from((e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('button'));
+            if (!focusable.length) return;
+            const first = focusable[0]; const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          }
+        };
+        const qtyNote = removeConfirm.qty > 1 ? ` (${removeConfirm.qty} unidades)` : '';
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-confirm-title"
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+            onKeyDown={handleKeyDown}
+            onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+          >
+            <div className="absolute inset-0 bg-black/60" onClick={closeModal} />
+            <div className="relative bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+              <button
+                onClick={closeModal}
+                aria-label="Cerrar"
+                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/8 hover:bg-black/14 text-black/60 text-sm font-bold">
+                ✕
+              </button>
+              <h2 id="remove-confirm-title" className="text-base font-black text-black mb-2 pr-8">¿Quitar esta orden?</h2>
+              <p className="text-sm text-black/65 mb-5">
+                ¿Seguro que deseas quitar «{removeConfirm.name}»{qtyNote} de tu carrito?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  autoFocus
+                  onClick={closeModal}
+                  className="flex-1 py-3 rounded-xl border-2 font-semibold text-sm text-black min-h-[44px]"
+                  style={{ borderColor: '#F58424', background: '#fff' }}>
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmRemove}
+                  className="flex-1 py-3 rounded-xl font-black text-sm text-white min-h-[44px]"
+                  style={{ background: '#F58424' }}>
+                  Sí, quitar
                 </button>
               </div>
             </div>
