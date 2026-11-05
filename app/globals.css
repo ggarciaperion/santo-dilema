@@ -4,8 +4,8 @@
 
 :root {
   /* Colores del logo Santo Dilema */
-  --background: #0a0a0a;
-  --foreground: #ffffff;
+  --background: #F6F1F1;
+  --foreground: #1A1206;
 
   /* Colores principales */
   --neon-purple: #d946ef;
@@ -388,56 +388,59 @@ body {
   animation: slideInOut 6s ease-in-out infinite, textReveal 6s ease-in-out infinite;
 }
 
-/* Animaciones de pantalla de éxito de pedido */
+/* ── Order sending ring (loading state) ── */
+@keyframes sdOrderRingSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.sd-order-ring-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sdOrderRingSpin 1.1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sd-order-ring-spin { animation: none; }
+}
+
+/* ── Pantalla de éxito de pedido ── */
 @keyframes successCircleFill {
-  0% { stroke-dashoffset: 351.86; }
+  0%   { stroke-dashoffset: 351.86; }
   100% { stroke-dashoffset: 0; }
 }
 
 @keyframes successCheckDraw {
-  0% { stroke-dashoffset: 60; }
+  0%   { stroke-dashoffset: 60; }
   100% { stroke-dashoffset: 0; }
 }
 
-@keyframes successTextReveal {
-  0% { clip-path: inset(0 0 0 100%); opacity: 0; }
-  30% { clip-path: inset(0 0 0 0); opacity: 1; }
-  48% { opacity: 1; }
-  52% { opacity: 0; }
-  56% { opacity: 1; }
-  72% { opacity: 1; }
-  76% { opacity: 0; }
-  80% { opacity: 1; }
-  100% { opacity: 1; clip-path: inset(0 0 0 0); }
-}
-
 @keyframes successFadeInUp {
-  0% { opacity: 0; transform: translateY(10px); }
+  0%   { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 .success-circle-fill {
-  animation: successCircleFill 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: successCircleFill 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .success-check-path {
-  animation: successCheckDraw 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.6s forwards;
+  animation: successCheckDraw 0.45s cubic-bezier(0.4, 0, 0.2, 1) 1.4s forwards;
 }
 
 .success-main-text {
-  clip-path: inset(0 0 0 100%);
   opacity: 0;
-  animation: successTextReveal 2.5s ease-out 2.3s forwards;
+  animation: successFadeInUp 0.6s ease-out 2.0s forwards;
 }
 
 .success-sub-text {
   opacity: 0;
-  animation: successFadeInUp 0.8s ease-out 3.8s forwards;
+  animation: successFadeInUp 0.6s ease-out 2.5s forwards;
 }
 
-.success-logo {
-  opacity: 0;
-  animation: successFadeInUp 0.8s ease-out 4.3s forwards;
+@media (prefers-reduced-motion: reduce) {
+  .success-circle-fill,
+  .success-check-path,
+  .success-main-text,
+  .success-sub-text { animation-duration: 0.01ms !important; animation-delay: 0s !important; }
 }
 
 @keyframes promoBorderPulse {

@@ -2,12 +2,27 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./components/Providers";
 import MaintenanceWrapper from "./maintenance-wrapper";
-import { Lilita_One } from "next/font/google";
+import IntroOverlay from "./components/IntroOverlay";
+import { Lilita_One, Poppins, Bricolage_Grotesque } from "next/font/google";
 
 const lilitaOne = Lilita_One({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-graffiti",
+  display: "swap",
+});
+
+const poppins = Poppins({
+  weight: ["400"],
+  subsets: ["latin"],
+  variable: "--font-poppins",
+  display: "swap",
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  weight: ["800"],
+  subsets: ["latin"],
+  variable: "--font-bricolage",
   display: "swap",
 });
 
@@ -42,8 +57,8 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: "/logoprincipal.png",
-    apple: "/logoprincipal.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
@@ -68,8 +83,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Santo Dilema" />
       </head>
-      <body className={`antialiased ${lilitaOne.variable}`}>
+      <body className={`antialiased ${lilitaOne.variable} ${poppins.variable} ${bricolageGrotesque.variable}`}>
         <Providers>
+          <IntroOverlay />
           <MaintenanceWrapper>
             {children}
           </MaintenanceWrapper>

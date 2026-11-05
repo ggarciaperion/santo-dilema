@@ -139,7 +139,7 @@ function ensureDataDirectory() {
 interface Order {
   id: string;
   name: string;
-  dni: string;
+  dni?: string;
   phone: string;
   address: string;
   email?: string;

@@ -565,37 +565,71 @@ export default function CheckoutPage() {
 
   if (isSubmitting && !orderPlaced) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-fuchsia-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-5 p-6" role="status" aria-live="polite" aria-label="Enviando pedido">
+        {/* Logo + ring giratorio */}
+        <div className="relative flex items-center justify-center" style={{ width: 140, height: 140 }}>
+          <svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true" className="absolute inset-0">
+            {/* Track tenue */}
+            <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(245,132,36,0.15)" strokeWidth="5" />
+            {/* Arco giratorio */}
+            <circle cx="70" cy="70" r="56" fill="none" stroke="#F58424" strokeWidth="5"
+              strokeLinecap="round" strokeDasharray="88 264"
+              className="sd-order-ring-spin" />
+          </svg>
+          <Image
+            src="/3334.png"
+            alt="Santo Dilema"
+            width={160}
+            height={160}
+            priority
+            className="relative"
+            style={{ height: 72, width: "auto", objectFit: "contain", transform: "scale(1.35)" }}
+          />
+        </div>
+        <p className="text-sm font-semibold text-black/55 text-center">Estamos enviando tu pedido…</p>
       </div>
     );
   }
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
-        {/* Círculo animado + check */}
-        <div className="relative mb-10">
-          <svg width="140" height="140" viewBox="0 0 140 140">
-            <circle cx="70" cy="70" r="56" fill="none" stroke="#1f2937" strokeWidth="6" />
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6" role="status" aria-live="polite">
+        {/* Logo — visible desde el inicio */}
+        <div className="mb-7" style={{ opacity: 0, animation: "successFadeInUp 0.4s ease-out 0.1s forwards" }}>
+          <Image
+            src="/3334.png"
+            alt="Santo Dilema"
+            width={180}
+            height={180}
+            priority
+            style={{ height: 64, width: "auto", objectFit: "contain", transform: "scale(1.35)" }}
+          />
+        </div>
+
+        {/* Círculo animado + check naranja */}
+        <div className="relative mb-7" aria-hidden="true">
+          <svg width="130" height="130" viewBox="0 0 140 140">
+            {/* Track base */}
+            <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(245,132,36,0.12)" strokeWidth="5" />
+            {/* Arco que se llena */}
             <circle
               cx="70" cy="70" r="56"
               fill="none"
-              stroke="#a855f7"
-              strokeWidth="6"
+              stroke="#F58424"
+              strokeWidth="5"
               strokeLinecap="round"
               strokeDasharray="351.86"
               strokeDashoffset="351.86"
               className="success-circle-fill"
-              style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
+              style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <svg width="56" height="56" viewBox="0 0 56 56">
+            <svg width="52" height="52" viewBox="0 0 56 56" aria-label="Pedido confirmado">
               <path
                 d="M12 28 L24 40 L44 16"
                 fill="none"
-                stroke="#a855f7"
+                stroke="#F58424"
                 strokeWidth="5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -607,54 +641,31 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Texto principal: slide-in derecha a izquierda + parpadeo */}
-        <h2
-          className="text-xl md:text-2xl text-center success-main-text"
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
-            fontWeight: 600,
-            fontStyle: 'italic',
-            color: 'transparent',
-            WebkitTextStroke: '1px #a855f7',
-            letterSpacing: '0.05em',
-            filter: 'drop-shadow(0 0 4px rgba(168, 85, 247, 0.5)) drop-shadow(0 0 8px rgba(168, 85, 247, 0.3)) drop-shadow(0 0 12px rgba(168, 85, 247, 0.2))'
-          }}
-        >
-          Pedido enviado con éxito
+        {/* Título */}
+        <h2 className="text-xl md:text-2xl font-black text-black text-center success-main-text">
+          ¡Pedido enviado!
         </h2>
 
-        {/* Texto secundario */}
-        <p className="text-gray-400 text-xs md:text-sm mt-3 max-w-xs mx-auto text-center success-sub-text">
-          En breve te contactaremos para coordinar la entrega, gracias
+        {/* Mensaje */}
+        <p className="text-black/50 text-sm mt-2 max-w-xs mx-auto text-center success-sub-text">
+          Nos estaremos contactando contigo para coordinar la entrega.
         </p>
-
-
-        {/* Logo Santo Dilema */}
-        <div className="mt-10 success-logo flex justify-center">
-          <Image
-            src="/logoprincipal.png"
-            alt="Santo Dilema"
-            width={200}
-            height={50}
-            className="h-8 md:h-10 w-auto"
-          />
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex flex-col">
+    <div className="min-h-screen bg-[#F6F1F1] flex flex-col">
       {/* Header mejorado */}
-      <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-fuchsia-500/30 shadow-lg shadow-fuchsia-500/10">
+      <header className="sticky top-0 z-50 bg-white border-b border-[#F58424]/30">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
             <Image
-              src="/logoprincipal.png"
+              src="/3334.png"
               alt="Santo Dilema"
               width={280}
               height={70}
-              className="h-9 md:h-11 w-auto"
+              className="h-12 md:h-14 w-auto"
               priority
             />
           </Link>
@@ -667,24 +678,24 @@ export default function CheckoutPage() {
 
           {/* Columna Izquierda - Datos de entrega */}
           <div className="lg:col-span-8">
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-fuchsia-500/20 p-4 md:p-6 shadow-xl">
+            <div className="bg-white rounded-2xl border border-[#F58424] p-4 md:p-6">
               {isFormValid() ? (
                 /* Card resumen de datos completados */
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-black text-fuchsia-400">Datos de entrega</h2>
+                    <h2 className="text-lg font-black text-black">Datos de entrega</h2>
                     <button
                       type="button"
                       onClick={() => setShowMobileFormModal(true)}
-                      className="text-xs text-fuchsia-400 hover:text-fuchsia-300 underline transition-colors"
+                      className="text-xs text-[#F58424] hover:text-[#F58424]/80 underline transition-colors"
                     >Editar</button>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <p className="text-gray-300 flex items-center gap-2"><span className="text-fuchsia-400 w-4">👤</span><span className="font-bold text-white">{formData.name}</span></p>
-                    <p className="text-gray-300 flex items-center gap-2"><span className="text-fuchsia-400 w-4">📱</span><span className="font-mono">{formData.phone}</span></p>
-                    <p className="text-gray-300 flex items-start gap-2"><span className="text-fuchsia-400 w-4 mt-0.5">📍</span><span>{formData.address}</span></p>
-                    <p className="text-gray-300 flex items-center gap-2">
-                      <span className="text-fuchsia-400 w-4">🛵</span>
+                    <p className="text-black flex items-center gap-2"><span className="text-[#F58424] w-4">👤</span><span className="font-bold text-black">{formData.name}</span></p>
+                    <p className="text-black flex items-center gap-2"><span className="text-[#F58424] w-4">📱</span><span className="font-mono">{formData.phone}</span></p>
+                    <p className="text-black flex items-start gap-2"><span className="text-[#F58424] w-4 mt-0.5">📍</span><span>{formData.address}</span></p>
+                    <p className="text-black flex items-center gap-2">
+                      <span className="text-[#F58424] w-4">🛵</span>
                       <span>{deliveryZone === 'centro' ? 'Chancay Centro — Gratis' : 'Chancay Alrededores — S/ 4.00'}</span>
                     </p>
                   </div>
@@ -692,11 +703,11 @@ export default function CheckoutPage() {
               ) : (
                 /* Estado vacío - invitar a completar */
                 <div className="text-center py-6">
-                  <p className="text-gray-400 text-sm mb-3">Completa tus datos para continuar</p>
+                  <p className="text-black text-sm mb-3">Completa tus datos para continuar</p>
                   <button
                     type="button"
                     onClick={() => setShowMobileFormModal(true)}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all active:scale-95"
+                    className="bg-[#F58424] hover:bg-[#F58424]/90 text-black font-bold px-6 py-3 rounded-xl text-sm transition-all active:scale-95"
                   >
                     Ingresar datos de entrega
                   </button>
@@ -708,8 +719,8 @@ export default function CheckoutPage() {
 
           {/* Columna Derecha - Resumen del Pedido (4 cols en desktop) */}
           <div className="lg:col-span-4">
-            <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-fuchsia-500/20 p-4 md:p-5 shadow-xl lg:sticky lg:top-24">
-              <h2 className="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 mb-4">
+            <div className="bg-white rounded-2xl border border-[#F58424] p-4 md:p-5 lg:sticky lg:top-24">
+              <h2 className="text-lg md:text-xl font-black text-black mb-4">
                 Resumen del Pedido
               </h2>
 
@@ -724,17 +735,17 @@ export default function CheckoutPage() {
                       seenCombos.add(order.comboGroupId);
                       const groupItems = completedOrders.filter(o => o.comboGroupId === order.comboGroupId);
                       return (
-                        <div key={`combo-${order.comboGroupId}`} className="bg-black/30 rounded-xl p-3 border border-amber-400/25 hover:border-amber-400/40 transition-all">
+                        <div key={`combo-${order.comboGroupId}`} className="bg-[#F6F1F1] rounded-xl p-3 border border-[#F58424]/25 hover:border-[#F58424]/50 transition-all">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <div>
-                              <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full font-bold tracking-wide">🔥 {order.comboName}</span>
+                              <span className="text-[10px] bg-[#F58424]/20 text-[#F58424] px-2 py-0.5 rounded-full font-bold tracking-wide">🔥 {order.comboName}</span>
                               {order.comboOriginalTotal && (
-                                <p className="text-gray-500 line-through text-[10px] font-mono mt-1">S/ {order.comboOriginalTotal.toFixed(2)}</p>
+                                <p className="text-black/40 line-through text-[10px] font-mono mt-1">S/ {order.comboOriginalTotal.toFixed(2)}</p>
                               )}
                             </div>
-                            <span className="font-black text-sm font-mono text-amber-400">S/ {(order.comboPrice ?? 0).toFixed(2)}</span>
+                            <span className="font-black text-sm font-mono text-black">S/ {(order.comboPrice ?? 0).toFixed(2)}</span>
                           </div>
-                          <div className="space-y-2 border-t border-amber-400/15 pt-2">
+                          <div className="space-y-2 border-t border-[#F58424]/15 pt-2">
                             {groupItems.map((gi, gi_idx) => {
                               const p = fatProducts.find(x => x.id === gi.productId)
                                 || fitProducts.find(x => x.id === gi.productId)
@@ -743,7 +754,7 @@ export default function CheckoutPage() {
                               if (!p) return null;
                               return (
                                 <div key={gi_idx} className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
+                                  <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
                                     {p.image.startsWith('/') ? (
                                       <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                                     ) : (
@@ -751,9 +762,9 @@ export default function CheckoutPage() {
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-white/80 text-xs leading-tight">{p.name}</p>
+                                    <p className="text-black text-xs leading-tight">{p.name}</p>
                                     {gi.salsas && gi.salsas.length > 0 && (
-                                      <p className="text-amber-300/70 text-[10px] truncate">
+                                      <p className="text-black/60 text-[10px] truncate">
                                         {gi.productId === "taco-duo"
                                           ? gi.salsas.map(id => tacoFlavors[id] || id).join(" + ")
                                           : gi.salsas.map(sId => salsas.find(s => s.id === sId)?.name).filter(Boolean).join(", ")}
@@ -781,10 +792,10 @@ export default function CheckoutPage() {
                     return (
                       <div
                         key={`${order.productId}-${index}`}
-                        className="bg-black/30 rounded-xl p-3 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-all"
+                        className="bg-[#F6F1F1] rounded-xl p-3 border border-[#F58424]/10 hover:border-[#F58424]/30 transition-all"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 border border-fuchsia-400/20">
+                          <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border border-[#F58424]/20">
                             {product.image.startsWith('/') ? (
                               <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                             ) : (
@@ -792,12 +803,12 @@ export default function CheckoutPage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white font-bold text-sm leading-tight">
-                              {order.quantity > 1 && <span className="text-fuchsia-400">{order.quantity}x </span>}
+                            <p className="text-black font-bold text-sm leading-tight">
+                              {order.quantity > 1 && <span className="text-[#F58424]">{order.quantity}x </span>}
                               {product.name}
                             </p>
                             {order.salsas && order.salsas.length > 0 && (
-                              <div className="text-xs text-amber-300 mt-1.5 flex items-start gap-1">
+                              <div className="text-xs text-black/70 mt-1.5 flex items-start gap-1">
                                 <span>{order.productId === "taco-duo" ? "🌮" : (order.productId === "burger-trio" || order.productId === "burger-duo") ? "🍔" : "🌶️"}</span>
                                 <span className="flex-1">
                                   {order.productId === "taco-duo"
@@ -809,7 +820,7 @@ export default function CheckoutPage() {
                               </div>
                             )}
                             {order.complementIds.length > 0 && (
-                              <div className="text-xs text-fuchsia-300 space-y-1 mt-1.5">
+                              <div className="text-xs text-black/60 space-y-1 mt-1.5">
                                 {order.complementIds.map((compId, ci) => {
                                   const comp = availableComplements[compId];
                                   if (!comp) return null;
@@ -832,7 +843,7 @@ export default function CheckoutPage() {
                                 </span>
                               </div>
                             )}
-                            <span className="font-black text-sm font-mono text-amber-400">
+                            <span className="font-black text-sm font-mono text-black">
                               S/ {productTotal.toFixed(2)}
                             </span>
                           </div>
@@ -844,11 +855,11 @@ export default function CheckoutPage() {
               </div>
 
               {/* Totales */}
-              <div className="border-t-2 border-fuchsia-500/30 pt-4 space-y-2">
+              <div className="border-t-2 border-[#F58424]/30 pt-4 space-y-2">
                 {(hasIndividualDiscount || hasComboDiscount) && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">Subtotal sin descuento:</span>
-                    <span className="text-gray-400 line-through font-mono text-xs">S/ {(() => {
+                    <span className="text-black/60">Subtotal sin descuento:</span>
+                    <span className="text-black/40 line-through font-mono text-xs">S/ {(() => {
                       const seenC = new Set<string>();
                       return completedOrders.reduce((t, o) => {
                         if (o.comboGroupId) {
@@ -866,14 +877,14 @@ export default function CheckoutPage() {
 
                 {deliveryZone === 'alrededores' && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-sky-400 font-bold">🛵 Delivery alrededores:</span>
-                    <span className="text-sky-400 font-bold font-mono">+S/ 4.00</span>
+                    <span className="text-black font-bold">🛵 Delivery alrededores:</span>
+                    <span className="text-black font-bold font-mono">+S/ 4.00</span>
                   </div>
                 )}
 
-                <div className="flex justify-between items-center pt-2 border-t border-gray-700">
-                  <span className="text-white font-black text-lg">Total:</span>
-                  <span className="text-amber-400 font-black text-2xl font-mono">
+                <div className="flex justify-between items-center pt-2 border-t border-[#F58424]/20">
+                  <span className="text-black font-black text-lg">Total:</span>
+                  <span className="text-black font-black text-2xl font-mono">
                     S/ {realTotal.toFixed(2)}
                   </span>
                 </div>
@@ -890,10 +901,10 @@ export default function CheckoutPage() {
               {/* Programar compra */}
               <div className="mt-3">
                 {scheduledDate && scheduledTime ? (
-                  <div className="flex items-center justify-between bg-indigo-900/30 border border-indigo-500/50 rounded-xl px-4 py-3">
+                  <div className="flex items-center justify-between bg-[#F6F1F1] border border-[#F58424]/50 rounded-xl px-4 py-3">
                     <div>
-                      <p className="text-indigo-300 font-bold text-sm">🗓 Entrega programada</p>
-                      <p className="text-white font-black text-base">{formatScheduleDisplay()}</p>
+                      <p className="text-black/70 font-bold text-sm">🗓 Entrega programada</p>
+                      <p className="text-black font-black text-base">{formatScheduleDisplay()}</p>
                     </div>
                     <button
                       type="button"
@@ -914,7 +925,7 @@ export default function CheckoutPage() {
                     className={`w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm ${
                       !isBusinessOpen()
                         ? 'bg-amber-900/30 border-2 border-amber-500/60 text-amber-300 hover:bg-amber-900/50'
-                        : 'bg-indigo-900/30 hover:bg-indigo-900/50 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-indigo-200'
+                        : 'bg-white border border-[#F58424]/40 hover:border-[#F58424] text-[#F58424]'
                     }`}
                   >
                     {!isBusinessOpen() ? '⚠️ Programar entrega (obligatorio)' : '🗓 Programar compra'}
@@ -926,7 +937,7 @@ export default function CheckoutPage() {
               <div className="flex gap-3 mt-6">
                 <Link
                   href={completedOrders.some(o => o.salsas && o.salsas.length > 0) ? "/fat?from=checkout" : "/fit?from=checkout"}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 border border-gray-600"
+                  className="flex-1 bg-white hover:bg-gray-50 text-black font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 border-2 border-[#F58424]"
                 >
                   <span>←</span>
                   <span>Volver</span>
@@ -946,7 +957,7 @@ export default function CheckoutPage() {
                     }
                     setShowPaymentModal(true);
                   }}
-                  className="flex-[2] bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-fuchsia-500/30"
+                  className="flex-[2] bg-[#F58424] hover:bg-[#F58424]/90 text-black font-black py-3 rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
                 </button>
@@ -959,7 +970,7 @@ export default function CheckoutPage() {
                 </p>
               )}
 
-              <p className="text-gray-400 text-[10px] text-center mt-3 leading-relaxed">
+              <p className="text-black/50 text-[10px] text-center mt-3 leading-relaxed">
                 Al confirmar, nos pondremos en contacto para coordinar la entrega
               </p>
             </div>
@@ -971,17 +982,17 @@ export default function CheckoutPage() {
       {showMobileFormModal && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div
-            className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl border-2 border-fuchsia-500/40 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl border-2 border-[#F58424] w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header con logo */}
-            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-fuchsia-500/20">
-              <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400">
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#F58424]/20">
+              <h3 className="text-xl font-black text-black">
                 Datos de Entrega
               </h3>
               <div className="flex items-center gap-3">
                 <Image
-                  src="/logoprincipal.png"
+                  src="/3334.png"
                   alt="Santo Dilema"
                   width={100}
                   height={28}
@@ -990,9 +1001,9 @@ export default function CheckoutPage() {
                 {isFormValid() && (
                   <button
                     onClick={() => setShowMobileFormModal(false)}
-                    className="w-9 h-9 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95"
+                    className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all active:scale-95"
                   >
-                    <span className="text-gray-300 text-xl leading-none">×</span>
+                    <span className="text-black text-xl leading-none">×</span>
                   </button>
                 )}
               </div>
@@ -1011,8 +1022,8 @@ export default function CheckoutPage() {
             >
               {/* TELÉFONO — primero */}
               <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
-                  Teléfono <span className="text-red-400">*</span>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Teléfono <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -1025,11 +1036,11 @@ export default function CheckoutPage() {
                     onChange={(e) => handlePhoneInput(e.target.value)}
                     maxLength={9}
                     placeholder="987654321"
-                    className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 font-mono pr-10"
+                    className="w-full px-4 py-4 text-base rounded-xl bg-white border-2 border-[#F58424] text-black focus:border-[#F58424] focus:outline-none focus:ring-2 focus:ring-[#F58424]/20 transition-all placeholder:text-black/40 font-mono pr-10"
                   />
                   {customerLookupStatus === 'searching' && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <svg className="animate-spin h-5 w-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-5 w-5 text-[#F58424]" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                       </svg>
@@ -1051,8 +1062,8 @@ export default function CheckoutPage() {
 
               {/* NOMBRE */}
               <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
-                  Nombre completo <span className="text-red-400">*</span>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Nombre completo <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -1060,29 +1071,29 @@ export default function CheckoutPage() {
                   value={formData.name}
                   onChange={(e) => handleNameInput(e.target.value)}
                   placeholder="Ingresa tu nombre completo"
-                  className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500"
+                  className="w-full px-4 py-4 text-base rounded-xl bg-white border-2 border-[#F58424] text-black focus:border-[#F58424] focus:outline-none focus:ring-2 focus:ring-[#F58424]/20 transition-all placeholder:text-black/40"
                 />
               </div>
 
               {/* DIRECCIÓN */}
               <div>
-                <label className="block text-sm font-bold text-fuchsia-400 mb-2">
-                  Dirección de entrega <span className="text-red-400">*</span>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Dirección de entrega <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   required
                   value={formData.address}
                   onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                   placeholder="Ej: Av. Principal 123, Chancay"
-                  className="w-full px-4 py-4 text-base rounded-xl bg-gray-800/50 border-2 border-fuchsia-500/30 text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all placeholder:text-gray-500 resize-none"
+                  className="w-full px-4 py-4 text-base rounded-xl bg-white border-2 border-[#F58424] text-black focus:border-[#F58424] focus:outline-none focus:ring-2 focus:ring-[#F58424]/20 transition-all placeholder:text-black/40 resize-none"
                   rows={3}
                 />
               </div>
 
               {/* Zona de delivery */}
               <div>
-                <p className="text-sm font-bold text-fuchsia-400 mb-3">
-                  Elige la zona de delivery <span className="text-red-400">*</span>
+                <p className="text-sm font-bold text-black mb-3">
+                  Elige la zona de delivery <span className="text-red-500">*</span>
                 </p>
                 <div className="space-y-2">
                   {[
@@ -1094,21 +1105,21 @@ export default function CheckoutPage() {
                       onClick={() => setDeliveryZone(opt.value as 'centro' | 'alrededores')}
                       className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
                         deliveryZone === opt.value
-                          ? 'border-fuchsia-500 bg-fuchsia-900/30'
-                          : 'border-gray-700 bg-gray-800/40 hover:border-fuchsia-500/50'
+                          ? 'border-[#F58424] bg-[#F58424]/10'
+                          : 'border-[#F58424]/30 bg-white hover:border-[#F58424]'
                       }`}
                     >
                       {/* Checkbox circular */}
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        deliveryZone === opt.value ? 'border-fuchsia-500 bg-fuchsia-500/20' : 'border-gray-500'
+                        deliveryZone === opt.value ? 'border-[#F58424] bg-[#F58424]/20' : 'border-[#F58424]/40'
                       }`}>
                         {deliveryZone === opt.value && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-fuchsia-400" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-[#F58424]" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`font-bold text-sm ${deliveryZone === opt.value ? 'text-white' : 'text-gray-300'}`}>{opt.label}</p>
-                        {opt.sub && <p className="text-xs text-gray-500 mt-0.5">{opt.sub}</p>}
+                        <p className="font-bold text-sm text-black">{opt.label}</p>
+                        {opt.sub && <p className="text-xs text-black/50 mt-0.5">{opt.sub}</p>}
                       </div>
                       <span className={`font-black text-sm font-mono flex-shrink-0 ${opt.priceColor}`}>{opt.price}</span>
                     </label>
@@ -1119,7 +1130,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={!isFormValid()}
-                className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-fuchsia-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#F58424] hover:bg-[#F58424]/90 text-black font-black py-4 rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Confirmar datos
               </button>
@@ -1243,7 +1254,7 @@ export default function CheckoutPage() {
           >
             <div className="flex justify-center mb-4">
               <Image
-                src="/logoprincipal.png"
+                src="/3334.png"
                 alt="Santo Dilema"
                 width={180}
                 height={50}
@@ -1353,7 +1364,7 @@ export default function CheckoutPage() {
           >
             <div className="flex justify-center mb-4">
               <Image
-                src="/logoprincipal.png"
+                src="/3334.png"
                 alt="Santo Dilema"
                 width={180}
                 height={50}
@@ -1529,7 +1540,7 @@ export default function CheckoutPage() {
           <div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl border-2 border-green-500/40 max-w-sm w-full p-6 shadow-2xl">
             <div className="flex justify-center mb-4">
               <Image
-                src="/logoprincipal.png"
+                src="/3334.png"
                 alt="Santo Dilema"
                 width={180}
                 height={50}

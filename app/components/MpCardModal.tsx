@@ -83,7 +83,7 @@ export default function MpCardModal({
             },
             customization: {
               visual: {
-                style: { theme: "dark" },
+                style: { theme: "default" },
                 hideFormTitle: true,
               },
               paymentMethods: { maxInstallments: 1, types: { excluded: [] } },
@@ -139,41 +139,52 @@ export default function MpCardModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-start justify-center z-[110] p-4 overflow-y-auto">
+    <div
+      className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto"
+      style={{ background: "rgba(0,0,0,.55)", backdropFilter: "blur(4px)" }}
+    >
       <div
-        className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl border-2 border-blue-500/40 w-full max-w-sm shadow-2xl my-6"
+        className="w-full max-w-sm mx-4 my-4 md:my-8 rounded-2xl shadow-2xl"
+        style={{ background: "#fff", border: "2px solid #F58424" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 pb-3 border-b border-gray-700/50">
-          <div className="flex justify-center mb-3">
+        <div className="px-5 pt-3 pb-2.5" style={{ borderBottom: "1px solid rgba(245,132,36,.2)" }}>
+          {/* Zona del logo — altura fija, imagen escalada para recortar márgenes transparentes */}
+          <div
+            className="flex justify-center overflow-hidden mx-auto"
+            style={{ height: 48, width: "100%" }}
+          >
             <Image
-              src="/logoprincipal.png"
+              src="/3334.png"
               alt="Santo Dilema"
-              width={150}
-              height={45}
-              className="h-9 w-auto"
+              width={200}
+              height={200}
+              priority
+              className="w-auto"
+              style={{ height: "150%", objectFit: "contain", transform: "translateY(-16%)" }}
             />
           </div>
-          <h3 className="text-lg font-black text-white text-center mb-0.5">
+          <h3 className="text-base font-black text-black text-center mt-1 mb-0">
             Pagar con tarjeta
           </h3>
-          <p className="text-gray-400 text-sm text-center">
+          <p className="text-sm text-black/50 text-center">
             Total:{" "}
-            <span className="text-amber-400 font-black font-mono text-base">
+            <span className="font-black text-sm" style={{ color: "#F58424" }}>
               S/ {amount.toFixed(2)}
             </span>
           </p>
         </div>
 
         {/* Brick container */}
-        <div className="p-5">
+        <div className="px-5 py-3">
           {initError ? (
             <div className="text-center py-6">
-              <p className="text-red-400 text-sm mb-4">{initError}</p>
+              <p className="text-sm text-red-500 mb-4">{initError}</p>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white text-sm underline"
+                className="text-sm font-semibold underline"
+                style={{ color: "#F58424" }}
               >
                 Cerrar y usar otro método
               </button>
@@ -181,26 +192,32 @@ export default function MpCardModal({
           ) : (
             <>
               {!brickReady && (
-                <div className="flex items-center justify-center py-10">
-                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                  <div
+                    className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin"
+                    style={{ borderColor: "#F58424", borderTopColor: "transparent" }}
+                  />
+                  <p className="text-xs text-black/40 font-semibold">Cargando formulario…</p>
                 </div>
               )}
+              {/* MP Brick — rendered by MercadoPago SDK, theme: default (light) */}
               <div id="mp-brick-container" />
             </>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 flex flex-col gap-2">
-          <div className="flex items-center justify-center gap-2 text-gray-500 text-xs">
-            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+        <div className="px-5 pb-4 flex flex-col gap-2" style={{ borderTop: "1px solid rgba(0,0,0,.06)" }}>
+          <div className="flex items-center justify-center gap-1.5 pt-2" style={{ color: "rgba(0,0,0,.35)" }}>
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current flex-shrink-0">
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l6 2.67V11c0 3.83-2.57 7.42-6 8.63C8.57 18.42 6 14.83 6 11V7.67L12 5z"/>
             </svg>
-            <span>Pago seguro · Powered by Mercado Pago</span>
+            <span className="text-xs font-semibold">Pago seguro · Powered by Mercado Pago</span>
           </div>
           <button
             onClick={onClose}
-            className="w-full text-gray-400 hover:text-gray-200 text-sm transition-colors py-2"
+            className="w-full py-2.5 rounded-xl border-2 text-sm font-black transition-colors"
+            style={{ borderColor: "rgba(0,0,0,.12)", color: "#000" }}
           >
             Cancelar
           </button>

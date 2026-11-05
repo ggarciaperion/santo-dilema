@@ -77,7 +77,7 @@ export default function MpSuccessPage() {
 
   if (isProcessing) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
+      <div className="fixed inset-0 bg-[#F6F1F1] flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-spin">⚙️</div>
           <p className="text-amber-400 font-bold animate-pulse">Confirmando tu pedido...</p>
@@ -88,7 +88,7 @@ export default function MpSuccessPage() {
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center p-6">
+      <div className="fixed inset-0 bg-[#F6F1F1] flex items-center justify-center p-6">
         <div className="bg-gray-900 border border-red-500/40 rounded-2xl p-6 max-w-sm w-full text-center">
           <div className="text-4xl mb-4">⚠️</div>
           <h2 className="text-white font-black text-xl mb-2">Pago exitoso</h2>
@@ -105,7 +105,7 @@ export default function MpSuccessPage() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center p-6">
+    <div className="fixed inset-0 bg-[#F6F1F1] flex items-center justify-center p-6">
       <div className="bg-gradient-to-b from-gray-900 to-gray-800 border-2 border-green-500/40 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
         <div className="flex justify-center mb-4">
           <Image src="/logoprincipal.png" alt="Santo Dilema" width={160} height={45} className="h-10 w-auto" />
