@@ -1120,10 +1120,22 @@ export default function MenuPage() {
         .sd-acc-content-open { transition:opacity 200ms ease 80ms; }
         /* Burger progress bar fill */
         .sd-bar-fill { transition:transform 300ms cubic-bezier(0.25,0.46,0.45,0.94); }
+        /* ── Checkout processing & success ─────────────────────────────── */
+        @keyframes sd-spin { to { transform:rotate(360deg); } }
+        @keyframes sd-complete-arc { from{stroke-dashoffset:578} to{stroke-dashoffset:0} }
+        @keyframes sd-draw-check   { to  {stroke-dashoffset:0} }
+        .sd-spin       { animation:sd-spin 1.2s linear infinite; transform-origin:center; }
+        .sd-arc-complete { stroke-dasharray:578; stroke-dashoffset:578;
+                           animation:sd-complete-arc .6s cubic-bezier(.4,0,.2,1) forwards; }
+        .sd-check-path { stroke-dasharray:115; stroke-dashoffset:115;
+                         animation:sd-draw-check .4s .5s cubic-bezier(.4,0,.2,1) forwards; }
         @media (prefers-reduced-motion:reduce) {
           .sd-acc { transition:none !important; }
           .sd-acc-content,.sd-acc-content-open { transition:none !important; }
           .sd-bar-fill { transition:none !important; }
+          .sd-spin { animation:none !important; }
+          .sd-arc-complete { animation:none !important; stroke-dashoffset:0 !important; }
+          .sd-check-path  { animation:none !important; stroke-dashoffset:0 !important; }
         }
       `}</style>
 
@@ -2256,7 +2268,7 @@ export default function MenuPage() {
                   )}
 
                   {/* ══ PAYMENT ═══════════════════════════════════════════════ */}
-                  {checkoutStep === 'payment' && !ckOrderPlaced && (
+                  {checkoutStep === 'payment' && !ckOrderPlaced && !ckIsSubmitting && (
                   <div className="max-w-3xl mx-auto px-4 py-4 space-y-3">
                     <p className="text-xs font-bold text-black/40 uppercase tracking-wide">Paso 3 — Método de pago</p>
                     <p className="text-sm font-black text-black">Total: <span style={{ color: '#F58424' }}>S/ {ckRealTotal.toFixed(2)}</span></p>
@@ -2306,7 +2318,7 @@ export default function MenuPage() {
                   )}
 
                   {/* ══ YAPE ══════════════════════════════════════════════════ */}
-                  {checkoutStep === 'yape' && !ckOrderPlaced && (
+                  {checkoutStep === 'yape' && !ckOrderPlaced && !ckIsSubmitting && (
                   <div className="max-w-3xl mx-auto px-4 py-4 space-y-3">
                     <p className="text-xs font-bold text-black/40 uppercase tracking-wide">Yape / Plin</p>
                     <p className="text-sm text-black/70">Yapea o Plínea <span className="font-black text-black">S/ {ckRealTotal.toFixed(2)}</span> al número:</p>
@@ -2347,7 +2359,7 @@ export default function MenuPage() {
                   )}
 
                   {/* ══ EFECTIVO ══════════════════════════════════════════════ */}
-                  {checkoutStep === 'efectivo' && !ckOrderPlaced && (
+                  {checkoutStep === 'efectivo' && !ckOrderPlaced && !ckIsSubmitting && (
                   <div className="max-w-3xl mx-auto px-4 py-4 space-y-3">
                     <p className="text-xs font-bold text-black/40 uppercase tracking-wide">Contra Entrega</p>
                     <p className="text-sm text-black/70">Total a pagar: <span className="font-black text-black">S/ {ckRealTotal.toFixed(2)}</span></p>
@@ -2390,14 +2402,38 @@ export default function MenuPage() {
                   </div>
                   )}
 
+                  {/* ══ PROCESSING ════════════════════════════════════════════ */}
+                  {ckIsSubmitting && !ckOrderPlaced && (
+                  <div className="max-w-3xl mx-auto px-4 py-10 flex flex-col items-center bg-white"
+                    role="status" aria-live="polite" aria-label="Procesando tu pedido">
+                    <div className="relative w-48 h-48 mx-auto mb-4">
+                      <svg className="absolute inset-0 w-full h-full sd-spin" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="92" fill="none" stroke="#F58424" strokeWidth="2.5"
+                          strokeDasharray="578" strokeDashoffset="434" strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Image src="/logo-santo-dilema-cropped.png" alt="Santo Dilema" width={961} height={372}
+                          className="w-36 h-auto" />
+                      </div>
+                    </div>
+                    <p className="text-sm font-semibold text-black/45">Procesando tu pedido…</p>
+                  </div>
+                  )}
+
                   {/* ══ SUCCESS ═══════════════════════════════════════════════ */}
                   {ckOrderPlaced && (
-                  <div className="max-w-3xl mx-auto px-4 py-8 text-center">
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(34,197,94,.12)' }}>
-                      <span className="text-3xl">✅</span>
+                  <div className="max-w-3xl mx-auto px-4 py-8 text-center bg-white">
+                    <div className="relative w-48 h-48 mx-auto mb-5">
+                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="92" fill="none" stroke="#F58424" strokeWidth="2.5"
+                          strokeLinecap="round" className="sd-arc-complete" />
+                        <path d="M62 100 L88 126 L140 70" fill="none" stroke="#F58424" strokeWidth="3.5"
+                          strokeLinecap="round" strokeLinejoin="round" className="sd-check-path" />
+                      </svg>
                     </div>
-                    <h2 className="text-xl font-black text-black mb-1">¡Pedido confirmado!</h2>
-                    <p className="text-sm text-black/55 mb-5">Tu pedido está siendo preparado. Te contactamos por WhatsApp si necesitamos algo.</p>
+                    <h2 className="text-xl font-black text-black mb-2">¡Pedido confirmado!</h2>
+                    <p className="text-sm text-black/55">Tu pedido está siendo preparado.</p>
+                    <p className="text-sm text-black/55 mb-5">Te contactaremos por WhatsApp cuando esté en camino.</p>
                     <button onClick={() => {
                       ckReset(); closeCart();
                       setAlitasOrders([]); setFitOrders([]); setTacoOrders([]); setTrioOrders([]); setBebidaQty({}); setComboItems([]);
