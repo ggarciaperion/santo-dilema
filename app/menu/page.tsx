@@ -1903,11 +1903,16 @@ export default function MenuPage() {
                     {/* Burgers */}
                     {trioOrders.map((trio, idx) => {
                       const DRINK_IDS_SET = new Set(["coca-cola","inka-cola","sprite","fanta","agua-mineral"]);
-                      const bebidas = trio.complementIds.filter(c => DRINK_IDS_SET.has(c)).map(c => COMPLEMENTS[c]);
+                      const bebidaIds = trio.complementIds.filter(c => DRINK_IDS_SET.has(c));
+                      const bebidas = bebidaIds.map(c => COMPLEMENTS[c]);
                       const salsaLibre = trio.complementIds.find(c => c.startsWith("burger-salsa-"));
                       const salsaLibreNombre = salsaLibre ? COMPLEMENTS[salsaLibre]?.name : null;
                       const paidExtras = trio.complementIds.filter(c => (COMPLEMENTS[c]?.price ?? 0) > 0).map(c => COMPLEMENTS[c]);
                       const lineTotal = trio.trioPrice + paidExtras.reduce((s, c) => s + (c?.price ?? 0), 0);
+                      // Exclude drinks from + extras display: drinks already shown in bebidas line with price
+                      const paidNonDrinks = trio.complementIds
+                        .filter(c => !DRINK_IDS_SET.has(c) && (COMPLEMENTS[c]?.price ?? 0) > 0)
+                        .map(c => COMPLEMENTS[c]);
                       return (
                         <div key={`b-${trio.trioGroupId}`} className="flex items-start gap-2.5 py-2.5 border-b border-black/6 last:border-0">
                           {badge(rTrio + idx + 1)}
@@ -1921,8 +1926,12 @@ export default function MenuPage() {
                             </div>
                             <p className="text-xs text-black/45 mt-0.5">{trio.trioFlavors.map(f => `${f.qty > 1 ? f.qty + "× " : ""}${f.name}`).join(" · ")}</p>
                             {salsaLibreNombre && <p className="text-xs text-black/35 mt-0.5">Salsa: {salsaLibreNombre}</p>}
-                            {bebidas.length > 0 && <p className="text-xs text-black/35 mt-0.5">🥤 {bebidas.map((c: any) => c?.name).join(", ")}</p>}
-                            {paidExtras.map((c, ci) => <p key={ci} className="text-xs text-black/45">+ {c?.name} <span className="text-[#F58424]">S/ {(c?.price ?? 0).toFixed(2)}</span></p>)}
+                            {bebidas.map((c, bi) => (
+                              <p key={bi} className="text-xs text-black/45 mt-0.5">
+                                🥤 {c?.name} <span className="text-[#F58424]">S/ {(c?.price ?? 0).toFixed(2)}</span>
+                              </p>
+                            ))}
+                            {paidNonDrinks.map((c, ci) => <p key={ci} className="text-xs text-black/45">+ {c?.name} <span className="text-[#F58424]">S/ {(c?.price ?? 0).toFixed(2)}</span></p>)}
                           </div>
                         </div>
                       );
