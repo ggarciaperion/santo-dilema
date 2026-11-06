@@ -548,15 +548,14 @@ export default function MenuPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartOpen]);
 
-  // ── Auto-close success panel: 4 s visible after animations complete ─────────
-  // Animations finish at ~0.9 s (arc 0.6 s + check 0.5 s delay + 0.4 s draw).
-  // Fade starts at 4.9 s (0.9 s + 4 s visible), close executes at 5.3 s (+ 0.4 s fade).
+  // ── Auto-close success panel after 3 s ───────────────────────────────────────
   useEffect(() => {
     if (!ckOrderPlaced) {
       setCkAutoClosing(false);
       return;
     }
-    const fadeTimer  = setTimeout(() => setCkAutoClosing(true), 4900);
+    // Start fade at 2.6 s, execute close at 3 s
+    const fadeTimer  = setTimeout(() => setCkAutoClosing(true), 2600);
     const closeTimer = setTimeout(() => {
       setCheckoutStep('cart');
       setCkForm({ phone: '', name: '', address: '' });
@@ -577,7 +576,7 @@ export default function MenuPage() {
       setComboItems([]);
       sessionStorage.removeItem('santo-dilema-orders');
       sessionStorage.removeItem('santo-dilema-cart');
-    }, 5300);
+    }, 3000);
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(closeTimer);
