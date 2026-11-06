@@ -499,7 +499,7 @@ export default function ClientesCRM({
                       <button
                         onClick={saveQuickNote}
                         disabled={!inlineNote.trim()}
-                        className="px-3 py-1 bg-gray-900 text-white rounded-lg text-[11px] font-bold disabled:opacity-40 hover:bg-gray-700 transition-all"
+                        className="px-3 py-1 bg-[#F58424] text-white rounded-lg text-[11px] font-bold disabled:opacity-40 hover:bg-orange-600 transition-all"
                       >
                         Guardar →
                       </button>

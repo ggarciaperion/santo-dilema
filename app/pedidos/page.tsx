@@ -508,9 +508,9 @@ export default function PedidosPage() {
   // ── Loading / unauth ──────────────────────────────────────────────────────
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F6F1F1] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-400 mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#F58424] mx-auto mb-4" />
           <p className="text-gray-500">Verificando acceso...</p>
         </div>
       </div>
@@ -520,7 +520,7 @@ export default function PedidosPage() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F6F1F1]">
       {/* ── Delivery toast ── */}
       {deliveryToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-white border border-green-200 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
@@ -537,27 +537,30 @@ export default function PedidosPage() {
       )}
 
       {/* ── Header ── */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
-          <div className="flex items-center gap-3">
-            <Image src="/logoprincipal.png" alt="Santo Dilema" width={80} height={40} />
-            <p className="text-xs font-black text-gray-900 uppercase tracking-wide">Pedidos</p>
+      <header className="bg-white border-b border-[#F58424]/20 sticky top-0 z-30">
+        <div className="flex items-center justify-between px-4 py-2 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2">
+            {/* Contenedor fijo — el logo se escala dentro sin agrandar el header */}
+            <div className="h-14 w-44 overflow-hidden flex items-center justify-center flex-shrink-0">
+              <Image src="/3334.png" alt="Santo Dilema" width={320} height={320} className="w-auto object-contain" style={{ height: "220%", transform: "translateY(-2%)" }} />
+            </div>
+            <p className="text-xs font-black uppercase tracking-wide" style={{ color: "#F58424" }}>Pedidos</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleLogout}
-              className="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 transition-all"
+              className="px-3 py-1.5 bg-[#F58424] text-white text-xs font-bold rounded-lg hover:bg-[#e07820] transition-all"
             >
               Salir
             </button>
           </div>
         </div>
         {/* ── Filter pills + toolbar ── */}
-        <div className="border-t border-gray-100 px-4 py-2 max-w-7xl mx-auto flex items-center gap-2">
+        <div className="border-t border-[#F58424]/10 px-4 py-2 max-w-7xl mx-auto flex items-center gap-2">
           {/* Pills */}
           <div className="flex gap-2 overflow-x-auto flex-1 min-w-0">
             {([
-              { key: "all" as const,       label: isOrdersDateFiltered ? "Filtrado" : "Total Hoy", icon: "📋", active: "bg-gray-700 text-white",        inactive: "bg-gray-100 text-gray-700",        count: dateFilteredOrders.length },
+              { key: "all" as const,       label: isOrdersDateFiltered ? "Filtrado" : "Total Hoy", icon: "📋", active: "bg-[#F58424] text-white",        inactive: "bg-orange-50 text-orange-700",        count: dateFilteredOrders.length },
               { key: "confirmed" as const,  label: "Confirmados",  icon: "✅", active: "bg-sky-500 text-white",      inactive: "bg-sky-50 text-sky-700",         count: dateFilteredOrders.filter((o) => o.status === "confirmed").length },
               { key: "en-camino" as const,  label: "En Camino",    icon: "🛵", active: "bg-blue-600 text-white",     inactive: "bg-blue-50 text-blue-700",       count: dateFilteredOrders.filter((o) => o.status === "en-camino").length },
               { key: "delivered" as const,  label: "Entregados",   icon: "📦", active: "bg-emerald-500 text-white",  inactive: "bg-emerald-50 text-emerald-700", count: dateFilteredOrders.filter((o) => o.status === "delivered").length },
@@ -581,7 +584,7 @@ export default function PedidosPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar..."
-                className="w-40 px-3 py-1.5 pl-8 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-all text-xs"
+                className="w-40 px-3 py-1.5 pl-8 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#F58424] transition-all text-xs"
               />
               <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -601,7 +604,7 @@ export default function PedidosPage() {
               </svg>
             </button>
             <button onClick={() => setShowOrdersDateModal(true)} title="Filtrar por fechas"
-              className={`p-1.5 bg-white border rounded-lg transition-all ${isOrdersDateFiltered ? "border-blue-400 text-blue-600" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-400"}`}>
+              className={`p-1.5 bg-white border rounded-lg transition-all ${isOrdersDateFiltered ? "border-[#F58424] text-[#F58424]" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-400"}`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -627,7 +630,7 @@ export default function PedidosPage() {
                   <input type="date" value={ordersDateTo} onChange={(e) => setOrdersDateTo(e.target.value)} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400 transition-all [color-scheme:light]" />
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <button onClick={applyOrdersDateFilter} disabled={!ordersDateFrom || !ordersDateTo} className="flex-1 px-6 py-3 bg-gray-900 text-white rounded-lg font-bold hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all">Aplicar Filtro</button>
+                  <button onClick={applyOrdersDateFilter} disabled={!ordersDateFrom || !ordersDateTo} className="flex-1 px-6 py-3 bg-[#F58424] text-white rounded-lg font-bold hover:bg-[#e07820] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all">Aplicar Filtro</button>
                   {isOrdersDateFiltered && <button onClick={clearOrdersDateFilter} className="px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all">Limpiar</button>}
                   <button onClick={() => setShowOrdersDateModal(false)} className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-all">Cerrar</button>
                 </div>
@@ -644,13 +647,13 @@ export default function PedidosPage() {
         )}
 
         {/* ── Lista de pedidos ── */}
-        <section className="px-4 pb-12">
+        <section className="px-4 pt-4 pb-12">
           {loading ? (
             <div className="text-center py-12">
               <p className="text-2xl text-gray-600">Cargando pedidos...</p>
             </div>
           ) : filteredOrders.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="text-center py-12 bg-white rounded-2xl border border-[#F58424]/20 shadow-sm">
               <div className="text-5xl mb-3">📭</div>
               <p className="text-xl font-bold text-gray-400">Sin pedidos</p>
               <p className="text-sm text-gray-300 mt-1">

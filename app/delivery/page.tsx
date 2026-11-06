@@ -267,23 +267,23 @@ export default function DeliveryPage() {
   // Pantalla de login
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
-        <div className="bg-gray-900 border-2 border-blue-500 rounded-xl p-8 max-w-md w-full shadow-2xl">
+      <div className="min-h-screen bg-[#F6F1F1] flex items-center justify-center p-4">
+        <div className="bg-white border-2 border-[#F58424] rounded-2xl p-8 max-w-md w-full shadow-2xl">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-2">
             <Image
-              src="/logoprincipal.png"
+              src="/3334.png"
               alt="Santo Dilema"
-              width={200}
-              height={60}
-              className="h-12 w-auto"
+              width={240}
+              height={240}
+              className="h-28 w-auto object-contain"
             />
           </div>
 
-          <h1 className="text-2xl font-black text-white text-center mb-2">
+          <h1 className="text-2xl font-black text-gray-900 text-center mb-2">
             🚚 Panel de Delivery
           </h1>
-          <p className="text-gray-400 text-sm text-center mb-6">
+          <p className="text-gray-500 text-sm text-center mb-6">
             Ingresa el PIN para acceder
           </p>
 
@@ -300,13 +300,13 @@ export default function DeliveryPage() {
                   setPinError(false);
                 }}
                 placeholder="••••"
-                className={`w-full px-6 py-4 rounded-lg bg-gray-800 text-white text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 ${
-                  pinError ? "ring-2 ring-red-500" : "focus:ring-blue-500"
+                className={`w-full px-6 py-4 rounded-xl bg-gray-50 border text-gray-900 text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 transition-all ${
+                  pinError ? "border-red-400 ring-2 ring-red-400" : "border-gray-200 focus:border-[#F58424] focus:ring-[#F58424]"
                 }`}
                 autoFocus
               />
               {pinError && (
-                <p className="text-red-400 text-sm text-center mt-2">
+                <p className="text-red-500 text-sm text-center mt-2">
                   ❌ PIN incorrecto
                 </p>
               )}
@@ -314,13 +314,13 @@ export default function DeliveryPage() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-black py-4 rounded-lg transition-all transform active:scale-95"
+              className="w-full bg-[#F58424] hover:bg-[#e07820] text-white font-black py-4 rounded-xl transition-all transform active:scale-95"
             >
               Ingresar
             </button>
           </form>
 
-          <p className="text-gray-500 text-xs text-center mt-6">
+          <p className="text-gray-400 text-xs text-center mt-6">
             PIN por defecto: 1234 (configurable)
           </p>
         </div>
@@ -330,19 +330,22 @@ export default function DeliveryPage() {
 
   // Pantalla principal - Lista de pedidos
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+    <div className="min-h-screen bg-[#F6F1F1]">
       {/* Header */}
-      <header className="bg-black/40 backdrop-blur-sm border-b border-blue-500/30 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logoprincipal.png"
-              alt="Santo Dilema"
-              width={120}
-              height={40}
-              className="h-8 w-auto"
-            />
-            <span className="text-blue-400 font-black text-sm">🚚 DELIVERY</span>
+      <header className="bg-white border-b border-[#F58424]/20 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-14 w-44 overflow-hidden flex items-center justify-center flex-shrink-0">
+              <Image
+                src="/3334.png"
+                alt="Santo Dilema"
+                width={320}
+                height={320}
+                className="w-auto object-contain"
+                style={{ height: "220%", transform: "translateY(-2%)" }}
+              />
+            </div>
+            <span className="font-black text-sm" style={{ color: "#F58424" }}>🚚 DELIVERY</span>
           </div>
           <button
             onClick={() => {
@@ -350,7 +353,7 @@ export default function DeliveryPage() {
               setIsAuthenticated(false);
               setPin("");
             }}
-            className="text-gray-400 hover:text-white text-sm font-bold transition-colors"
+            className="px-3 py-1.5 bg-[#F58424] text-white text-xs font-bold rounded-lg hover:bg-[#e07820] transition-all"
           >
             Salir
           </button>
@@ -361,10 +364,10 @@ export default function DeliveryPage() {
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header de pedidos */}
         <div className="mb-6">
-          <h1 className="text-2xl font-black text-white mb-2">
+          <h1 className="text-2xl font-black text-gray-900 mb-2">
             Pedidos para Entregar
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             {orders.length} pedido{orders.length !== 1 ? "s" : ""} en camino
           </p>
         </div>
@@ -372,16 +375,16 @@ export default function DeliveryPage() {
         {/* Lista de pedidos */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">Cargando...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#F58424] mx-auto mb-4"></div>
+            <p className="text-gray-500">Cargando...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-12 text-center">
+          <div className="bg-white border border-[#F58424]/20 rounded-2xl p-12 text-center shadow-sm">
             <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-xl font-bold text-white mb-2">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
               No hay pedidos pendientes
             </h3>
-            <p className="text-gray-400">
+            <p className="text-gray-500">
               Los nuevos pedidos aparecerán aquí automáticamente
             </p>
           </div>
@@ -390,15 +393,15 @@ export default function DeliveryPage() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="bg-gray-900 border-2 border-blue-500/30 rounded-xl overflow-hidden shadow-xl"
+                className="bg-white border-2 border-[#F58424]/30 rounded-2xl overflow-hidden shadow-md"
               >
                 {/* Header del pedido */}
-                <div className="bg-blue-500/20 border-b border-blue-500/30 p-4">
+                <div className="bg-[#F58424]/10 border-b border-[#F58424]/20 p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-blue-400 font-black text-lg font-mono">
+                    <span className="font-black text-lg font-mono" style={{ color: "#F58424" }}>
                       {order.id}
                     </span>
-                    <span className="text-gray-400 text-sm">
+                    <span className="text-gray-500 text-sm">
                       {new Date(order.createdAt).toLocaleTimeString('es-PE', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -412,20 +415,21 @@ export default function DeliveryPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-white font-bold text-lg">📍 {order.name}</p>
+                    <p className="text-gray-900 font-bold text-lg">📍 {order.name}</p>
                     <a
                       href={`tel:${order.phone}`}
-                      className="text-blue-300 text-sm font-bold underline underline-offset-2 active:text-blue-100"
+                      className="text-sm font-bold underline underline-offset-2 active:opacity-70"
+                      style={{ color: "#F58424" }}
                     >
                       📞 {order.phone}
                     </a>
-                    <p className="text-gray-300 text-sm">🏠 {order.address}</p>
+                    <p className="text-gray-600 text-sm">🏠 {order.address}</p>
                   </div>
                 </div>
 
                 {/* Productos */}
                 <div className="p-4">
-                  <h3 className="text-white font-bold mb-3 text-sm uppercase">
+                  <h3 className="text-gray-700 font-bold mb-3 text-sm uppercase">
                     🍽️ Pedido:
                   </h3>
                   <div className="space-y-2 mb-4">
@@ -443,25 +447,25 @@ export default function DeliveryPage() {
                       });
 
                       return (
-                        <div key={idx} className="bg-gray-800/50 rounded-lg p-3">
+                        <div key={idx} className="bg-gray-50 rounded-xl p-3">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-[#F58424] flex items-center justify-center flex-shrink-0">
                               <span className="text-white font-black text-sm">
                                 {item.quantity}
                               </span>
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="text-white font-bold">{item.name}</h4>
-                                {item.discountApplied && <span className="text-[9px] bg-red-600 text-white px-1 py-0.5 rounded font-bold">🔥 PROMO</span>}
+                                <h4 className="text-gray-900 font-bold">{item.name}</h4>
+                                {item.discountApplied && <span className="text-[9px] bg-red-500 text-white px-1 py-0.5 rounded font-bold">🔥 PROMO</span>}
                               </div>
                               {item.discountApplied ? (
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-gray-500 line-through text-xs">S/ {((item.originalPrice || item.price) * item.quantity).toFixed(2)}</span>
-                                  <span className="text-blue-400 font-black text-sm">S/ {(item.price * item.quantity).toFixed(2)}</span>
+                                  <span className="text-gray-400 line-through text-xs">S/ {((item.originalPrice || item.price) * item.quantity).toFixed(2)}</span>
+                                  <span className="font-black text-sm" style={{ color: "#F58424" }}>S/ {(item.price * item.quantity).toFixed(2)}</span>
                                 </div>
                               ) : (
-                                <p className="text-blue-400 font-black text-sm">
+                                <p className="font-black text-sm" style={{ color: "#F58424" }}>
                                   S/ {(item.price * item.quantity).toFixed(2)}
                                 </p>
                               )}
@@ -533,9 +537,9 @@ export default function DeliveryPage() {
                   )}
 
                   {/* Total y Botón */}
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-700">
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                     <div>
-                      <p className="text-gray-400 text-xs uppercase font-bold">Método de Pago</p>
+                      <p className="text-gray-500 text-xs uppercase font-bold">Método de Pago</p>
                       <div className="mt-2 space-y-1">
                         {order.paymentMethod === 'anticipado' && (
                           <div className="bg-green-600/20 border border-green-500 rounded-lg px-3 py-2">
@@ -594,7 +598,7 @@ export default function DeliveryPage() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-gray-500 text-xs">
+          <p className="text-gray-400 text-xs">
             La lista se actualiza automáticamente cada 5 segundos
           </p>
         </div>

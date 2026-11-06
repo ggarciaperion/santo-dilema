@@ -427,7 +427,7 @@ export default function CostosMargenesAdmin({ orders }: Props) {
                               </td>
                               <td className="px-4 py-3 text-center">
                                 <button onClick={() => openNew(p)}
-                                  className="bg-gray-900 hover:bg-gray-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
+                                  className="bg-[#F58424] hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
                                   {cur ? "Actualizar" : "+ Registrar"}
                                 </button>
                               </td>
@@ -815,7 +815,7 @@ export default function CostosMargenesAdmin({ orders }: Props) {
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-semibold">Cancelar</button>
               <button onClick={handleSave} disabled={saving || effectiveCost <= 0}
-                className="bg-gray-900 hover:bg-gray-700 disabled:opacity-40 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all">
+                className="bg-[#F58424] hover:bg-orange-600 disabled:opacity-40 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all">
                 {saving ? "Guardando..." : "Guardar"}
               </button>
             </div>

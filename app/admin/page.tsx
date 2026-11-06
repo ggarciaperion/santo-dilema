@@ -2511,10 +2511,10 @@ export default function AdminPage() {
   // Mostrar pantalla de carga mientras se verifica la autenticación
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F6F1F1] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-400 mx-auto mb-4"></div>
-          <p className="text-gray-500">Verificando acceso...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F58424] mx-auto mb-4"></div>
+          <p className="text-gray-400 text-sm">Verificando acceso…</p>
         </div>
       </div>
     );
@@ -2526,7 +2526,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#F6F1F1] flex">
       {/* Toast de pedido entregado */}
       {deliveryToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-white border border-green-200 rounded-xl px-5 py-4 shadow-2xl max-w-xs">
@@ -2545,7 +2545,7 @@ export default function AdminPage() {
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 ${sidebarCollapsed ? 'w-14' : 'w-56'} bg-white border-r border-gray-200 flex flex-col z-40 transition-all duration-200`}>
         <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-4 border-b border-gray-100`}>
-          {!sidebarCollapsed && <Image src="/logoprincipal.png" alt="Santo Dilema" width={120} height={120} />}
+          {!sidebarCollapsed && <Image src="/3334.png" alt="Santo Dilema" width={130} height={48} className="object-contain" />}
           <button
             onClick={() => setSidebarCollapsed(prev => !prev)}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all"
@@ -2559,7 +2559,7 @@ export default function AdminPage() {
         <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           <button
             onClick={() => setActiveTab("orders")}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "orders" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "orders" ? "bg-[#F58424] text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
             title={sidebarCollapsed ? 'Pedidos' : ''}
           >
             <span>📦</span>
@@ -2571,7 +2571,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "analytics" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "analytics" ? "bg-[#F58424] text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
             title={sidebarCollapsed ? 'Inicio' : ''}
           >
             <span>📊</span>
@@ -2579,7 +2579,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("customers")}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "customers" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "customers" ? "bg-[#F58424] text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
             title={sidebarCollapsed ? 'Clientes' : ''}
           >
             <span>👥</span>
@@ -2587,7 +2587,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("financial")}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "financial" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "financial" ? "bg-[#F58424] text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
             title={sidebarCollapsed ? 'Finanzas' : ''}
           >
             <span>💰</span>
@@ -2595,7 +2595,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("carta")}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "carta" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "carta" ? "bg-[#F58424] text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
             title={sidebarCollapsed ? 'Carta' : ''}
           >
             <span>🍽️</span>
@@ -2603,7 +2603,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("marketing")}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "marketing" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "marketing" ? "bg-[#F58424] text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
             title={sidebarCollapsed ? 'Marketing' : ''}
           >
             <span>📢</span>
@@ -2718,7 +2718,7 @@ export default function AdminPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar pedido, cliente, dirección, menú..."
-              className="w-full md:w-80 px-4 py-3 pl-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-all text-sm"
+              className="w-full md:w-80 px-4 py-3 pl-10 bg-white border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#F58424] transition-all text-sm"
             />
             <svg
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
@@ -2760,7 +2760,7 @@ export default function AdminPage() {
                   type="date"
                   value={ordersDateFrom}
                   onChange={(e) => setOrdersDateFrom(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400 transition-all [color-scheme:light]"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-[#F58424] transition-all [color-scheme:light]"
                 />
               </div>
 
@@ -2770,7 +2770,7 @@ export default function AdminPage() {
                   type="date"
                   value={ordersDateTo}
                   onChange={(e) => setOrdersDateTo(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400 transition-all [color-scheme:light]"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-[#F58424] transition-all [color-scheme:light]"
                 />
               </div>
 
@@ -2778,7 +2778,7 @@ export default function AdminPage() {
                 <button
                   onClick={applyOrdersDateFilter}
                   disabled={!ordersDateFrom || !ordersDateTo}
-                  className="flex-1 px-6 py-3 bg-gray-900 text-white rounded-lg font-bold hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
+                  className="flex-1 px-6 py-3 bg-[#F58424] text-white rounded-lg font-bold hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
                 >
                   Aplicar Filtro
                 </button>
@@ -3098,9 +3098,9 @@ export default function AdminPage() {
                             {hasProof ? (
                               <button
                                 onClick={openVoucher}
-                                className="rounded-xl px-2 py-1.5 text-center text-[10px] font-black bg-purple-100 text-purple-700 border border-purple-300 hover:bg-purple-200 transition-all flex items-center justify-center gap-1"
+                                className="rounded-xl px-2 py-1.5 text-center text-[10px] font-black bg-orange-50 text-[#F58424] border border-orange-200 hover:bg-orange-100 transition-all flex items-center justify-center gap-1"
                               >
-                                🟣 Ver comprobante
+                                🧾 Ver comprobante
                               </button>
                             ) : (
                               <div className="rounded-xl px-2 py-1.5 text-center text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-300">
@@ -3166,10 +3166,10 @@ export default function AdminPage() {
                 )}
                 {order.status === 'pendiente-verificacion' && (
                   <div className="flex mt-auto">
-                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
+                    <button onClick={() => updateOrderStatus(order.id, 'confirmed')} className="flex-1 bg-[#F58424] hover:bg-orange-600 text-white py-3 text-sm font-black uppercase tracking-wide transition-all rounded-bl-2xl">
                       ✓ Verificar y confirmar
                     </button>
-                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-purple-700 hover:bg-red-600 text-white/70 hover:text-white border-l border-purple-800 text-sm font-bold transition-all rounded-br-2xl">✕</button>
+                    <button onClick={() => updateOrderStatus(order.id, 'cancelled')} className="px-4 bg-orange-700 hover:bg-red-600 text-white/70 hover:text-white border-l border-orange-800 text-sm font-bold transition-all rounded-br-2xl">✕</button>
                   </div>
                 )}
                 {order.status === 'programado' && (
@@ -3344,7 +3344,7 @@ export default function AdminPage() {
                 </h2>
                 <button
                   onClick={() => setShowBirthdaySettings(s => !s)}
-                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${showBirthdaySettings ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${showBirthdaySettings ? 'bg-[#F58424] text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
                 >
                   🎂 Configurar alertas
                 </button>
@@ -3365,7 +3365,7 @@ export default function AdminPage() {
                         value={bdSettingsForm.recipientEmail}
                         onChange={e => setBdSettingsForm(f => ({ ...f, recipientEmail: e.target.value }))}
                         placeholder="tucorreo@gmail.com"
-                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-gray-400"
+                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-[#F58424]"
                       />
                       <p className="text-[10px] text-gray-400 mt-1">Configurar BIRTHDAY_EMAIL_USER y BIRTHDAY_EMAIL_PASS en .env.local (Gmail)</p>
                     </div>
@@ -3374,7 +3374,7 @@ export default function AdminPage() {
                       <select
                         value={bdSettingsForm.alertDaysBefore}
                         onChange={e => setBdSettingsForm(f => ({ ...f, alertDaysBefore: parseInt(e.target.value) }))}
-                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-gray-400"
+                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-[#F58424]"
                       >
                         <option value={0}>El mismo día</option>
                         <option value={1}>1 día antes</option>
@@ -3390,7 +3390,7 @@ export default function AdminPage() {
                       onChange={e => setBdSettingsForm(f => ({ ...f, waTemplate: e.target.value }))}
                       rows={6}
                       placeholder="Hola {{nombre}}! Feliz cumpleanos..."
-                      className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-gray-400 resize-none font-mono leading-relaxed"
+                      className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-[#F58424] resize-none font-mono leading-relaxed"
                     />
                     <p className="text-[10px] text-gray-400 mt-1">Usa {'{{nombre}}'} para insertar el nombre del cliente automáticamente.</p>
                   </div>
@@ -3408,7 +3408,7 @@ export default function AdminPage() {
                           setBirthdayAlerts(prev => prev ? { ...prev, settings: { ...prev.settings, ...bdSettingsForm } } : prev);
                         } finally { setBdSettingsSaving(false); }
                       }}
-                      className="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm py-2.5 rounded-xl transition-all disabled:opacity-50"
+                      className="flex-1 bg-[#F58424] hover:bg-orange-600 text-white font-bold text-sm py-2.5 rounded-xl transition-all disabled:opacity-50"
                     >
                       {bdSettingsSaving ? 'Guardando...' : '✓ Guardar configuración'}
                     </button>
@@ -3445,7 +3445,7 @@ export default function AdminPage() {
             <section className="px-6 py-6 space-y-6">
               {/* 4 KPIs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white rounded-xl border-2 border-fuchsia-500/40 p-4 text-center">
+                <div className="bg-white rounded-xl border-2 border-[#F58424]/30 p-4 text-center">
                   <p className="text-3xl font-black text-gray-700">{crmDashboard.total}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Clientes totales</p>
                 </div>
@@ -3457,8 +3457,8 @@ export default function AdminPage() {
                   <p className="text-3xl font-black text-amber-400">S/ {crmDashboard.avgTicket.toFixed(0)}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Ticket promedio</p>
                 </div>
-                <div className="bg-white rounded-xl border-2 border-cyan-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-cyan-400">{crmDashboard.avgFrequency}</p>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+                  <p className="text-3xl font-black text-gray-900">{crmDashboard.avgFrequency}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Pedidos/cliente</p>
                 </div>
               </div>
@@ -3474,7 +3474,7 @@ export default function AdminPage() {
                   ].map(({ label, seg }) => (
                     <button key={seg}
                       onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
-                      className="bg-gray-100 border border-gray-200 hover:border-fuchsia-500 rounded-lg p-3 text-center transition-all">
+                      className="bg-gray-100 border border-gray-200 hover:border-[#F58424] rounded-lg p-3 text-center transition-all">
                       <p className="text-2xl font-black text-gray-900">{(customerSegments as any)[seg]?.length ?? 0}</p>
                       <p className="text-xs text-gray-400 mt-1">Inactivos {label}</p>
                       <p className="text-xs text-gray-700 mt-1">Enviar WhatsApp →</p>
@@ -3497,7 +3497,7 @@ export default function AdminPage() {
                   ].map(({ label, seg }) => (
                     <button key={seg}
                       onClick={() => { setCampaignSegment(seg); setShowCampaignModal(true); }}
-                      className="bg-gray-100 border border-gray-200 hover:border-fuchsia-500 rounded-lg p-3 text-left transition-all">
+                      className="bg-gray-100 border border-gray-200 hover:border-[#F58424] rounded-lg p-3 text-left transition-all">
                       <p className="text-gray-800 font-bold text-sm">{label}</p>
                       <p className="text-gray-500 text-xs">{(customerSegments as any)[seg]?.length ?? 0} clientes</p>
                       <p className="text-gray-700 text-xs mt-1">Generar mensajes →</p>
@@ -3585,7 +3585,7 @@ export default function AdminPage() {
                         onClick={() => { setAnalyticsDateFrom(from); setAnalyticsDateTo(to); setIsAnalyticsDateFiltered(true); }}
                         className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
                           isActive
-                            ? "bg-fuchsia-600 text-white"
+                            ? "bg-[#F58424] text-white"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
                         }`}
                       >
@@ -3605,7 +3605,7 @@ export default function AdminPage() {
                     type="date"
                     value={analyticsDateFrom}
                     onChange={(e) => setAnalyticsDateFrom(e.target.value)}
-                    className="px-2 py-1.5 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none cursor-pointer [color-scheme:light]"
+                    className="px-2 py-1.5 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none cursor-pointer [color-scheme:light]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
                   <label className="text-xs text-gray-400">Hasta:</label>
@@ -3613,13 +3613,13 @@ export default function AdminPage() {
                     type="date"
                     value={analyticsDateTo}
                     onChange={(e) => setAnalyticsDateTo(e.target.value)}
-                    className="px-2 py-1.5 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none cursor-pointer [color-scheme:light]"
+                    className="px-2 py-1.5 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none cursor-pointer [color-scheme:light]"
                     onClick={(e) => e.currentTarget.showPicker()}
                   />
                   <button
                     onClick={applyAnalyticsDateFilter}
                     disabled={!analyticsDateFrom || !analyticsDateTo}
-                    className="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-1.5 bg-[#F58424] hover:bg-orange-600 text-white rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Aplicar
                   </button>
@@ -3635,7 +3635,7 @@ export default function AdminPage() {
                 )}
 
                 {isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo && (
-                  <span className="text-xs text-green-400 font-bold">
+                  <span className="text-xs text-[#F58424] font-bold">
                     ✓ {new Date(analyticsDateFrom + "T12:00:00").toLocaleDateString("es-PE")} — {new Date(analyticsDateTo + "T12:00:00").toLocaleDateString("es-PE")}
                   </span>
                 )}
@@ -3647,36 +3647,40 @@ export default function AdminPage() {
             {/* CARTELES PRINCIPALES */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               {/* 1. VENTAS DEL DÍA */}
-              <div className="bg-white rounded-xl border-2 border-cyan-500/50 p-6">
-                <p className="text-cyan-400 text-sm font-bold mb-2">💰 Ventas del Día</p>
-                <p className="text-4xl font-black text-cyan-400">S/ {analytics.dailySales.toFixed(2)}</p>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#F58424] rounded-b-xl opacity-70" />
+                <p className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-wide">💰 Ventas del Día</p>
+                <p className="text-4xl font-black text-[#F58424]">S/ {analytics.dailySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {isAnalyticsDateFiltered && analyticsDateFrom && analyticsDateTo ? `${new Date(analyticsDateFrom).toLocaleDateString("es-PE")} - ${new Date(analyticsDateTo).toLocaleDateString("es-PE")}` : new Date().toLocaleDateString("es-PE")}
                 </p>
               </div>
 
               {/* 2. PEDIDOS ENTREGADOS DEL DÍA */}
-              <div className="bg-white rounded-xl border-2 border-green-500/50 p-6">
-                <p className="text-green-400 text-sm font-bold mb-2">📦 Pedidos Entregados</p>
-                <p className="text-4xl font-black text-green-400">{analytics.todayDeliveredOrdersCount}</p>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-400 rounded-b-xl opacity-70" />
+                <p className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-wide">📦 Pedidos Entregados</p>
+                <p className="text-4xl font-black text-emerald-600">{analytics.todayDeliveredOrdersCount}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {isAnalyticsDateFiltered ? "Del período filtrado" : "Hoy"}
                 </p>
               </div>
 
               {/* 3. ACUMULADO DEL MES */}
-              <div className="bg-white rounded-xl border-2 border-purple-500/50 p-6">
-                <p className="text-purple-400 text-sm font-bold mb-2">📊 Acumulado del Mes</p>
-                <p className="text-4xl font-black text-purple-400">S/ {analytics.monthlySales.toFixed(2)}</p>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-sky-400 rounded-b-xl opacity-70" />
+                <p className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-wide">📊 Acumulado del Mes</p>
+                <p className="text-4xl font-black text-gray-900">S/ {analytics.monthlySales.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {analytics.currentMonthOrdersCount} pedidos
                 </p>
               </div>
 
               {/* 4. TICKET PROMEDIO DEL DÍA */}
-              <div className="bg-white rounded-xl border-2 border-amber-500/50 p-6">
-                <p className="text-amber-400 text-sm font-bold mb-2">🎫 Ticket Promedio</p>
-                <p className="text-4xl font-black text-amber-400">S/ {analytics.todayAverageTicket.toFixed(2)}</p>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-400 rounded-b-xl opacity-70" />
+                <p className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-wide">🎫 Ticket Promedio</p>
+                <p className="text-4xl font-black text-gray-900">S/ {analytics.todayAverageTicket.toFixed(2)}</p>
                 <p className="text-gray-400 text-xs mt-2">
                   {isAnalyticsDateFiltered ? "Del período filtrado" : "Del día"} ({analytics.todayDeliveredOrdersCount} pedidos)
                 </p>
@@ -3705,10 +3709,10 @@ export default function AdminPage() {
                       return (
                         <div
                           key={idx}
-                          className={`bg-gray-100 rounded-lg p-4 border-2 ${
-                            isMostSold ? 'border-green-500/50 bg-green-500/5' :
-                            isLeastSold ? 'border-red-500/50 bg-red-500/5' :
-                            'border-gray-200/50'
+                          className={`bg-white rounded-xl p-4 border ${
+                            isMostSold ? 'border-emerald-200 bg-emerald-50/40' :
+                            isLeastSold ? 'border-red-100 bg-red-50/40' :
+                            'border-gray-100'
                           }`}
                         >
                           <div className="flex items-start justify-between mb-2">
@@ -3727,11 +3731,11 @@ export default function AdminPage() {
                           <div className="flex justify-between items-center mb-2">
                             <div>
                               <p className="text-xs text-gray-500">Cantidad</p>
-                              <p className="text-xl font-black text-cyan-400">{product.quantity}</p>
+                              <p className="text-xl font-black text-gray-900">{product.quantity}</p>
                             </div>
                             <div className="text-right">
                               <p className="text-xs text-gray-500">Ingresos</p>
-                              <p className="text-xl font-black text-amber-400">S/ {product.revenue.toFixed(2)}</p>
+                              <p className="text-xl font-black text-[#F58424]">S/ {product.revenue.toFixed(2)}</p>
                             </div>
                           </div>
                           <div className="mt-2 pt-2 border-t border-gray-200">
@@ -3741,7 +3745,7 @@ export default function AdminPage() {
                             </div>
                             <div className="bg-gray-100 rounded-full h-1.5 overflow-hidden mt-1">
                               <div
-                                className="h-full bg-gradient-to-r from-fuchsia-600 to-pink-600"
+                                className="h-full bg-[#F58424]"
                                 style={{ width: `${revenuePercentage}%` }}
                               ></div>
                             </div>
@@ -3756,13 +3760,13 @@ export default function AdminPage() {
 
             {/* SECCIÓN: SABORES DE MINI BURGERS DEL DÍA */}
             {analytics.burgerFlavorsSoldToday.length > 0 && (
-              <div className="bg-white rounded-xl border-2 border-pink-200 p-6 mb-8">
-                <h3 className="text-lg font-black text-pink-500 mb-1">🍔 Sabores de Mini Burgers {isAnalyticsDateFiltered ? "del Período" : "de Hoy"}</h3>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
+                <h3 className="text-lg font-black text-gray-800 mb-1">🍔 Sabores de Mini Burgers {isAnalyticsDateFiltered ? "del Período" : "de Hoy"}</h3>
                 <p className="text-gray-400 text-xs mb-4">Unidades individuales vendidas por sabor (un dúo con 2× Santo Smash = 2 unidades)</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {analytics.burgerFlavorsSoldToday.map((flavor: any) => (
-                    <div key={flavor.name} className="bg-pink-50 rounded-lg p-3 border border-pink-100 text-center">
-                      <p className="text-2xl font-black text-pink-500">{flavor.quantity}</p>
+                    <div key={flavor.name} className="bg-orange-50 rounded-lg p-3 border border-orange-100 text-center">
+                      <p className="text-2xl font-black text-[#F58424]">{flavor.quantity}</p>
                       <p className="text-xs font-bold text-gray-700 mt-1 leading-tight">{flavor.name}</p>
                     </div>
                   ))}
@@ -3772,11 +3776,11 @@ export default function AdminPage() {
 
             {/* SECCIÓN: INSIGHTS DEL NEGOCIO */}
             <div className="mb-8">
-              <h3 className="text-2xl font-black text-cyan-400 mb-4">📊 Insights del Negocio</h3>
+              <h3 className="text-xl font-black text-gray-800 mb-4">📊 Insights del Negocio</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* 1. MÉTODO DE PAGO MÁS USADO */}
-                <div className="bg-white rounded-xl border-2 border-green-500/50 p-6">
-                  <p className="text-green-400 text-sm font-bold mb-2">💳 Método de Pago Preferido</p>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                  <p className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-wide">💳 Método de Pago Preferido</p>
                   <p className="text-2xl font-black text-gray-900 mb-1">
                     {analytics.mostUsedPaymentMethod.method === 'anticipado' ? '💰 Anticipado' :
                      analytics.mostUsedPaymentMethod.method === 'contraentrega-efectivo-exacto' ? '💵 Efectivo Exacto' :
@@ -3787,15 +3791,15 @@ export default function AdminPage() {
                 </div>
 
                 {/* 2. HORARIO PICO */}
-                <div className="bg-white rounded-xl border-2 border-amber-500/50 p-6">
-                  <p className="text-amber-400 text-sm font-bold mb-2">⏰ Horario Pico</p>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                  <p className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-wide">⏰ Horario Pico</p>
                   <p className="text-2xl font-black text-gray-900 mb-1">{analytics.peakHour}</p>
                   <p className="text-gray-400 text-xs mt-2">{analytics.peakHourCount} pedidos en esa hora</p>
                 </div>
 
                 {/* 3. TASA DE CONVERSIÓN */}
-                <div className="bg-white rounded-xl border-2 border-cyan-500/50 p-6">
-                  <p className="text-cyan-400 text-sm font-bold mb-2">📈 Tasa de Conversión</p>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                  <p className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-wide">📈 Tasa de Conversión</p>
                   <p className="text-3xl font-black text-gray-900 mb-1">{analytics.conversionRate.toFixed(1)}%</p>
                   <p className="text-gray-400 text-xs mt-2">Pedidos confirmados vs totales</p>
                 </div>
@@ -3803,8 +3807,8 @@ export default function AdminPage() {
             </div>
 
             {/* SECCIÓN: DISTRIBUCIÓN DE MÉTODOS DE PAGO - formato filas */}
-            <div className="bg-white rounded-xl border-2 border-blue-500/30 p-6 mb-8">
-              <h3 className="text-xl font-black text-blue-400 mb-4">💳 Distribución de Métodos de Pago</h3>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
+              <h3 className="text-base font-black text-gray-800 mb-4">💳 Distribución de Métodos de Pago</h3>
               <div className="space-y-3">
                 {analytics.paymentMethodsArray.map((pm: any, idx: number) => (
                   <div key={idx} className="flex items-center gap-4">
@@ -3816,16 +3820,16 @@ export default function AdminPage() {
                          pm.method}
                       </p>
                     </div>
-                    <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden border border-blue-500/20">
+                    <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-end pr-2 transition-all duration-300"
+                        className="h-full bg-[#F58424] flex items-center justify-end pr-2 transition-all duration-300"
                         style={{ width: `${(pm.count / analytics.currentMonthOrdersCount) * 100}%` }}
                       >
-                        <span className="text-gray-700 font-black text-xs">{pm.count}</span>
+                        <span className="text-white font-black text-xs">{pm.count}</span>
                       </div>
                     </div>
                     <div className="w-14 text-right flex-shrink-0">
-                      <span className="text-cyan-400 font-black text-sm">{((pm.count / analytics.currentMonthOrdersCount) * 100).toFixed(1)}%</span>
+                      <span className="text-gray-600 font-black text-sm">{((pm.count / analytics.currentMonthOrdersCount) * 100).toFixed(1)}%</span>
                     </div>
                   </div>
                 ))}
@@ -3848,7 +3852,7 @@ export default function AdminPage() {
                 onClick={() => setFinancialSection("dashboard")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   financialSection === "dashboard"
-                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    ? "text-[#F58424] border-b-4 border-[#F58424]"
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
@@ -3858,7 +3862,7 @@ export default function AdminPage() {
                 onClick={() => setFinancialSection("purchases")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   financialSection === "purchases"
-                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    ? "text-[#F58424] border-b-4 border-[#F58424]"
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
@@ -3868,7 +3872,7 @@ export default function AdminPage() {
                 onClick={() => setFinancialSection("costos")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   financialSection === "costos"
-                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    ? "text-[#F58424] border-b-4 border-[#F58424]"
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
@@ -4379,7 +4383,7 @@ export default function AdminPage() {
                           <input type="date" value={cajaEditDate} onChange={e => setCajaEditDate(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none" />
                           <div className="flex gap-2">
-                            <button onClick={saveCajaSnapshot} className="flex-1 bg-gray-900 text-white py-1.5 rounded-lg text-xs font-bold">Guardar</button>
+                            <button onClick={saveCajaSnapshot} className="flex-1 bg-[#F58424] text-white py-1.5 rounded-lg text-xs font-bold">Guardar</button>
                             <button onClick={() => setCajaEditMode(false)} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-500 rounded-lg text-xs">✕</button>
                           </div>
                         </div>
@@ -4447,7 +4451,7 @@ export default function AdminPage() {
                       <span className="text-sm font-black text-gray-700 tabular-nums">S/ {total.toFixed(2)}</span>
                       <button
                         onClick={() => { setShowInventoryModal(true); setProductSearchTerms([""]); }}
-                        className="bg-gray-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-800 transition-all">
+                        className="bg-[#F58424] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 transition-all">
                         + Nuevo registro
                       </button>
                     </div>
@@ -4651,14 +4655,14 @@ export default function AdminPage() {
                   {/* ── SECCIÓN 1: CATÁLOGO ── */}
                   <div>
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-black text-cyan-400">📋 Catálogo de Productos</h3>
+                      <h3 className="text-xl font-black text-gray-800">📋 Catálogo de Productos</h3>
                       <button
                         onClick={() => {
                           setEditingProduct(null);
                           setProductForm({ name: "", category: "fat", price: 0, cost: 0, active: true, stock: 0, minStock: 10, maxStock: 100, components: [] });
                           setShowProductModal(true);
                         }}
-                        className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
+                        className="bg-[#F58424] hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
                       >
                         + Nuevo Producto
                       </button>
@@ -4672,7 +4676,7 @@ export default function AdminPage() {
                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase hidden md:table-cell">Categoría</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Precio Venta</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase">Margen</th>
                             <th className="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Acciones</th>
                           </tr>
                         </thead>
@@ -4688,7 +4692,7 @@ export default function AdminPage() {
                               const margin = (product.cost || 0) > 0
                                 ? ((product.price - (product.cost || 0)) / (product.cost || 0)) * 100 : 0;
                               return (
-                                <tr key={product.id} className={`border-b border-gray-100 hover:bg-fuchsia-500/5 transition-all ${idx % 2 === 0 ? 'bg-gray-50' : ''}`}>
+                                <tr key={product.id} className={`border-b border-gray-100 hover:bg-orange-500/5 transition-all ${idx % 2 === 0 ? 'bg-gray-50' : ''}`}>
                                   <td className="px-4 py-3 text-gray-800 font-bold text-sm">{product.name}</td>
                                   <td className="px-4 py-3 hidden md:table-cell">
                                     <span className="text-xs text-gray-400">{catLabel[product.category] || product.category}</span>
@@ -4702,7 +4706,7 @@ export default function AdminPage() {
                                   </td>
                                   <td className="px-4 py-3 text-center">
                                     <div className="flex gap-1 justify-center">
-                                      <button onClick={() => openEditProduct(product)} className="bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-1 rounded text-xs font-bold">Editar</button>
+                                      <button onClick={() => openEditProduct(product)} className="bg-[#F58424] hover:bg-orange-600 text-white px-3 py-1 rounded text-xs font-bold">Editar</button>
                                       <button onClick={() => handleDeleteProduct(product.id)} className="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">Eliminar</button>
                                     </div>
                                   </td>
@@ -4748,7 +4752,7 @@ export default function AdminPage() {
                               setSalesDateTo(today);
                               setIsSalesDateFiltered(true);
                             }}
-                            className="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg font-bold text-xs"
+                            className="px-3 py-1.5 bg-[#F58424] hover:bg-orange-600 text-white rounded-lg font-bold text-xs"
                           >
                             Hoy
                           </button>
@@ -4801,7 +4805,7 @@ export default function AdminPage() {
                               if (salesDateFrom && salesDateTo) setIsSalesDateFiltered(true);
                             }}
                             disabled={!salesDateFrom || !salesDateTo}
-                            className="px-3 py-1.5 bg-fuchsia-700 hover:bg-fuchsia-600 text-white rounded-lg font-bold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="px-3 py-1.5 bg-[#F58424] hover:bg-orange-600 text-white rounded-lg font-bold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             Aplicar
                           </button>
@@ -4823,7 +4827,7 @@ export default function AdminPage() {
                         <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Utilidad Operativa</p>
                         <p className={`text-xl font-black ${totalProfit >= 0 ? 'text-amber-400' : 'text-red-400'}`}>S/ {totalProfit.toFixed(2)}</p>
                       </div>
-                      <div className="bg-white rounded-xl border border-purple-500/40 p-4 text-center">
+                      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
                         <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Margen Promedio</p>
                         <p className={`text-xl font-black ${avgMargin >= 50 ? 'text-green-400' : avgMargin >= 30 ? 'text-amber-400' : 'text-red-400'}`}>{avgMargin.toFixed(1)}%</p>
                       </div>
@@ -4839,7 +4843,7 @@ export default function AdminPage() {
                             <th className="px-4 py-3 text-right text-xs font-bold text-green-400 uppercase">Ingresos</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-red-400 uppercase">Costo Total</th>
                             <th className="px-4 py-3 text-right text-xs font-bold text-amber-400 uppercase">Utilidad Operativa</th>
-                            <th className="px-4 py-3 text-right text-xs font-bold text-purple-400 uppercase">Margen</th>
+                            <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase">Margen</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -4882,7 +4886,7 @@ export default function AdminPage() {
                               <td className="px-4 py-3 text-right text-green-400 font-black text-sm">S/ {totalRevenue.toFixed(2)}</td>
                               <td className="px-4 py-3 text-right text-red-400 font-black text-sm">S/ {totalCostAll.toFixed(2)}</td>
                               <td className="px-4 py-3 text-right text-amber-400 font-black text-sm">S/ {totalProfit.toFixed(2)}</td>
-                              <td className="px-4 py-3 text-right text-purple-400 font-black text-sm">{avgMargin.toFixed(1)}%</td>
+                              <td className="px-4 py-3 text-right text-gray-700 font-black text-sm">{avgMargin.toFixed(1)}%</td>
                             </tr>
                           </tfoot>
                         )}
@@ -4899,11 +4903,11 @@ export default function AdminPage() {
           {/* Recipe Configuration Modal */}
           {showRecipeModal && editingRecipeProduct && (
             <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-white rounded-xl border-2 border-purple-500 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
+              <div className="bg-white rounded-xl border-2 border-orange-200 p-6 max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-2xl font-black text-purple-400">🧾 Configurar Receta</h3>
-                    <p className="text-cyan-400 text-lg font-bold mt-1">{editingRecipeProduct.name}</p>
+                    <h3 className="text-2xl font-black text-gray-800">🧾 Configurar Receta</h3>
+                    <p className="text-[#F58424] text-lg font-bold mt-1">{editingRecipeProduct.name}</p>
                     <p className="text-gray-400 text-sm mt-2">
                       Define qué empaques/insumos se usan para preparar este producto y en qué cantidades
                     </p>
@@ -4923,41 +4927,41 @@ export default function AdminPage() {
                 {/* Components List */}
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-lg font-bold text-cyan-400">Componentes de la Receta</h4>
+                    <h4 className="text-lg font-bold text-gray-800">Componentes de la Receta</h4>
                     <button
                       onClick={addRecipeComponent}
-                      className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
+                      className="bg-[#F58424] hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold transition-all text-sm"
                     >
                       + Agregar Componente
                     </button>
                   </div>
 
                   {recipeComponents.length === 0 ? (
-                    <div className="bg-gray-100 rounded-lg border-2 border-purple-500/30 p-8 text-center">
+                    <div className="bg-gray-50 rounded-lg border-2 border-gray-200 p-8 text-center">
                       <p className="text-gray-400 text-lg">No hay componentes configurados</p>
                       <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Componente" para empezar</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {/* Header */}
-                      <div className="grid grid-cols-12 gap-3 px-3 py-2 bg-gray-100 rounded-lg border border-purple-500/30">
-                        <div className="col-span-4 text-xs font-bold text-purple-400">INGREDIENTE/EMPAQUE</div>
-                        <div className="col-span-2 text-xs font-bold text-purple-400">CANTIDAD</div>
-                        <div className="col-span-2 text-xs font-bold text-purple-400">UNIDAD</div>
-                        <div className="col-span-3 text-xs font-bold text-purple-400">COSTO (S/)</div>
-                        <div className="col-span-1 text-xs font-bold text-purple-400 text-center"></div>
+                      <div className="grid grid-cols-12 gap-3 px-3 py-2 bg-gray-100 rounded-lg border border-gray-200">
+                        <div className="col-span-4 text-xs font-bold text-gray-500">INGREDIENTE/EMPAQUE</div>
+                        <div className="col-span-2 text-xs font-bold text-gray-500">CANTIDAD</div>
+                        <div className="col-span-2 text-xs font-bold text-gray-500">UNIDAD</div>
+                        <div className="col-span-3 text-xs font-bold text-gray-500">COSTO (S/)</div>
+                        <div className="col-span-1 text-xs font-bold text-gray-500 text-center"></div>
                       </div>
 
                       {/* Components - MANUAL INPUT */}
                       {recipeComponents.map((component, idx) => (
-                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-100 rounded-lg p-3 border border-purple-500/20">
+                        <div key={idx} className="grid grid-cols-12 gap-3 items-center bg-gray-50 rounded-lg p-3 border border-gray-200">
                           {/* Nombre del ingrediente/empaque - INPUT MANUAL */}
                           <div className="col-span-4">
                             <input
                               type="text"
                               value={component.productName || ""}
                               onChange={(e) => updateRecipeComponent(idx, 'productName', e.target.value.toUpperCase())}
-                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-gray-200 text-gray-900 text-sm focus:border-[#F58424] focus:outline-none"
                               placeholder="Ej: PECHUGA, CAJA, LECHUGA"
                             />
                           </div>
@@ -4970,7 +4974,7 @@ export default function AdminPage() {
                               min="0"
                               value={component.quantity}
                               onChange={(e) => updateRecipeComponent(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm text-center focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-gray-200 text-gray-900 text-sm text-center focus:border-[#F58424] focus:outline-none"
                               placeholder="0"
                             />
                           </div>
@@ -4980,7 +4984,7 @@ export default function AdminPage() {
                             <select
                               value={component.unit || ""}
                               onChange={(e) => updateRecipeComponent(idx, 'unit', e.target.value)}
-                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-gray-200 text-gray-900 text-sm focus:border-[#F58424] focus:outline-none"
                             >
                               <option value="">Seleccionar</option>
                               <option value="UNIDAD">UNIDAD</option>
@@ -5001,7 +5005,7 @@ export default function AdminPage() {
                               min="0"
                               value={component.cost || 0}
                               onChange={(e) => updateRecipeComponent(idx, 'cost', parseFloat(e.target.value) || 0)}
-                              className="w-full px-3 py-2 rounded bg-white border border-purple-200 text-gray-900 text-sm focus:border-purple-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded bg-white border border-gray-200 text-gray-900 text-sm focus:border-[#F58424] focus:outline-none"
                               placeholder="0.00"
                             />
                           </div>
@@ -5024,13 +5028,13 @@ export default function AdminPage() {
 
                 {/* Costo Total de la Receta */}
                 {recipeComponents.length > 0 && (
-                  <div className="bg-gradient-to-r from-purple-900/30 to-fuchsia-900/30 border-2 border-purple-500/50 rounded-lg p-4 mb-6">
+                  <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 mb-6">
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-gray-400 text-sm font-semibold">Costo Total de la Receta</p>
                         <p className="text-xs text-gray-500 mt-1">{recipeComponents.length} componentes</p>
                       </div>
-                      <p className="text-3xl font-black text-purple-400">
+                      <p className="text-3xl font-black text-[#F58424]">
                         S/ {recipeComponents.reduce((sum, comp) => sum + (comp.cost || 0), 0).toFixed(2)}
                       </p>
                     </div>
@@ -5052,7 +5056,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={saveRecipe}
-                    className="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-all "
+                    className="flex-1 bg-[#F58424] hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-bold transition-all"
                   >
                     ✓ Guardar Receta
                   </button>
@@ -5068,7 +5072,7 @@ export default function AdminPage() {
             const margin = cost > 0 ? ((price - cost) / cost) * 100 : 0;
             return (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => { setShowProductModal(false); setEditingProduct(null); }}>
-              <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+              <div className="bg-white rounded-xl border-2 border-[#F58424] p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="text-xl font-black text-gray-700">
                     {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}
@@ -5083,7 +5087,7 @@ export default function AdminPage() {
                       type="text"
                       value={productForm.name}
                       onChange={(e) => setProductForm({ ...productForm, name: e.target.value.toUpperCase() })}
-                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none text-sm"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none text-sm"
                       placeholder="Ej: PEQUEÑO DILEMA, COCA-COLA, EXTRA PAPAS"
                     />
                   </div>
@@ -5093,7 +5097,7 @@ export default function AdminPage() {
                     <select
                       value={productForm.category}
                       onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none text-sm"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none text-sm"
                     >
                       <option value="fat">🍗 FAT (Alitas)</option>
                       <option value="fit">🥗 FIT (Ensaladas)</option>
@@ -5107,12 +5111,12 @@ export default function AdminPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-green-400 uppercase mb-1">Precio de Venta (S/) *</label>
+                      <label className="block text-xs font-bold text-[#F58424] uppercase mb-1">Precio de Venta (S/) *</label>
                       <input
                         type="number" step="0.01" min="0"
                         value={productForm.price}
                         onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-green-500/30 text-green-400 focus:border-green-400 focus:outline-none text-sm font-bold"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-orange-200 text-gray-800 focus:border-[#F58424] focus:outline-none text-sm font-bold"
                         placeholder="0.00"
                       />
                     </div>
@@ -5147,7 +5151,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
-                    className="flex-1 bg-white hover:bg-gray-800 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm"
+                    className="flex-1 bg-white hover:bg-orange-600 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm"
                   >
                     {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
                   </button>
@@ -5290,7 +5294,7 @@ export default function AdminPage() {
                 onClick={() => setMarketingSection("promotions")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   marketingSection === "promotions"
-                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    ? "text-[#F58424] border-b-4 border-[#F58424]"
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
@@ -5300,7 +5304,7 @@ export default function AdminPage() {
                 onClick={() => setMarketingSection("campaigns")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   marketingSection === "campaigns"
-                    ? "text-gray-700 border-b-4 border-fuchsia-500"
+                    ? "text-[#F58424] border-b-4 border-[#F58424]"
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
@@ -5330,7 +5334,7 @@ export default function AdminPage() {
                 onClick={() => setMarketingSection("sorteo")}
                 className={`px-6 py-3 font-bold transition-all text-sm ${
                   marketingSection === "sorteo"
-                    ? "text-green-400 border-b-4 border-green-400"
+                    ? "text-[#F58424] border-b-4 border-[#F58424]"
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
@@ -5353,7 +5357,7 @@ export default function AdminPage() {
                       resetPromotionForm();
                       setShowPromotionModal(true);
                     }}
-                    className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-bold transition-all  transform hover:scale-105"
+                    className="bg-[#F58424] hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105"
                   >
                     + Nueva Promoción
                   </button>
@@ -5399,7 +5403,7 @@ export default function AdminPage() {
                       const isExpired = new Date(promo.endDate) < new Date();
                       const daysLeft = Math.ceil((new Date(promo.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={promo.id} className={`bg-white rounded-xl border-2 p-6 transition-all ${promo.active ? 'border-gray-200 hover:border-fuchsia-500' : 'border-gray-200 opacity-60'}`}>
+                        <div key={promo.id} className={`bg-white rounded-xl border-2 p-6 transition-all ${promo.active ? 'border-gray-200 hover:border-[#F58424]' : 'border-gray-200 opacity-60'}`}>
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
@@ -5410,7 +5414,7 @@ export default function AdminPage() {
                                   {promo.active ? 'Activa' : 'Inactiva'}
                                 </span>
                                 {promo.code && (
-                                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500">
+                                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300">
                                     CÓDIGO: {promo.code}
                                   </span>
                                 )}
@@ -5455,7 +5459,7 @@ export default function AdminPage() {
                               <div className="flex gap-2 mt-3">
                                 <button
                                   onClick={() => openEditPromotion(promo)}
-                                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded text-xs font-bold transition-all"
+                                  className="bg-[#F58424] hover:bg-orange-600 text-white px-3 py-1 rounded text-xs font-bold transition-all"
                                 >
                                   Editar
                                 </button>
@@ -5500,7 +5504,7 @@ export default function AdminPage() {
                       <div className="text-4xl mb-3">✨</div>
                       <h4 className="text-lg font-bold text-gray-800 mb-2">Nuevos Clientes</h4>
                       <p className="text-sm text-gray-400 mb-4">Bienvenida y primera compra especial</p>
-                      <p className="text-2xl font-black text-cyan-400">{customerSegments.new.length} clientes</p>
+                      <p className="text-2xl font-black text-[#F58424]">{customerSegments.new.length} clientes</p>
                     </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-8">
@@ -5538,28 +5542,28 @@ export default function AdminPage() {
                         </li>
                       </ul>
                     </div>
-                    <div className="bg-gray-100 rounded-lg p-6 border border-purple-500/30 text-left">
+                    <div className="bg-orange-50 rounded-lg p-6 border border-orange-100 text-left">
                       <div className="flex items-center gap-3 mb-4">
                         <span className="text-4xl">🎁</span>
-                        <h4 className="text-xl font-bold text-purple-400">Beneficios VIP</h4>
+                        <h4 className="text-xl font-bold text-[#F58424]">Beneficios VIP</h4>
                       </div>
                       <ul className="space-y-3 text-sm text-gray-500">
                         <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
+                          <span className="text-[#F58424]">•</span>
                           <span>Acceso anticipado a nuevos productos</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
+                          <span className="text-[#F58424]">•</span>
                           <span>Envío gratis en compras mayores a S/ 50</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <span className="text-purple-400">•</span>
+                          <span className="text-[#F58424]">•</span>
                           <span>Descuentos exclusivos en cumpleaños</span>
                         </li>
                       </ul>
                     </div>
                   </div>
-                  <div className="mt-8 p-6 bg-fuchsia-500/10 rounded-lg border border-gray-200 max-w-2xl mx-auto">
+                  <div className="mt-8 p-6 bg-orange-50 rounded-lg border border-orange-100 max-w-2xl mx-auto">
                     <p className="text-gray-600 text-sm">
                       💡 <strong>Próximamente:</strong> Integración automática de puntos y niveles de fidelización con cada compra
                     </p>
@@ -5867,7 +5871,7 @@ export default function AdminPage() {
           {/* Promotion Modal */}
           {showPromotionModal && (
             <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-6 max-w-2xl w-full my-8">
+              <div className="bg-white rounded-xl border-2 border-[#F58424] p-6 max-w-2xl w-full my-8">
                 <h3 className="text-2xl font-black text-gray-700 mb-4">
                   {editingPromotion ? 'Editar Promoción' : 'Nueva Promoción'}
                 </h3>
@@ -5879,7 +5883,7 @@ export default function AdminPage() {
                         type="text"
                         value={promotionForm.name}
                         onChange={(e) => setPromotionForm({ ...promotionForm, name: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                         placeholder="Black Friday 2024"
                       />
                     </div>
@@ -5889,7 +5893,7 @@ export default function AdminPage() {
                         type="text"
                         value={promotionForm.code}
                         onChange={(e) => setPromotionForm({ ...promotionForm, code: e.target.value.toUpperCase() })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none uppercase"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none uppercase"
                         placeholder="VERANO2024"
                       />
                     </div>
@@ -5899,7 +5903,7 @@ export default function AdminPage() {
                     <textarea
                       value={promotionForm.description}
                       onChange={(e) => setPromotionForm({ ...promotionForm, description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                       rows={2}
                       placeholder="Descripción de la promoción"
                     />
@@ -5910,7 +5914,7 @@ export default function AdminPage() {
                       <select
                         value={promotionForm.type}
                         onChange={(e) => setPromotionForm({ ...promotionForm, type: e.target.value as any })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                       >
                         <option value="percentage">Porcentaje</option>
                         <option value="fixed">Monto Fijo</option>
@@ -5928,7 +5932,7 @@ export default function AdminPage() {
                         value={promotionForm.value}
                         onChange={(e) => setPromotionForm({ ...promotionForm, value: parseFloat(e.target.value) || 0 })}
                         disabled={promotionForm.type === 'shipping'}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none disabled:opacity-50"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none disabled:opacity-50"
                         placeholder="10"
                       />
                     </div>
@@ -5939,7 +5943,7 @@ export default function AdminPage() {
                         step="0.01"
                         value={promotionForm.minAmount}
                         onChange={(e) => setPromotionForm({ ...promotionForm, minAmount: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                         placeholder="0"
                       />
                     </div>
@@ -5951,7 +5955,7 @@ export default function AdminPage() {
                         type="date"
                         value={promotionForm.startDate}
                         onChange={(e) => setPromotionForm({ ...promotionForm, startDate: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [color-scheme:light]"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [color-scheme:light]"
                       />
                     </div>
                     <div>
@@ -5960,7 +5964,7 @@ export default function AdminPage() {
                         type="date"
                         value={promotionForm.endDate}
                         onChange={(e) => setPromotionForm({ ...promotionForm, endDate: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [color-scheme:light]"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [color-scheme:light]"
                       />
                     </div>
                     <div>
@@ -5969,7 +5973,7 @@ export default function AdminPage() {
                         type="number"
                         value={promotionForm.usageLimit}
                         onChange={(e) => setPromotionForm({ ...promotionForm, usageLimit: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                         placeholder="0 = ilimitado"
                       />
                     </div>
@@ -5979,7 +5983,7 @@ export default function AdminPage() {
                     <select
                       value={promotionForm.targetSegment}
                       onChange={(e) => setPromotionForm({ ...promotionForm, targetSegment: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                     >
                       <option value="all">Todos los clientes</option>
                       <option value="vip">Clientes VIP</option>
@@ -6013,7 +6017,7 @@ export default function AdminPage() {
                   <button
                     onClick={editingPromotion ? handleUpdatePromotion : handleCreatePromotion}
                     disabled={!promotionForm.name || !promotionForm.startDate || !promotionForm.endDate}
-                    className="flex-1 bg-white hover:bg-gray-800 text-gray-900 px-4 py-2 rounded-lg font-bold transition-all  disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-white hover:bg-orange-600 text-gray-900 px-4 py-2 rounded-lg font-bold transition-all  disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {editingPromotion ? 'Guardar' : 'Crear Promoción'}
                   </button>
@@ -6194,7 +6198,7 @@ export default function AdminPage() {
                       setPromoForm({ productId: 'pequeno-dilema', salsas: [], promoPrice: 0, active: true });
                       setShowSalsaPromoModal(true);
                     }}
-                    className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-lg font-bold text-sm"
+                    className="bg-[#F58424] hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold text-sm"
                   >
                     + Nueva promo
                   </button>
@@ -6209,7 +6213,7 @@ export default function AdminPage() {
                     {salsaPromos.map((promo: any) => {
                       const prodName = FAT_PRODUCTS.find(p => p.id === promo.productId)?.name || promo.productId;
                       return (
-                        <div key={promo.id} className={`bg-white rounded-xl border-2 p-4 ${promo.active ? 'border-fuchsia-500/50' : 'border-gray-200 opacity-60'}`}>
+                        <div key={promo.id} className={`bg-white rounded-xl border-2 p-4 ${promo.active ? 'border-[#F58424]/40' : 'border-gray-200 opacity-60'}`}>
                           <div className="flex items-start justify-between mb-2">
                             <div>
                               <p className="text-gray-900 font-black text-sm">{prodName}</p>
@@ -6243,7 +6247,7 @@ export default function AdminPage() {
                 {/* Modal crear/editar promo */}
                 {showSalsaPromoModal && (
                   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
-                    <div className="bg-white rounded-xl border-2 border-fuchsia-500 p-5 max-w-md w-full">
+                    <div className="bg-white rounded-xl border-2 border-[#F58424] p-5 max-w-md w-full">
                       <h3 className="text-lg font-black text-gray-700 mb-4">
                         {editingPromo ? 'Editar Promo' : 'Nueva Promo de Salsas'}
                       </h3>
@@ -6303,7 +6307,7 @@ export default function AdminPage() {
                         <button
                           onClick={handleSavePromo}
                           disabled={promoSaving || promoForm.salsas.length === 0 || !promoForm.promoPrice}
-                          className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-700 disabled:opacity-50 text-white py-2 rounded-lg font-bold text-sm"
+                          className="flex-1 bg-[#F58424] hover:bg-orange-600 disabled:opacity-50 text-white py-2 rounded-lg font-bold text-sm"
                         >
                           {promoSaving ? 'Guardando...' : 'Guardar'}
                         </button>
@@ -6324,7 +6328,7 @@ export default function AdminPage() {
 
           {/* FIT */}
           <div>
-            <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-black text-gray-800 mb-4 flex items-center gap-2">
               🥗 Carta FIT
             </h3>
             {/* Stock FIT */}
@@ -6348,7 +6352,7 @@ export default function AdminPage() {
                   <div
                     key={item.id}
                     className={`bg-white rounded-xl border-2 p-5 transition-all ${
-                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-cyan-500/50" : "border-gray-200"
+                      isSoldOut ? "border-red-600/60 opacity-70" : hasDiscount ? "border-orange-300" : "border-gray-200"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-3">
@@ -6357,10 +6361,10 @@ export default function AdminPage() {
                         {hasDiscount ? (
                           <p className="text-xs mt-0.5">
                             <span className="text-gray-500 line-through">S/ {effectivePrice.toFixed(2)}</span>
-                            <span className="text-cyan-400 font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
+                            <span className="text-[#F58424] font-black ml-1.5">S/ {menuDiscounts[item.id].toFixed(2)}</span>
                           </p>
                         ) : (
-                          <p className="text-cyan-400 text-sm font-bold">S/ {effectivePrice.toFixed(2)}</p>
+                          <p className="text-[#F58424] text-sm font-bold">S/ {effectivePrice.toFixed(2)}</p>
                         )}
                         {isSoldOut && <span className="text-red-400 text-xs font-black tracking-widest">AGOTADO</span>}
                       </div>
@@ -6381,12 +6385,12 @@ export default function AdminPage() {
                         placeholder={`Precio real (actual: S/ ${effectivePrice.toFixed(2)})`}
                         value={priceInputs[item.id] || ''}
                         onChange={e => setPriceInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-cyan-400 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-[#F58424] focus:outline-none"
                       />
                       <button
                         onClick={() => savePrice(item.id, item.defaultPrice)}
                         disabled={isSavingPrice}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all bg-cyan-700 hover:bg-cyan-600 text-white ${isSavingPrice ? 'opacity-50' : ''}`}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all bg-[#F58424] hover:bg-orange-600 text-white ${isSavingPrice ? 'opacity-50' : ''}`}
                       >
                         {isSavingPrice ? '...' : '💰 Precio'}
                       </button>
@@ -6398,12 +6402,12 @@ export default function AdminPage() {
                         placeholder="Precio oferta (menor al real)"
                         value={discountInputs[item.id] || ''}
                         onChange={e => setDiscountInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-cyan-500 focus:outline-none"
+                        className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs focus:border-[#F58424] focus:outline-none"
                       />
                       <button
                         onClick={() => saveDiscount(item.id, effectivePrice)}
                         disabled={isSavingDiscount}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-gray-200 hover:bg-gray-600'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${hasDiscount ? 'bg-[#F58424] hover:bg-orange-600' : 'bg-gray-400 hover:bg-gray-500'} text-white ${isSavingDiscount ? 'opacity-50' : ''}`}
                       >
                         {isSavingDiscount ? '...' : hasDiscount ? '🏷️ Actualizar' : '🏷️ Oferta'}
                       </button>
@@ -6762,7 +6766,7 @@ export default function AdminPage() {
                     type="text"
                     value={inventoryForm.supplier}
                     onChange={(e) => setInventoryForm({ ...inventoryForm, supplier: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                     placeholder={inventoryForm.category === "personal" ? "NOMBRE COMPLETO" : "MERCADO, WONG..."}
                   />
                 </div>
@@ -6772,7 +6776,7 @@ export default function AdminPage() {
                     type="date"
                     value={inventoryForm.purchaseDate}
                     onChange={(e) => setInventoryForm({ ...inventoryForm, purchaseDate: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [color-scheme:light]"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [color-scheme:light]"
                   />
                 </div>
                 <div>
@@ -6780,7 +6784,7 @@ export default function AdminPage() {
                   <select
                     value={inventoryForm.paymentMethod}
                     onChange={(e) => setInventoryForm({ ...inventoryForm, paymentMethod: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                   >
                     <option value="plin-yape">Plin / Yape</option>
                     <option value="efectivo">Efectivo</option>
@@ -6816,7 +6820,7 @@ export default function AdminPage() {
                           type="text"
                           value={item.productName || ""}
                           onChange={(e) => updateInventoryItem(idx, "productName", e.target.value.toUpperCase())}
-                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                           placeholder="Pollo, pan, gas..."
                         />
                         <input
@@ -6825,13 +6829,13 @@ export default function AdminPage() {
                           min="0"
                           value={item.quantity === 0 ? "" : item.quantity}
                           onChange={(e) => updateInventoryItem(idx, "quantity", parseInt(e.target.value) || 0)}
-                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-center focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-center focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="1"
                         />
                         <select
                           value={item.unit}
                           onChange={(e) => updateInventoryItem(idx, "unit", e.target.value)}
-                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                         >
                           <option value="KG">KG</option>
                           <option value="UNIDAD">UND</option>
@@ -6847,7 +6851,7 @@ export default function AdminPage() {
                           min="0"
                           value={item.unitCost === 0 ? "" : item.unitCost}
                           onChange={(e) => updateInventoryItem(idx, "unitCost", parseFloat(e.target.value) || 0)}
-                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-right focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-right focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="0.00"
                         />
                         {inventoryForm.items.length > 1 ? (
@@ -6879,7 +6883,7 @@ export default function AdminPage() {
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                           inventoryForm.items[0]?.productName === opt
-                            ? "bg-gray-900 text-white border-gray-900"
+                            ? "bg-[#F58424] text-white border-[#F58424]"
                             : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
                         }`}
                       >
@@ -6896,7 +6900,7 @@ export default function AdminPage() {
                         (newItems[0] as any).category = e.target.value.toUpperCase();
                         setInventoryForm({ ...inventoryForm, items: newItems });
                       }}
-                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                       placeholder="Describe el gasto..."
                     />
                   )}
@@ -6913,7 +6917,7 @@ export default function AdminPage() {
                         newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
                         setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
                       }}
-                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       placeholder="0.00"
                     />
                   </div>
@@ -6938,7 +6942,7 @@ export default function AdminPage() {
                           newItems[0] = { ...newItems[0], quantity: days, unit: "DÍA", volume: 1, total: days * dailyRate };
                           setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: days * dailyRate });
                         }}
-                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0"
                       />
                     </div>
@@ -6956,7 +6960,7 @@ export default function AdminPage() {
                           newItems[0] = { ...newItems[0], unitCost: dailyRate, unit: "DÍA", volume: 1, total: days * dailyRate };
                           setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: days * dailyRate });
                         }}
-                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0.00"
                       />
                     </div>
@@ -6984,7 +6988,7 @@ export default function AdminPage() {
                         newItems[0] = { ...newItems[0], productName: e.target.value.toUpperCase(), unit: "CAMPAÑA", quantity: 1, volume: 1 };
                         setInventoryForm({ ...inventoryForm, items: newItems });
                       }}
-                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
                       placeholder="Instagram Ads, canje influencer, flyers..."
                     />
                   </div>
@@ -7001,7 +7005,7 @@ export default function AdminPage() {
                           }}
                           className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${
                             (inventoryForm.items[0] as any)?.category === tipo
-                              ? "bg-gray-900 text-white border-gray-900"
+                              ? "bg-[#F58424] text-white border-[#F58424]"
                               : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
                           }`}
                         >
@@ -7024,7 +7028,7 @@ export default function AdminPage() {
                           newItems[0] = { ...newItems[0], unitCost: amount, total: amount };
                           setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: amount });
                         }}
-                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0.00"
                       />
                     </div>
@@ -7044,7 +7048,7 @@ export default function AdminPage() {
                             newItems[0] = { ...newItems[0], quantity: qty, total: qty * cost };
                             setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
                           }}
-                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="0"
                         />
                       </div>
@@ -7062,7 +7066,7 @@ export default function AdminPage() {
                             newItems[0] = { ...newItems[0], unitCost: cost, total: qty * cost };
                             setInventoryForm({ ...inventoryForm, items: newItems, totalAmount: qty * cost });
                           }}
-                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-gray-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="0.00"
                         />
                       </div>
@@ -7096,7 +7100,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={handleCreateInventory}
-                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-sm rounded-xl font-bold transition-all"
+                    className="flex-1 bg-[#F58424] hover:bg-orange-600 text-white px-8 py-3 text-sm rounded-xl font-bold transition-all"
                   >
                     Guardar gasto
                   </button>
@@ -7197,10 +7201,10 @@ export default function AdminPage() {
                     <p className="text-xs font-bold text-amber-400">Und.</p>
                   </div>
                   <div className="col-span-1">
-                    <p className="text-xs font-bold text-cyan-400 text-center" title="Contenido por unidad de compra">x</p>
+                    <p className="text-xs font-bold text-gray-500 text-center" title="Contenido por unidad de compra">x</p>
                   </div>
                   <div className="col-span-1">
-                    <p className="text-xs font-bold text-green-400 text-center" title="Stock total que ingresa">= Stock</p>
+                    <p className="text-xs font-bold text-gray-500 text-center" title="Stock total que ingresa">= Stock</p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-xs font-bold text-amber-400">Costo S/</p>
@@ -7298,13 +7302,13 @@ export default function AdminPage() {
                             setEditingPurchase({ ...editingPurchase, items: newItems });
                           }}
                           title="Contenido por unidad. Ej: Si cada paquete tiene 100 bolsas, escribe 100"
-                          className="w-full px-2 py-1.5 text-xs rounded bg-cyan-900/30 border border-cyan-500/50 text-cyan-300 text-center focus:border-cyan-400 focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full px-2 py-1.5 text-xs rounded bg-orange-50 border border-orange-200 text-gray-800 text-center focus:border-[#F58424] focus:outline-none font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
                       {/* Stock Total (Auto-calculado) */}
                       <div className="col-span-3 md:col-span-1">
-                        <div className="w-full px-2 py-1.5 text-xs rounded bg-green-900/30 border border-green-500/50 text-green-400 text-center font-black">
+                        <div className="w-full px-2 py-1.5 text-xs rounded bg-orange-50 border border-orange-200 text-[#F58424] text-center font-black">
                           {(item.quantity * (item.volume || 1)).toLocaleString()}
                         </div>
                       </div>
@@ -7424,7 +7428,7 @@ export default function AdminPage() {
 
             {/* Datos del pedido */}
             {selectedVoucherOrder && (
-              <div className="px-5 py-3 bg-purple-50 border-b border-purple-100 flex items-center justify-between flex-shrink-0">
+              <div className="px-5 py-3 bg-orange-50 border-b border-orange-100 flex items-center justify-between flex-shrink-0">
                 <div className="flex gap-4 text-xs text-gray-500">
                   <div>
                     <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Pedido</p>
@@ -7436,7 +7440,7 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Total</p>
-                    <p className="font-black text-purple-700">S/ {(selectedVoucherOrder.totalPrice || 0).toFixed(2)}</p>
+                    <p className="font-black text-[#F58424]">S/ {(selectedVoucherOrder.totalPrice || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Hora</p>
@@ -7474,7 +7478,7 @@ export default function AdminPage() {
                   download={`comprobante-${selectedVoucherOrder?.id || 'pedido'}.jpg`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-2.5 text-xs font-black text-center transition-all"
+                  className="flex-1 bg-[#F58424] hover:bg-orange-600 text-white rounded-xl py-2.5 text-xs font-black text-center transition-all"
                 >
                   ⬇ Descargar
                 </a>
@@ -7538,7 +7542,7 @@ export default function AdminPage() {
       {/* Modal CRM Edit */}
       {showCrmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCrmModal(false)}>
-          <div className="bg-white rounded-xl border-2 border-fuchsia-500 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl border-2 border-[#F58424] w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-black text-gray-700">Perfil CRM</h2>
               <button onClick={() => setShowCrmModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">✕</button>
@@ -7556,7 +7560,7 @@ export default function AdminPage() {
                 }}
                 placeholder="15/03"
                 maxLength={5}
-                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-gray-400"
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-[#F58424]"
               />
             </div>
 
@@ -7572,8 +7576,8 @@ export default function AdminPage() {
                     }))}
                     className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
                       crmForm.tags.includes(tag)
-                        ? 'bg-fuchsia-600 text-white border-fuchsia-500'
-                        : 'bg-gray-100 text-gray-400 border-gray-300 hover:border-fuchsia-500'
+                        ? 'bg-[#F58424] text-white border-[#F58424]'
+                        : 'bg-gray-100 text-gray-400 border-gray-300 hover:border-[#F58424]'
                     }`}>
                     {tag}
                   </button>
@@ -7589,7 +7593,7 @@ export default function AdminPage() {
                 onChange={e => setCrmForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
                 placeholder="Preferencias, alergias, observaciones..."
                 rows={3}
-                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-sm resize-none focus:outline-none focus:border-gray-400"
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-sm resize-none focus:outline-none focus:border-[#F58424]"
               />
               <p className="text-[10px] text-gray-600 mt-1">{crmForm.notes.length}/500</p>
             </div>
@@ -7598,7 +7602,7 @@ export default function AdminPage() {
               <button
                 onClick={handleCrmSave}
                 disabled={crmSaving}
-                className="flex-1 bg-white hover:bg-gray-800 disabled:opacity-50 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm transition-all"
+                className="flex-1 bg-white hover:bg-orange-600 disabled:opacity-50 text-gray-900 px-4 py-2 rounded-lg font-bold text-sm transition-all"
               >
                 {crmSaving ? 'Guardando...' : 'Guardar'}
               </button>
@@ -7614,7 +7618,7 @@ export default function AdminPage() {
       {/* Modal Campaña WhatsApp */}
       {showCampaignModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowCampaignModal(false)}>
-          <div className="bg-white rounded-xl border-2 border-fuchsia-500 w-full max-w-lg p-5 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl border-2 border-[#F58424] w-full max-w-lg p-5 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-black text-gray-700">Campaña WhatsApp</h2>
               <button onClick={() => setShowCampaignModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">✕</button>
@@ -7633,7 +7637,7 @@ export default function AdminPage() {
                 <button key={seg}
                   onClick={() => setCampaignSegment(seg)}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                    campaignSegment === seg ? 'bg-fuchsia-600 text-white' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:border-fuchsia-500'
+                    campaignSegment === seg ? 'bg-[#F58424] text-white' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:border-[#F58424]'
                   }`}>
                   {label} ({(customerSegments as any)[seg]?.length ?? 0})
                 </button>

@@ -328,11 +328,11 @@ export default function FinanzasDashboard({
               <div className="flex items-center gap-1">
                 <input type="date" value={dashboardDateFrom}
                   onChange={e => { setDashboardDateFrom(e.target.value); setIsDashboardDateFiltered(true); }}
-                  className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400 bg-white" />
+                  className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-[#F58424] bg-white" />
                 <span className="text-gray-400 text-xs">—</span>
                 <input type="date" value={dashboardDateTo}
                   onChange={e => { setDashboardDateTo(e.target.value); setIsDashboardDateFiltered(true); }}
-                  className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400 bg-white" />
+                  className="px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-[#F58424] bg-white" />
               </div>
             )}
           </div>
@@ -586,12 +586,12 @@ export default function FinanzasDashboard({
                 <div className="space-y-2">
                   <input type="number" step="0.01" value={cajaEditBalance}
                     onChange={e => setCajaEditBalance(e.target.value)}
-                    placeholder="Saldo base" className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400" />
+                    placeholder="Saldo base" className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#F58424]" />
                   <input type="date" value={cajaEditDate}
                     onChange={e => setCajaEditDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400" />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#F58424]" />
                   <div className="flex gap-2">
-                    <button onClick={saveCajaSnapshot} className="flex-1 bg-gray-900 text-white py-2 rounded-xl text-sm font-bold hover:bg-gray-700">Guardar</button>
+                    <button onClick={saveCajaSnapshot} className="flex-1 bg-[#F58424] text-white py-2 rounded-xl text-sm font-bold hover:bg-orange-600">Guardar</button>
                     <button onClick={() => setCajaEditMode(false)} className="px-4 py-2 bg-gray-100 text-gray-500 rounded-xl text-sm hover:bg-gray-200">✕</button>
                   </div>
                 </div>
@@ -656,27 +656,27 @@ export default function FinanzasDashboard({
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               <input type="text" placeholder="Concepto *" value={exp.desc} onChange={e => setExp(x => ({ ...x, desc: e.target.value }))}
-                className="col-span-2 px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+                className="col-span-2 px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#F58424]" />
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">S/</span>
                 <input type="number" placeholder="Monto *" step="0.01" min="0" value={exp.amount} onChange={e => setExp(x => ({ ...x, amount: e.target.value }))}
-                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#F58424]" />
               </div>
               <select value={exp.payment} onChange={e => setExp(x => ({ ...x, payment: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 bg-white focus:outline-none focus:border-gray-400">
+                className="px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 bg-white focus:outline-none focus:border-[#F58424]">
                 <option value="plin-yape">📱 Plin/Yape</option>
                 <option value="efectivo">💵 Efectivo</option>
                 <option value="transferencia">🏦 Transf.</option>
                 <option value="tarjeta">💳 Tarjeta</option>
               </select>
               <input type="text" placeholder="Proveedor" value={exp.supplier} onChange={e => setExp(x => ({ ...x, supplier: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+                className="px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#F58424]" />
               <input type="date" value={exp.date} onChange={e => setExp(x => ({ ...x, date: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-gray-400" />
+                className="px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#F58424]" />
             </div>
             <div className="flex justify-end mt-3">
               <button onClick={submitExpense} disabled={submitting || !exp.desc.trim() || !exp.amount}
-                className="px-6 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-40">
+                className="px-6 py-2 bg-[#F58424] hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-40">
                 {submitting ? "Guardando..." : "Guardar gasto →"}
               </button>
             </div>
@@ -707,11 +707,11 @@ export default function FinanzasDashboard({
             <div className="flex items-center gap-1">
               <input type="date" value={purchasesDateFrom}
                 onChange={e => { setPurchasesDateFrom(e.target.value); setIsPurchasesDateFiltered(true); }}
-                className="px-2 py-1 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-gray-400 bg-white" />
+                className="px-2 py-1 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#F58424] bg-white" />
               <span className="text-gray-400 text-xs">—</span>
               <input type="date" value={purchasesDateTo}
                 onChange={e => { setPurchasesDateTo(e.target.value); setIsPurchasesDateFiltered(true); }}
-                className="px-2 py-1 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-gray-400 bg-white" />
+                className="px-2 py-1 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#F58424] bg-white" />
               {isPurchasesDateFiltered && (
                 <button onClick={() => setPurchasesPreset("all")} className="ml-1 text-gray-400 hover:text-gray-600 text-xs font-bold">✕</button>
               )}
@@ -753,7 +753,7 @@ export default function FinanzasDashboard({
             <div className="relative ml-auto">
               <input type="text" placeholder="Buscar..." value={inventorySearchTerm}
                 onChange={e => setInventorySearchTerm(e.target.value)}
-                className="pl-3 pr-7 py-2 border border-gray-200 rounded-xl text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400 w-44 bg-white" />
+                className="pl-3 pr-7 py-2 border border-gray-200 rounded-xl text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#F58424] w-44 bg-white" />
               {inventorySearchTerm && (
                 <button onClick={() => setInventorySearchTerm("")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold">✕</button>
