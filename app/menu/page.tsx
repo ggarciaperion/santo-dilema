@@ -426,6 +426,7 @@ export default function MenuPage() {
   const [ckCustomerAddresses, setCkCustomerAddresses] = useState<string[]>([]);
   const [ckIsSubmitting,   setCkIsSubmitting]   = useState(false);
   const [ckOrderPlaced,    setCkOrderPlaced]    = useState(false);
+  const [ckAutoClosing,    setCkAutoClosing]    = useState(false);
   const [ckCompletedOrders, setCkCompletedOrders] = useState<any[]>([]);
   const [ckSelectedEfectivo, setCkSelectedEfectivo] = useState<null|'exacto'|'cambio'>(null);
   const [ckCantoCancelo,   setCkCantoCancelo]   = useState('');
@@ -546,6 +547,41 @@ export default function MenuPage() {
     return () => { document.removeEventListener("keydown", onKey); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartOpen]);
+
+  // ── Auto-close success panel after 3 s ───────────────────────────────────────
+  useEffect(() => {
+    if (!ckOrderPlaced) {
+      setCkAutoClosing(false);
+      return;
+    }
+    // Start fade at 2.6 s, execute close at 3 s
+    const fadeTimer  = setTimeout(() => setCkAutoClosing(true), 2600);
+    const closeTimer = setTimeout(() => {
+      setCheckoutStep('cart');
+      setCkForm({ phone: '', name: '', address: '' });
+      setCkDeliveryZone('');
+      setCkCustomerStatus('idle');
+      setCkCustomerAddresses([]);
+      setCkPaymentProof(null);
+      setCkSelectedEfectivo(null);
+      setCkCantoCancelo('');
+      setCkOrderPlaced(false);
+      setCkIsSubmitting(false);
+      setCartOpen(false);
+      setAlitasOrders([]);
+      setFitOrders([]);
+      setTacoOrders([]);
+      setTrioOrders([]);
+      setBebidaQty({});
+      setComboItems([]);
+      sessionStorage.removeItem('santo-dilema-orders');
+      sessionStorage.removeItem('santo-dilema-cart');
+    }, 3000);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(closeTimer);
+    };
+  }, [ckOrderPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Derived: any product modal is open ───────────────────────────────────
   const anyModalOpen = !!(alitasModal || fitModal || tacoModalOpen || confirmTrio || comboPhase);
@@ -2422,7 +2458,8 @@ export default function MenuPage() {
 
                   {/* ══ SUCCESS ═══════════════════════════════════════════════ */}
                   {ckOrderPlaced && (
-                  <div className="max-w-3xl mx-auto px-4 py-8 text-center bg-white">
+                  <div className="max-w-3xl mx-auto px-4 py-8 text-center bg-white"
+                    style={{ opacity: ckAutoClosing ? 0 : 1, transition: 'opacity 0.4s ease' }}>
                     <div className="relative w-48 h-48 mx-auto mb-5">
                       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 200">
                         <circle cx="100" cy="100" r="92" fill="none" stroke="#F58424" strokeWidth="2.5"
