@@ -70,6 +70,7 @@ const playSuccessSound = () => {
 
 interface CompletedOrder {
   productId: string;
+  name?: string;
   quantity: number;
   salsas?: string[]; // Opcional, solo para fat
   complementIds: string[];
@@ -751,18 +752,21 @@ export default function CheckoutPage() {
                                 || fitProducts.find(x => x.id === gi.productId)
                                 || tacoProducts.find(x => x.id === gi.productId)
                                 || beverageProducts.find(x => x.id === gi.productId);
-                              if (!p) return null;
+                              const displayName = gi.name ?? p?.name ?? gi.productId;
+                              if (!displayName) return null;
                               return (
                                 <div key={gi_idx} className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
-                                    {p.image.startsWith('/') ? (
-                                      <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                      <span className="text-lg">{p.image}</span>
-                                    )}
-                                  </div>
+                                  {p && (
+                                    <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
+                                      {p.image.startsWith('/') ? (
+                                        <img src={p.image} alt={displayName} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span className="text-lg">{p.image}</span>
+                                      )}
+                                    </div>
+                                  )}
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-black text-xs leading-tight">{p.name}</p>
+                                    <p className="text-black text-xs leading-tight">{displayName}</p>
                                     {gi.salsas && gi.salsas.length > 0 && (
                                       <p className="text-black/60 text-[10px] truncate">
                                         {gi.productId === "taco-duo"

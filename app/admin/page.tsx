@@ -3013,8 +3013,27 @@ export default function AdminPage() {
                         if (seen.has(item.comboGroupId)) return;
                         seen.add(item.comboGroupId);
                         const grp = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
-                        const isChiguan = grp.some((gi: any) => gi.productId === 'chiguan-alitas');
-                        if (isChiguan) {
+                        const isComboPlaycer = item.comboName === 'Combo Placer';
+                        const isChiguan = !isComboPlaycer && grp.some((gi: any) => gi.productId === 'chiguan-alitas');
+                        if (isComboPlaycer) {
+                          // ── Combo Placer: alitas + trío mini burgers ──
+                          const qCombo = String(grp[0]?.quantity || 1).padStart(2, '0');
+                          lines.push(<p key={`cp-${item.comboGroupId}`} className="text-sm text-gray-900"><span className="font-bold">{qCombo} Combo Placer</span></p>);
+                          const alGi = grp.find((gi: any) => gi.productId === 'pequeno-dilema');
+                          if (alGi) {
+                            const sIds: string[] = alGi.salsas || [];
+                            const sName = sIds.map((s: string) => salsas.find((x: any) => x.id === s)?.name || s).join(' y ');
+                            lines.push(<p key={`cp-alitas-${item.comboGroupId}`} className="text-sm text-gray-800 pl-3"><span className="font-bold">8 alitas 🍗 + papas</span>{sName && <span className="font-normal text-gray-600"> · Salsa: {sName}</span>}</p>);
+                          }
+                          const bgGi = grp.find((gi: any) => gi.productId === 'burger-trio');
+                          if (bgGi) {
+                            const flavors: string[] = bgGi.salsas || [];
+                            const sc: Record<string,number> = {};
+                            flavors.forEach(f => { sc[f] = (sc[f] || 0) + 1; });
+                            const fStr = [...new Set(flavors)].map(f => sc[f] > 1 ? `${sc[f]} ${f}` : `1 ${f}`).join(' + ');
+                            lines.push(<p key={`cp-burgers-${item.comboGroupId}`} className="text-sm text-gray-800 pl-3"><span className="font-bold">Trío mini burgers 🍔</span><span className="font-normal text-gray-600"> · {fStr}</span></p>);
+                          }
+                        } else if (isChiguan) {
                           // ── Combo Chihuán: título estilo producto ──
                           const qCombo = String(grp[0]?.quantity || 1).padStart(2, '0');
                           lines.push(<p key={`ch-${item.comboGroupId}`} className="text-sm text-gray-900"><span className="font-bold">{qCombo} {item.comboName || 'Combo Chihuán'}</span></p>);
@@ -3056,7 +3075,8 @@ export default function AdminPage() {
                           const varStr = varNames.length === 0 ? '' : isTaco ? ` ${varNames.join(' y ')}` : ` x ${varNames.join(' y ')}`;
                           const q = String(gi.quantity || 1).padStart(2, '0');
                           const ciIcon = gi.productId === 'burger-duo' || gi.productId === 'burger-trio' ? '🍔' : gi.category === 'fat' ? '🍗' : gi.category === 'fit' ? '🥗' : gi.category === 'taco' ? '🌮' : '';
-                          lines.push(<p key={`ci-${item.comboGroupId}-${gi_i}`} className="text-sm text-gray-800 pl-3"><span className="font-bold">{q} {gi.name}{ciIcon ? ` ${ciIcon}` : ''}</span>{varStr && <span className="font-normal text-gray-600">{varStr}</span>}</p>);
+                          const giDisplayName = gi.name ?? gi.productId;
+                          lines.push(<p key={`ci-${item.comboGroupId}-${gi_i}`} className="text-sm text-gray-800 pl-3"><span className="font-bold">{q} {giDisplayName}{ciIcon ? ` ${ciIcon}` : ''}</span>{varStr && <span className="font-normal text-gray-600">{varStr}</span>}</p>);
                           drinks.forEach((c: string, i: number) => {
                             lines.push(<p key={`cd-${item.comboGroupId}-${gi_i}-d${i}`} className="text-sm text-gray-700 pl-3">{q} {availableComplements[c]?.name || c}</p>);
                           });

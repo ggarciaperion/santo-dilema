@@ -133,5 +133,14 @@
     "cost": 1,
     "active": true,
     "type": "sale"
+  },
+  {
+    "id": "combo-placer",
+    "name": "Combo Placer",
+    "category": "combo",
+    "price": 41.00,
+    "cost": 0,
+    "active": true,
+    "type": "sale"
   }
 ]
