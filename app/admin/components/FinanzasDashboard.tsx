@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 
 interface FinanzasDashboardProps {
   financialSection: "dashboard" | "purchases" | "products" | "stock" | "canjes";
@@ -77,6 +77,39 @@ export default function FinanzasDashboard({
   const [purchasesDateFrom,       setPurchasesDateFrom]       = useState("");
   const [purchasesDateTo,         setPurchasesDateTo]         = useState("");
   const [isPurchasesDateFiltered, setIsPurchasesDateFiltered] = useState(false);
+
+  /* ─── Checkbox saving state ─── */
+  const [savingLiquidado, setSavingLiquidado] = useState<Record<string, boolean>>({});
+  const [confirmPersonal, setConfirmPersonal] = useState<{ id: string; current: boolean } | null>(null);
+
+  /* ─── Safe date format: "YYYY-MM-DD..." → "DD/MM/AAAA" or "Sin fecha" ─── */
+  const fmtDate = useCallback((raw: string | undefined | null): string => {
+    if (!raw) return "Sin fecha";
+    // Take only the date part (first 10 chars) to avoid timezone shifts
+    const datePart = String(raw).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return "Sin fecha";
+    const [y, m, d] = datePart.split("-");
+    if (!y || !m || !d) return "Sin fecha";
+    return `${d}/${m}/${y}`;
+  }, []);
+
+  /* ─── Handle checkbox click ─── */
+  const handleLiquidadoClick = useCallback((id: string, current: boolean, paidBy?: string) => {
+    if (!current && (paidBy === "personal" || paidBy === "tarjeta-personal")) {
+      setConfirmPersonal({ id, current });
+      return;
+    }
+    doToggleLiquidado(id, current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const doToggleLiquidado = useCallback((id: string, current: boolean) => {
+    setSavingLiquidado(s => ({ ...s, [id]: true }));
+    toggleLiquidado(id, current);
+    // Clear saving flag after a short delay (toggleLiquidado reloads inventory)
+    setTimeout(() => setSavingLiquidado(s => { const n = { ...s }; delete n[id]; return n; }), 1500);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toggleLiquidado]);
 
   /* ─── Caja ─── */
   const cajaSnapshot   = cajaData?.snapshotBalance || 0;
@@ -351,7 +384,7 @@ export default function FinanzasDashboard({
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     financialSection === tab ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
                   }`}>
-                  {tab === "dashboard" ? "Resumen" : "Gastos"}
+                  {tab === "dashboard" ? "Resumen" : "Registros"}
                 </button>
               ))}
             </div>
@@ -685,9 +718,35 @@ export default function FinanzasDashboard({
         </div>
       )}
 
-      {/* ════════════════════════ GASTOS ════════════════════════ */}
+      {/* ════════════════════════ REGISTROS ════════════════════════ */}
       {financialSection === "purchases" && (
         <div className="px-6 py-5 space-y-4">
+
+          {/* Confirm dialog for personal payments */}
+          {confirmPersonal && (
+            <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
+                <p className="text-sm font-black text-gray-900 mb-2">¿Liquidar gasto personal?</p>
+                <p className="text-xs text-gray-500 mb-5">
+                  Confirma que este gasto personal ya fue regularizado por el negocio. Esta acción solo marca el registro como revisado; no crea un movimiento financiero de reembolso.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { doToggleLiquidado(confirmPersonal.id, confirmPersonal.current); setConfirmPersonal(null); }}
+                    className="flex-1 bg-[#F58424] text-white py-2 rounded-xl text-sm font-bold hover:bg-orange-600">
+                    Confirmar
+                  </button>
+                  <button onClick={() => setConfirmPersonal(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-xl text-sm font-bold hover:bg-gray-200">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Title */}
+          <h2 className="text-lg font-black text-gray-900">Registros</h2>
 
           {/* Period presets — Purchases */}
           <div className="flex flex-wrap items-center gap-2">
@@ -746,10 +805,16 @@ export default function FinanzasDashboard({
                 className={`cursor-pointer rounded-xl border px-4 py-2.5 flex items-center gap-2 transition-all ${
                   liquidadoFilter === "pendiente" ? "bg-amber-100 border-amber-400 ring-2 ring-amber-400 ring-offset-1" : "bg-amber-50 border-amber-200 hover:bg-amber-100"
                 }`}>
-                <span className="text-xs font-bold text-amber-700">⏳ Por pagar</span>
+                <span className="text-xs font-bold text-amber-700">⏳ Pendiente</span>
                 <span className="text-sm font-black text-amber-700">S/{purchaseSummary.pendiente.toFixed(0)}</span>
               </div>
             )}
+            <div onClick={() => setLiquidadoFilter(liquidadoFilter === "liquidado" ? "all" : "liquidado")}
+              className={`cursor-pointer rounded-xl border px-4 py-2.5 flex items-center gap-2 transition-all ${
+                liquidadoFilter === "liquidado" ? "bg-emerald-100 border-emerald-400 ring-2 ring-emerald-400 ring-offset-1" : "bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+              }`}>
+              <span className="text-xs font-bold text-emerald-700">✅ Liquidados</span>
+            </div>
             <div className="relative ml-auto">
               <input type="text" placeholder="Buscar..." value={inventorySearchTerm}
                 onChange={e => setInventorySearchTerm(e.target.value)}
@@ -767,82 +832,158 @@ export default function FinanzasDashboard({
               <div className="text-center py-16 text-gray-400">
                 <p className="text-4xl mb-3">🛒</p>
                 <p className="font-semibold text-gray-500 text-sm">
-                  {inventorySearchTerm ? `Sin resultados para "${inventorySearchTerm}"` : "No hay gastos en este período"}
+                  {inventorySearchTerm ? `Sin resultados para "${inventorySearchTerm}"` : "No hay registros en este período"}
                 </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm" style={{ minWidth: "900px" }}>
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Fecha</th>
-                      <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Proveedor</th>
-                      <th className="px-4 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">Cat.</th>
-                      <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Concepto</th>
-                      <th className="px-4 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">Pago</th>
-                      <th className="px-4 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider">Total</th>
-                      <th className="px-4 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">Estado</th>
-                      <th className="px-4 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">Acc.</th>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Fecha</th>
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Tipo</th>
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Descripción</th>
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider" style={{ minWidth: "130px" }}>Proveedor</th>
+                      <th className="px-3 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Cant.</th>
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Unidad</th>
+                      <th className="px-3 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Costo total</th>
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Medio de pago</th>
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Pagado por</th>
+                      <th className="px-3 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Estado</th>
+                      <th className="px-3 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Liquidar</th>
+                      <th className="px-3 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {filteredInv.map((purchase: any) =>
-                      purchase.items.map((item: any, itemIdx: number) => {
-                        const cfg    = CAT[purchase.category || "operativos"] || CAT.operativos;
-                        const isOp   = (purchase.category || "operativos") === "operativos";
-                        const rowTotal = isOp ? item.unitCost : item.total;
-                        return (
-                          <tr key={`${purchase.id}-${itemIdx}`}
-                            className={`hover:bg-gray-50 transition-colors ${!purchase.liquidado ? "bg-amber-50/30" : ""}`}>
-                            <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
-                              {new Date(purchase.purchaseDate).toLocaleDateString("es-PE", { day:"2-digit", month:"2-digit", year:"2-digit" })}
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredInv.map((purchase: any) => {
+                      const cfg     = CAT[purchase.category || "operativos"] || CAT.operativos;
+                      const items   = purchase.items || [];
+                      const isSaving = !!savingLiquidado[purchase.id];
+                      const paidByLabel = (() => {
+                        const pb = purchase.paidBy;
+                        if (!pb) return "Sin indicar";
+                        if (pb === "personal" || pb === "tarjeta-personal") {
+                          return purchase.paidByName ? purchase.paidByName : "Personal";
+                        }
+                        if (pb === "negocio")           return "Negocio";
+                        if (pb === "tarjeta-negocio")   return "Tarjeta negocio";
+                        if (pb === "tarjeta")           return "Tarjeta";
+                        return pb;
+                      })();
+                      const payLabel = PAYMENT_LABEL[purchase.paymentMethod] || purchase.paymentMethod || "Sin indicar";
+
+                      return items.map((item: any, itemIdx: number) => (
+                        <tr key={`${purchase.id}-${itemIdx}`}
+                          className={`hover:bg-gray-50 transition-colors ${itemIdx > 0 ? "border-t border-dashed border-gray-100" : ""}`}>
+                          {/* Fecha — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-xs text-gray-700 whitespace-nowrap align-top" rowSpan={items.length}>
+                              {fmtDate(purchase.purchaseDate)}
                             </td>
-                            <td className="px-4 py-3">
-                              <p className="text-xs font-semibold text-gray-800">{purchase.supplier}</p>
-                              {purchase.supplierPhone && <p className="text-[10px] text-gray-400">{purchase.supplierPhone}</p>}
+                          ) : null}
+
+                          {/* Tipo — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-xs text-gray-900 align-top whitespace-nowrap" rowSpan={items.length}>
+                              {cfg.label}
                             </td>
-                            <td className="px-4 py-3 text-center">
-                              <span className={`inline-flex items-center justify-center w-6 h-6 ${cfg.bg} rounded-lg text-sm`}>{cfg.icon}</span>
+                          ) : null}
+
+                          {/* Descripción */}
+                          <td className="px-3 py-3 text-xs text-gray-800 align-top" style={{ minWidth: "160px" }}>
+                            {item.productName || "—"}
+                          </td>
+
+                          {/* Proveedor — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 align-top" rowSpan={items.length} style={{ minWidth: "130px" }}>
+                              <p className="text-xs text-gray-800 break-words">{purchase.supplier || "Sin indicar"}</p>
+                              {purchase.supplierPhone && <p className="text-[10px] text-gray-400 mt-0.5">{purchase.supplierPhone}</p>}
                             </td>
-                            <td className="px-4 py-3 text-xs font-semibold text-gray-800">{item.productName || "—"}</td>
-                            <td className="px-4 py-3 text-center">
-                              <span className="text-[10px] font-semibold text-gray-500">{PAYMENT_LABEL[purchase.paymentMethod] || purchase.paymentMethod}</span>
+                          ) : null}
+
+                          {/* Cantidad */}
+                          <td className="px-3 py-3 text-xs text-gray-700 text-right align-top whitespace-nowrap">
+                            {item.quantity != null ? item.quantity : "—"}
+                          </td>
+
+                          {/* Unidad */}
+                          <td className="px-3 py-3 text-xs text-gray-700 align-top whitespace-nowrap">
+                            {item.unit || "—"}
+                          </td>
+
+                          {/* Costo total — total of purchase on first row, blank on subsequent */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-xs font-black text-gray-900 text-right align-top whitespace-nowrap" rowSpan={items.length}>
+                              S/ {(purchase.totalAmount || 0).toFixed(2)}
                             </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className="text-xs font-black text-gray-900">S/ {(rowTotal || 0).toFixed(2)}</span>
+                          ) : null}
+
+                          {/* Medio de pago — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-xs text-gray-700 align-top whitespace-nowrap" rowSpan={items.length}>
+                              {payLabel}
                             </td>
-                            {itemIdx === 0 ? (
-                              <td className="px-4 py-3 text-center" rowSpan={purchase.items.length}>
-                                <button onClick={() => toggleLiquidado(purchase.id, !!purchase.liquidado)}
-                                  className={`text-[10px] font-bold px-2.5 py-1.5 rounded-xl border transition-all ${
-                                    purchase.liquidado
-                                      ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-                                      : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
-                                  }`}>
-                                  {purchase.liquidado ? "✅ Pagado" : "⏳ Pagar"}
+                          ) : null}
+
+                          {/* Pagado por — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-xs text-gray-700 align-top" rowSpan={items.length}>
+                              {paidByLabel}
+                            </td>
+                          ) : null}
+
+                          {/* Estado — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-xs text-gray-700 align-top whitespace-nowrap" rowSpan={items.length}>
+                              {purchase.liquidado ? "Liquidado" : "Pendiente"}
+                            </td>
+                          ) : null}
+
+                          {/* Liquidar checkbox — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-center align-top" rowSpan={items.length}>
+                              <label className="flex items-center justify-center gap-1.5 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={!!purchase.liquidado}
+                                  disabled={isSaving}
+                                  onChange={() => handleLiquidadoClick(purchase.id, !!purchase.liquidado, purchase.paidBy)}
+                                  className="w-4 h-4 accent-[#F58424] cursor-pointer disabled:opacity-50"
+                                />
+                                {isSaving && <span className="text-[9px] text-gray-400">guardando…</span>}
+                              </label>
+                            </td>
+                          ) : null}
+
+                          {/* Acciones — only on first item row */}
+                          {itemIdx === 0 ? (
+                            <td className="px-3 py-3 text-center align-top" rowSpan={items.length}>
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => { setEditingPurchase(purchase); setShowInventoryEditModal(true); }}
+                                  className="text-gray-400 hover:text-[#F58424] transition-colors text-xs font-bold"
+                                  title="Editar">
+                                  Editar
                                 </button>
-                              </td>
-                            ) : null}
-                            <td className="px-4 py-3 text-center">
-                              {itemIdx === 0 && (
-                                <div className="flex items-center justify-center gap-1.5">
-                                  <button onClick={() => { setEditingPurchase(purchase); setShowInventoryEditModal(true); }}
-                                    className="text-gray-300 hover:text-amber-500 transition-colors text-base" title="Editar">✏️</button>
-                                  <button onClick={() => handleDeleteInventory(purchase.id)}
-                                    className="text-gray-300 hover:text-red-500 transition-colors text-sm font-bold" title="Eliminar">✕</button>
-                                </div>
-                              )}
+                                <button
+                                  onClick={() => handleDeleteInventory(purchase.id)}
+                                  className="text-gray-400 hover:text-red-500 transition-colors text-xs font-bold"
+                                  title="Eliminar">
+                                  Eliminar
+                                </button>
+                              </div>
                             </td>
-                          </tr>
-                        );
-                      })
-                    )}
+                          ) : null}
+                        </tr>
+                      ));
+                    })}
                   </tbody>
                   <tfoot className="border-t-2 border-gray-200 bg-gray-50">
                     <tr>
-                      <td colSpan={5} className="px-4 py-3 text-xs font-black text-gray-500 text-right uppercase tracking-wide">Total período</td>
-                      <td className="px-4 py-3 text-right text-sm font-black text-gray-900">S/ {purchaseSummary.total.toFixed(2)}</td>
-                      <td colSpan={2} />
+                      <td colSpan={6} className="px-3 py-3 text-xs font-black text-gray-500 text-right uppercase tracking-wide">Total período</td>
+                      <td className="px-3 py-3 text-right text-sm font-black text-gray-900 whitespace-nowrap">S/ {purchaseSummary.total.toFixed(2)}</td>
+                      <td colSpan={5} />
                     </tr>
                   </tfoot>
                 </table>

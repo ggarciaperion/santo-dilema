@@ -314,6 +314,10 @@ export default function CostosMargenesAdmin({ orders }: Props) {
   const totalMargen = completeRows.reduce((s, r) => s + (r.margenBruto || 0), 0);
   const margenPctTotal = totalVenta > 0 ? (totalMargen / completeRows.reduce((s, r) => s + r.ventaNeta, 0)) * 100 : null;
   const pendingCount = marginRows.filter(r => r.hasMissingCosts).length;
+  // Margen bruto global: sólo calculable cuando todos los costos están completos
+  const globalMargenPct = pendingCount > 0 || totalVenta === 0
+    ? null
+    : (totalMargen / totalVenta) * 100;
 
   // ── Reporte por producto ─────────────────────────────────────────────────
   const productReport: Record<string, { name: string; category: string; units: number; venta: number; costo: number; hasMissing: boolean }> = {};
@@ -521,11 +525,11 @@ export default function CostosMargenesAdmin({ orders }: Props) {
                 { label: "Venta neta", value: fmt(totalVenta), sub: `${marginRows.length} pedidos` },
                 { label: "Costo vendido", value: fmt(totalCosto), sub: `${completeRows.length} con costo` },
                 { label: "Margen bruto", value: fmt(totalMargen), sub: margenPctTotal !== null ? `${margenPctTotal.toFixed(1)}%` : "—" },
-                { label: "Sin costo", value: String(pendingCount), sub: "pedidos incompletos", warn: pendingCount > 0 },
+                { label: "Margen bruto (%)", value: globalMargenPct !== null ? `${globalMargenPct.toFixed(1)}%` : "—", sub: pendingCount > 0 ? "Completa los costos para calcularlo" : "", warn: pendingCount > 0, valueColor: globalMargenPct !== null ? (globalMargenPct < 0 ? "text-red-500" : "text-emerald-600") : undefined },
               ].map(kpi => (
                 <div key={kpi.label} className={`bg-white rounded-xl border p-4 ${kpi.warn && pendingCount > 0 ? "border-amber-300" : "border-gray-200"}`}>
                   <p className="text-xs text-gray-500 uppercase tracking-wide font-bold">{kpi.label}</p>
-                  <p className={`text-2xl font-black mt-1 ${kpi.warn && pendingCount > 0 ? "text-amber-500" : "text-gray-900"}`}>{kpi.value}</p>
+                  <p className={`text-2xl font-black mt-1 ${"valueColor" in kpi && kpi.valueColor ? kpi.valueColor : kpi.warn && pendingCount > 0 ? "text-amber-500" : "text-gray-900"}`}>{kpi.value}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{kpi.sub}</p>
                 </div>
               ))}

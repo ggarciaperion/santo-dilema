@@ -1047,7 +1047,7 @@ export default function MenuPage() {
       }
     }
     for (const fi of activeCombo.fixedItems ?? []) {
-      items.push({ productId: fi.productId, quantity: 1, salsas: fi.cartSalsas, complementIds: fi.cartComplementIds, category: "taco", originalPrice: fi.cartOriginalPrice, finalPrice: fi.cartOriginalPrice, ...meta });
+      items.push({ productId: fi.productId, name: fi.summaryLabel, quantity: 1, salsas: fi.cartSalsas, complementIds: fi.cartComplementIds, category: "taco", originalPrice: fi.cartOriginalPrice, finalPrice: fi.cartOriginalPrice, ...meta });
     }
     extras.forEach(eid => {
       const c = COMPLEMENTS[eid];

@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import SorteoMundialAdmin from "./components/SorteoMundialAdmin";
 const CostosMargenesAdmin = dynamic(() => import("./components/CostosMargenesAdmin"), { ssr: false });
 const ClientesAdmin = dynamic(() => import("./components/ClientesAdmin"), { ssr: false });
+const InventarioAdmin = dynamic(() => import("./components/InventarioAdmin"), { ssr: false });
 
 // Definiciones de salsas y complementos (igual que en checkout)
 const salsas: { id: string; name: string }[] = [
@@ -67,7 +68,7 @@ interface Order {
   totalItems?: number;
   totalPrice?: number;
   timestamp?: string;
-  status: "pending" | "pendiente-verificacion" | "confirmed" | "en-camino" | "delivered" | "cancelled";
+  status: "pending" | "pendiente-verificacion" | "confirmed" | "en-camino" | "delivered" | "cancelled" | "programado";
   createdAt: string;
   updatedAt?: string;
   confirmedAt?: string;
@@ -160,6 +161,10 @@ function TimeCounter({ createdAt, status, onOvertime, audioCtx }: { createdAt: s
   );
 }
 
+// Generates a short random ID for inventory line items — stable identity across edits/reorders
+const genLineId = () => Math.random().toString(36).slice(2, 10);
+const newLineItem = () => ({ productName: "", supplyId: "", quantity: 0, unit: "KG", volume: 1, unitCost: 0, total: 0, lineId: genLineId() });
+
 export default function AdminPage() {
   const router = useRouter();
   // DEV BYPASS: activo solo cuando NODE_ENV === 'development'
@@ -248,7 +253,7 @@ export default function AdminPage() {
   const [menuPrices, setMenuPrices] = useState<Record<string, number>>({});
   const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
   const [priceSaving, setPriceSaving] = useState<string | null>(null);
-  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock" | "canjes" | "costos">("dashboard");
+  const [financialSection, setFinancialSection] = useState<"dashboard" | "purchases" | "products" | "stock" | "canjes" | "costos" | "inventario">("dashboard");
   const [canjeModal, setCanjeModal] = useState<{ orderId: string } | null>(null);
   const [canjeNoteInput, setCanjeNoteInput] = useState("");
   const [canjeSaving, setCanjeSaving] = useState(false);
@@ -321,7 +326,8 @@ export default function AdminPage() {
     supplierPhone: "",
     paymentMethod: "plin-yape",
     category: "operativos",
-    items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
+    receivedInStock: true,
+    items: [newLineItem()],
     totalAmount: 0,
     purchaseDate: new Date().toISOString().split('T')[0]
   });
@@ -357,8 +363,12 @@ export default function AdminPage() {
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [editingCatalogProduct, setEditingCatalogProduct] = useState<any>(null);
   const [catalogForm, setCatalogForm] = useState({ productId: "", name: "", category: "", unit: "" });
-  const [productSearchTerms, setProductSearchTerms] = useState<string[]>([]);
+  const [productSearchTerms, setProductSearchTerms] = useState<string[]>([""]);
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(null);
+  const [supplies, setSupplies] = useState<any[]>([]);
+  const [quickSupplyIdx, setQuickSupplyIdx] = useState<number | null>(null);
+  const [quickSupplyUnit, setQuickSupplyUnit] = useState("unidades");
+  const [quickSupplySaving, setQuickSupplySaving] = useState(false);
   const [promotionForm, setPromotionForm] = useState({
     name: "",
     description: "",
@@ -482,6 +492,7 @@ export default function AdminPage() {
     loadInventory();
     loadDeductions();
     loadPromotions();
+    loadSupplies();
     loadCatalogProducts();
     loadMenuStock();
     loadMenuDiscounts();
@@ -533,7 +544,7 @@ export default function AdminPage() {
 
         if (newOrders.length > 0) {
           console.log(`🔔 [ADMIN] ¡${newOrders.length} pedido(s) NUEVO(S) detectado(s)!`);
-          console.log(`🔔 [ADMIN] IDs nuevos:`, newOrders.map(o => o.id));
+          console.log(`🔔 [ADMIN] IDs nuevos:`, newOrders.map((o: Order) => o.id));
           console.log(`🔔 [ADMIN] Llamando a playNotificationSound()...`);
           playNotificationSound();
         } else {
@@ -556,7 +567,7 @@ export default function AdminPage() {
 
         if (newlyDelivered.length > 0) {
           console.log(`✅ [ADMIN] ¡${newlyDelivered.length} pedido(s) ENTREGADO(S) por delivery!`);
-          console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map(o => o.id));
+          console.log(`✅ [ADMIN] IDs entregados:`, newlyDelivered.map((o: Order) => o.id));
           // Registrar PERMANENTEMENTE para que nunca vuelva a disparar (race condition + refresh)
           newlyDelivered.forEach((o: Order) => {
             announcedDeliveredRef.current.add(o.id);
@@ -866,6 +877,14 @@ export default function AdminPage() {
     }
   };
 
+  const loadSupplies = async () => {
+    try {
+      const res = await fetch("/api/supplies");
+      const data = await res.json();
+      setSupplies(Array.isArray(data) ? data : []);
+    } catch {}
+  };
+
   const loadCaja = async () => {
     try {
       const response = await fetch("/api/caja");
@@ -1045,8 +1064,18 @@ export default function AdminPage() {
         setOvertimeOrderIds(prev => { const next = new Set(prev); next.delete(orderId); return next; });
       }
 
-      // Si el nuevo estado es "delivered", deducir stock automáticamente
+      // Si el nuevo estado es "delivered", descontar insumos (una sola vez por pedido)
       if (newStatus === "delivered" && order && order.status !== "delivered") {
+        fetch("/api/stock-consume", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: order.id,
+            orderDate: order.createdAt,
+            cart: (order as any).completedOrders || order.cart || [],
+          }),
+        }).catch((e) => console.warn("stock-consume failed:", e));
+
         await deductStockFromOrder(order);
       }
 
@@ -1486,7 +1515,13 @@ export default function AdminPage() {
   };
 
   // Inventory functions
+  const VALID_CATEGORIES = ["operativos", "fijos", "personal", "marketing"];
+
   const handleCreateInventory = async () => {
+    if (!VALID_CATEGORIES.includes(inventoryForm.category)) {
+      alert("Selecciona una categoría válida antes de guardar.");
+      return;
+    }
     try {
       console.log("📦 Datos a enviar:", inventoryForm);
       console.log("📦 Items a enviar:", inventoryForm.items);
@@ -1515,6 +1550,32 @@ export default function AdminPage() {
       if (response.ok) {
         const savedData = await response.json();
         console.log("📦 Datos guardados en servidor:", savedData);
+
+        // Auto-generar entradas de inventario para líneas vinculadas a un insumo
+        // Uses per-line reference "${id}-line-${idx}" for idempotency
+        if (inventoryForm.category === "operativos" && inventoryForm.receivedInStock) {
+          for (let idx = 0; idx < inventoryForm.items.length; idx++) {
+            const item = inventoryForm.items[idx];
+            const supplyId = (item as any).supplyId;
+            if (!supplyId) continue;
+            const unitsIn = item.quantity * Math.max(item.volume || 1, 1);
+            if (unitsIn <= 0) continue;
+            await fetch("/api/supply-movements", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                itemId: supplyId,
+                type: "entrada",
+                quantity: unitsIn,
+                date: inventoryForm.purchaseDate,
+                notes: `Compra: ${inventoryForm.supplier || "sin proveedor"}`,
+                reference: `${savedData.id}-${item.lineId || `line-${idx}`}`,
+              }),
+            }).catch(e => console.warn("supply-movement failed:", e));
+          }
+          await loadSupplies();
+        }
+
         await loadInventory();
         setShowInventoryModal(false);
         setInventoryForm({
@@ -1523,11 +1584,13 @@ export default function AdminPage() {
           supplierPhone: "",
           paymentMethod: "plin-yape",
           category: "operativos",
-          items: [{ productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }],
+          receivedInStock: true,
+          items: [newLineItem()],
           totalAmount: 0,
           purchaseDate: new Date().toISOString().split('T')[0]
         });
         setProductSearchTerms([""]);
+        setQuickSupplyIdx(null);
         alert("Compra registrada exitosamente");
       } else {
         const errorData = await response.json();
@@ -1566,7 +1629,7 @@ export default function AdminPage() {
   const addInventoryItem = () => {
     setInventoryForm({
       ...inventoryForm,
-      items: [...inventoryForm.items, { productName: "", quantity: 0, unit: "kg", volume: 0, unitCost: 0, total: 0 }]
+      items: [...inventoryForm.items, newLineItem()]
     });
     setProductSearchTerms([...productSearchTerms, ""]);
   };
@@ -1983,7 +2046,7 @@ export default function AdminPage() {
 
     // Si hay filtro activo, usar directamente los pedidos filtrados para TODOS los cálculos
     let todayOrders, dailySales, currentMonthOrders, monthlySales;
-    let lastMonthOrders, lastMonthSales, progressPercentage, lastMonthAverageTicket, totalRevenue;
+    let lastMonthOrders: any[] = [], lastMonthSales: any, progressPercentage: any, lastMonthAverageTicket: any, totalRevenue: any;
 
     // Calcular métricas de canje (sobre TODOS los pedidos, sin filtro de fechas)
     const allCanjeOrders = orders.filter((o: any) => o.isCanje);
@@ -2950,6 +3013,27 @@ export default function AdminPage() {
                         if (seen.has(item.comboGroupId)) return;
                         seen.add(item.comboGroupId);
                         const grp = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
+                        const isChiguan = grp.some((gi: any) => gi.productId === 'chiguan-alitas');
+                        if (isChiguan) {
+                          // ── Combo Chihuán: título estilo producto ──
+                          const qCombo = String(grp[0]?.quantity || 1).padStart(2, '0');
+                          lines.push(<p key={`ch-${item.comboGroupId}`} className="text-sm text-gray-900"><span className="font-bold">{qCombo} {item.comboName || 'Combo Chihuán'}</span></p>);
+                          // ── 4 alitas con salsa ──
+                          const alGi = grp.find((gi: any) => gi.productId === 'chiguan-alitas');
+                          if (alGi) {
+                            const sIds: string[] = alGi.salsas || [];
+                            const sName = sIds.map((s: string) => salsas.find((x: any) => x.id === s)?.name || s).join(' y ');
+                            lines.push(<p key={`cc-alitas-${item.comboGroupId}`} className="text-sm text-gray-800 pl-3"><span className="font-bold">4 alitas 🍗</span>{sName && <span className="font-normal text-gray-600"> × {sName}</span>}</p>);
+                          }
+                          // ── Taco Crunch Supreme + nachos ──
+                          const tacoGi = grp.find((gi: any) => gi.productId === 'taco-duo');
+                          if (tacoGi) {
+                            const sIds: string[] = tacoGi.salsas || [];
+                            const tName = sIds.length > 0 ? sIds.map((s: string) => tacoNames[s] || s).join(' y ') : 'Crunch Supreme';
+                            const hasNachos = (tacoGi.complementIds || []).includes('nachos');
+                            lines.push(<p key={`cc-taco-${item.comboGroupId}`} className="text-sm text-gray-700 pl-3">{'1 taco ' + tName + (hasNachos ? ' + nachos' : '')}</p>);
+                          }
+                        } else {
                         lines.push(
                           <p key={`ch-${item.comboGroupId}`} className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mt-1">
                             {item.comboName || 'Combo'}
@@ -2988,6 +3072,7 @@ export default function AdminPage() {
                             });
                           }
                         });
+                        } // end isChiguan else
                       } else {
                         const q = String(item.quantity || 1).padStart(2, '0');
                         const salsas_: string[] = item.salsas || [];
@@ -3426,6 +3511,8 @@ export default function AdminPage() {
           <section className="px-6 pb-12">
 
             <ClientesAdmin
+              orders={orders}
+              customerProfiles={customerProfiles}
               customers={customers}
               allCustomers={allCustomers}
               customerSegment={customerSegment}
@@ -3446,19 +3533,19 @@ export default function AdminPage() {
               {/* 4 KPIs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-white rounded-xl border-2 border-[#F58424]/30 p-4 text-center">
-                  <p className="text-3xl font-black text-gray-700">{crmDashboard.total}</p>
+                  <p className="text-3xl font-black text-gray-700">{crmDashboard!.total}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Clientes totales</p>
                 </div>
                 <div className="bg-white rounded-xl border-2 border-green-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-green-400">{crmDashboard.repurchaseRate}%</p>
+                  <p className="text-3xl font-black text-green-400">{crmDashboard!.repurchaseRate}%</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Tasa recompra</p>
                 </div>
                 <div className="bg-white rounded-xl border-2 border-amber-500/40 p-4 text-center">
-                  <p className="text-3xl font-black text-amber-400">S/ {crmDashboard.avgTicket.toFixed(0)}</p>
+                  <p className="text-3xl font-black text-amber-400">S/ {crmDashboard!.avgTicket.toFixed(0)}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Ticket promedio</p>
                 </div>
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
-                  <p className="text-3xl font-black text-gray-900">{crmDashboard.avgFrequency}</p>
+                  <p className="text-3xl font-black text-gray-900">{crmDashboard!.avgFrequency}</p>
                   <p className="text-xs text-gray-400 uppercase mt-1">Pedidos/cliente</p>
                 </div>
               </div>
@@ -3511,10 +3598,10 @@ export default function AdminPage() {
           {/* Cumpleaños - integrado como segmento en lista de clientes */}
           {false && crmDashboard && (
             <section className="px-6 py-6 space-y-4">
-              {crmDashboard.birthdaysToday.length > 0 && (
+              {crmDashboard!.birthdaysToday.length > 0 && (
                 <div className="bg-pink-900/20 border-2 border-pink-500 rounded-xl p-4">
-                  <h3 className="text-pink-400 font-black text-sm uppercase mb-3">🎂 Cumpleaños hoy ({crmDashboard.birthdaysToday.length})</h3>
-                  {crmDashboard.birthdaysToday.map((c: any) => (
+                  <h3 className="text-pink-400 font-black text-sm uppercase mb-3">🎂 Cumpleaños hoy ({crmDashboard!.birthdaysToday.length})</h3>
+                  {crmDashboard!.birthdaysToday.map((c: any) => (
                     <div key={c.phone} className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 mb-2">
                       <div>
                         <p className="text-gray-800 font-bold text-sm">{c.name}</p>
@@ -3866,7 +3953,7 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
-                🛒 Compras y Gastos
+                📋 Registros
               </button>
               <button
                 onClick={() => setFinancialSection("costos")}
@@ -3876,7 +3963,17 @@ export default function AdminPage() {
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
-                📐 Costos y Márgenes
+                📐 Costos
+              </button>
+              <button
+                onClick={() => setFinancialSection("inventario")}
+                className={`px-6 py-3 font-bold transition-all text-sm ${
+                  financialSection === "inventario"
+                    ? "text-[#F58424] border-b-4 border-[#F58424]"
+                    : "text-gray-400 hover:text-gray-700"
+                }`}
+              >
+                📦 Inventario
               </button>
               {/* Stock de Empaques ELIMINADO - Sistema ahora es 100% manual */}
             </div>
@@ -4040,22 +4137,81 @@ export default function AdminPage() {
               const nPorPagar  = inventory.filter((p: any) => !p.liquidado).length;
               const ticket     = deliveredOrders.length > 0 ? totalVentas / deliveredOrders.length : 0;
 
-              // ── Clientes únicos (por teléfono) ──
-              const phoneCount: Record<string, number> = {};
+              // ── Clientes únicos (normalización de teléfono) ──
+              const normPhone = (raw: string): string => {
+                let p = String(raw).replace(/[\s\-().+]/g, "");
+                if (/^51\d{9}$/.test(p)) p = p.slice(2); // quitar código país Perú
+                return p;
+              };
+
+              // Conteo de pedidos por teléfono normalizado dentro del período
+              const phoneCountPeriod: Record<string, number> = {};
               deliveredOrders.forEach((o: any) => {
-                if (o.phone) phoneCount[o.phone] = (phoneCount[o.phone] || 0) + 1;
+                const raw = (o.phone || o.customerPhone || "").trim();
+                if (!raw) return;
+                const key = normPhone(raw);
+                if (!key) return;
+                phoneCountPeriod[key] = (phoneCountPeriod[key] || 0) + 1;
               });
-              const totalClientes   = Object.keys(phoneCount).length;
-              const clientesRepeat  = Object.values(phoneCount).filter((n: any) => n > 1).length;
-              const clientesNuevos  = totalClientes - clientesRepeat;
+
+              const totalClientes = Object.keys(phoneCountPeriod).length;
+              const clientesRepeat = Object.values(phoneCountPeriod).filter((n: any) => n >= 2).length;
+              const pedidosRecurrentes = Object.values(phoneCountPeriod)
+                .filter((n: any) => n >= 2)
+                .reduce((s: number, n: any) => s + n, 0);
+              const promedioRecurrente = clientesRepeat > 0 ? pedidosRecurrentes / clientesRepeat : 0;
+              const pctRecurrencia    = totalClientes > 0 ? (clientesRepeat / totalClientes) * 100 : 0;
+              const recBreakdown = { dos: 0, tres: 0, cuatroPlus: 0 };
+              Object.values(phoneCountPeriod).forEach((n: any) => {
+                if (n === 2) recBreakdown.dos++;
+                else if (n === 3) recBreakdown.tres++;
+                else if (n >= 4) recBreakdown.cuatroPlus++;
+              });
+
+              // ── Clientes nuevos: primera entrega en todo el historial dentro del período ──
+              const deliveredStatuses = new Set(["delivered", "Entregado", "entregado"]);
+              const firstDeliveryDate: Record<string, string> = {};
+              orders
+                .filter((o: any) => !o.isCanje && deliveredStatuses.has(o.status || ""))
+                .forEach((o: any) => {
+                  const raw = (o.phone || o.customerPhone || "").trim();
+                  if (!raw) return;
+                  const key = normPhone(raw);
+                  if (!key) return;
+                  const d = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+                  if (!firstDeliveryDate[key] || d < firstDeliveryDate[key]) firstDeliveryDate[key] = d;
+                });
+
+              const periodFrom = isDashboardDateFiltered && dashboardDateFrom ? dashboardDateFrom : "0000-01-01";
+              const periodTo   = isDashboardDateFiltered && dashboardDateTo   ? dashboardDateTo   : "9999-12-31";
+              let clientesNuevos = 0;
+              Object.keys(phoneCountPeriod).forEach(phone => {
+                const first = firstDeliveryDate[phone];
+                if (first && first >= periodFrom && first <= periodTo) clientesNuevos++;
+              });
 
               // ── Métodos de pago ──
-              const paymentMap: Record<string, { count: number; amount: number }> = {};
+              // Mapeo de valores reales del checkout a los 3 métodos mostrados
+              const pmGroup = (raw: string): "yape" | "efectivo" | "tarjeta" | "otros" => {
+                if (raw === "anticipado") return "yape";
+                if (raw === "contraentrega" || raw === "contraentrega-efectivo-exacto" || raw === "contraentrega-efectivo-cambio") return "efectivo";
+                if (raw === "tarjeta-mp") return "tarjeta";
+                return "otros";
+              };
+              type PmEntry = { count: number; amount: number };
+              const paymentMap: Record<string, PmEntry> = {
+                yape: { count: 0, amount: 0 },
+                efectivo: { count: 0, amount: 0 },
+                tarjeta: { count: 0, amount: 0 },
+                otros: { count: 0, amount: 0 },
+              };
+              const pmRawOtros = new Set<string>();
               deliveredOrders.forEach((o: any) => {
-                const pm = o.paymentMethod || "otro";
-                if (!paymentMap[pm]) paymentMap[pm] = { count: 0, amount: 0 };
-                paymentMap[pm].count++;
-                paymentMap[pm].amount += o.totalPrice || 0;
+                const raw = (o.paymentMethod || "").trim();
+                const grupo = pmGroup(raw);
+                paymentMap[grupo].count++;
+                paymentMap[grupo].amount += o.totalPrice || 0;
+                if (grupo === "otros" && raw) pmRawOtros.add(raw);
               });
 
               // ── Top 5 productos más vendidos ──
@@ -4214,60 +4370,71 @@ export default function AdminPage() {
                       {/* Clientes */}
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
                         <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Clientes</p>
-                        <div className="grid grid-cols-3 gap-1 text-center mb-3">
+                        <div className="grid grid-cols-3 gap-1 text-center">
+                          {/* Clientes atendidos */}
                           <div>
                             <p className="text-xl font-black text-gray-900 tabular-nums">{totalClientes}</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Total únicos</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">Clientes<br/>atendidos</p>
                           </div>
+                          {/* Recurrencia */}
                           <div>
                             <p className="text-xl font-black text-emerald-600 tabular-nums">{clientesRepeat}</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Vuelven</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Recurrencia</p>
+                            {clientesRepeat > 0 && (
+                              <p className="text-[10px] text-gray-400 mt-0.5 leading-tight tabular-nums">
+                                {pctRecurrencia.toFixed(1)}% · {promedioRecurrente.toFixed(1)} ped.
+                              </p>
+                            )}
+                            {clientesRepeat > 0 && (
+                              <details className="mt-1">
+                                <summary className="text-[10px] text-gray-300 cursor-pointer hover:text-gray-500 select-none list-none">▸ desglose</summary>
+                                <div className="text-[10px] text-gray-400 mt-1 bg-gray-50 rounded p-1.5 text-left space-y-0.5">
+                                  <p>2 ped.: {recBreakdown.dos} cl.</p>
+                                  <p>3 ped.: {recBreakdown.tres} cl.</p>
+                                  <p>4+ ped.: {recBreakdown.cuatroPlus} cl.</p>
+                                  <p className="text-gray-300 italic mt-0.5">En el período</p>
+                                </div>
+                              </details>
+                            )}
                           </div>
+                          {/* Clientes nuevos */}
                           <div>
                             <p className="text-xl font-black text-blue-500 tabular-nums">{clientesNuevos}</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Nuevos</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">Clientes<br/>nuevos</p>
+                            <p className="text-[10px] text-gray-300 mt-0.5 italic leading-tight">Según historial disp.</p>
                           </div>
                         </div>
-                        {totalClientes > 0 && (
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-emerald-400 rounded-full transition-all duration-500"
-                                style={{ width: `${(clientesRepeat / totalClientes) * 100}%` }} />
-                            </div>
-                            <span className="text-xs font-bold text-emerald-600 shrink-0">
-                              {totalClientes > 0 ? ((clientesRepeat / totalClientes) * 100).toFixed(0) : 0}% retención
-                            </span>
-                          </div>
-                        )}
                       </div>
 
                       {/* Métodos de pago */}
                       <div className="bg-white border border-gray-200 rounded-xl p-4 flex-1">
                         <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Métodos de pago</p>
-                        {Object.keys(paymentMap).length === 0 ? (
+                        {totalVentas === 0 ? (
                           <p className="text-xs text-gray-400 text-center py-3">Sin datos</p>
                         ) : (
                           <div className="space-y-2">
-                            {Object.entries(paymentMap)
-                              .sort((a: any, b: any) => b[1].amount - a[1].amount)
-                              .map(([pm, data]: any) => {
+                            {([ ["yape","Yape"], ["efectivo","Efectivo"], ["tarjeta","Tarjeta"] ] as [string,string][])
+                              .map(([key, label]) => {
+                                const data = paymentMap[key];
                                 const pct = totalVentas > 0 ? (data.amount / totalVentas) * 100 : 0;
-                                const label =
-                                  pm === "anticipado"    ? "Transf. / Yape" :
-                                  pm === "contraentrega" ? "Contraentrega" :
-                                  pm === "efectivo"      ? "Efectivo" : pm;
                                 return (
-                                  <div key={pm} className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500 w-28 shrink-0 truncate">{label}</span>
+                                  <div key={key} className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 w-16 shrink-0">{label}</span>
                                     <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                       <div className="h-full bg-blue-400 rounded-full transition-all duration-500"
-                                        style={{ width: `${pct}%` }} />
+                                        style={{ width: `${Math.min(pct, 100)}%` }} />
                                     </div>
                                     <span className="text-[10px] text-gray-400 w-8 text-right shrink-0">{pct.toFixed(0)}%</span>
                                     <span className="text-xs font-bold text-gray-700 w-16 text-right shrink-0 tabular-nums">S/ {data.amount.toFixed(0)}</span>
                                   </div>
                                 );
                               })}
+                            {paymentMap.otros.count > 0 && (
+                              <p className="text-[10px] text-gray-300 pt-1 italic">
+                                {paymentMap.otros.count} pedido{paymentMap.otros.count !== 1 ? "s" : ""} con método desconocido
+                                {pmRawOtros.size > 0 && `: "${[...pmRawOtros].join('", "')}"`}
+                              </p>
+                            )}
                           </div>
                         )}
                       </div>
@@ -4395,45 +4562,50 @@ export default function AdminPage() {
               );
             })()}
 
-            {/* COMPRAS Y GASTOS */}
-            {/* COMPRAS Y GASTOS */}
+            {/* REGISTROS */}
             {financialSection === "purchases" && (() => {
-              const catLabel: Record<string, string> = {
-                operativos:"Costos", fijos:"Gastos", marketing:"Gastos", personal:"Personal", gastos:"Gastos",
-              };
-              const catColor: Record<string, string> = {
-                operativos:"bg-blue-100 text-blue-700", fijos:"bg-violet-100 text-violet-700",
-                marketing:"bg-orange-100 text-orange-700", personal:"bg-green-100 text-green-700", gastos:"bg-violet-100 text-violet-700",
-              };
+              // ── Categorías canónicas ─────────────────────────────────────
+              const CANON_CATS = [
+                { value: "operativos", label: "Operativos" },
+                { value: "fijos",      label: "Fijos"      },
+                { value: "personal",   label: "Personal"   },
+                { value: "marketing",  label: "Marketing"  },
+              ];
+              const CAT_LABEL: Record<string, string> = Object.fromEntries(CANON_CATS.map(c => [c.value, c.label]));
+
               const pmLabel: Record<string, string> = {
                 "plin-yape":"Yape/Plin", efectivo:"Efectivo", transferencia:"Transferencia", tarjeta:"Tarjeta",
               };
 
-              // Filtro por tab activo
+              // ── Filtrado ─────────────────────────────────────────────────
               let filtered = [...inventory].sort((a: any, b: any) =>
                 (b.purchaseDate || "").localeCompare(a.purchaseDate || "")
               );
-              if (inventoryCategoryFilter === "operativos") {
-                filtered = filtered.filter((p: any) => (p.category || "operativos") === "operativos");
-              } else if (inventoryCategoryFilter === "fijos") {
-                filtered = filtered.filter((p: any) => ["fijos","marketing","gastos"].includes(p.category || "operativos"));
-              } else if (inventoryCategoryFilter === "personal") {
-                filtered = filtered.filter((p: any) => (p.category || "operativos") === "personal");
+              if (inventoryCategoryFilter !== "all") {
+                filtered = filtered.filter((p: any) => (p.category || "operativos") === inventoryCategoryFilter);
               }
 
+              // ── Totales para cards ───────────────────────────────────────
               const total = filtered.reduce((s: number, p: any) => s + (p.totalAmount || 0), 0);
+              const breakdown: Record<string, number> = {};
+              for (const p of filtered) {
+                const key = CAT_LABEL[p.category] ? p.category : "operativos";
+                breakdown[key] = (breakdown[key] || 0) + (p.totalAmount || 0);
+              }
+
               const tabs = [
-                { key:"all",        label:"Todos"    },
-                { key:"operativos", label:"Costos"   },
-                { key:"fijos",      label:"Gastos"   },
-                { key:"personal",   label:"Personal" },
+                { key: "all",        label: "Todos"      },
+                { key: "operativos", label: "Operativos" },
+                { key: "fijos",      label: "Fijos"      },
+                { key: "personal",   label: "Personal"   },
+                { key: "marketing",  label: "Marketing"  },
               ];
 
               return (
                 <div className="space-y-4">
 
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
+                  {/* Filtros + botón nuevo */}
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex gap-0.5 bg-gray-100 rounded-lg p-0.5">
                       {tabs.map(tab => (
                         <button key={tab.key}
@@ -4447,68 +4619,156 @@ export default function AdminPage() {
                         </button>
                       ))}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-black text-gray-700 tabular-nums">S/ {total.toFixed(2)}</span>
-                      <button
-                        onClick={() => { setShowInventoryModal(true); setProductSearchTerms([""]); }}
-                        className="bg-[#F58424] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 transition-all">
-                        + Nuevo registro
-                      </button>
+                    <button
+                      onClick={() => { setShowInventoryModal(true); setProductSearchTerms([""]); }}
+                      className="bg-[#F58424] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 transition-all">
+                      + Nuevo registro
+                    </button>
+                  </div>
+
+                  {/* Cards resumen */}
+                  <div className="flex gap-3 flex-wrap">
+                    {/* Card 1: Total */}
+                    <div className="bg-white border border-[#F58424] rounded-xl px-4 py-3 min-w-[140px]">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Total registrado</p>
+                      <p className="text-lg font-black text-gray-900 tabular-nums mt-0.5">S/ {total.toFixed(2)}</p>
+                    </div>
+                    {/* Card 2: Desglose */}
+                    <div className="bg-white border border-[#F58424] rounded-xl px-4 py-3 flex-1 min-w-[200px]">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">Desglose</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-0.5">
+                        {CANON_CATS.map(cat => (
+                          <div key={cat.value} className="flex justify-between gap-2 text-xs">
+                            <span className="text-gray-500">{cat.label}:</span>
+                            <span className="font-bold text-gray-900 tabular-nums">S/ {(breakdown[cat.value] || 0).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Lista */}
+                  {/* Tabla */}
                   {filtered.length === 0 ? (
                     <div className="py-16 text-center text-sm text-gray-400">
                       Sin registros en esta categoría
                     </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {filtered.map((purchase: any) => {
-                        const cat   = purchase.category || "operativos";
-                        const desc  = purchase.items?.[0]?.productName || purchase.supplier || "—";
-                        const extra = purchase.items?.length > 1 ? ` +${purchase.items.length - 1}` : "";
-                        const date  = (() => {
-                          try { return new Date(purchase.purchaseDate + "T12:00:00").toLocaleDateString("es-PE", { day:"2-digit", month:"short" }); }
-                          catch { return purchase.purchaseDate || "—"; }
-                        })();
-                        const pm = pmLabel[purchase.paymentMethod as string] || purchase.paymentMethod || "—";
-                        return (
-                          <div key={purchase.id}
-                            className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-100 rounded-xl hover:border-gray-200 transition-all group">
-                            <span className="text-xs text-gray-400 w-14 shrink-0 tabular-nums">{date}</span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 ${catColor[cat] || "bg-gray-100 text-gray-500"}`}>
-                              {catLabel[cat] || cat}
-                            </span>
-                            <span className="flex-1 text-sm font-medium text-gray-800 truncate">
-                              {desc}{extra && <span className="text-gray-400 text-xs ml-1">{extra} más</span>}
-                            </span>
-                            {purchase.supplier && purchase.items?.[0]?.productName && purchase.items[0].productName !== purchase.supplier && (
-                              <span className="text-xs text-gray-400 hidden md:inline truncate max-w-[120px] shrink-0">{purchase.supplier}</span>
-                            )}
-                            <span className="text-xs text-gray-400 w-24 text-right shrink-0 hidden sm:inline">{pm}</span>
-                            <span className={`text-sm font-black w-20 text-right shrink-0 tabular-nums ${(purchase as any).liquidado ? "text-gray-400 line-through" : "text-gray-900"}`}>
-                              S/ {(purchase.totalAmount || 0).toFixed(2)}
-                            </span>
-                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                              <button
-                                onClick={() => { setEditingPurchase(purchase); setShowInventoryEditModal(true); }}
-                                title="Editar"
-                                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-300 hover:text-gray-600 transition-all text-xs">
-                                ✏️
-                              </button>
-                              <button
-                                onClick={() => handleDeleteInventory(purchase.id)}
-                                title="Eliminar"
-                                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 font-bold transition-all text-xs">
-                                ✕
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                  ) : (() => {
+                    const fmtD = (raw: any): string => {
+                      if (!raw) return "Sin fecha";
+                      const dp = String(raw).slice(0, 10);
+                      if (!/^\d{4}-\d{2}-\d{2}$/.test(dp)) return "Sin fecha";
+                      const [y, m, d] = dp.split("-");
+                      return `${d}/${m}/${y}`;
+                    };
+                    const thCls = "px-3 py-2 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap";
+                    const tdBase = "px-3 py-1.5";
+                    return (
+                      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs" style={{ minWidth: "900px" }}>
+                            <thead>
+                              <tr className="bg-gray-50 border-b border-gray-200">
+                                <th className={thCls}>Fecha</th>
+                                <th className={thCls}>Tipo</th>
+                                <th className={`${thCls} w-full`}>Descripción</th>
+                                <th className={thCls} style={{ minWidth: "110px" }}>Proveedor</th>
+                                <th className={`${thCls} text-right`}>Cant.</th>
+                                <th className={thCls}>Unidad</th>
+                                <th className={`${thCls} text-right`}>Total</th>
+                                <th className={thCls}>Pago</th>
+                                <th className={thCls}>Pagado por</th>
+                                <th className={`${thCls} text-center`}>Liq.</th>
+                                <th className={`${thCls} text-center`}></th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {filtered.map((purchase: any) => {
+                                const items = (purchase.items || []) as any[];
+                                const isLiq = !!purchase.liquidado;
+                                const pb = purchase.paidBy;
+                                const paidByLabel = !pb ? "—"
+                                  : (pb === "personal" || pb === "tarjeta-personal") ? (purchase.paidByName || "Personal")
+                                  : pb === "negocio" ? "Negocio"
+                                  : pb === "tarjeta-negocio" ? "T. negocio"
+                                  : pb === "tarjeta" ? "Tarjeta"
+                                  : pb;
+                                const pmLab = pmLabel[purchase.paymentMethod as string] || purchase.paymentMethod || "—";
+                                const rowCls = `transition-colors ${isLiq ? "opacity-50" : "hover:bg-gray-50"}`;
+                                return items.map((item: any, idx: number) => (
+                                  <tr key={`${purchase.id}-${idx}`}
+                                    className={`${rowCls} ${idx > 0 ? "border-t border-dashed border-gray-100" : ""}`}>
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} text-gray-400 whitespace-nowrap align-middle`}>
+                                        {fmtD(purchase.purchaseDate)}
+                                      </td>
+                                    )}
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} align-middle text-gray-800 whitespace-nowrap`}>
+                                        {CAT_LABEL[purchase.category] || purchase.category}
+                                      </td>
+                                    )}
+                                    <td className={`${tdBase} text-gray-800`}>{item.productName || "—"}</td>
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} text-gray-500 align-middle`}>{purchase.supplier || "—"}</td>
+                                    )}
+                                    <td className={`${tdBase} text-right text-gray-700 tabular-nums`}>{item.quantity ?? "—"}</td>
+                                    <td className={`${tdBase} text-gray-400 uppercase`}>{item.unit || "—"}</td>
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} text-right font-bold text-gray-900 tabular-nums align-middle whitespace-nowrap`}>
+                                        S/ {(purchase.totalAmount || 0).toFixed(2)}
+                                      </td>
+                                    )}
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} text-gray-500 align-middle whitespace-nowrap`}>{pmLab}</td>
+                                    )}
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} text-gray-500 align-middle whitespace-nowrap`}>{paidByLabel}</td>
+                                    )}
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} text-center align-middle`}>
+                                        <input
+                                          type="checkbox"
+                                          checked={isLiq}
+                                          onChange={() => toggleLiquidado(purchase.id, isLiq)}
+                                          className="w-3.5 h-3.5 cursor-pointer accent-[#F58424]"
+                                        />
+                                      </td>
+                                    )}
+                                    {idx === 0 && (
+                                      <td rowSpan={items.length} className={`${tdBase} text-center align-middle`}>
+                                        {!isLiq && (
+                                          <div className="flex items-center justify-center gap-0.5">
+                                            <button
+                                              onClick={() => {
+                                // Assign lineIds in memory for display only — NOT saved here.
+                                // lineIds are persisted by the save action or by assign-lineids before reception.
+                                const normalizedItems = (purchase.items || []).map((it: any) => ({ ...it, lineId: it.lineId || genLineId() }));
+                                setEditingPurchase({ ...purchase, items: normalizedItems });
+                                setShowInventoryEditModal(true);
+                              }}
+                                              title="Editar"
+                                              className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-300 hover:text-gray-600 transition-all">
+                                              ✏️
+                                            </button>
+                                            <button
+                                              onClick={() => handleDeleteInventory(purchase.id)}
+                                              title="Eliminar"
+                                              className="w-6 h-6 flex items-center justify-center rounded hover:bg-red-50 text-gray-300 hover:text-red-500 font-bold transition-all">
+                                              ✕
+                                            </button>
+                                          </div>
+                                        )}
+                                      </td>
+                                    )}
+                                  </tr>
+                                ));
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}
@@ -4517,6 +4777,11 @@ export default function AdminPage() {
             {/* COSTOS Y MÁRGENES */}
             {financialSection === "costos" && (
               <CostosMargenesAdmin orders={orders} />
+            )}
+
+            {/* INVENTARIO */}
+            {financialSection === "inventario" && (
+              <InventarioAdmin />
             )}
 
             {/* PRODUCTOS DE VENTA */}
@@ -6717,9 +6982,10 @@ export default function AdminPage() {
               <button
                 onClick={() => {
                   setShowInventoryModal(false);
-                  setInventoryForm({ supplier: "", supplierRuc: "", supplierPhone: "", paymentMethod: "plin-yape", category: "operativos", items: [{ productName: "", quantity: 0, unit: "KG", volume: 1, unitCost: 0, total: 0 }], totalAmount: 0, purchaseDate: new Date().toISOString().split("T")[0] });
+                  setInventoryForm({ supplier: "", supplierRuc: "", supplierPhone: "", paymentMethod: "plin-yape", category: "operativos", receivedInStock: true, items: [newLineItem()], totalAmount: 0, purchaseDate: new Date().toISOString().split("T")[0] });
                   setProductSearchTerms([""]);
                   setActiveDropdownIndex(null);
+                  setQuickSupplyIdx(null);
                 }}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 text-sm font-bold transition-all"
               >
@@ -6741,7 +7007,7 @@ export default function AdminPage() {
                   ] as const).map(cat => (
                     <button
                       key={cat.value}
-                      onClick={() => setInventoryForm({ ...inventoryForm, category: cat.value, items: [{ productName: "", quantity: 0, unit: "KG", volume: 1, unitCost: 0, total: 0 }], totalAmount: 0 })}
+                      onClick={() => { setInventoryForm({ ...inventoryForm, category: cat.value, receivedInStock: cat.value === "operativos", items: [newLineItem()], totalAmount: 0 }); setProductSearchTerms([""]); setQuickSupplyIdx(null); }}
                       className={`p-3 rounded-xl border-2 text-left transition-all ${
                         inventoryForm.category === cat.value
                           ? "border-gray-900 bg-gray-50"
@@ -6814,57 +7080,136 @@ export default function AdminPage() {
                     <span />
                   </div>
                   <div className="space-y-2">
-                    {inventoryForm.items.map((item, idx) => (
-                      <div key={idx} className="grid grid-cols-[1fr_64px_80px_88px_28px] gap-2 items-center">
-                        <input
-                          type="text"
-                          value={item.productName || ""}
-                          onChange={(e) => updateInventoryItem(idx, "productName", e.target.value.toUpperCase())}
-                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
-                          placeholder="Pollo, pan, gas..."
-                        />
-                        <input
-                          type="number"
-                          step="1"
-                          min="0"
-                          value={item.quantity === 0 ? "" : item.quantity}
-                          onChange={(e) => updateInventoryItem(idx, "quantity", parseInt(e.target.value) || 0)}
-                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-center focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          placeholder="1"
-                        />
-                        <select
-                          value={item.unit}
-                          onChange={(e) => updateInventoryItem(idx, "unit", e.target.value)}
-                          className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none"
-                        >
-                          <option value="KG">KG</option>
-                          <option value="UNIDAD">UND</option>
-                          <option value="PAQUETE">PKT</option>
-                          <option value="CAJA">CAJA</option>
-                          <option value="BOLSA">BOLSA</option>
-                          <option value="LITRO">LTR</option>
-                          <option value="CIENTO">CIEN</option>
-                        </select>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={item.unitCost === 0 ? "" : item.unitCost}
-                          onChange={(e) => updateInventoryItem(idx, "unitCost", parseFloat(e.target.value) || 0)}
-                          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-right focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          placeholder="0.00"
-                        />
-                        {inventoryForm.items.length > 1 ? (
-                          <button
-                            onClick={() => removeInventoryItem(idx)}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 text-xs font-bold transition-all"
-                          >
-                            ✕
-                          </button>
-                        ) : <span />}
-                      </div>
-                    ))}
+                    {inventoryForm.items.map((item, idx) => {
+                      const normStr = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                      const searchTerm = productSearchTerms[idx] || "";
+                      const q = normStr(searchTerm);
+                      const matchingSupplies = q.length > 0 ? supplies.filter(s => normStr(s.name).includes(q)) : supplies;
+                      const hasSupply = !!(item as any).supplyId;
+                      const linkedSupply = hasSupply ? supplies.find(s => s.id === (item as any).supplyId) : null;
+                      const unitsIn = item.quantity * Math.max(item.volume || 1, 1);
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="grid grid-cols-[1fr_64px_80px_88px_28px] gap-2 items-start">
+                            {/* Supply autocomplete */}
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                  const terms = [...productSearchTerms]; terms[idx] = e.target.value; setProductSearchTerms(terms);
+                                  updateInventoryItem(idx, "supplyId", "");
+                                  updateInventoryItem(idx, "productName", e.target.value.toUpperCase());
+                                  setActiveDropdownIndex(idx);
+                                  setQuickSupplyIdx(null);
+                                }}
+                                onFocus={() => setActiveDropdownIndex(idx)}
+                                onBlur={() => setTimeout(() => setActiveDropdownIndex(null), 200)}
+                                className={`w-full px-3 py-2 text-sm rounded-lg bg-white border ${hasSupply ? "border-green-400" : "border-gray-200"} text-gray-900 focus:border-[#F58424] focus:outline-none pr-7`}
+                                placeholder="Buscar insumo..."
+                              />
+                              {hasSupply && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 text-xs font-bold pointer-events-none">✓</span>}
+                              {activeDropdownIndex === idx && (
+                                <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-44 overflow-y-auto">
+                                  {matchingSupplies.slice(0, 8).map(s => (
+                                    <button key={s.id} onMouseDown={() => {
+                                      updateInventoryItem(idx, "supplyId", s.id);
+                                      updateInventoryItem(idx, "productName", s.name);
+                                      const terms = [...productSearchTerms]; terms[idx] = s.name; setProductSearchTerms(terms);
+                                      setActiveDropdownIndex(null);
+                                    }} className="w-full px-3 py-2 text-sm text-left hover:bg-orange-50 text-gray-800 flex items-center gap-2">
+                                      <span className="text-orange-400">📦</span>
+                                      <span className="flex-1">{s.name}</span>
+                                      <span className="text-xs text-gray-400 shrink-0">{s.available} {s.unit}</span>
+                                    </button>
+                                  ))}
+                                  {matchingSupplies.length === 0 && (
+                                    <div className="px-3 py-2 text-xs text-gray-400 italic">Sin coincidencias</div>
+                                  )}
+                                  <button onMouseDown={() => { setQuickSupplyIdx(idx); setQuickSupplyUnit("unidades"); setActiveDropdownIndex(null); }}
+                                    className="w-full px-3 py-2 text-xs text-left text-[#F58424] hover:bg-orange-50 border-t border-gray-100 font-bold">
+                                    + Crear &ldquo;{searchTerm || "nuevo insumo"}&rdquo;
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            <input type="number" step="1" min="0"
+                              value={item.quantity === 0 ? "" : item.quantity}
+                              onChange={(e) => updateInventoryItem(idx, "quantity", parseInt(e.target.value) || 0)}
+                              className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-center focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="1" />
+                            <select value={item.unit} onChange={(e) => updateInventoryItem(idx, "unit", e.target.value)}
+                              className="w-full px-2 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 focus:border-[#F58424] focus:outline-none">
+                              <option value="KG">KG</option>
+                              <option value="UNIDAD">UND</option>
+                              <option value="PAQUETE">PKT</option>
+                              <option value="CAJA">CAJA</option>
+                              <option value="BOLSA">BOLSA</option>
+                              <option value="LITRO">LTR</option>
+                              <option value="CIENTO">CIEN</option>
+                            </select>
+                            <input type="number" step="0.01" min="0"
+                              value={item.unitCost === 0 ? "" : item.unitCost}
+                              onChange={(e) => updateInventoryItem(idx, "unitCost", parseFloat(e.target.value) || 0)}
+                              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-900 text-right focus:border-[#F58424] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              placeholder="0.00" />
+                            {inventoryForm.items.length > 1 ? (
+                              <button onClick={() => removeInventoryItem(idx)}
+                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 text-xs font-bold transition-all">✕</button>
+                            ) : <span />}
+                          </div>
+                          {/* Quick create inline */}
+                          {quickSupplyIdx === idx && (
+                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex flex-wrap items-center gap-2 text-sm">
+                              <span className="text-blue-700 font-semibold text-xs shrink-0">Crear insumo:</span>
+                              <span className="text-gray-700 font-medium text-xs shrink-0">{searchTerm}</span>
+                              <select value={quickSupplyUnit} onChange={e => setQuickSupplyUnit(e.target.value)}
+                                className="px-2 py-1 text-xs rounded border border-blue-200 bg-white">
+                                {["unidades","gramos","kilogramos","mililitros","litros","porciones","paquetes"].map(u => (
+                                  <option key={u} value={u}>{u}</option>
+                                ))}
+                              </select>
+                              <button disabled={quickSupplySaving} onMouseDown={async () => {
+                                setQuickSupplySaving(true);
+                                try {
+                                  const res = await fetch("/api/supplies", {
+                                    method: "POST", headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ name: searchTerm, unit: quickSupplyUnit, initialQty: 0, minimum: 0 }),
+                                  });
+                                  if (res.ok) {
+                                    const newS = await res.json();
+                                    await loadSupplies();
+                                    updateInventoryItem(idx, "supplyId", newS.id);
+                                    updateInventoryItem(idx, "productName", newS.name);
+                                    const terms = [...productSearchTerms]; terms[idx] = newS.name; setProductSearchTerms(terms);
+                                    setQuickSupplyIdx(null);
+                                  }
+                                } finally { setQuickSupplySaving(false); }
+                              }} className="px-3 py-1 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700 disabled:opacity-50 ml-auto">
+                                {quickSupplySaving ? "..." : "Crear"}
+                              </button>
+                              <button onMouseDown={() => setQuickSupplyIdx(null)} className="px-2 py-1 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+                            </div>
+                          )}
+                          {/* Conversion hint: volume > 1 */}
+                          {hasSupply && item.volume > 1 && item.quantity > 0 && (
+                            <p className="text-xs text-green-600 ml-1">→ {unitsIn} {linkedSupply?.unit || "unidades"} al inventario</p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
+                  {/* Compra recibida toggle */}
+                  <label className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all mt-3 ${inventoryForm.receivedInStock ? "border-green-400 bg-green-50" : "border-gray-200 bg-white"}`}>
+                    <input type="checkbox" checked={inventoryForm.receivedInStock}
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, receivedInStock: e.target.checked })}
+                      className="w-4 h-4 accent-green-600" />
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-gray-800">Compra recibida</p>
+                      <p className="text-xs text-gray-400">Actualiza el inventario al guardar · Independiente del pago</p>
+                    </div>
+                    {inventoryForm.receivedInStock && <span className="text-green-500 font-bold text-sm">✓</span>}
+                  </label>
                 </div>
               )}
 
@@ -7090,9 +7435,10 @@ export default function AdminPage() {
                   <button
                     onClick={() => {
                       setShowInventoryModal(false);
-                      setInventoryForm({ supplier: "", supplierRuc: "", supplierPhone: "", paymentMethod: "plin-yape", category: "operativos", items: [{ productName: "", quantity: 0, unit: "KG", volume: 1, unitCost: 0, total: 0 }], totalAmount: 0, purchaseDate: new Date().toISOString().split("T")[0] });
+                      setInventoryForm({ supplier: "", supplierRuc: "", supplierPhone: "", paymentMethod: "plin-yape", category: "operativos", receivedInStock: true, items: [newLineItem()], totalAmount: 0, purchaseDate: new Date().toISOString().split("T")[0] });
                       setProductSearchTerms([""]);
                       setActiveDropdownIndex(null);
+                      setQuickSupplyIdx(null);
                     }}
                     className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 text-sm rounded-xl font-bold transition-all"
                   >
@@ -7176,6 +7522,36 @@ export default function AdminPage() {
                   <option value="transferencia">🏦 Transferencia</option>
                   <option value="tarjeta">💳 Tarjeta</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Categoría del registro */}
+            <div className="mb-3">
+              <label className="block text-xs font-bold text-amber-400 mb-1">Categoría *</label>
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { value: "operativos", label: "Operativos" },
+                  { value: "fijos",      label: "Fijos"      },
+                  { value: "personal",   label: "Personal"   },
+                  { value: "marketing",  label: "Marketing"  },
+                ].map(cat => (
+                  <button
+                    key={cat.value}
+                    onClick={() => setEditingPurchase({ ...editingPurchase, category: cat.value })}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                      (editingPurchase.category || "operativos") === cat.value
+                        ? "bg-[#F58424] text-white border-[#F58424]"
+                        : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+                {!["operativos","fijos","personal","marketing"].includes(editingPurchase.category || "") && (
+                  <span className="px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-300 bg-amber-50 text-amber-700">
+                    Sin clasificar → selecciona una categoría
+                  </span>
+                )}
               </div>
             </div>
 
@@ -7358,6 +7734,100 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* "Registrar recepción" — solo si es operativos y aún no recibida */}
+            {editingPurchase.category === "operativos" && !editingPurchase.receivedInStock && (
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs font-semibold text-blue-700 mb-2">Esta compra aún no actualizó el inventario.</p>
+                <button
+                  onClick={async () => {
+                    // Step 1: Persist lineIds for any items that lack them (server-confirmed identity)
+                    // Uses server state; falls back to in-memory lineIds if assign-lineids fails.
+                    let serverItems: any[] = editingPurchase.items || [];
+                    try {
+                      const assignRes = await fetch("/api/inventory/assign-lineids", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ purchaseId: editingPurchase.id }),
+                      });
+                      if (assignRes.ok) {
+                        const { items: persistedItems } = await assignRes.json();
+                        serverItems = persistedItems;
+                        // Sync in-memory state with server-confirmed lineIds
+                        setEditingPurchase((prev: any) => ({ ...prev, items: persistedItems }));
+                      }
+                    } catch (e) {
+                      console.warn("assign-lineids failed, using in-memory items:", e);
+                    }
+
+                    const itemsWithSupply = serverItems.filter((it: any) => it.supplyId);
+                    if (itemsWithSupply.length === 0) {
+                      alert("Ninguna línea tiene un insumo vinculado. Vincula los insumos antes de registrar la recepción.");
+                      return;
+                    }
+
+                    // Step 2: Per-line idempotency — stable lineId ref + legacy index ref for older movements
+                    const movRes = await fetch("/api/supply-movements");
+                    const existingMovs = movRes.ok ? await movRes.json() : [];
+                    let linesReceived = 0;
+                    let linesSkipped = 0;
+                    for (let idx = 0; idx < serverItems.length; idx++) {
+                      const item = serverItems[idx];
+                      if (!item.supplyId) continue;
+                      const stableRef = item.lineId
+                        ? `${editingPurchase.id}-${item.lineId}`
+                        : `${editingPurchase.id}-line-${idx}`;
+                      const legacyRef = `${editingPurchase.id}-line-${idx}`;
+                      const lineAlreadyDone = existingMovs.some((m: any) =>
+                        (m.reference === stableRef || m.reference === legacyRef) && m.type === "entrada"
+                      );
+                      if (lineAlreadyDone) { linesSkipped++; continue; }
+                      const unitsIn = item.quantity * Math.max(item.volume || 1, 1);
+                      if (unitsIn <= 0) continue;
+                      await fetch("/api/supply-movements", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          itemId: item.supplyId,
+                          type: "entrada",
+                          quantity: unitsIn,
+                          date: (editingPurchase.purchaseDate || "").slice(0, 10),
+                          notes: `Recepción: ${editingPurchase.supplier || "sin proveedor"}`,
+                          reference: stableRef,
+                        }),
+                      }).catch(e => console.warn("supply-movement failed:", e));
+                      linesReceived++;
+                    }
+                    if (linesReceived === 0 && linesSkipped > 0) {
+                      alert("Todas las líneas ya fueron recibidas previamente. No se duplicará.");
+                      return;
+                    }
+                    // Mark as received
+                    const updatedPurchase = { ...editingPurchase, receivedInStock: true };
+                    await fetch("/api/inventory", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(updatedPurchase),
+                    });
+                    setEditingPurchase(updatedPurchase);
+                    await loadInventory();
+                    await loadSupplies();
+                    alert("Recepción registrada. Inventario actualizado.");
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm rounded-lg font-bold transition-all"
+                >
+                  ✅ Registrar recepción — actualizar inventario
+                </button>
+              </div>
+            )}
+            {editingPurchase.category === "operativos" && editingPurchase.receivedInStock && (
+              <div className="mb-3 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700 font-semibold">
+                ✓ Compra recibida — inventario actualizado
+                {editingPurchase.category === "operativos" && (
+                  <span className="ml-2 text-gray-400 font-normal">Para corregir cantidades usa Ajuste manual en Inventario.</span>
+                )}
+              </div>
+            )}
+
             {/* Botones */}
             <div className="flex gap-2">
               <button
@@ -7371,6 +7841,10 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={async () => {
+                  if (!VALID_CATEGORIES.includes(editingPurchase.category || "")) {
+                    alert("Selecciona una categoría válida antes de guardar.");
+                    return;
+                  }
                   try {
                     const response = await fetch('/api/inventory', {
                       method: 'PUT',

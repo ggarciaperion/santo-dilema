@@ -12,12 +12,18 @@ export async function GET() {
   }
 }
 
+const VALID_CATEGORIES = ["operativos", "fijos", "personal", "marketing"];
+
 // POST - Registrar nueva compra de inventario
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     console.log("🔥 Body recibido:", body);
     console.log("🔥 Items recibidos:", body.items);
+
+    if (!VALID_CATEGORIES.includes(body.category)) {
+      return NextResponse.json({ error: "Categoría inválida" }, { status: 400 });
+    }
 
     // Fix timezone issue: if date is in YYYY-MM-DD format, append Peru time
     let purchaseDate = body.purchaseDate || new Date().toISOString();
@@ -65,6 +71,9 @@ export async function PUT(request: Request) {
     if (!body.id) {
       return NextResponse.json({ error: "ID es requerido" }, { status: 400 });
     }
+    if (body.category && !VALID_CATEGORIES.includes(body.category)) {
+      return NextResponse.json({ error: "Categoría inválida" }, { status: 400 });
+    }
 
     // Fix timezone issue: if date is in YYYY-MM-DD format, append Peru time
     let purchaseDate = body.purchaseDate;
@@ -91,6 +100,7 @@ export async function PUT(request: Request) {
       createdAt: body.createdAt,
       liquidado: body.liquidado ?? false,
       liquidadoAt: body.liquidadoAt || undefined,
+      receivedInStock: body.receivedInStock ?? false,
       updatedAt: new Date().toISOString(),
     };
 

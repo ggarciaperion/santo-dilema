@@ -34,6 +34,10 @@ let menuPricesFilePath: string = '';
 let cajaFilePath: string = '';
 let birthdaySettingsFilePath: string = '';
 let productCostsFilePath: string = '';
+let suppliesFilePath: string = '';
+let supplyMovementsFilePath: string = '';
+let recipesFilePath: string = '';
+let stockDeductionLogFilePath: string = '';
 let sorteoMundialParticipantesFilePath: string = '';
 let sorteoMundialConfigFilePath: string = '';
 let sorteoMundialMetricasFilePath: string = '';
@@ -65,6 +69,10 @@ if (!isProduction) {
   sorteoMundialConfigFilePath = path.join(dataDir, 'sorteo-mundial-config.json');
   sorteoMundialMetricasFilePath = path.join(dataDir, 'sorteo-mundial-metricas.json');
   productCostsFilePath = path.join(dataDir, 'product-costs.json');
+  suppliesFilePath = path.join(dataDir, 'supplies.json');
+  supplyMovementsFilePath = path.join(dataDir, 'supply-movements.json');
+  recipesFilePath = path.join(dataDir, 'recipes.json');
+  stockDeductionLogFilePath = path.join(dataDir, 'stock-deduction-log.json');
 }
 
 // Asegurar que el directorio data existe en desarrollo
@@ -133,6 +141,18 @@ function ensureDataDirectory() {
     if (!fs.existsSync(productCostsFilePath)) {
       fs.writeFileSync(productCostsFilePath, JSON.stringify([], null, 2));
     }
+    if (!fs.existsSync(suppliesFilePath)) {
+      fs.writeFileSync(suppliesFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(supplyMovementsFilePath)) {
+      fs.writeFileSync(supplyMovementsFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(recipesFilePath)) {
+      fs.writeFileSync(recipesFilePath, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(stockDeductionLogFilePath)) {
+      fs.writeFileSync(stockDeductionLogFilePath, JSON.stringify([], null, 2));
+    }
   }
 }
 
@@ -190,6 +210,9 @@ interface InventoryPurchase {
     unitCost: number;
     total: number;
     category?: string; // INSUMO, EMPAQUE, SERVICIO, UTENCILIO
+    originalQuantity?: number;
+    stockUnits?: number;
+    lineId?: string;
   }>;
   totalAmount: number;
   notes?: string;
@@ -1025,21 +1048,6 @@ export const storage = {
     return participation;
   },
 
-  async saveCoupon(coupon: any): Promise<any> {
-    const coupons = await this.getCoupons();
-    coupons.unshift(coupon);
-
-    if (isProduction) {
-      if (!redis) throw new Error('Database not configured.');
-      await redis.set('coupons', coupons);
-    } else {
-      ensureDataDirectory();
-      fs.writeFileSync(couponsFilePath, JSON.stringify(coupons, null, 2));
-    }
-
-    return coupon;
-  },
-
   // ========== DESAFÍO DEL CLIENTE ==========
 
   async getChallengeData(): Promise<any> {
@@ -1366,6 +1374,221 @@ export const storage = {
       fs.writeFileSync(productCostsFilePath, JSON.stringify(filtered, null, 2));
     }
     return true;
+  },
+
+  // ── SUPPLIES ───────────────────────────────────────────────────────────────
+  async getSupplies(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any[]>('supplies')) || [];
+    }
+    ensureDataDirectory();
+    return JSON.parse(fs.readFileSync(suppliesFilePath, 'utf-8'));
+  },
+  async saveSupply(supply: any): Promise<any> {
+    const list = await this.getSupplies();
+    list.push(supply);
+    if (isProduction) { if (!redis) throw new Error('DB not configured.'); await redis.set('supplies', list); }
+    else { ensureDataDirectory(); fs.writeFileSync(suppliesFilePath, JSON.stringify(list, null, 2)); }
+    return supply;
+  },
+  async updateSupply(updated: any): Promise<boolean> {
+    const list = await this.getSupplies();
+    const idx = list.findIndex((s: any) => s.id === updated.id);
+    if (idx === -1) return false;
+    list[idx] = updated;
+    if (isProduction) { if (!redis) throw new Error('DB not configured.'); await redis.set('supplies', list); }
+    else { ensureDataDirectory(); fs.writeFileSync(suppliesFilePath, JSON.stringify(list, null, 2)); }
+    return true;
+  },
+  async deleteSupply(id: string): Promise<boolean> {
+    const list = await this.getSupplies();
+    const filtered = list.filter((s: any) => s.id !== id);
+    if (filtered.length === list.length) return false;
+    if (isProduction) { if (!redis) throw new Error('DB not configured.'); await redis.set('supplies', filtered); }
+    else { ensureDataDirectory(); fs.writeFileSync(suppliesFilePath, JSON.stringify(filtered, null, 2)); }
+    return true;
+  },
+
+  // ── SUPPLY MOVEMENTS ───────────────────────────────────────────────────────
+  async getSupplyMovements(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any[]>('supply-movements')) || [];
+    }
+    ensureDataDirectory();
+    return JSON.parse(fs.readFileSync(supplyMovementsFilePath, 'utf-8'));
+  },
+  async addSupplyMovement(movement: any): Promise<any> {
+    const list = await this.getSupplyMovements();
+    list.push(movement);
+    if (isProduction) { if (!redis) throw new Error('DB not configured.'); await redis.set('supply-movements', list); }
+    else { ensureDataDirectory(); fs.writeFileSync(supplyMovementsFilePath, JSON.stringify(list, null, 2)); }
+    return movement;
+  },
+
+  // Atomic check-and-create: verifies reference uniqueness, updates supply balance, and appends movement
+  // as a single atomic operation.
+  //
+  // JSON (dev): synchronous read-check-write in one block — no async/await between steps.
+  //   Scope: single-process Node.js. Atomicity holds for concurrent requests within the same
+  //   process (the standard dev scenario). Does NOT protect against multi-process deployments.
+  //
+  // Redis (prod): executes a Lua script atomically on the Redis server.
+  //   Script design:
+  //     1. Check for existing movement by reference+type first (idempotency record, permanent).
+  //        If found: return it immediately — no writes, no lock. Safe even after lock expiry.
+  //     2. Validate the supply exists. If missing: return error WITHOUT acquiring the lock,
+  //        so the caller can recover and retry without being blocked.
+  //     3. Acquire lock (SET NX EX 3600). If lock taken: another concurrent request won;
+  //        read their written movement and return it.
+  //     4. Write: update supply balance, append movement — all in the same atomic script.
+  //   Error guarantee: Lua scripts execute atomically. Partial writes are impossible unless
+  //   Redis itself crashes (in which case Redis replication handles durability, not this script).
+  //   Lock expiry (3600 s): step 1 catches any duplicate after expiry via the movement record.
+  //
+  // ⚠️ REDIS PATH NOT YET TESTED — awaiting test Upstash credentials.
+  //   Once a test database is provided, run scripts/test-redis.mjs to validate before deploy.
+  async addSupplyMovementAtomic(params: {
+    reference: string;
+    type: string;
+    movement: any;
+    supplyId: string;
+    delta: number;        // amount added to supply.available (negative for consumo/ajuste)
+    supplyUpdatedAt: string;
+  }): Promise<{ created: boolean; movement: any; error?: string }> {
+    const { reference, type, movement, supplyId, delta, supplyUpdatedAt } = params;
+
+    if (!isProduction) {
+      // JSON — no async/await between read, check, and write; single-process Node.js guarantees no interleave
+      ensureDataDirectory();
+      const movList: any[] = JSON.parse(fs.readFileSync(supplyMovementsFilePath, 'utf-8'));
+      const existing = movList.find((m: any) => m.reference === reference && m.type === type);
+      if (existing) return { created: false, movement: existing };
+
+      const supList: any[] = JSON.parse(fs.readFileSync(suppliesFilePath, 'utf-8'));
+      const sidx = supList.findIndex((s: any) => s.id === supplyId);
+      if (sidx === -1) return { created: false, movement, error: 'supply_not_found' };
+      supList[sidx] = { ...supList[sidx], available: supList[sidx].available + delta, updatedAt: supplyUpdatedAt };
+      fs.writeFileSync(suppliesFilePath, JSON.stringify(supList, null, 2));
+      movList.push(movement);
+      fs.writeFileSync(supplyMovementsFilePath, JSON.stringify(movList, null, 2));
+      return { created: true, movement };
+
+    } else {
+      if (!redis) throw new Error('DB not configured.');
+
+      // Lua script run atomically on Redis.
+      // KEYS[1] = "supplies"  KEYS[2] = "supply-movements"  KEYS[3] = lock key
+      // ARGV[1] = reference  ARGV[2] = type  ARGV[3] = supplyId
+      // ARGV[4] = delta (number string)  ARGV[5] = updatedAt ISO string  ARGV[6] = movement JSON
+      const luaScript = `
+local supKey = KEYS[1]
+local movKey = KEYS[2]
+local lockKey = KEYS[3]
+local ref = ARGV[1]
+local typ = ARGV[2]
+local sid = ARGV[3]
+local d   = tonumber(ARGV[4])
+local upd = ARGV[5]
+-- Step 1: idempotency — permanent record, survives lock expiry
+local movRaw = redis.call('GET', movKey)
+local movs = movRaw and cjson.decode(movRaw) or {}
+for _, m in ipairs(movs) do
+  if m['reference'] == ref and m['type'] == typ then
+    return cjson.encode({created=false, movement=m})
+  end
+end
+-- Step 2: validate supply before acquiring lock
+local supRaw = redis.call('GET', supKey)
+if not supRaw then
+  return cjson.encode({created=false, error='supplies_missing'})
+end
+local sups = cjson.decode(supRaw)
+local sidx = -1
+for i, s in ipairs(sups) do
+  if s['id'] == sid then sidx = i break end
+end
+if sidx == -1 then
+  return cjson.encode({created=false, error='supply_not_found'})
+end
+-- Step 3: acquire lock (NX = only if absent); EX=3600 so an interrupted request can retry
+local acquired = redis.call('SET', lockKey, '1', 'NX', 'EX', '3600')
+if not acquired then
+  -- Another concurrent request won; it will have written the movement — read it back
+  movRaw = redis.call('GET', movKey)
+  movs = movRaw and cjson.decode(movRaw) or {}
+  for _, m in ipairs(movs) do
+    if m['reference'] == ref and m['type'] == typ then
+      return cjson.encode({created=false, movement=m})
+    end
+  end
+  return cjson.encode({created=false, movement=cjson.decode(ARGV[6])})
+end
+-- Step 4: commit — both writes in the same atomic script execution
+sups[sidx]['available'] = (sups[sidx]['available'] or 0) + d
+sups[sidx]['updatedAt'] = upd
+redis.call('SET', supKey, cjson.encode(sups))
+local newMov = cjson.decode(ARGV[6])
+table.insert(movs, newMov)
+redis.call('SET', movKey, cjson.encode(movs))
+return cjson.encode({created=true, movement=newMov})
+`;
+      const lockKey = `mov-lock:${reference}:${type}`;
+      // Signature: redis.eval(script, keys, args) — typed, no cast needed.
+      // KEYS[1]="supplies", KEYS[2]="supply-movements", KEYS[3]=lockKey (dynamic per reference).
+      // Upstash is single-node so cluster key-slot rules do not apply, but all accessed key
+      // names are still declared in KEYS as required by Redis best practice.
+      const result = await redis.eval<string[], string>(
+        luaScript,
+        ['supplies', 'supply-movements', lockKey],  // KEYS[1..3]
+        [reference, type, supplyId, String(delta), supplyUpdatedAt, JSON.stringify(movement)],
+      );
+      // Upstash eval returns the Lua cjson.encode result as a bulk string
+      const parsed = typeof result === 'string' ? JSON.parse(result) : (result as any);
+      if (parsed.error) {
+        throw new Error(`Lua atomic write failed: ${parsed.error}`);
+      }
+      return { created: !!parsed.created, movement: parsed.movement };
+    }
+  },
+
+  // ── RECIPES ────────────────────────────────────────────────────────────────
+  async getRecipes(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any[]>('recipes')) || [];
+    }
+    ensureDataDirectory();
+    return JSON.parse(fs.readFileSync(recipesFilePath, 'utf-8'));
+  },
+  async saveOrUpdateRecipe(recipe: any): Promise<any> {
+    const list = await this.getRecipes();
+    const idx = list.findIndex((r: any) => r.productId === recipe.productId);
+    if (idx === -1) list.push(recipe); else list[idx] = recipe;
+    if (isProduction) { if (!redis) throw new Error('DB not configured.'); await redis.set('recipes', list); }
+    else { ensureDataDirectory(); fs.writeFileSync(recipesFilePath, JSON.stringify(list, null, 2)); }
+    return recipe;
+  },
+
+  // ── STOCK DEDUCTION LOG (idempotency) ──────────────────────────────────────
+  async getStockDeductionLog(): Promise<any[]> {
+    if (isProduction) {
+      if (!redis) throw new Error('Database not configured.');
+      return (await redis.get<any[]>('stock-deduction-log')) || [];
+    }
+    ensureDataDirectory();
+    return JSON.parse(fs.readFileSync(stockDeductionLogFilePath, 'utf-8'));
+  },
+  async addStockDeductionEntry(entry: any): Promise<void> {
+    const list = await this.getStockDeductionLog();
+    list.push(entry);
+    if (isProduction) { if (!redis) throw new Error('DB not configured.'); await redis.set('stock-deduction-log', list); }
+    else { ensureDataDirectory(); fs.writeFileSync(stockDeductionLogFilePath, JSON.stringify(list, null, 2)); }
+  },
+  async updateStockDeductionLog(list: any[]): Promise<void> {
+    if (isProduction) { if (!redis) throw new Error('DB not configured.'); await redis.set('stock-deduction-log', list); }
+    else { ensureDataDirectory(); fs.writeFileSync(stockDeductionLogFilePath, JSON.stringify(list, null, 2)); }
   },
 
 };
