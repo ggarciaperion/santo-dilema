@@ -115,6 +115,7 @@ const BURGER_HALO: Record<string, string> = {
 // ─── Combos data ─────────────────────────────────────────────────────────────
 const REF_PRICES: Record<string, number> = {
   "pequeno-dilema": 22, "duo-dilema": 34, "taco-duo": 24.90, "chiguan-alitas": 12,
+  "burger-trio": 23.50,
   "ensalada-clasica": 18.50, "ensalada-proteica": 22.50, "ensalada-caesar": 23.50,
   "ensalada-mediterranea": 23.50, "cobb-supreme-bowl": 23.50,
   "crispy-chicken-bowl": 22.50, "pasta-power-bowl": 22.50,
@@ -123,7 +124,8 @@ const REF_PRICES: Record<string, number> = {
 type ComboStep =
   | { type: "sauces"; productId: string; productName: string; count: number; label: string; excludeSauceIds?: string[] }
   | { type: "salad"; label: string }
-  | { type: "tacos"; label: string };
+  | { type: "tacos"; label: string }
+  | { type: "burgers"; label: string; count: number };
 
 interface ComboColors { text: string; border: string; badge: string; btn: string; stepDot: string; rgb: string; }
 interface ComboFixed { productId: string; cartSalsas: string[]; cartComplementIds: string[]; cartOriginalPrice: number; summaryLabel: string; summaryImage: string; summaryDetails: string[]; }
@@ -135,10 +137,10 @@ interface ComboConfig {
   images: string[]; colors: ComboColors;
 }
 
-interface ComboSelections { sauces: Record<string, string[]>; salad: string; tacos: string[]; tacoComplement: string; }
+interface ComboSelections { sauces: Record<string, string[]>; salad: string; tacos: string[]; tacoComplement: string; burgers: string[]; }
 type ComboPhase = "selecting" | "confirming" | null;
 
-const emptyComboSel = (): ComboSelections => ({ sauces: {}, salad: "", tacos: [], tacoComplement: "" });
+const emptyComboSel = (): ComboSelections => ({ sauces: {}, salad: "", tacos: [], tacoComplement: "", burgers: [] });
 
 const COMBO_PRODUCT_IMAGES: Record<string, string> = {
   "pequeno-dilema": "/pequeno-dilema.png", "duo-dilema": "/duo-dilema.png",
@@ -182,6 +184,18 @@ const COMBOS: ComboConfig[] = [
     ],
     images: ["/rr.jpeg"],
     colors: { text:"text-orange-400", border:"border-orange-500/30", badge:"", btn:"bg-orange-600 hover:bg-orange-500 text-white", stepDot:"bg-orange-500", rgb:"249,115,22" },
+  },
+  {
+    id: "combo-placer", name: "Combo Placer", emoji: "🍔", tagline: "Alitas y burgers al fin juntos",
+    description: "Pequeño Dilema: 8 alitas + papas + 1 salsa a elección.\nTrió de mini burgers a elección.",
+    price: 41, maxSavings: 3.50,
+    includes: ["Pequeño Dilema · 8 alitas + papas + 1 salsa a elección", "Trío de mini burgers a elección"],
+    steps: [
+      { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Salsa para las alitas" },
+      { type: "burgers", label: "Elige tus 3 mini burgers", count: 3 },
+    ],
+    images: ["/burger-hero.jpeg"],
+    colors: { text:"text-amber-400", border:"border-amber-500/30", badge:"", btn:"bg-amber-600 hover:bg-amber-500 text-white", stepDot:"bg-amber-500", rgb:"245,158,11" },
   },
   {
     id: "combo-alitas", name: "Combo Alitas", emoji: "🍗", tagline: "Doble dosis de pecado",
@@ -950,9 +964,10 @@ export default function MenuPage() {
   function isComboStepValid(): boolean {
     if (!activeCombo) return false;
     const step = activeCombo.steps[comboStep];
-    if (step.type === "sauces") return (comboSelections.sauces[step.productId]?.length ?? 0) === step.count;
-    if (step.type === "salad")  return !!comboSelections.salad;
-    if (step.type === "tacos")  return comboSelections.tacos.length === 2 && !!comboSelections.tacoComplement;
+    if (step.type === "sauces")  return (comboSelections.sauces[step.productId]?.length ?? 0) === step.count;
+    if (step.type === "salad")   return !!comboSelections.salad;
+    if (step.type === "tacos")   return comboSelections.tacos.length === 2 && !!comboSelections.tacoComplement;
+    if (step.type === "burgers") return comboSelections.burgers.length === step.count;
     return false;
   }
 
@@ -961,9 +976,10 @@ export default function MenuPage() {
     if (!activeCombo) return false;
     const step = activeCombo.steps[si];
     if (!step) return false;
-    if (step.type === "sauces") return (comboSelections.sauces[step.productId]?.length ?? 0) === step.count;
-    if (step.type === "salad")  return !!comboSelections.salad;
-    if (step.type === "tacos")  return comboSelections.tacos.length === 2 && !!comboSelections.tacoComplement;
+    if (step.type === "sauces")  return (comboSelections.sauces[step.productId]?.length ?? 0) === step.count;
+    if (step.type === "salad")   return !!comboSelections.salad;
+    if (step.type === "tacos")   return comboSelections.tacos.length === 2 && !!comboSelections.tacoComplement;
+    if (step.type === "burgers") return comboSelections.burgers.length === step.count;
     return false;
   }
 
@@ -995,6 +1011,14 @@ export default function MenuPage() {
       const comp = TACO_COMPLEMENTS.find(c => c.id === comboSelections.tacoComplement);
       if (comp) parts.push(`+ ${comp.emoji} ${comp.name}`);
       return parts.join(" · ");
+    }
+    if (step.type === "burgers") {
+      const groups: Record<string, number> = {};
+      for (const bid of comboSelections.burgers) groups[bid] = (groups[bid] ?? 0) + 1;
+      return Object.entries(groups).map(([bid, qty]) => {
+        const name = BURGER_FLAVORS.find(f => f.id === bid)?.name ?? bid;
+        return qty > 1 ? `${qty}× ${name}` : name;
+      }).join(" · ");
     }
     return "";
   }
@@ -1044,10 +1068,14 @@ export default function MenuPage() {
         if (sal) items.push({ productId: sal.id, quantity: 1, salsas: [], complementIds: [], originalPrice: sal.price, finalPrice: sal.price, ...meta });
       } else if (step.type === "tacos") {
         items.push({ productId: "taco-duo", quantity: 1, salsas: comboSelections.tacos, complementIds: comboSelections.tacoComplement ? [comboSelections.tacoComplement] : [], category: "taco", originalPrice: REF_PRICES["taco-duo"], finalPrice: REF_PRICES["taco-duo"], ...meta });
+      } else if (step.type === "burgers") {
+        // Store flavor names (not IDs) so admin can display them directly
+        const flavorNames = comboSelections.burgers.map(id => BURGER_FLAVORS.find(b => b.id === id)?.name ?? id);
+        items.push({ productId: "burger-trio", name: "Trío Mini Burgers", quantity: 1, salsas: flavorNames, complementIds: [], category: "burger", originalPrice: REF_PRICES["burger-trio"] ?? 23.50, finalPrice: REF_PRICES["burger-trio"] ?? 23.50, ...meta });
       }
     }
     for (const fi of activeCombo.fixedItems ?? []) {
-      items.push({ productId: fi.productId, quantity: 1, salsas: fi.cartSalsas, complementIds: fi.cartComplementIds, category: "taco", originalPrice: fi.cartOriginalPrice, finalPrice: fi.cartOriginalPrice, ...meta });
+      items.push({ productId: fi.productId, name: fi.summaryLabel, quantity: 1, salsas: fi.cartSalsas, complementIds: fi.cartComplementIds, category: "taco", originalPrice: fi.cartOriginalPrice, finalPrice: fi.cartOriginalPrice, ...meta });
     }
     extras.forEach(eid => {
       const c = COMPLEMENTS[eid];
@@ -2852,7 +2880,7 @@ export default function MenuPage() {
                             )}
                             {!isDone && !isOpen && (
                               <p className="text-xs text-[rgba(26,18,6,0.35)] mt-0.5">
-                                {step.type === "sauces" ? `Elige ${step.count} salsa${step.count > 1 ? "s" : ""}` : step.type === "salad" ? "Elige 1 bowl" : "Elige 2 tacos"}
+                                {step.type === "sauces" ? `Elige ${step.count} salsa${step.count > 1 ? "s" : ""}` : step.type === "salad" ? "Elige 1 bowl" : step.type === "burgers" ? `Elige ${(step as {count:number}).count} mini burgers` : "Elige 2 tacos"}
                               </p>
                             )}
                           </div>
@@ -2939,6 +2967,44 @@ export default function MenuPage() {
                                   })}
                                 </div>
                               )}
+
+                              {step.type === "burgers" && (() => {
+                                const burgersTotal = comboSelections.burgers.length;
+                                return (
+                                  <div className="space-y-1.5">
+                                    <p className="text-xs text-[rgba(26,18,6,0.45)] mb-2 font-medium">
+                                      Elige {step.count} mini burgers ·{" "}
+                                      <span className={burgersTotal === step.count ? "text-[#F58424] font-bold" : ""}>{burgersTotal}/{step.count}</span>
+                                    </p>
+                                    {BURGER_FLAVORS.map(burger => {
+                                      const qty = comboSelections.burgers.filter(id => id === burger.id).length;
+                                      const canAdd = burgersTotal < step.count;
+                                      return (
+                                        <div key={burger.id}
+                                          className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${qty > 0 ? "border-[#F58424] bg-[rgba(245,132,36,0.06)]" : "border-[rgba(26,18,6,0.1)] bg-white"}`}>
+                                          <div className="relative w-11 h-11 shrink-0 rounded-xl overflow-hidden bg-[rgba(26,18,6,0.07)]">
+                                            <Image src={burger.image} alt={burger.name} fill className="object-cover" />
+                                          </div>
+                                          <p className={`text-sm font-bold flex-1 ${qty > 0 ? "text-[#F58424]" : "text-[#1A1206]"}`}>
+                                            {qty > 0 ? `${qty} × ` : ""}{burger.name}
+                                          </p>
+                                          <div className="flex items-center gap-2">
+                                            {qty > 0 && (
+                                              <button onClick={() => setComboSelections(p => { const a = [...p.burgers]; const idx = a.lastIndexOf(burger.id); if (idx !== -1) a.splice(idx, 1); return { ...p, burgers: a }; })}
+                                                className="w-8 h-8 flex items-center justify-center rounded-full border border-[rgba(26,18,6,0.15)] bg-white hover:bg-[rgba(26,18,6,0.07)] text-[#1A1206] font-bold text-lg transition-all active:scale-95">−</button>
+                                            )}
+                                            {qty > 0 && <span className="text-[#1A1206] font-black w-5 text-center text-sm">{qty}</span>}
+                                            <button
+                                              disabled={!canAdd}
+                                              onClick={() => setComboSelections(p => ({ ...p, burgers: [...p.burgers, burger.id] }))}
+                                              className={`w-8 h-8 flex items-center justify-center rounded-full text-white font-bold text-lg transition-all ${!canAdd ? "bg-[rgba(26,18,6,0.12)] cursor-not-allowed" : "bg-[#F58424] hover:bg-[#e07820] active:scale-95"}`}>+</button>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })()}
 
                               {step.type === "tacos" && (() => {
                                 const tacoTotal = comboSelections.tacos.length;

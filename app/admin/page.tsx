@@ -2950,6 +2950,25 @@ export default function AdminPage() {
                         if (seen.has(item.comboGroupId)) return;
                         seen.add(item.comboGroupId);
                         const grp = allItems.filter((i: any) => i.comboGroupId === item.comboGroupId);
+                        const isComboPlaycer = item.comboName === 'Combo Placer';
+                        if (isComboPlaycer) {
+                          const qCombo = String(grp[0]?.quantity || 1).padStart(2, '0');
+                          lines.push(<p key={`cp-${item.comboGroupId}`} className="text-sm text-gray-900"><span className="font-bold">{qCombo} Combo Placer</span></p>);
+                          const alGi = grp.find((gi: any) => gi.productId === 'pequeno-dilema');
+                          if (alGi) {
+                            const sIds: string[] = alGi.salsas || [];
+                            const sName = sIds.map((s: string) => salsas.find((x: any) => x.id === s)?.name || s).join(' y ');
+                            lines.push(<p key={`cp-alitas-${item.comboGroupId}`} className="text-sm text-gray-800 pl-3">8 alitas + papas{sName && <span className="font-normal text-gray-600"> · Salsa: {sName}</span>}</p>);
+                          }
+                          const bgGi = grp.find((gi: any) => gi.productId === 'burger-trio');
+                          if (bgGi) {
+                            const flavors: string[] = bgGi.salsas || [];
+                            const sc: Record<string,number> = {};
+                            flavors.forEach((f: string) => { sc[f] = (sc[f] || 0) + 1; });
+                            const fStr = [...new Set(flavors)].map(f => sc[f] > 1 ? `${sc[f]} ${f}` : `1 ${f}`).join(' + ');
+                            lines.push(<p key={`cp-burgers-${item.comboGroupId}`} className="text-sm text-gray-700 pl-3">Trío mini burgers: <span className="font-normal text-gray-600">{fStr}</span></p>);
+                          }
+                        } else {
                         lines.push(
                           <p key={`ch-${item.comboGroupId}`} className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mt-1">
                             {item.comboName || 'Combo'}
@@ -2988,6 +3007,7 @@ export default function AdminPage() {
                             });
                           }
                         });
+                        } // end isComboPlaycer else
                       } else {
                         const q = String(item.quantity || 1).padStart(2, '0');
                         const salsas_: string[] = item.salsas || [];
