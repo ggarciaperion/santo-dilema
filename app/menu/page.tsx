@@ -403,7 +403,9 @@ export default function MenuPage() {
   const [burgerToast,      setBurgerToast]       = useState(false);
   const [burgerTrioComps,  setBurgerTrioComps]   = useState<string[]>([]);
   const [burgerShowBebidas,setBurgerShowBebidas] = useState(false);
+  const [burgerShowExtras, setBurgerShowExtras]  = useState(false);
   const [burgerRecentComp, setBurgerRecentComp]  = useState<string | null>(null);
+  const [burgerRecentExtra,setBurgerRecentExtra] = useState<string | null>(null);
   const [burgerSalsa,      setBurgerSalsa]        = useState<string | null>(null);
 
   // ── Combos state ──────────────────────────────────────────────────────────
@@ -465,6 +467,7 @@ export default function MenuPage() {
   const tacoExtrasBtnRef         = useRef<HTMLButtonElement>(null);
   const tacoComplementSectionRef = useRef<HTMLDivElement>(null);
   const burgerBebidasBtnRef = useRef<HTMLButtonElement>(null);
+  const burgerExtrasBtnRef  = useRef<HTMLButtonElement>(null);
   const comboBebidasBtnRef  = useRef<HTMLButtonElement>(null);
   const comboExtrasBtnRef   = useRef<HTMLButtonElement>(null);
   const comboExpandedStepRef = useRef<number>(0);
@@ -795,7 +798,9 @@ export default function MenuPage() {
     const trio = buildTrio();
     setBurgerTrioComps([]);
     setBurgerShowBebidas(false);
+    setBurgerShowExtras(false);
     setBurgerRecentComp(null);
+    setBurgerRecentExtra(null);
     setBurgerSalsa(null);
     setCartOpen(false);
     setCartClosing(false);
@@ -814,6 +819,8 @@ export default function MenuPage() {
     setBurgerSelections({});
     setBurgerTrioComps([]);
     setBurgerShowBebidas(false);
+    setBurgerShowExtras(false);
+    setBurgerRecentExtra(null);
     setBurgerSalsa(null);
     closeTrioModal();
     setBurgerToast(true);
@@ -3238,13 +3245,87 @@ export default function MenuPage() {
               </div>
 
               {/* Bebidas accordion */}
+              {/* Extras accordion */}
+              {(() => {
+                const burgerExtrasComps = burgerTrioComps.filter(id => id.startsWith('extra-'));
+                return (
+                  <>
+                    <button ref={burgerExtrasBtnRef} onClick={() => { const next = !burgerShowExtras; setBurgerShowExtras(next); scrollModalSection(burgerScrollRef.current, burgerExtrasBtnRef.current, next); }}
+                      className="w-full flex items-center justify-between bg-[rgba(26,18,6,0.05)] border border-[rgba(26,18,6,0.1)] rounded-xl p-3 transition-all hover:bg-[rgba(26,18,6,0.1)] mt-1">
+                      <div className="flex items-center gap-2">
+                        <span>➕</span>
+                        <span className="text-[#1A1206] text-sm font-bold">Extras</span>
+                        {burgerExtrasComps.length > 0 && (
+                          <span className="text-xs bg-amber-600 text-white px-1.5 py-0.5 rounded-full font-bold">{burgerExtrasComps.length}</span>
+                        )}
+                      </div>
+                      <span className="text-[rgba(26,18,6,0.5)] text-sm inline-block transition-transform duration-200" style={{ transform: burgerShowExtras ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▼</span>
+                    </button>
+                    <div className="sd-acc" style={{ gridTemplateRows: burgerShowExtras ? '1fr' : '0fr' }}>
+                      <div className="sd-acc-body">
+                        <div className={`space-y-1.5 mt-1 ${burgerShowExtras ? "sd-acc-content-open" : "sd-acc-content"}`} style={{ opacity: burgerShowExtras ? 1 : 0 }}>
+                        {/* Extra papas */}
+                        {(() => {
+                          const bid = "extra-papas"; const c = COMPLEMENTS[bid];
+                          const cnt = burgerTrioComps.filter(x => x === bid).length;
+                          const recent = burgerRecentExtra === bid;
+                          return (
+                            <div key={bid} className="flex items-center justify-between bg-[rgba(26,18,6,0.05)] rounded-xl p-3 border border-[rgba(26,18,6,0.08)]">
+                              <div className="flex items-center gap-2"><span>🍟</span><span className="text-[#1A1206] text-sm">{c.name}</span></div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-amber-400 text-sm font-bold">S/ {c.price.toFixed(2)}</span>
+                                {cnt > 0 && (
+                                  <><button onClick={() => setBurgerTrioComps(p => { const a = [...p]; a.splice(a.lastIndexOf(bid), 1); return a; })}
+                                    className="w-7 h-7 flex items-center justify-center rounded-full bg-red-600/80 hover:bg-red-500 text-white font-bold">−</button>
+                                    <span className="text-sm bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold">{cnt}</span></>
+                                )}
+                                <button onClick={() => { setBurgerTrioComps(p => [...p, bid]); setBurgerRecentExtra(bid); setTimeout(() => setBurgerRecentExtra(null), 1200); }}
+                                  className={`w-7 h-7 flex items-center justify-center rounded-full font-bold text-white ${recent ? "bg-green-500" : "bg-red-600 hover:bg-red-500"}`}>
+                                  {recent ? "✓" : "+"}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                        {/* Extra salsas */}
+                        {effectiveSalsas.filter(s => !s.soldOut && s.id !== 'anticuchos').map(salsa => {
+                          const bid = `extra-salsa-${salsa.id}`; const c = COMPLEMENTS[bid];
+                          if (!c) return null;
+                          const cnt = burgerTrioComps.filter(x => x === bid).length;
+                          const recent = burgerRecentExtra === bid;
+                          return (
+                            <div key={bid} className="flex items-center justify-between bg-[rgba(26,18,6,0.05)] rounded-xl p-3 border border-[rgba(26,18,6,0.08)]">
+                              <div className="flex items-center gap-2"><span>🥫</span><span className="text-[#1A1206] text-sm">{c.name}</span></div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-amber-400 text-sm font-bold">S/ {c.price.toFixed(2)}</span>
+                                {cnt > 0 && (
+                                  <><button onClick={() => setBurgerTrioComps(p => { const a = [...p]; a.splice(a.lastIndexOf(bid), 1); return a; })}
+                                    className="w-7 h-7 flex items-center justify-center rounded-full bg-red-600/80 hover:bg-red-500 text-white font-bold">−</button>
+                                    <span className="text-sm bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold">{cnt}</span></>
+                                )}
+                                <button onClick={() => { setBurgerTrioComps(p => [...p, bid]); setBurgerRecentExtra(bid); setTimeout(() => setBurgerRecentExtra(null), 1200); }}
+                                  className={`w-7 h-7 flex items-center justify-center rounded-full font-bold text-white ${recent ? "bg-green-500" : "bg-red-600 hover:bg-red-500"}`}>
+                                  {recent ? "✓" : "+"}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* Bebidas accordion */}
               <button ref={burgerBebidasBtnRef} onClick={() => { const next = !burgerShowBebidas; setBurgerShowBebidas(next); scrollModalSection(burgerScrollRef.current, burgerBebidasBtnRef.current, next); }}
                 className="w-full flex items-center justify-between bg-[rgba(26,18,6,0.05)] border border-[rgba(26,18,6,0.1)] rounded-xl p-3 transition-all hover:bg-[rgba(26,18,6,0.1)] mt-1">
                 <div className="flex items-center gap-2">
                   <span>🥤</span>
                   <span className="text-[#1A1206] text-sm font-bold">Bebidas</span>
-                  {burgerTrioComps.length > 0 && (
-                    <span className="text-xs bg-amber-600 text-white px-1.5 py-0.5 rounded-full font-bold">{burgerTrioComps.length}</span>
+                  {burgerTrioComps.filter(id => ["coca-cola","inka-cola","sprite","fanta","agua-mineral"].includes(id)).length > 0 && (
+                    <span className="text-xs bg-amber-600 text-white px-1.5 py-0.5 rounded-full font-bold">{burgerTrioComps.filter(id => ["coca-cola","inka-cola","sprite","fanta","agua-mineral"].includes(id)).length}</span>
                   )}
                 </div>
                 <span className="text-[rgba(26,18,6,0.5)] text-sm inline-block transition-transform duration-200" style={{ transform: burgerShowBebidas ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▼</span>
