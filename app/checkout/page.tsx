@@ -895,14 +895,15 @@ export default function CheckoutPage() {
               </div>
 
               {/* Aviso restaurante cerrado */}
-              {!isBusinessOpen() && !scheduledDate && (
+              {!isBusinessOpen() && (
                 <div className="mt-4 bg-amber-900/20 border border-amber-500/50 rounded-xl px-4 py-3">
-                  <p className="text-amber-400 font-bold text-sm">⏰ Estamos cerrados ahora</p>
-                  <p className="text-amber-300/80 text-xs mt-0.5">{getNextOpenMessage()} — Debes programar tu entrega.</p>
+                  <p className="text-amber-400 font-bold text-sm">⏰ Estamos cerrados</p>
+                  <p className="text-amber-300/80 text-xs mt-0.5">{getNextOpenMessage()} — Atendemos mié–dom de 6 PM a 11 PM.</p>
                 </div>
               )}
 
-              {/* Programar compra */}
+              {/* Programar compra (solo cuando estamos abiertos) */}
+              {isBusinessOpen() && (
               <div className="mt-3">
                 {scheduledDate && scheduledTime ? (
                   <div className="flex items-center justify-between bg-[#F6F1F1] border border-[#F58424]/50 rounded-xl px-4 py-3">
@@ -926,16 +927,13 @@ export default function CheckoutPage() {
                       setScheduledTime('');
                       setShowScheduleModal(true);
                     }}
-                    className={`w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm ${
-                      !isBusinessOpen()
-                        ? 'bg-amber-900/30 border-2 border-amber-500/60 text-amber-300 hover:bg-amber-900/50'
-                        : 'bg-white border border-[#F58424]/40 hover:border-[#F58424] text-[#F58424]'
-                    }`}
+                    className="w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm bg-white border border-[#F58424]/40 hover:border-[#F58424] text-[#F58424]"
                   >
-                    {!isBusinessOpen() ? '⚠️ Programar entrega (obligatorio)' : '🗓 Programar compra'}
+                    🗓 Programar compra
                   </button>
                 )}
               </div>
+              )}
 
               {/* Botones de acción */}
               <div className="flex gap-3 mt-6">
@@ -948,7 +946,7 @@ export default function CheckoutPage() {
                 </Link>
                 <button
                   type="button"
-                  disabled={isSubmitting || !isFormValid()}
+                  disabled={isSubmitting || !isFormValid() || !isBusinessOpen()}
                   onClick={() => {
                     const baseValid = formData.name.trim() !== "" && formData.phone.length === 9 && formData.address.trim() !== "" && deliveryZone !== "";
                     if (!baseValid) {
@@ -967,7 +965,7 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              {!isFormValid() && (
+              {!isFormValid() && isBusinessOpen() && (
                 <p className="text-red-400 text-xs text-center mt-3 flex items-center justify-center gap-1">
                   <span>⚠️</span>
                   <span>Completa todos los campos obligatorios</span>

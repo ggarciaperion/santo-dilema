@@ -194,7 +194,7 @@ const COMBOS: ComboConfig[] = [
       { type: "sauces", productId: "pequeno-dilema", productName: "Pequeño Dilema", count: 1, label: "Salsa para las alitas" },
       { type: "burgers", label: "Elige tus 3 mini burgers", count: 3 },
     ],
-    images: ["/burger-hero.jpeg"],
+    images: ["/combo-placer-hero.png"],
     colors: { text:"text-amber-400", border:"border-amber-500/30", badge:"", btn:"bg-amber-600 hover:bg-amber-500 text-white", stepDot:"bg-amber-500", rgb:"245,158,11" },
   },
   {
@@ -1356,7 +1356,8 @@ export default function MenuPage() {
                   onClick={() => { if (!soldOut) openAlitasModal(product.id); }}
                   className={`relative bg-white rounded-2xl overflow-hidden transition-all
                     ${carousel ? "flex-shrink-0 w-[76vw] snap-center" : ""}
-                    ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1"}`}>
+                    ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1"}
+                    ${discount ? "ring-2 ring-[#F58424]" : ""}`}>
                   {soldOut && <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50"><span className="border-4 border-red-500 text-red-500 font-black text-sm px-2 py-0.5 rotate-[-15deg]">AGOTADO</span></div>}
                   {inOrder && <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ En orden</div>}
                   <div className="relative h-44 bg-black overflow-hidden">
@@ -1426,7 +1427,8 @@ export default function MenuPage() {
                   onClick={() => { if (!soldOut) openFitModal(product.id); }}
                   className={`relative bg-white rounded-2xl overflow-hidden transition-all flex flex-col
                     ${carousel ? "flex-shrink-0 w-[76vw] snap-center" : wide ? "w-full" : "w-56 flex-shrink-0"}
-                    ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1"}`}>
+                    ${soldOut ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1"}
+                    ${discount ? "ring-2 ring-[#F58424]" : ""}`}>
                   {soldOut && <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50"><span className="border-4 border-red-500 text-red-500 font-black text-sm px-2 py-0.5 rotate-[-15deg]">AGOTADO</span></div>}
                   {inOrder && <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ En orden</div>}
                   <div className="relative h-44 bg-black overflow-hidden">
@@ -1684,7 +1686,7 @@ export default function MenuPage() {
               return (
                 <div key={combo.id}
                   onClick={() => { openCombo(combo); }}
-                  className={`relative flex-shrink-0 ${carousel ? 'w-[76vw] snap-center' : desktop ? 'w-full' : 'w-[200px] sm:w-[240px] snap-start'} bg-white rounded-2xl overflow-hidden cursor-pointer transition-all hover:-translate-y-1`}>
+                  className={`relative flex-shrink-0 ${carousel ? 'w-[76vw] snap-center' : desktop ? 'w-full' : 'w-[200px] sm:w-[240px] snap-start'} bg-white rounded-2xl overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${discP ? 'ring-2 ring-[#F58424]' : ''}`}>
                   <div className="h-0.5" style={{ background: `linear-gradient(90deg,transparent,rgba(${rgb},.8),transparent)` }} />
                   <div className={`relative ${desktop ? 'h-44' : 'h-40'} bg-black overflow-hidden`}>
                     <Image src={combo.images[0]} alt={combo.name} fill className="object-cover" sizes="400px" />
@@ -1783,6 +1785,7 @@ export default function MenuPage() {
         };
         const goToDelivery = () => {
           if (anyModalOpen) return;
+          if (!isOpen) return;
           setCkCompletedOrders(buildCompletedOrders());
           setCheckoutStep('delivery');
           setCartOpen(true);
@@ -2092,11 +2095,18 @@ export default function MenuPage() {
                       <span className="text-sm font-bold text-black/50">Total</span>
                       <span className="text-xl font-black text-black">S/ {grandTotal.toFixed(2)}</span>
                     </div>
-                    <button onClick={goToDelivery}
-                      className="w-full py-3.5 rounded-xl text-white font-black text-base transition-all active:scale-[.98] mb-1 mt-2"
-                      style={{ background: '#F58424', boxShadow: '0 4px 16px rgba(245,132,36,.4)' }}>
-                      Continuar →
-                    </button>
+                    {isOpen ? (
+                      <button onClick={goToDelivery}
+                        className="w-full py-3.5 rounded-xl text-white font-black text-base transition-all active:scale-[.98] mb-1 mt-2"
+                        style={{ background: '#F58424', boxShadow: '0 4px 16px rgba(245,132,36,.4)' }}>
+                        Continuar →
+                      </button>
+                    ) : (
+                      <div className="mt-2 rounded-xl border border-amber-500/40 bg-amber-900/10 px-4 py-3 text-center">
+                        <p className="text-amber-500 font-black text-sm">⏰ Estamos cerrados</p>
+                        <p className="text-amber-600/80 text-xs mt-0.5">{getNextOpenMessage()} — Tu carrito estará guardado</p>
+                      </div>
+                    )}
 
                   </div>}
 
@@ -2543,11 +2553,17 @@ export default function MenuPage() {
               )}
 
               {checkoutStep === 'cart' && !ckOrderPlaced && !cartOpen && (
-                <button type="button" onClick={goToDelivery}
-                  className="flex-shrink-0 px-4 py-3 rounded-xl text-white font-black text-sm transition-all active:scale-95 min-h-[48px]"
-                  style={{ background: '#F58424', boxShadow: '0 4px 14px rgba(245,132,36,.35)' }}>
-                  Continuar →
-                </button>
+                isOpen ? (
+                  <button type="button" onClick={goToDelivery}
+                    className="flex-shrink-0 px-4 py-3 rounded-xl text-white font-black text-sm transition-all active:scale-95 min-h-[48px]"
+                    style={{ background: '#F58424', boxShadow: '0 4px 14px rgba(245,132,36,.35)' }}>
+                    Continuar →
+                  </button>
+                ) : (
+                  <span className="flex-shrink-0 text-xs font-bold text-amber-500 whitespace-nowrap">
+                    ⏰ {getNextOpenMessage()}
+                  </span>
+                )
               )}
 
               {checkoutStep !== 'cart' && !ckOrderPlaced && (
