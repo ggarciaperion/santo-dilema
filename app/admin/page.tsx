@@ -288,22 +288,24 @@ export default function AdminPage() {
   // Modal pedido retroactivo
   const [showBackdateModal, setShowBackdateModal] = useState(false);
   const [backdateSubmitting, setBackdateSubmitting] = useState(false);
+  const [backdateLookingUp, setBackdateLookingUp] = useState(false);
+  const [backdateAddresses, setBackdateAddresses] = useState<string[]>([]);
   const [backdateForm, setBackdateForm] = useState<{
     date: string;
     name: string;
     phone: string;
-    deliveryOption: string;
+    deliveryOption: 'recojo' | 'centro' | 'alrededores';
     address: string;
     paymentMethod: string;
-    items: Array<{ productId: string; name: string; price: number; qty: number }>;
+    items: Array<{ productId: string; name: string; price: number; qty: number; salsa: string }>;
   }>({
     date: '',
     name: '',
     phone: '',
     deliveryOption: 'recojo',
     address: '',
-    paymentMethod: 'efectivo',
-    items: [{ productId: '', name: '', price: 0, qty: 1 }],
+    paymentMethod: 'contraentrega-efectivo-exacto',
+    items: [{ productId: '', name: '', price: 0, qty: 1, salsa: '' }],
   });
   // Estados de filtro de fechas para la pestaña "Analytics & CRM"
   const [analyticsDateFrom, setAnalyticsDateFrom] = useState<string>("");
@@ -1217,6 +1219,26 @@ export default function AdminPage() {
     }
   };
 
+  // Productos FAT/burger que llevan salsa en el pedido retroactivo
+  const BACKDATE_SALSA_IDS = ['pequeno-dilema','duo-dilema','santo-pecado','chiguan-alitas','taco-duo','burger-duo','burger-trio'];
+
+  // Buscar cliente por teléfono y autocompletar nombre + direcciones
+  const handleBackdatePhoneLookup = async (phone: string) => {
+    if (phone.replace(/\D/g,'').length < 9) return;
+    setBackdateLookingUp(true);
+    try {
+      const res = await fetch(`/api/customers?phone=${encodeURIComponent(phone)}`);
+      const data = await res.json();
+      if (data.found) {
+        setBackdateForm(f => ({ ...f, name: data.name || f.name }));
+        setBackdateAddresses(data.addresses || []);
+      } else {
+        setBackdateAddresses([]);
+      }
+    } catch {}
+    setBackdateLookingUp(false);
+  };
+
   // Crear pedido retroactivo con adminDate
   const handleBackdateSubmit = async () => {
     const validItems = backdateForm.items.filter(i => i.productId && i.qty > 0);
@@ -1228,6 +1250,11 @@ export default function AdminPage() {
       alert('Agrega al menos un producto');
       return;
     }
+    const deliveryCost = backdateForm.deliveryOption === 'alrededores' ? 4.00 : 0;
+    const address = backdateForm.deliveryOption === 'recojo'
+      ? 'Recojo en tienda'
+      : backdateForm.address.trim() || 'Sin dirección';
+
     setBackdateSubmitting(true);
     try {
       const cart = validItems.map(i => ({
@@ -1237,23 +1264,24 @@ export default function AdminPage() {
         price: i.price,
         finalPrice: i.price,
         originalPrice: i.price,
-        selectedSalsa: null,
+        selectedSalsa: i.salsa || null,
         selectedComplements: [],
       }));
-      const completedOrders = validItems.map(i => ({
-        productId: i.productId,
-        name: i.name,
-        quantity: i.qty,
-        price: i.price,
-        finalPrice: i.price,
-        originalPrice: i.price,
-        category: 'fat',
-      }));
+      const completedOrders = validItems.map(i => {
+        const prod = BACKDATE_PRODUCTS.find(p => p.id === i.productId);
+        return {
+          productId: i.productId,
+          name: i.name,
+          quantity: i.qty,
+          price: i.price,
+          finalPrice: i.price,
+          originalPrice: i.price,
+          category: prod ? (BACKDATE_SALSA_IDS.includes(i.productId) ? 'fat' : 'fit') : 'fat',
+          selectedSalsa: i.salsa || null,
+        };
+      });
       const totalItems = validItems.reduce((s, i) => s + i.qty, 0);
-      const totalPrice = validItems.reduce((s, i) => s + i.price * i.qty, 0);
-      const address = backdateForm.deliveryOption === 'recojo'
-        ? 'Recojo en tienda'
-        : backdateForm.address.trim() || 'Sin dirección';
+      const totalPrice = validItems.reduce((s, i) => s + i.price * i.qty, 0) + deliveryCost;
 
       const fd = new FormData();
       fd.append('name', backdateForm.name.trim());
@@ -1265,6 +1293,7 @@ export default function AdminPage() {
       fd.append('totalPrice', totalPrice.toString());
       fd.append('paymentMethod', backdateForm.paymentMethod);
       fd.append('deliveryOption', backdateForm.deliveryOption);
+      fd.append('deliveryCost', deliveryCost.toString());
       fd.append('adminDate', backdateForm.date);
 
       const res = await fetch('/api/orders', { method: 'POST', body: fd });
@@ -1272,10 +1301,11 @@ export default function AdminPage() {
       const created = await res.json();
       alert(`✅ Pedido ${created.id} creado con fecha ${backdateForm.date}`);
       setShowBackdateModal(false);
+      setBackdateAddresses([]);
       setBackdateForm({
         date: '', name: '', phone: '', deliveryOption: 'recojo',
-        address: '', paymentMethod: 'efectivo',
-        items: [{ productId: '', name: '', price: 0, qty: 1 }],
+        address: '', paymentMethod: 'contraentrega-efectivo-exacto',
+        items: [{ productId: '', name: '', price: 0, qty: 1, salsa: '' }],
       });
       loadOrders();
     } catch (err) {
@@ -3001,140 +3031,213 @@ export default function AdminPage() {
       )}
 
       {/* Modal pedido retroactivo */}
-      {showBackdateModal && (
+      {showBackdateModal && (() => {
+        const deliveryCost = backdateForm.deliveryOption === 'alrededores' ? 4.00 : 0;
+        const subtotal = backdateForm.items.reduce((s, i) => s + i.price * i.qty, 0);
+        return (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowBackdateModal(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 border border-gray-200 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 border border-gray-200 max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-black text-gray-900 mb-1">Pedido retroactivo</h3>
             <p className="text-xs text-gray-400 mb-5">El pedido se guardará con el ID y fecha que elijas.</p>
 
             <div className="space-y-4">
-              {/* Fecha */}
+
+              {/* ── Fecha ─────────────────────────────────── */}
               <div>
-                <label className="text-gray-600 text-sm font-semibold block mb-1">Fecha del pedido</label>
+                <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-1">Fecha del pedido</label>
                 <input type="date" value={backdateForm.date}
                   onChange={e => setBackdateForm(f => ({ ...f, date: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400 [color-scheme:light]"
                 />
               </div>
 
-              {/* Cliente */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-gray-600 text-sm font-semibold block mb-1">Nombre</label>
-                  <input type="text" value={backdateForm.name} placeholder="Nombre"
-                    onChange={e => setBackdateForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
-                  />
-                </div>
-                <div>
-                  <label className="text-gray-600 text-sm font-semibold block mb-1">Teléfono</label>
-                  <input type="text" value={backdateForm.phone} placeholder="+51..."
+              {/* ── Teléfono → autocompletar ──────────────── */}
+              <div>
+                <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-1">Teléfono</label>
+                <div className="relative">
+                  <input type="tel" value={backdateForm.phone} placeholder="9XXXXXXXX"
                     onChange={e => setBackdateForm(f => ({ ...f, phone: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
+                    onBlur={e => handleBackdatePhoneLookup(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400 pr-8"
                   />
+                  {backdateLookingUp && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">buscando…</span>
+                  )}
                 </div>
               </div>
 
-              {/* Entrega */}
+              {/* ── Nombre ───────────────────────────────── */}
               <div>
-                <label className="text-gray-600 text-sm font-semibold block mb-1">Entrega</label>
-                <div className="flex gap-2">
-                  {['recojo', 'delivery'].map(opt => (
-                    <button key={opt} onClick={() => setBackdateForm(f => ({ ...f, deliveryOption: opt }))}
-                      className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-all ${backdateForm.deliveryOption === opt ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'}`}>
-                      {opt === 'recojo' ? 'Recojo en tienda' : 'Delivery'}
+                <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-1">Nombre</label>
+                <input type="text" value={backdateForm.name} placeholder="Se autocompleta con el teléfono"
+                  onChange={e => setBackdateForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
+                />
+              </div>
+
+              {/* ── Entrega ───────────────────────────────── */}
+              <div>
+                <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-2">Entrega</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { value: 'recojo',       label: 'Recojo',         sub: 'En tienda',        price: 'Gratis' },
+                    { value: 'centro',       label: 'Chancay Centro', sub: '',                 price: 'Gratis' },
+                    { value: 'alrededores',  label: 'Alrededores',    sub: 'Puerto · Peralvillo', price: 'S/ 4.00' },
+                  ] as const).map(opt => (
+                    <button key={opt.value}
+                      onClick={() => setBackdateForm(f => ({ ...f, deliveryOption: opt.value, address: '' }))}
+                      className={`py-2 px-2 rounded-lg text-xs font-semibold border transition-all text-left ${backdateForm.deliveryOption === opt.value ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'}`}>
+                      <div>{opt.label}</div>
+                      {opt.sub && <div className={`text-[10px] mt-0.5 ${backdateForm.deliveryOption === opt.value ? 'text-orange-100' : 'text-gray-400'}`}>{opt.sub}</div>}
+                      <div className={`text-[10px] font-bold mt-0.5 ${backdateForm.deliveryOption === opt.value ? 'text-white' : 'text-green-600'}`}>{opt.price}</div>
                     </button>
                   ))}
                 </div>
-                {backdateForm.deliveryOption === 'delivery' && (
-                  <input type="text" value={backdateForm.address} placeholder="Dirección de entrega"
-                    onChange={e => setBackdateForm(f => ({ ...f, address: e.target.value }))}
-                    className="mt-2 w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
-                  />
+
+                {/* Dirección */}
+                {backdateForm.deliveryOption !== 'recojo' && (
+                  <div className="mt-2">
+                    <input type="text" value={backdateForm.address}
+                      placeholder="Dirección de entrega"
+                      list="backdate-addr-list"
+                      onChange={e => setBackdateForm(f => ({ ...f, address: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
+                    />
+                    {backdateAddresses.length > 0 && (
+                      <datalist id="backdate-addr-list">
+                        {backdateAddresses.map((a, i) => <option key={i} value={a} />)}
+                      </datalist>
+                    )}
+                    {backdateAddresses.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {backdateAddresses.map((a, i) => (
+                          <button key={i} onClick={() => setBackdateForm(f => ({ ...f, address: a }))}
+                            className="text-[10px] px-2 py-1 bg-orange-50 border border-orange-200 text-orange-700 rounded-full hover:bg-orange-100 transition-colors">
+                            {a.length > 35 ? a.slice(0, 35) + '…' : a}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {/* Pago */}
+              {/* ── Pago ─────────────────────────────────── */}
               <div>
-                <label className="text-gray-600 text-sm font-semibold block mb-1">Método de pago</label>
-                <select value={backdateForm.paymentMethod}
-                  onChange={e => setBackdateForm(f => ({ ...f, paymentMethod: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400">
-                  <option value="efectivo">Efectivo</option>
-                  <option value="yape">Yape</option>
-                  <option value="plin">Plin</option>
-                  <option value="transferencia">Transferencia</option>
-                  <option value="anticipado">Anticipado</option>
-                </select>
+                <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-2">Método de pago</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: 'contraentrega-efectivo-exacto', label: 'Efectivo exacto' },
+                    { value: 'contraentrega-efectivo-cambio', label: 'Efectivo con cambio' },
+                    { value: 'anticipado',                    label: 'Yape / Plin' },
+                    { value: 'tarjeta-mp',                    label: 'Tarjeta / MP' },
+                  ] as const).map(opt => (
+                    <button key={opt.value}
+                      onClick={() => setBackdateForm(f => ({ ...f, paymentMethod: opt.value }))}
+                      className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${backdateForm.paymentMethod === opt.value ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Productos */}
+              {/* ── Productos ────────────────────────────── */}
               <div>
-                <label className="text-gray-600 text-sm font-semibold block mb-2">Productos</label>
-                <div className="space-y-2">
+                <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-2">Productos</label>
+                <div className="space-y-3">
                   {backdateForm.items.map((item, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
-                      <select value={item.productId}
-                        onChange={e => {
-                          const prod = BACKDATE_PRODUCTS.find(p => p.id === e.target.value);
-                          setBackdateForm(f => {
+                    <div key={idx} className="border border-gray-100 rounded-lg p-3 space-y-2">
+                      <div className="flex gap-2 items-center">
+                        <select value={item.productId}
+                          onChange={e => {
+                            const prod = BACKDATE_PRODUCTS.find(p => p.id === e.target.value);
+                            setBackdateForm(f => {
+                              const items = [...f.items];
+                              items[idx] = { ...items[idx], productId: e.target.value, name: prod?.name || '', price: prod?.price || 0, salsa: '' };
+                              return { ...f, items };
+                            });
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400">
+                          <option value="">— Elige producto —</option>
+                          {BACKDATE_PRODUCTS.map(p => (
+                            <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
+                          ))}
+                        </select>
+                        <input type="number" min={1} value={item.qty}
+                          onChange={e => setBackdateForm(f => {
                             const items = [...f.items];
-                            items[idx] = { ...items[idx], productId: e.target.value, name: prod?.name || '', price: prod?.price || 0 };
+                            items[idx] = { ...items[idx], qty: Math.max(1, parseInt(e.target.value) || 1) };
                             return { ...f, items };
-                          });
-                        }}
-                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400">
-                        <option value="">— Producto —</option>
-                        {BACKDATE_PRODUCTS.map(p => (
-                          <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
-                        ))}
-                      </select>
-                      <input type="number" min={1} value={item.qty}
-                        onChange={e => setBackdateForm(f => {
-                          const items = [...f.items];
-                          items[idx] = { ...items[idx], qty: parseInt(e.target.value) || 1 };
-                          return { ...f, items };
-                        })}
-                        className="w-14 px-2 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm text-center focus:outline-none focus:border-orange-400"
-                      />
-                      {backdateForm.items.length > 1 && (
-                        <button onClick={() => setBackdateForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }))}
-                          className="text-gray-400 hover:text-red-500 transition-colors px-1">×</button>
+                          })}
+                          className="w-14 px-2 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm text-center focus:outline-none focus:border-orange-400"
+                        />
+                        {backdateForm.items.length > 1 && (
+                          <button onClick={() => setBackdateForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }))}
+                            className="text-gray-300 hover:text-red-500 transition-colors text-lg leading-none">×</button>
+                        )}
+                      </div>
+                      {/* Salsa — solo para productos que la llevan */}
+                      {item.productId && BACKDATE_SALSA_IDS.includes(item.productId) && (
+                        <div>
+                          <label className="text-gray-400 text-[10px] font-bold uppercase tracking-wide block mb-1">Salsa</label>
+                          <div className="flex flex-wrap gap-1">
+                            {salsas.map(s => (
+                              <button key={s.id}
+                                onClick={() => setBackdateForm(f => {
+                                  const items = [...f.items];
+                                  items[idx] = { ...items[idx], salsa: items[idx].salsa === s.id ? '' : s.id };
+                                  return { ...f, items };
+                                })}
+                                className={`px-2 py-1 rounded-full text-[10px] font-semibold border transition-all ${item.salsa === s.id ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-500 border-gray-200 hover:border-orange-300'}`}>
+                                {s.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setBackdateForm(f => ({ ...f, items: [...f.items, { productId: '', name: '', price: 0, qty: 1 }] }))}
+                <button onClick={() => setBackdateForm(f => ({ ...f, items: [...f.items, { productId: '', name: '', price: 0, qty: 1, salsa: '' }] }))}
                   className="mt-2 text-orange-500 text-sm font-semibold hover:text-orange-600 transition-colors">
                   + Agregar producto
                 </button>
               </div>
 
-              {/* Total */}
+              {/* ── Resumen total ─────────────────────────── */}
               {backdateForm.items.some(i => i.productId) && (
-                <div className="bg-gray-50 rounded-lg px-4 py-3 text-right">
-                  <span className="text-gray-500 text-sm">Total: </span>
-                  <span className="text-gray-900 font-black text-lg">
-                    S/{backdateForm.items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2)}
-                  </span>
+                <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1">
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Subtotal</span><span>S/{subtotal.toFixed(2)}</span>
+                  </div>
+                  {deliveryCost > 0 && (
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>Delivery</span><span>S/{deliveryCost.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-black text-gray-900 text-base pt-1 border-t border-gray-200">
+                    <span>Total</span><span>S/{(subtotal + deliveryCost).toFixed(2)}</span>
+                  </div>
                 </div>
               )}
 
-              {/* Acciones */}
-              <div className="flex gap-3 pt-2">
+              {/* ── Acciones ─────────────────────────────── */}
+              <div className="flex gap-3 pt-1">
                 <button onClick={handleBackdateSubmit} disabled={backdateSubmitting}
                   className="flex-1 py-3 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 transition-all">
                   {backdateSubmitting ? 'Guardando…' : 'Crear pedido'}
                 </button>
                 <button onClick={() => setShowBackdateModal(false)}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-all">
+                  className="px-5 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-all">
                   Cancelar
                 </button>
               </div>
+
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Orders List */}
       <section className="px-6 pb-12">
