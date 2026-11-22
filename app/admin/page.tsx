@@ -105,7 +105,7 @@ const BACKDATE_EXTRAS_IDS = [
 ];
 
 // Precio de extras por ID de complemento
-const BACKDATE_EXTRAS_PRICE: Record<string,number> = { 'extra-papas': 5.00, 'extra-salsa': 3.00 };
+const BACKDATE_EXTRAS_PRICE: Record<string,number> = { 'extra-papas': 5.00, 'extra-salsa': 3.00, 'extra-aderezo': 3.00 };
 
 interface Order {
   id: string;
@@ -3286,6 +3286,21 @@ export default function AdminPage() {
                                 className="w-4 h-4 accent-orange-500"
                               />
                               <span className="text-sm text-gray-700">Extra salsa</span>
+                              <span className="text-xs text-orange-600 font-bold ml-auto">+S/3.00</span>
+                            </label>
+                            {/* Extra aderezo */}
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox"
+                                checked={(item.extras || []).includes('extra-aderezo')}
+                                onChange={e => setBackdateForm(f => {
+                                  const items = [...f.items];
+                                  const extras = items[idx].extras || [];
+                                  items[idx] = { ...items[idx], extras: e.target.checked ? [...extras, 'extra-aderezo'] : extras.filter(x => x !== 'extra-aderezo') };
+                                  return { ...f, items };
+                                })}
+                                className="w-4 h-4 accent-orange-500"
+                              />
+                              <span className="text-sm text-gray-700">Extra aderezo</span>
                               <span className="text-xs text-orange-600 font-bold ml-auto">+S/3.00</span>
                             </label>
                           </div>
