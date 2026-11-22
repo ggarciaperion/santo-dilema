@@ -1274,7 +1274,7 @@ export default function AdminPage() {
       alert('Agrega al menos un producto');
       return;
     }
-    const deliveryCost = backdateForm.deliveryOption === 'alrededores' ? 4.00 : 0;
+    const deliveryCost = backdateForm.deliveryOption === 'alrededores' ? 5.00 : 0;
     const address = backdateForm.deliveryOption === 'recojo'
       ? 'Recojo en tienda'
       : backdateForm.address.trim() || 'Sin dirección';
@@ -2758,7 +2758,7 @@ export default function AdminPage() {
   }
 
   // Computed vars for backdate modal (must be outside JSX to avoid IIFE closure issues)
-  const backdateDeliveryCost = backdateForm.deliveryOption === 'alrededores' ? 4.00 : 0;
+  const backdateDeliveryCost = backdateForm.deliveryOption === 'alrededores' ? 5.00 : 0;
   const backdateSubtotal = backdateForm.items.reduce((s, i) => {
     const extrasPrice = (i.extras || []).reduce((es, eid) => es + (BACKDATE_EXTRAS_PRICE[eid] ?? 0), 0);
     return s + i.price * i.qty + extrasPrice;
@@ -3113,9 +3113,8 @@ export default function AdminPage() {
                 <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-2">Entrega</label>
                 <div className="grid grid-cols-3 gap-2">
                   {([
-                    { value: 'recojo',       label: 'Recojo',         sub: 'En tienda',           price: 'Gratis'  },
                     { value: 'centro',       label: 'Chancay Centro', sub: '',                    price: 'Gratis'  },
-                    { value: 'alrededores',  label: 'Alrededores',    sub: 'Puerto · Peralvillo', price: 'S/ 4.00' },
+                    { value: 'alrededores',  label: 'Alrededores',    sub: 'Puerto · Peralvillo', price: 'S/ 5.00' },
                   ] as const).map(opt => (
                     <button type="button" key={opt.value}
                       onClick={() => setBackdateForm(f => ({ ...f, deliveryOption: opt.value, address: '' }))}
