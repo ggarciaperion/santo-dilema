@@ -280,7 +280,8 @@ export async function POST(request: Request) {
 
     // Registrar la última dirección usada — solo después de saveOrder exitoso.
     // Así checkouts abandonados o pedidos fallidos no sobreescriben la dirección.
-    if (phone && address) {
+    // Excluir "Recojo en tienda" para no sobreescribir historial de delivery del cliente.
+    if (phone && address && address !== 'Recojo en tienda') {
       try {
         await storage.updateCustomerLastAddress(phone, address);
       } catch (addrErr) {

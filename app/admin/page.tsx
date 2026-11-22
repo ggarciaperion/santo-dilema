@@ -59,26 +59,53 @@ const availableComplements = generateAvailableComplements();
 
 // Lista de productos para pedidos retroactivos (espejo de route.ts)
 const BACKDATE_PRODUCTS = [
-  { id: "pequeno-dilema",    name: "Pequeño Dilema",      price: 22.00 },
-  { id: "duo-dilema",        name: "Dúo Dilema",          price: 34.00 },
-  { id: "santo-pecado",      name: "Santo Pecado",        price: 47.00 },
-  { id: "chiguan-alitas",    name: "4 Alitas · Chiguan",  price: 12.00 },
-  { id: "ensalada-clasica",  name: "CLÁSICA FRESH BOWL",  price: 18.50 },
-  { id: "ensalada-proteica", name: "CÉSAR POWER BOWL",    price: 20.00 },
-  { id: "ensalada-caesar",   name: "PROTEIN FIT BOWL",    price: 20.00 },
-  { id: "cobb-supreme-bowl", name: "COBB SUPREME BOWL",   price: 23.50 },
-  { id: "crispy-chicken-bowl", name: "CRISPY CHICKEN BOWL", price: 22.50 },
-  { id: "pasta-power-bowl",  name: "PASTA POWER BOWL",    price: 22.50 },
-  { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: 23.50 },
-  { id: "taco-duo",          name: "Dúo de Tacos",        price: 24.90 },
-  { id: "burger-duo",        name: "Dúo Mini Burgers",    price: 19.90 },
-  { id: "burger-trio",       name: "Trío Mini Burgers",   price: 23.50 },
-  { id: "coca-cola",         name: "Coca Cola 500ml",     price: 4.00 },
-  { id: "inka-cola",         name: "Inka Cola 500ml",     price: 4.00 },
-  { id: "sprite",            name: "Sprite 500ml",        price: 4.00 },
-  { id: "fanta",             name: "Fanta 500ml",         price: 4.00 },
-  { id: "agua-mineral",      name: "Agua mineral",        price: 4.00 },
+  // ── Alitas ──────────────────────────────────────
+  { id: "pequeno-dilema",    name: "Pequeño Dilema",        price: 22.00, cat: "fat" },
+  { id: "duo-dilema",        name: "Dúo Dilema",            price: 34.00, cat: "fat" },
+  { id: "santo-pecado",      name: "Santo Pecado",          price: 47.00, cat: "fat" },
+  { id: "chiguan-alitas",    name: "4 Alitas · Chiguan",    price: 12.00, cat: "fat" },
+  // ── Ensaladas ────────────────────────────────────
+  { id: "ensalada-clasica",  name: "CLÁSICA FRESH BOWL",    price: 18.50, cat: "fit" },
+  { id: "ensalada-proteica", name: "CÉSAR POWER BOWL",      price: 20.00, cat: "fit" },
+  { id: "ensalada-caesar",   name: "PROTEIN FIT BOWL",      price: 20.00, cat: "fit" },
+  { id: "cobb-supreme-bowl", name: "COBB SUPREME BOWL",     price: 23.50, cat: "fit" },
+  { id: "crispy-chicken-bowl", name: "CRISPY CHICKEN BOWL", price: 22.50, cat: "fit" },
+  { id: "pasta-power-bowl",  name: "PASTA POWER BOWL",      price: 22.50, cat: "fit" },
+  { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL",   price: 23.50, cat: "fit" },
+  // ── Tacos / Burgers ──────────────────────────────
+  { id: "taco-duo",          name: "Dúo de Tacos",          price: 24.90, cat: "taco" },
+  { id: "burger-duo",        name: "Dúo Mini Burgers",      price: 19.90, cat: "burger" },
+  { id: "burger-trio",       name: "Trío Mini Burgers",     price: 23.50, cat: "burger" },
+  // ── Combos ───────────────────────────────────────
+  { id: "combo-chiguan",       name: "Combo Chiguan",        price: 20.00, cat: "combo" },
+  { id: "combo-perfecto",      name: "Combo Perfecto",       price: 40.00, cat: "combo" },
+  { id: "combo-especial",      name: "Combo Especial",       price: 42.00, cat: "combo" },
+  { id: "combo-placer",        name: "Combo Placer",         price: 41.00, cat: "combo" },
+  { id: "combo-alitas",        name: "Combo Alitas",         price: 52.00, cat: "combo" },
+  { id: "combo-santo-dilema",  name: "Combo Santo Dilema",   price: 76.00, cat: "combo" },
+  // ── Bebidas ──────────────────────────────────────
+  { id: "coca-cola",         name: "Coca Cola 500ml",        price: 4.00,  cat: "bebida" },
+  { id: "inka-cola",         name: "Inka Cola 500ml",        price: 4.00,  cat: "bebida" },
+  { id: "sprite",            name: "Sprite 500ml",           price: 4.00,  cat: "bebida" },
+  { id: "fanta",             name: "Fanta 500ml",            price: 4.00,  cat: "bebida" },
+  { id: "agua-mineral",      name: "Agua mineral",           price: 4.00,  cat: "bebida" },
 ];
+
+// IDs que llevan selección de salsa en el modal retroactivo
+const BACKDATE_SALSA_IDS = [
+  'pequeno-dilema','duo-dilema','santo-pecado','chiguan-alitas',
+  'taco-duo','burger-duo','burger-trio',
+  'combo-chiguan','combo-perfecto','combo-especial','combo-placer','combo-alitas','combo-santo-dilema',
+];
+
+// IDs que pueden llevar extras (extra-papas / extra-salsa)
+const BACKDATE_EXTRAS_IDS = [
+  'pequeno-dilema','duo-dilema','santo-pecado','chiguan-alitas',
+  'combo-perfecto','combo-especial','combo-placer','combo-alitas','combo-santo-dilema',
+];
+
+// Precio de extras por ID de complemento
+const BACKDATE_EXTRAS_PRICE: Record<string,number> = { 'extra-papas': 5.00, 'extra-salsa': 3.00 };
 
 interface Order {
   id: string;
@@ -297,7 +324,7 @@ export default function AdminPage() {
     deliveryOption: 'recojo' | 'centro' | 'alrededores';
     address: string;
     paymentMethod: string;
-    items: Array<{ productId: string; name: string; price: number; qty: number; salsa: string }>;
+    items: Array<{ productId: string; name: string; price: number; qty: number; salsa: string; extras: string[] }>;
   }>({
     date: '',
     name: '',
@@ -305,7 +332,7 @@ export default function AdminPage() {
     deliveryOption: 'recojo',
     address: '',
     paymentMethod: 'contraentrega-efectivo-exacto',
-    items: [{ productId: '', name: '', price: 0, qty: 1, salsa: '' }],
+    items: [{ productId: '', name: '', price: 0, qty: 1, salsa: '', extras: [] }],
   });
   // Estados de filtro de fechas para la pestaña "Analytics & CRM"
   const [analyticsDateFrom, setAnalyticsDateFrom] = useState<string>("");
@@ -1219,9 +1246,6 @@ export default function AdminPage() {
     }
   };
 
-  // Productos FAT/burger que llevan salsa en el pedido retroactivo
-  const BACKDATE_SALSA_IDS = ['pequeno-dilema','duo-dilema','santo-pecado','chiguan-alitas','taco-duo','burger-duo','burger-trio'];
-
   // Buscar cliente por teléfono y autocompletar nombre + direcciones
   const handleBackdatePhoneLookup = async (phone: string) => {
     if (phone.replace(/\D/g,'').length < 9) return;
@@ -1265,23 +1289,28 @@ export default function AdminPage() {
         finalPrice: i.price,
         originalPrice: i.price,
         selectedSalsa: i.salsa || null,
-        selectedComplements: [],
+        selectedComplements: i.extras,
       }));
       const completedOrders = validItems.map(i => {
         const prod = BACKDATE_PRODUCTS.find(p => p.id === i.productId);
+        const extrasPrice = i.extras.reduce((s, eid) => s + (BACKDATE_EXTRAS_PRICE[eid] ?? 0), 0);
         return {
           productId: i.productId,
           name: i.name,
           quantity: i.qty,
           price: i.price,
-          finalPrice: i.price,
+          finalPrice: i.price + extrasPrice,
           originalPrice: i.price,
-          category: prod ? (BACKDATE_SALSA_IDS.includes(i.productId) ? 'fat' : 'fit') : 'fat',
+          category: prod?.cat || 'fat',
           selectedSalsa: i.salsa || null,
+          complementIds: i.extras,
         };
       });
       const totalItems = validItems.reduce((s, i) => s + i.qty, 0);
-      const totalPrice = validItems.reduce((s, i) => s + i.price * i.qty, 0) + deliveryCost;
+      const totalPrice = validItems.reduce((s, i) => {
+        const extrasPrice = i.extras.reduce((es, eid) => es + (BACKDATE_EXTRAS_PRICE[eid] ?? 0), 0);
+        return s + i.price * i.qty + extrasPrice;
+      }, 0) + deliveryCost;
 
       const fd = new FormData();
       fd.append('name', backdateForm.name.trim());
@@ -1305,7 +1334,7 @@ export default function AdminPage() {
       setBackdateForm({
         date: '', name: '', phone: '', deliveryOption: 'recojo',
         address: '', paymentMethod: 'contraentrega-efectivo-exacto',
-        items: [{ productId: '', name: '', price: 0, qty: 1, salsa: '' }],
+        items: [{ productId: '', name: '', price: 0, qty: 1, salsa: '', extras: [] }],
       });
       loadOrders();
     } catch (err) {
@@ -2728,6 +2757,13 @@ export default function AdminPage() {
     return null;
   }
 
+  // Computed vars for backdate modal (must be outside JSX to avoid IIFE closure issues)
+  const backdateDeliveryCost = backdateForm.deliveryOption === 'alrededores' ? 4.00 : 0;
+  const backdateSubtotal = backdateForm.items.reduce((s, i) => {
+    const extrasPrice = (i.extras || []).reduce((es, eid) => es + (BACKDATE_EXTRAS_PRICE[eid] ?? 0), 0);
+    return s + i.price * i.qty + extrasPrice;
+  }, 0);
+
   return (
     <div className="min-h-screen bg-[#F6F1F1] flex">
       {/* Toast de pedido entregado */}
@@ -3031,10 +3067,7 @@ export default function AdminPage() {
       )}
 
       {/* Modal pedido retroactivo */}
-      {showBackdateModal && (() => {
-        const deliveryCost = backdateForm.deliveryOption === 'alrededores' ? 4.00 : 0;
-        const subtotal = backdateForm.items.reduce((s, i) => s + i.price * i.qty, 0);
-        return (
+      {showBackdateModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowBackdateModal(false)}>
           <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 border border-gray-200 max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-black text-gray-900 mb-1">Pedido retroactivo</h3>
@@ -3080,11 +3113,11 @@ export default function AdminPage() {
                 <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-2">Entrega</label>
                 <div className="grid grid-cols-3 gap-2">
                   {([
-                    { value: 'recojo',       label: 'Recojo',         sub: 'En tienda',        price: 'Gratis' },
-                    { value: 'centro',       label: 'Chancay Centro', sub: '',                 price: 'Gratis' },
+                    { value: 'recojo',       label: 'Recojo',         sub: 'En tienda',           price: 'Gratis'  },
+                    { value: 'centro',       label: 'Chancay Centro', sub: '',                    price: 'Gratis'  },
                     { value: 'alrededores',  label: 'Alrededores',    sub: 'Puerto · Peralvillo', price: 'S/ 4.00' },
                   ] as const).map(opt => (
-                    <button key={opt.value}
+                    <button type="button" key={opt.value}
                       onClick={() => setBackdateForm(f => ({ ...f, deliveryOption: opt.value, address: '' }))}
                       className={`py-2 px-2 rounded-lg text-xs font-semibold border transition-all text-left ${backdateForm.deliveryOption === opt.value ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'}`}>
                       <div>{opt.label}</div>
@@ -3111,9 +3144,9 @@ export default function AdminPage() {
                     {backdateAddresses.length > 0 && (
                       <div className="mt-1 flex flex-wrap gap-1">
                         {backdateAddresses.map((a, i) => (
-                          <button key={i} onClick={() => setBackdateForm(f => ({ ...f, address: a }))}
-                            className="text-[10px] px-2 py-1 bg-orange-50 border border-orange-200 text-orange-700 rounded-full hover:bg-orange-100 transition-colors">
-                            {a.length > 35 ? a.slice(0, 35) + '…' : a}
+                          <button type="button" key={i} onClick={() => setBackdateForm(f => ({ ...f, address: a }))}
+                            className="text-xs px-2 py-1 bg-orange-50 border border-orange-200 text-orange-700 rounded-full hover:bg-orange-100 transition-colors">
+                            {a.length > 40 ? a.slice(0, 40) + '…' : a}
                           </button>
                         ))}
                       </div>
@@ -3132,7 +3165,7 @@ export default function AdminPage() {
                     { value: 'anticipado',                    label: 'Yape / Plin' },
                     { value: 'tarjeta-mp',                    label: 'Tarjeta / MP' },
                   ] as const).map(opt => (
-                    <button key={opt.value}
+                    <button type="button" key={opt.value}
                       onClick={() => setBackdateForm(f => ({ ...f, paymentMethod: opt.value }))}
                       className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${backdateForm.paymentMethod === opt.value ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'}`}>
                       {opt.label}
@@ -3146,22 +3179,45 @@ export default function AdminPage() {
                 <label className="text-gray-600 text-xs font-bold uppercase tracking-wide block mb-2">Productos</label>
                 <div className="space-y-3">
                   {backdateForm.items.map((item, idx) => (
-                    <div key={idx} className="border border-gray-100 rounded-lg p-3 space-y-2">
+                    <div key={idx} className="border border-gray-100 rounded-lg p-3 space-y-2 bg-gray-50/50">
+                      {/* Producto + cantidad */}
                       <div className="flex gap-2 items-center">
                         <select value={item.productId}
                           onChange={e => {
                             const prod = BACKDATE_PRODUCTS.find(p => p.id === e.target.value);
                             setBackdateForm(f => {
                               const items = [...f.items];
-                              items[idx] = { ...items[idx], productId: e.target.value, name: prod?.name || '', price: prod?.price || 0, salsa: '' };
+                              items[idx] = { ...items[idx], productId: e.target.value, name: prod?.name || '', price: prod?.price || 0, salsa: '', extras: [] };
                               return { ...f, items };
                             });
                           }}
-                          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400">
+                          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400 bg-white">
                           <option value="">— Elige producto —</option>
-                          {BACKDATE_PRODUCTS.map(p => (
-                            <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
-                          ))}
+                          <optgroup label="Alitas">
+                            {BACKDATE_PRODUCTS.filter(p => p.cat === 'fat').map(p => (
+                              <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="Combos">
+                            {BACKDATE_PRODUCTS.filter(p => p.cat === 'combo').map(p => (
+                              <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="Tacos / Burgers">
+                            {BACKDATE_PRODUCTS.filter(p => p.cat === 'taco' || p.cat === 'burger').map(p => (
+                              <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="Ensaladas">
+                            {BACKDATE_PRODUCTS.filter(p => p.cat === 'fit').map(p => (
+                              <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="Bebidas">
+                            {BACKDATE_PRODUCTS.filter(p => p.cat === 'bebida').map(p => (
+                              <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
+                            ))}
+                          </optgroup>
                         </select>
                         <input type="number" min={1} value={item.qty}
                           onChange={e => setBackdateForm(f => {
@@ -3169,36 +3225,76 @@ export default function AdminPage() {
                             items[idx] = { ...items[idx], qty: Math.max(1, parseInt(e.target.value) || 1) };
                             return { ...f, items };
                           })}
-                          className="w-14 px-2 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm text-center focus:outline-none focus:border-orange-400"
+                          className="w-14 px-2 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm text-center focus:outline-none focus:border-orange-400 bg-white"
                         />
                         {backdateForm.items.length > 1 && (
-                          <button onClick={() => setBackdateForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }))}
-                            className="text-gray-300 hover:text-red-500 transition-colors text-lg leading-none">×</button>
+                          <button type="button" onClick={() => setBackdateForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }))}
+                            className="text-gray-300 hover:text-red-500 transition-colors text-xl leading-none font-bold">×</button>
                         )}
                       </div>
+
                       {/* Salsa — solo para productos que la llevan */}
                       {item.productId && BACKDATE_SALSA_IDS.includes(item.productId) && (
                         <div>
-                          <label className="text-gray-400 text-[10px] font-bold uppercase tracking-wide block mb-1">Salsa</label>
-                          <div className="flex flex-wrap gap-1">
+                          <label className="text-gray-500 text-xs font-bold uppercase tracking-wide block mb-1.5">Salsa</label>
+                          <div className="flex flex-wrap gap-1.5">
                             {salsas.map(s => (
-                              <button key={s.id}
+                              <button type="button" key={s.id}
                                 onClick={() => setBackdateForm(f => {
                                   const items = [...f.items];
                                   items[idx] = { ...items[idx], salsa: items[idx].salsa === s.id ? '' : s.id };
                                   return { ...f, items };
                                 })}
-                                className={`px-2 py-1 rounded-full text-[10px] font-semibold border transition-all ${item.salsa === s.id ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-500 border-gray-200 hover:border-orange-300'}`}>
+                                className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${item.salsa === s.id ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-600'}`}>
                                 {s.name}
                               </button>
                             ))}
                           </div>
                         </div>
                       )}
+
+                      {/* Extras — solo para productos que los llevan */}
+                      {item.productId && BACKDATE_EXTRAS_IDS.includes(item.productId) && (
+                        <div>
+                          <label className="text-gray-500 text-xs font-bold uppercase tracking-wide block mb-1.5">Extras</label>
+                          <div className="flex flex-col gap-1.5">
+                            {/* Extra papas */}
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox"
+                                checked={(item.extras || []).includes('extra-papas')}
+                                onChange={e => setBackdateForm(f => {
+                                  const items = [...f.items];
+                                  const extras = items[idx].extras || [];
+                                  items[idx] = { ...items[idx], extras: e.target.checked ? [...extras, 'extra-papas'] : extras.filter(x => x !== 'extra-papas') };
+                                  return { ...f, items };
+                                })}
+                                className="w-4 h-4 accent-orange-500"
+                              />
+                              <span className="text-sm text-gray-700">Extra papas</span>
+                              <span className="text-xs text-orange-600 font-bold ml-auto">+S/5.00</span>
+                            </label>
+                            {/* Extra salsa */}
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox"
+                                checked={(item.extras || []).includes('extra-salsa')}
+                                onChange={e => setBackdateForm(f => {
+                                  const items = [...f.items];
+                                  const extras = items[idx].extras || [];
+                                  items[idx] = { ...items[idx], extras: e.target.checked ? [...extras, 'extra-salsa'] : extras.filter(x => x !== 'extra-salsa') };
+                                  return { ...f, items };
+                                })}
+                                className="w-4 h-4 accent-orange-500"
+                              />
+                              <span className="text-sm text-gray-700">Extra salsa</span>
+                              <span className="text-xs text-orange-600 font-bold ml-auto">+S/3.00</span>
+                            </label>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setBackdateForm(f => ({ ...f, items: [...f.items, { productId: '', name: '', price: 0, qty: 1, salsa: '' }] }))}
+                <button type="button" onClick={() => setBackdateForm(f => ({ ...f, items: [...f.items, { productId: '', name: '', price: 0, qty: 1, salsa: '', extras: [] }] }))}
                   className="mt-2 text-orange-500 text-sm font-semibold hover:text-orange-600 transition-colors">
                   + Agregar producto
                 </button>
@@ -3208,26 +3304,26 @@ export default function AdminPage() {
               {backdateForm.items.some(i => i.productId) && (
                 <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1">
                   <div className="flex justify-between text-sm text-gray-500">
-                    <span>Subtotal</span><span>S/{subtotal.toFixed(2)}</span>
+                    <span>Subtotal</span><span>S/{backdateSubtotal.toFixed(2)}</span>
                   </div>
-                  {deliveryCost > 0 && (
+                  {backdateDeliveryCost > 0 && (
                     <div className="flex justify-between text-sm text-gray-500">
-                      <span>Delivery</span><span>S/{deliveryCost.toFixed(2)}</span>
+                      <span>Delivery</span><span>S/{backdateDeliveryCost.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-black text-gray-900 text-base pt-1 border-t border-gray-200">
-                    <span>Total</span><span>S/{(subtotal + deliveryCost).toFixed(2)}</span>
+                    <span>Total</span><span>S/{(backdateSubtotal + backdateDeliveryCost).toFixed(2)}</span>
                   </div>
                 </div>
               )}
 
               {/* ── Acciones ─────────────────────────────── */}
               <div className="flex gap-3 pt-1">
-                <button onClick={handleBackdateSubmit} disabled={backdateSubmitting}
+                <button type="button" onClick={handleBackdateSubmit} disabled={backdateSubmitting}
                   className="flex-1 py-3 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 transition-all">
                   {backdateSubmitting ? 'Guardando…' : 'Crear pedido'}
                 </button>
-                <button onClick={() => setShowBackdateModal(false)}
+                <button type="button" onClick={() => setShowBackdateModal(false)}
                   className="px-5 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-all">
                   Cancelar
                 </button>
@@ -3236,8 +3332,7 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-        );
-      })()}
+      )}
 
       {/* Orders List */}
       <section className="px-6 pb-12">
