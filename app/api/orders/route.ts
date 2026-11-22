@@ -165,6 +165,7 @@ export async function POST(request: Request) {
     const scheduledDate = formData.get('scheduledDate') as string | null;
     const scheduledTime = formData.get('scheduledTime') as string | null;
     const timestamp = formData.get('timestamp') as string;
+    const adminDate = formData.get('adminDate') as string | null; // "YYYY-MM-DD" — solo desde panel admin
     const paymentProof = formData.get('paymentProof') as File | null;
 
     let paymentProofPath = null;
@@ -198,10 +199,19 @@ export async function POST(request: Request) {
     const status = isScheduled ? 'programado' : (paymentMethod === 'anticipado' ? 'pendiente-verificacion' : 'pending');
 
     // Generar ID con formato #DDMM-NN (en hora Peru)
-    const today = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Lima" }));
-    const day   = today.getDate().toString().padStart(2, '0');
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const year  = today.getFullYear().toString();
+    // Si adminDate presente (retroactivo desde panel admin), usar esa fecha en lugar de hoy
+    let day: string, month: string, year: string;
+    if (adminDate) {
+      const parts = adminDate.split('-'); // ["YYYY","MM","DD"]
+      year  = parts[0];
+      month = parts[1];
+      day   = parts[2];
+    } else {
+      const today = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Lima" }));
+      day   = today.getDate().toString().padStart(2, '0');
+      month = (today.getMonth() + 1).toString().padStart(2, '0');
+      year  = today.getFullYear().toString();
+    }
 
     // Leer pedidos UNA SOLA VEZ — este array se reutiliza en saveOrder
     // para evitar una segunda lectura a Redis (que podría devolver dato desactualizado)
@@ -232,7 +242,10 @@ export async function POST(request: Request) {
     });
 
     // Crear nuevo pedido con ID único
-    const peruNow = getPeruTimestamp();
+    // Si adminDate, usar las 23:30 Lima de ese día como timestamp retroactivo
+    const peruNow = adminDate
+      ? new Date(`${adminDate}T23:30:00-05:00`).toISOString()
+      : getPeruTimestamp();
     const newOrder = {
       id: orderId,
       name,

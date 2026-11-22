@@ -57,6 +57,28 @@ const generateAvailableComplements = () => {
 
 const availableComplements = generateAvailableComplements();
 
+// Lista de productos para pedidos retroactivos (espejo de route.ts)
+const BACKDATE_PRODUCTS = [
+  { id: "pequeno-dilema",    name: "Pequeño Dilema",      price: 22.00 },
+  { id: "duo-dilema",        name: "Dúo Dilema",          price: 34.00 },
+  { id: "santo-pecado",      name: "Santo Pecado",        price: 47.00 },
+  { id: "chiguan-alitas",    name: "4 Alitas · Chiguan",  price: 12.00 },
+  { id: "ensalada-clasica",  name: "CLÁSICA FRESH BOWL",  price: 18.50 },
+  { id: "ensalada-proteica", name: "CÉSAR POWER BOWL",    price: 20.00 },
+  { id: "ensalada-caesar",   name: "PROTEIN FIT BOWL",    price: 20.00 },
+  { id: "cobb-supreme-bowl", name: "COBB SUPREME BOWL",   price: 23.50 },
+  { id: "crispy-chicken-bowl", name: "CRISPY CHICKEN BOWL", price: 22.50 },
+  { id: "pasta-power-bowl",  name: "PASTA POWER BOWL",    price: 22.50 },
+  { id: "ensalada-mediterranea", name: "TUNA FRESH BOWL", price: 23.50 },
+  { id: "taco-duo",          name: "Dúo de Tacos",        price: 24.90 },
+  { id: "burger-duo",        name: "Dúo Mini Burgers",    price: 19.90 },
+  { id: "burger-trio",       name: "Trío Mini Burgers",   price: 23.50 },
+  { id: "coca-cola",         name: "Coca Cola 500ml",     price: 4.00 },
+  { id: "inka-cola",         name: "Inka Cola 500ml",     price: 4.00 },
+  { id: "sprite",            name: "Sprite 500ml",        price: 4.00 },
+  { id: "fanta",             name: "Fanta 500ml",         price: 4.00 },
+  { id: "agua-mineral",      name: "Agua mineral",        price: 4.00 },
+];
 
 interface Order {
   id: string;
@@ -263,6 +285,26 @@ export default function AdminPage() {
   const [ordersDateTo, setOrdersDateTo] = useState<string>("");
   const [isOrdersDateFiltered, setIsOrdersDateFiltered] = useState(false);
   const [showOrdersDateModal, setShowOrdersDateModal] = useState(false);
+  // Modal pedido retroactivo
+  const [showBackdateModal, setShowBackdateModal] = useState(false);
+  const [backdateSubmitting, setBackdateSubmitting] = useState(false);
+  const [backdateForm, setBackdateForm] = useState<{
+    date: string;
+    name: string;
+    phone: string;
+    deliveryOption: string;
+    address: string;
+    paymentMethod: string;
+    items: Array<{ productId: string; name: string; price: number; qty: number }>;
+  }>({
+    date: '',
+    name: '',
+    phone: '',
+    deliveryOption: 'recojo',
+    address: '',
+    paymentMethod: 'efectivo',
+    items: [{ productId: '', name: '', price: 0, qty: 1 }],
+  });
   // Estados de filtro de fechas para la pestaña "Analytics & CRM"
   const [analyticsDateFrom, setAnalyticsDateFrom] = useState<string>("");
   const [analyticsDateTo, setAnalyticsDateTo] = useState<string>("");
@@ -1172,6 +1214,74 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error("Error al deducir stock:", error);
+    }
+  };
+
+  // Crear pedido retroactivo con adminDate
+  const handleBackdateSubmit = async () => {
+    const validItems = backdateForm.items.filter(i => i.productId && i.qty > 0);
+    if (!backdateForm.date || !backdateForm.name.trim() || !backdateForm.phone.trim()) {
+      alert('Completa fecha, nombre y teléfono');
+      return;
+    }
+    if (validItems.length === 0) {
+      alert('Agrega al menos un producto');
+      return;
+    }
+    setBackdateSubmitting(true);
+    try {
+      const cart = validItems.map(i => ({
+        id: i.productId,
+        name: i.name,
+        quantity: i.qty,
+        price: i.price,
+        finalPrice: i.price,
+        originalPrice: i.price,
+        selectedSalsa: null,
+        selectedComplements: [],
+      }));
+      const completedOrders = validItems.map(i => ({
+        productId: i.productId,
+        name: i.name,
+        quantity: i.qty,
+        price: i.price,
+        finalPrice: i.price,
+        originalPrice: i.price,
+        category: 'fat',
+      }));
+      const totalItems = validItems.reduce((s, i) => s + i.qty, 0);
+      const totalPrice = validItems.reduce((s, i) => s + i.price * i.qty, 0);
+      const address = backdateForm.deliveryOption === 'recojo'
+        ? 'Recojo en tienda'
+        : backdateForm.address.trim() || 'Sin dirección';
+
+      const fd = new FormData();
+      fd.append('name', backdateForm.name.trim());
+      fd.append('phone', backdateForm.phone.trim());
+      fd.append('address', address);
+      fd.append('cart', JSON.stringify(cart));
+      fd.append('completedOrders', JSON.stringify(completedOrders));
+      fd.append('totalItems', totalItems.toString());
+      fd.append('totalPrice', totalPrice.toString());
+      fd.append('paymentMethod', backdateForm.paymentMethod);
+      fd.append('deliveryOption', backdateForm.deliveryOption);
+      fd.append('adminDate', backdateForm.date);
+
+      const res = await fetch('/api/orders', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const created = await res.json();
+      alert(`✅ Pedido ${created.id} creado con fecha ${backdateForm.date}`);
+      setShowBackdateModal(false);
+      setBackdateForm({
+        date: '', name: '', phone: '', deliveryOption: 'recojo',
+        address: '', paymentMethod: 'efectivo',
+        items: [{ productId: '', name: '', price: 0, qty: 1 }],
+      });
+      loadOrders();
+    } catch (err) {
+      alert('Error al crear el pedido retroactivo. Intenta de nuevo.');
+    } finally {
+      setBackdateSubmitting(false);
     }
   };
 
@@ -2751,6 +2861,23 @@ export default function AdminPage() {
       <section className="px-6 pb-6">
         <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-center justify-end">
           <div className="flex gap-2 justify-end">
+            {/* Botón pedido retroactivo */}
+            <button
+              onClick={() => {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yd = yesterday.toISOString().split('T')[0];
+                setBackdateForm(f => ({ ...f, date: yd }));
+                setShowBackdateModal(true);
+              }}
+              className="px-3 py-3 bg-white border border-gray-200 rounded-lg text-orange-500 hover:text-orange-600 hover:border-orange-300 transition-all"
+              title="Crear pedido retroactivo"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+              </svg>
+            </button>
+
             {/* Botón exportar CSV */}
             <button
               onClick={exportOrdersToCSV}
@@ -2868,6 +2995,142 @@ export default function AdminPage() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal pedido retroactivo */}
+      {showBackdateModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowBackdateModal(false)}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 border border-gray-200 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-black text-gray-900 mb-1">Pedido retroactivo</h3>
+            <p className="text-xs text-gray-400 mb-5">El pedido se guardará con el ID y fecha que elijas.</p>
+
+            <div className="space-y-4">
+              {/* Fecha */}
+              <div>
+                <label className="text-gray-600 text-sm font-semibold block mb-1">Fecha del pedido</label>
+                <input type="date" value={backdateForm.date}
+                  onChange={e => setBackdateForm(f => ({ ...f, date: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400 [color-scheme:light]"
+                />
+              </div>
+
+              {/* Cliente */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-gray-600 text-sm font-semibold block mb-1">Nombre</label>
+                  <input type="text" value={backdateForm.name} placeholder="Nombre"
+                    onChange={e => setBackdateForm(f => ({ ...f, name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-gray-600 text-sm font-semibold block mb-1">Teléfono</label>
+                  <input type="text" value={backdateForm.phone} placeholder="+51..."
+                    onChange={e => setBackdateForm(f => ({ ...f, phone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
+                  />
+                </div>
+              </div>
+
+              {/* Entrega */}
+              <div>
+                <label className="text-gray-600 text-sm font-semibold block mb-1">Entrega</label>
+                <div className="flex gap-2">
+                  {['recojo', 'delivery'].map(opt => (
+                    <button key={opt} onClick={() => setBackdateForm(f => ({ ...f, deliveryOption: opt }))}
+                      className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-all ${backdateForm.deliveryOption === opt ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'}`}>
+                      {opt === 'recojo' ? 'Recojo en tienda' : 'Delivery'}
+                    </button>
+                  ))}
+                </div>
+                {backdateForm.deliveryOption === 'delivery' && (
+                  <input type="text" value={backdateForm.address} placeholder="Dirección de entrega"
+                    onChange={e => setBackdateForm(f => ({ ...f, address: e.target.value }))}
+                    className="mt-2 w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400"
+                  />
+                )}
+              </div>
+
+              {/* Pago */}
+              <div>
+                <label className="text-gray-600 text-sm font-semibold block mb-1">Método de pago</label>
+                <select value={backdateForm.paymentMethod}
+                  onChange={e => setBackdateForm(f => ({ ...f, paymentMethod: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400">
+                  <option value="efectivo">Efectivo</option>
+                  <option value="yape">Yape</option>
+                  <option value="plin">Plin</option>
+                  <option value="transferencia">Transferencia</option>
+                  <option value="anticipado">Anticipado</option>
+                </select>
+              </div>
+
+              {/* Productos */}
+              <div>
+                <label className="text-gray-600 text-sm font-semibold block mb-2">Productos</label>
+                <div className="space-y-2">
+                  {backdateForm.items.map((item, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <select value={item.productId}
+                        onChange={e => {
+                          const prod = BACKDATE_PRODUCTS.find(p => p.id === e.target.value);
+                          setBackdateForm(f => {
+                            const items = [...f.items];
+                            items[idx] = { ...items[idx], productId: e.target.value, name: prod?.name || '', price: prod?.price || 0 };
+                            return { ...f, items };
+                          });
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:border-orange-400">
+                        <option value="">— Producto —</option>
+                        {BACKDATE_PRODUCTS.map(p => (
+                          <option key={p.id} value={p.id}>{p.name} · S/{p.price.toFixed(2)}</option>
+                        ))}
+                      </select>
+                      <input type="number" min={1} value={item.qty}
+                        onChange={e => setBackdateForm(f => {
+                          const items = [...f.items];
+                          items[idx] = { ...items[idx], qty: parseInt(e.target.value) || 1 };
+                          return { ...f, items };
+                        })}
+                        className="w-14 px-2 py-2 border border-gray-200 rounded-lg text-gray-900 text-sm text-center focus:outline-none focus:border-orange-400"
+                      />
+                      {backdateForm.items.length > 1 && (
+                        <button onClick={() => setBackdateForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }))}
+                          className="text-gray-400 hover:text-red-500 transition-colors px-1">×</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setBackdateForm(f => ({ ...f, items: [...f.items, { productId: '', name: '', price: 0, qty: 1 }] }))}
+                  className="mt-2 text-orange-500 text-sm font-semibold hover:text-orange-600 transition-colors">
+                  + Agregar producto
+                </button>
+              </div>
+
+              {/* Total */}
+              {backdateForm.items.some(i => i.productId) && (
+                <div className="bg-gray-50 rounded-lg px-4 py-3 text-right">
+                  <span className="text-gray-500 text-sm">Total: </span>
+                  <span className="text-gray-900 font-black text-lg">
+                    S/{backdateForm.items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2)}
+                  </span>
+                </div>
+              )}
+
+              {/* Acciones */}
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleBackdateSubmit} disabled={backdateSubmitting}
+                  className="flex-1 py-3 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 transition-all">
+                  {backdateSubmitting ? 'Guardando…' : 'Crear pedido'}
+                </button>
+                <button onClick={() => setShowBackdateModal(false)}
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-all">
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         </div>
